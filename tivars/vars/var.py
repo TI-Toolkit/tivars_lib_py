@@ -10,15 +10,15 @@ from tivars.models import *
 class TIHeader(namedtuple("TIHeader", ["signature", "export", "comment", "entry_length"])):
     __slots__ = ()
 
-    def dump(self) -> bytearray:
+    def dump(self) -> bytes:
         dump = bytearray()
 
         dump.extend(self.signature)
         dump.extend(self.export)
-        dump.extend(self.comment.encode('utf8').ljust(42, b'\x00'))
+        dump.extend(self.comment[:42].encode('utf8').ljust(42, b'\x00'))
         dump.extend(self.entry_length.to_bytes(2, 'little'))
 
-        return dump
+        return bytes(dump)
 
 
 class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "name", "version", "archived", "data"])):
@@ -32,17 +32,17 @@ class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "n
         return self.meta_length - TIEntry.base_meta_length
 
     @property
-    def varname(self) -> bytearray:
+    def varname(self) -> bytes:
         varname = self.name
         varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
         varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
-            raise ValueError(f"Var has invalid name: {self.name}")
+            raise ValueError(f"Var has invalid name: {self.name} -> {varname}.")
 
-        return bytearray(varname.ljust(8, '\0')[:8].upper().encode('utf8'))
+        return varname[:8].upper().encode('utf8').ljust(8, b'\x00')
 
-    def dump(self) -> bytearray:
+    def dump(self) -> bytes:
         dump = bytearray()
 
         dump.extend(self.meta_length.to_bytes(2, 'little'))
@@ -57,7 +57,7 @@ class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "n
         dump.extend(self.data_length.to_bytes(2, 'little'))
         dump.extend(self.data)
 
-        return dump
+        return bytes(dump)
 
 
 class TIVar:
@@ -133,7 +133,7 @@ class TIVar:
         return self.entry.flash_bytes
 
     @property
-    def varname(self) -> bytearray:
+    def varname(self) -> bytes:
         return self.entry.varname
 
     @staticmethod
@@ -170,7 +170,7 @@ class TIVar:
         else:
             raise TypeError("Calculator model does not support archiving.")
 
-    def dump(self) -> bytearray:
+    def dump(self) -> bytes:
         return self.header.dump() + self.entry.dump() + self.checksum.to_bytes(2, 'little')
 
     def dumps(self) -> str:
@@ -196,7 +196,7 @@ class TIVar:
 
         if self.meta_length == TIEntry.flash_meta_length:
             self.version = file.read(1)
-            self.archived = bool(file.read(1))
+            self.archived = file.read(1) != b'\x00'
 
         elif self.meta_length != TIEntry.base_meta_length:
             if strict:
@@ -224,7 +224,7 @@ class TIVar:
 
     def save(self, filename: str = None):
         filename = filename or f"{self.name}.{self.extension}"
-        with open(filename, 'wb+') as file:
+        with open(filename.replace('\0', ''), 'wb+') as file:
             file.write(self.dump())
 
     def unarchive(self):
