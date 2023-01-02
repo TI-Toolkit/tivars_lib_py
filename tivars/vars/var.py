@@ -173,6 +173,9 @@ class TIVar:
     def dump(self) -> bytearray:
         return self.header.dump() + self.entry.dump() + self.checksum.to_bytes(2, 'little')
 
+    def dumps(self) -> str:
+        pass
+
     def load(self, file: BinaryIO, strict=True):
         self.signature = file.read(8)
         self.export = file.read(3)

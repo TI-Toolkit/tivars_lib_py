@@ -1,7 +1,7 @@
 from tivars.models import *
 from tivars.tokenizer.tokens import *
 
-from tivars.tokenizer import tokenize
+from tivars.tokenizer import tokenize, decode
 from ..var import TIVar
 
 
@@ -26,9 +26,13 @@ class TIProgram(TIVar):
 
     type_id = b'\x05'
 
+    def dumps(self) -> str:
+        byte_map = CE_BYTES if self.model in (TI_83pce, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy) else CSE_BYTES
+        return decode(self.data, byte_map)
+
     def loads(self, string: str):
-        tokens = CE_TOKENS if self.model in (TI_83pce, TI_84pce) else CSE_TOKENS
-        self.data = tokenize(string, tokens)
+        token_map = CE_TOKENS if self.model in (TI_83pce, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy) else CSE_TOKENS
+        self.data = tokenize(string, token_map)
 
 
 class TIProtectedProgram(TIProgram):
