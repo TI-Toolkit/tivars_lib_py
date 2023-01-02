@@ -152,7 +152,7 @@ class TIVar:
 
         type_id = file.read(1)
         try:
-            var = TIVar._type_ids[type_id](model)
+            var = TIVar._type_ids[type_id](file.name, model)
         except KeyError:
             raise ValueError("File has unknown type ID.")
 
@@ -221,6 +221,11 @@ class TIVar:
 
     def loads(self, string: str):
         pass
+
+    def save(self, filename: str = None):
+        filename = filename or f"{self.name}.{self.extension}"
+        with open(filename, 'wb+') as file:
+            file.write(self.dump())
 
     def unarchive(self):
         if self.model.has(TIFeatures.FLASH):
