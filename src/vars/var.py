@@ -5,6 +5,7 @@ from typing import BinaryIO
 
 
 from src.models import TIFeatures, TIModel
+from src.models.models import *
 
 
 class TIHeader(namedtuple("TIHeader", ["signature", "export", "comment", "entry_length"])):
@@ -22,14 +23,14 @@ class TIHeader(namedtuple("TIHeader", ["signature", "export", "comment", "entry_
 
 
 class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "name", "version", "archived", "data"])):
-    pre_flash_meta_length = 0x0B
-    post_flash_meta_length = 0x0D
+    base_meta_length = 0x0B
+    flash_meta_length = 0x0D
 
     __slots__ = ()
 
     @property
-    def optional_bytes(self) -> int:
-        return self.meta_length - TIEntry.pre_flash_meta_length
+    def flash_bytes(self) -> int:
+        return self.meta_length - TIEntry.base_meta_length
 
     @property
     def varname(self) -> bytearray:
@@ -50,7 +51,7 @@ class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "n
         dump.extend(self.type_id)
         dump.extend(self.varname)
 
-        if self.optional_bytes:
+        if self.flash_bytes:
             dump.extend(self.version)
             dump.append(self.archived)
 
@@ -64,16 +65,18 @@ class TIVar:
     extensions = {}
     type_id = b'\x00'
 
-    def __init__(self, model: 'TIModel'):
+    _type_ids = {}
+
+    def __init__(self, name: str = "MyVar", model: 'TIModel' = TI_84p):
         self.model = model
 
         self.signature = model.signature
         self.export = b'\x1A\x0A\x00'
         self.comment = "Created by tivars_lib_py"
 
-        self.meta_length = 0
+        self.meta_length = TIEntry.flash_meta_length if model.has(TIFeatures.FLASH) else TIEntry.base_meta_length
 
-        self.name = "CHARS2"
+        self.name = name
 
         self.version = b'\x00'
         self.archived = False
@@ -91,7 +94,7 @@ class TIVar:
         checksum += sum(self.varname)
         checksum += sum(self.data)
 
-        if self.optional_bytes:
+        if self.flash_bytes:
             checksum += int.from_bytes(self.version, 'little')
             checksum += self.archived
 
@@ -127,12 +130,40 @@ class TIVar:
                         entry_length=self.entry_length)
 
     @property
-    def optional_bytes(self) -> int:
-        return self.entry.optional_bytes
+    def flash_bytes(self) -> int:
+        return self.entry.flash_bytes
 
     @property
     def varname(self) -> bytearray:
         return self.entry.varname
+
+    @staticmethod
+    def infer(file: BinaryIO, model: 'TIModel' = None) -> 'TIVar':
+        signature = file.read(8)
+
+        if model is None:
+            match signature:
+                case TI_82.signature: model = TI_82
+                case TI_83.signature: model = TI_83
+                case TI_84p.signature: model = TI_84p
+                case _:
+                    raise ValueError("File has unknown model signature.")
+
+        file.read(51)
+
+        type_id = file.read(1)
+        try:
+            var = TIVar._type_ids[type_id](model)
+        except KeyError:
+            raise ValueError("File has unknown type ID.")
+
+        file.seek(0)
+        var.load(file)
+        return var
+
+    @staticmethod
+    def register(var_type: type['TIVar']):
+        TIVar._type_ids[var_type.type_id] = var_type
 
     def archive(self):
         if self.model.has(TIFeatures.FLASH):
@@ -143,7 +174,7 @@ class TIVar:
     def dump(self) -> bytearray:
         return self.header.dump() + self.entry.dump() + self.checksum.to_bytes(2, 'little')
 
-    def load(self, file: BinaryIO, strict=False):
+    def load(self, file: BinaryIO, strict=True):
         self.signature = file.read(8)
         self.export = file.read(3)
         self.comment = file.read(42).decode('utf8')
@@ -161,11 +192,11 @@ class TIVar:
 
         self.name = file.read(8).decode('utf8')
 
-        if self.meta_length == TIEntry.post_flash_meta_length:
+        if self.meta_length == TIEntry.flash_meta_length:
             self.version = file.read(1)
             self.archived = bool(file.read(1))
 
-        elif self.meta_length != TIEntry.pre_flash_meta_length:
+        elif self.meta_length != TIEntry.base_meta_length:
             if strict:
                 raise ValueError("The var entry meta length has an unexpected value.")
             else:
