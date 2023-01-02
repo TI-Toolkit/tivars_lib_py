@@ -1,0 +1,3 @@
+[submodule "tivars/tokenizer/tokens"]
+	path = tivars/tokenizer/tokens
+	url = https://github.com/CE-Fauxgramming/tokens

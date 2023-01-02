@@ -1,4 +1,4 @@
-from ..parse import load_tokens_xml
+from tivars.tokenizer import load_tokens_xml
 
 AXE_TOKENS, AXE_BYTES = load_tokens_xml("./tivars/tokenizer/tokens/Axe.xml")
 
