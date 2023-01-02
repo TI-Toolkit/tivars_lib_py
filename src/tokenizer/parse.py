@@ -1,4 +1,3 @@
-import csv
 import xml.parsers.expat
 
 from collections import namedtuple
