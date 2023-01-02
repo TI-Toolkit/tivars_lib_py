@@ -1,5 +1,6 @@
 from .parse import *
 
+
 def decode(bytestream: bytearray, byte_map: ByteMap) -> str:
     string = ""
     if (data_length := int.from_bytes(bytestream[:2], 'little')) != (true_length := len(bytestream) - 2):
@@ -25,7 +26,7 @@ def decode(bytestream: bytearray, byte_map: ByteMap) -> str:
     return string
 
 
-def tokenize(string: str, token_map: TokenMap) -> bytearray:
+def encode(string: str, token_map: TokenMap) -> bytearray:
     data = bytearray(b'\0\0')
     max_length = max(map(len, token_map.keys()))
     within_string = False

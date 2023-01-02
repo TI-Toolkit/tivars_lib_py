@@ -1,6 +1,6 @@
 from tivars.models import *
 
-from tivars.tokenizer import tokenize, decode
+from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
 from ..var import TIVar
 
@@ -32,7 +32,7 @@ class TIProgram(TIVar):
 
     def loads(self, string: str):
         token_map = CE_TOKENS if self.model in (TI_83pce, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy) else CSE_TOKENS
-        self.data = tokenize(string, token_map)
+        self.data = encode(string, token_map)
 
 
 class TIProtectedProgram(TIProgram):
