@@ -1,7 +1,7 @@
 from tivars.models import *
-from tivars.tokenizer.tokens import *
 
 from tivars.tokenizer import tokenize, decode
+from tivars.tokenizer.tokens import *
 from ..var import TIVar
 
 
