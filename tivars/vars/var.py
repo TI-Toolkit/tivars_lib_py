@@ -4,8 +4,7 @@ from collections import namedtuple
 from typing import BinaryIO
 
 
-from src.models import TIFeatures, TIModel
-from src.models.models import *
+from tivars.models import *
 
 
 class TIHeader(namedtuple("TIHeader", ["signature", "export", "comment", "entry_length"])):

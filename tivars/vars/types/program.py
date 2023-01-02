@@ -1,7 +1,7 @@
-from src.models.models import *
-from src.tokenizer.tokens import *
+from tivars.models import *
+from tivars.tokenizer.tokens import *
 
-from src.tokenizer import tokenize
+from tivars.tokenizer import tokenize
 from ..var import TIVar
 
 

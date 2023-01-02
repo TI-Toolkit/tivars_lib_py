@@ -1,4 +1,4 @@
-from src.models import *
+from tivars.models import *
 from ..var import TIVar
 
 

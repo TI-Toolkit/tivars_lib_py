@@ -1,5 +1,5 @@
-from src.models import TI_84pce
-from src.vars import TIVar
+from tivars.models import TI_84pce
+from tivars.vars import TIVar
 
 if __name__ == "__main__":
     with open("HELLO.8xp", 'rb') as file:
