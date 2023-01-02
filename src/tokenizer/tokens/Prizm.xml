@@ -1,0 +1,695 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+Prizm.xml
+Shaun McFall, Merthsoft Creations
+shaunm.mcfall@gmail.com
+
+With help from:
+- comic
+- _player
+- kerm
+
+Use of this file in other programs is permitted 
+as long as this comment is kept in tact and any 
+modifications conform to the schema. If you do
+make changes, let me know! I'm happy to include
+changes if they're better!
+-->
+<Tokens xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://merthsoft.com/Tokens">
+  <Groups />
+  <Styles />
+  <Token byte="5B" string="[" />
+  <Token byte="5D" string="]" />
+  <Token byte="7B" string="{" />
+  <Token byte="7D" string="}" />
+  <Token byte="$0D" string="\n" />
+  <Token byte="$20" string=" " />
+  <Token byte="$0E" string="-&gt;" />
+  <Token byte="$89" string="+" />
+  <Token byte="$99" string="-" />
+  <Token byte="$30" string="0" />
+  <Token byte="$31" string="1" />
+  <Token byte="$32" string="2" />
+  <Token byte="$33" string="3" />
+  <Token byte="$34" string="4" />
+  <Token byte="$35" string="5" />
+  <Token byte="$36" string="6" />
+  <Token byte="$37" string="7" />
+  <Token byte="$38" string="8" />
+  <Token byte="$39" string="9" />
+  <Token byte="$41" string="A" />
+  <Token byte="$42" string="B" />
+  <Token byte="$43" string="C" />
+  <Token byte="$44" string="D" />
+  <Token byte="$45" string="E" />
+  <Token byte="$46" string="F" />
+  <Token byte="$47" string="G" />
+  <Token byte="$48" string="H" />
+  <Token byte="$49" string="I" />
+  <Token byte="$4A" string="J" />
+  <Token byte="$4B" string="K" />
+  <Token byte="$4C" string="L" />
+  <Token byte="$4D" string="M" />
+  <Token byte="$4E" string="N" />
+  <Token byte="$4F" string="O" />
+  <Token byte="$50" string="P" />
+  <Token byte="$51" string="Q" />
+  <Token byte="$52" string="R" />
+  <Token byte="$53" string="S" />
+  <Token byte="$54" string="T" />
+  <Token byte="$55" string="U" />
+  <Token byte="$56" string="V" />
+  <Token byte="$57" string="W" />
+  <Token byte="$58" string="X" />
+  <Token byte="$59" string="Y" />
+  <Token byte="$5A" string="Z" />
+  <Token byte="$7F" string="D Var" stringTerminator="false">
+    <Token byte="$B0" string=" And " />
+    <Token byte="$51" string="∆List" />
+    <Token byte="$A4" string="a0" />
+    <Token byte="$A5" string="a1" />
+    <Token byte="$A6" string="a2" />
+    <Token byte="$E1" string="ABdf" />
+    <Token byte="$D7" string="Adf" />
+    <Token byte="$A0" string="An" />
+    <Token byte="$AD" string="An Start" />
+    <Token byte="$A1" string="An01" />
+    <Token byte="$A2" string="An02" />
+    <Token byte="$22" string="Arg" />
+    <Token byte="$49" string="Augment(" />
+    <Token byte="$AA" string="b0" />
+    <Token byte="$AB" string="b1" />
+    <Token byte="$AC" string="b2" />
+    <Token byte="$E0" string="Bdf" />
+    <Token byte="$35" string="Blue" />
+    <Token byte="$A7" string="Bn" />
+    <Token byte="$A8" string="Bn01" />
+    <Token byte="$A9" string="Bn02" />
+    <Token byte="$AE" string="BnStart" />
+    <Token byte="$1D" string="c" />
+    <Token byte="$CD" string="C/Y" />
+    <Token byte="$EF" string="CellIf(" />
+    <Token byte="$EC" string="CellMax(" />
+    <Token byte="$ED" string="CellMean(" />
+    <Token byte="$EE" string="CellMedian(" />
+    <Token byte="$EB" string="CellMin(" />
+    <Token byte="$EA" string="CellProd(" />
+    <Token byte="$E9" string="CellSum(" />
+    <Token byte="$23" string="CoordOff" />
+    <Token byte="$4F" string="Cyan" />
+    <Token byte="$1E" string="D End" />
+    <Token byte="$0E" string="D pitch" />
+    <Token byte="$0F" string="D SelOff" />
+    <Token byte="$26" string="d^2/dx^2 (" />
+    <Token byte="$27" string="Data" />
+    <Token byte="$21" string="df" />
+    <Token byte="$D9" string="Dim" />
+    <Token byte="$46" string="DispF-Tbl" />
+    <Token byte="$1F" string="e^" />
+    <Token byte="$D8" string="Else" />
+    <Token byte="$92" string="F pitch" />
+    <Token byte="$93" string="F Result" />
+    <Token byte="$90" string="F Start" />
+    <Token byte="$91" string="F-Line" />
+    <Token byte="$D0" string="Fa" />
+    <Token byte="$BE" string="Fab" />
+    <Token byte="$DE" string="Factor" />
+    <Token byte="$CE" string="FCD(" />
+    <Token byte="$47" string="Fix" />
+    <Token byte="$2B" string="FMin(" />
+    <Token byte="$2A" string="fn" />
+    <Token byte="$68" string="G SelOff" />
+    <Token byte="$3C" string="GeoCD(" />
+    <Token byte="$8F" string="Getkey" />
+    <Token byte="$36" string="GridLine" />
+    <Token byte="$98" string="H Start" />
+    <Token byte="$97" string="Hist" />
+    <Token byte="$50" string="I%" />
+    <Token byte="$65" string="Identity" />
+    <Token byte="$48" string="If" />
+    <Token byte="$25" string="IneqTypeIntsect" />
+    <Token byte="$BC" string="InvBinomialCD(" />
+    <Token byte="$3D" string="Line" />
+    <Token byte="$52" string="List→Mat(" />
+    <Token byte="$4A" string="ln" />
+    <Token byte="$85" string="Logistic" />
+    <Token byte="$CA" string="LpWhile" />
+    <Token byte="$40" string="Mat→List(" />
+    <Token byte="$4B" string="Max(" />
+    <Token byte="$20" string="maxX" />
+    <Token byte="$2E" string="Med" />
+    <Token byte="$2F" string="Menu" />
+    <Token byte="$2D" string="minX" />
+    <Token byte="$3A" string="MOD_Exp(" />
+    <Token byte="$3B" string="MSa" />
+    <Token byte="$DB" string="MSab" />
+    <Token byte="$FE" string="MSb" />
+    <Token byte="$FD" string="MSe" />
+    <Token byte="$C1" string="N-Dist" />
+    <Token byte="$C0" string="n(Financial)" />
+    <Token byte="$64" string="n(RECUR)" />
+    <Token byte="$D5" string="x^2" />
+    <Token byte="$00" string="Xmax " />
+    <Token byte="$01" string="xInv " />
+    <Token byte="$02" string=" Xor " />
+    <Token byte="$04" string="Ymax " />
+    <Token byte="$05" string="Yfct " />
+    <Token byte="$06" string="Ymin " />
+    <Token byte="$08" string="T{theta}min " />
+    <Token byte="$09" string="T{theta}max " />
+    <Token byte="$0A" string="T{theta}ptch " />
+    <Token byte="$0B" string="Xdot " />
+    <Token byte="$0C" string="Yellow " />
+    <Token byte="$10" string="RightXmax " />
+    <Token byte="$11" string="RightXdot " />
+    <Token byte="$12" string="RightXMin " />
+    <Token byte="$14" string="RightYmax " />
+    <Token byte="$15" string="RightXscl " />
+    <Token byte="$16" string="RightYscl " />
+    <Token byte="$18" string="RightT{theta}max " />
+    <Token byte="$19" string="Return " />
+    <Token byte="$1A" string="RightT{theta}min " />
+    <Token byte="$24" string="Ref " />
+    <Token byte="$28" string="Solve( " />
+    <Token byte="$29" string="{sigma}( " />
+    <Token byte="$2C" string="Seq( " />
+    <Token byte="$30" string="SolveN( " />
+    <Token byte="$34" string="Red " />
+    <Token byte="$3E" string="StdDev( " />
+    <Token byte="$3F" string="Variance( " />
+    <Token byte="$41" string="Trn " />
+    <Token byte="$42" string="*Row " />
+    <Token byte="$43" string="*Row+ " />
+    <Token byte="$44" string="Row+ " />
+    <Token byte="$45" string="Swap " />
+    <Token byte="$4C" string="Sum " />
+    <Token byte="$4D" string="Power " />
+    <Token byte="$4E" string="pb " />
+    <Token byte="$54" string="- " />
+    <Token byte="$55" string="Receive38k " />
+    <Token byte="$56" string="Rref " />
+    <Token byte="$60" string="Sim Coef " />
+    <Token byte="$61" string="PlotOn " />
+    <Token byte="$62" string="Sim Result " />
+    <Token byte="$63" string="PlotPhase " />
+    <Token byte="$66" string="Prod " />
+    <Token byte="$67" string="Ply Coef " />
+    <Token byte="$76" string="PxlTest( " />
+    <Token byte="$77" string="Q1Q3TypeOnData " />
+    <Token byte="$78" string="{x1} " />
+    <Token byte="$79" string="Y{&gt;=}Type " />
+    <Token byte="$7A" string="{x2} " />
+    <Token byte="$7B" string="{y1} " />
+    <Token byte="$7C" string="X2InvN " />
+    <Token byte="$7D" string="{y2} " />
+    <Token byte="$86" string="RndFix( " />
+    <Token byte="$87" string="RanBin#( " />
+    <Token byte="$88" string="RanInt#( " />
+    <Token byte="$89" string="Ran# " />
+    <Token byte="$8A" string="RanList#( " />
+    <Token byte="$8C" string="{sigma}a{n} " />
+    <Token byte="$8D" string="{sigma}b{n} " />
+    <Token byte="$8E" string="{sigma}c{n} " />
+    <Token byte="$94" string="r " />
+    <Token byte="$95" string="R SelOn " />
+    <Token byte="$96" string="{r bold} " />
+    <Token byte="$9C" string="&gt;Simp " />
+    <Token byte="$B1" string="OneWayANOVA " />
+    <Token byte="$B3" string="NormCD( " />
+    <Token byte="$B4" string="Xmin " />
+    <Token byte="$B5" string="{sigma}a{n + 1} " />
+    <Token byte="$B6" string="{sigma}b{n + 1} " />
+    <Token byte="$B7" string="{sigma}c{n + 1} " />
+    <Token byte="$B9" string="{sigma}a{n + 2} " />
+    <Token byte="$BA" string="{sigma}b{n + 2} " />
+    <Token byte="$BB" string="{sigma}c{n + 2} " />
+    <Token byte="$BD" string=" Rmdr " />
+    <Token byte="$C2" string="{x bar 1} " />
+    <Token byte="$C3" string="{x bar 2} " />
+    <Token byte="$C4" string="sx1 " />
+    <Token byte="$C5" string="sx2 " />
+    <Token byte="$C6" string="sp " />
+    <Token byte="$C7" string="OpenComport38k " />
+    <Token byte="$C8" string=" Or " />
+    <Token byte="$C9" string="{^p} " />
+    <Token byte="$CB" string="Upper " />
+    <Token byte="$CC" string="p " />
+    <Token byte="$D1" string="Yt " />
+    <Token byte="$D2" string="{^p2} " />
+    <Token byte="$D3" string="t " />
+    <Token byte="$D4" string="se " />
+    <Token byte="$D6" string="r=Type " />
+    <Token byte="$DA" string="SSa " />
+    <Token byte="$DC" string="SSe " />
+    <Token byte="$E2" string="P( " />
+    <Token byte="$E3" string="pab " />
+    <Token byte="$E4" string="P/Y( " />
+    <Token byte="$F0" string="{y circumflex} " />
+    <Token byte="$F1" string="Quart " />
+    <Token byte="$F2" string="Xscl " />
+    <Token byte="$F3" string="Yscl " />
+    <Token byte="$F4" string="{x bold} " />
+    <Token byte="$FB" string="SSb " />
+    <Token byte="$FC" string="SSab " />
+  </Token>
+  <Token byte="$A6" string="∫(" />
+  <Token byte="$F9" stringTerminator="false">
+    <Token byte="$06" string="➧a+bi" />
+    <Token byte="$09" string="a+bi" />
+    <Token byte="$AE" string="AMT_∑INT(" />
+    <Token byte="$AF" string="AMT_∑PRN(" />
+    <Token byte="$AB" string="Amt_BAL(" />
+    <Token byte="$AC" string="Amt_INT(" />
+    <Token byte="$AD" string="Amt_PRN(" />
+    <Token byte="$9A" string="AxesScale" />
+    <Token byte="$8D" string="BinomialCD(" />
+    <Token byte="$8C" string="BinomialPD(" />
+    <Token byte="$9B" string="Black" />
+    <Token byte="$7C" string="BLANK" />
+    <Token byte="$B7" string="Bond_PRC(" />
+    <Token byte="$B8" string="BOND_YLD(" />
+    <Token byte="$15" string="c0" />
+    <Token byte="$16" string="c1" />
+    <Token byte="$17" string="c2" />
+    <Token byte="$A8" string="Cash_IRR(" />
+    <Token byte="$AA" string="Cash_NFV(" />
+    <Token byte="$A7" string="Cash_NPV(" />
+    <Token byte="$A9" string="Cash_PBP(" />
+    <Token byte="$87" string="ChiCD(" />
+    <Token byte="$EB" string="ChiGOFTest" />
+    <Token byte="$86" string="ChiPD(" />
+    <Token byte="$EC" string="ChiTest" />
+    <Token byte="$1E" string="ClrMat" />
+    <Token byte="$A6" string="Cmpd_FV(" />
+    <Token byte="$A3" string="Cmpd_I%(" />
+    <Token byte="$A2" string="Cmpd_n(" />
+    <Token byte="$A5" string="Cmpd_PMT(" />
+    <Token byte="$A4" string="Cn" />
+    <Token byte="$12" string="Cn01" />
+    <Token byte="$13" string="Cn02" />
+    <Token byte="$14" string="CnStart" />
+    <Token byte="$18" string="Cnvt_APR(" />
+    <Token byte="$B1" string="Cnvt_EFF(" />
+    <Token byte="$B0" string="ColorAuto" />
+    <Token byte="$73" string="ColorClr" />
+    <Token byte="$7D" string="ColorLighter" />
+    <Token byte="$74" string="ColorLinkOff" />
+    <Token byte="$79" string="ColorLinkOn" />
+    <Token byte="$78" string="ColorLinkOnlyX" />
+    <Token byte="$76" string="ColorLinkOnlyY" />
+    <Token byte="$77" string="ColorLinkX&amp;Freq" />
+    <Token byte="$7E" string="ColorLinkX&amp;Y" />
+    <Token byte="$75" string="ColorNormal" />
+    <Token byte="$7A" string="Conjg" />
+    <Token byte="$B2" string="Cross" />
+    <Token byte="$9E" string="d" />
+    <Token byte="$BA" string="DateMode365" />
+    <Token byte="$B9" string="Days_Prd" />
+    <Token byte="$BD" string="Deg" />
+    <Token byte="$05" string="Do" />
+    <Token byte="$26" string="DrawDistF" />
+    <Token byte="$27" string="DrawDistNorm" />
+    <Token byte="$24" string="DrawDistT" />
+    <Token byte="$25" string="DrawDyna" />
+    <Token byte="$0C" string="EngOn" />
+    <Token byte="$0B" string="ERROR" />
+    <Token byte="$37" string="Exp(" />
+    <Token byte="$38" string="Exp(a*b^x)" />
+    <Token byte="$7B" string="Exp➧Str(" />
+    <Token byte="$8A" string="File" />
+    <Token byte="$1C" string="Fill(" />
+    <Token byte="$1B" string="For" />
+    <Token byte="$89" string="Frac" />
+    <Token byte="$93" string="GeoPD(" />
+    <Token byte="$92" string="Goto" />
+    <Token byte="$2D" string="Graph X&gt;" />
+    <Token byte="$2C" string="Graph X≤" />
+    <Token byte="$2F" string="Graph X≥" />
+    <Token byte="$2E" string="Graph(X,Y)=(" />
+    <Token byte="$96" string="HypergeoPD(" />
+    <Token byte="$95" string="i" />
+    <Token byte="$19" string="IneqTypeUnion" />
+    <Token byte="$2B" string="Int" />
+    <Token byte="$8E" string="InvChiCD(" />
+    <Token byte="$88" string="Inverse" />
+    <Token byte="$8B" string="InvGeoCD(" />
+    <Token byte="$94" string="InvHypergeoCD(" />
+    <Token byte="$97" string="InvNormCD(" />
+    <Token byte="$82" string="InvPoissonCD(" />
+    <Token byte="$91" string="InvTCD(" />
+    <Token byte="$85" string="Isz" />
+    <Token byte="$EA" string="List" />
+    <Token byte="$9D" string="Margin" />
+    <Token byte="$B4" string="Mat" />
+    <Token byte="$28" string="n2" />
+    <Token byte="$07" string="{r angle theta} " />
+    <Token byte="$08" string="RclV-Win " />
+    <Token byte="$0A" string="{r2} " />
+    <Token byte="$10" string="Sel {a0} " />
+    <Token byte="$11" string="Sel {a1} " />
+    <Token byte="$1D" string="VarList " />
+    <Token byte="$20" string="zLow " />
+    <Token byte="$21" string="{x3} " />
+    <Token byte="$22" string="RightT{theta}ptch " />
+    <Token byte="$29" string="StickLength " />
+    <Token byte="$2A" string="StickHoriz " />
+    <Token byte="$30" string="StrJoin( " />
+    <Token byte="$31" string="StrLen( " />
+    <Token byte="$32" string="StrCmp( " />
+    <Token byte="$33" string="StrSrc( " />
+    <Token byte="$34" string="StrLeft( " />
+    <Token byte="$35" string="StrRight( " />
+    <Token byte="$36" string="StrMid( " />
+    <Token byte="$39" string="StrUpr( " />
+    <Token byte="$3A" string="StrLwr( " />
+    <Token byte="$3B" string="StrInv( " />
+    <Token byte="$3C" string="StrShift( " />
+    <Token byte="$3D" string="StrRotate( " />
+    <Token byte="$3F" string="Str " />
+    <Token byte="$80" string="NormalG " />
+    <Token byte="$81" string="Normal " />
+    <Token byte="$83" string="tPD( " />
+    <Token byte="$84" string="tCD( " />
+    <Token byte="$8F" string="PmtEnd " />
+    <Token byte="$90" string="PmtBgn " />
+    <Token byte="$98" string="SetG-Color " />
+    <Token byte="$99" string="Pie " />
+    <Token byte="$9F" string="{y3} " />
+    <Token byte="$A0" string="Smpl_SI( " />
+    <Token byte="$A1" string="Smpl_SFV( " />
+    <Token byte="$B3" string="Sell( " />
+    <Token byte="$B5" string="PMT " />
+    <Token byte="$B6" string="Ply Result " />
+    <Token byte="$BB" string="% " />
+    <Token byte="$BC" string="Percent " />
+    <Token byte="$E0" string="OnePropZTest " />
+    <Token byte="$E1" string="TwoSampleZTest " />
+    <Token byte="$E2" string="Not " />
+    <Token byte="$E3" string="TwoPropZTest " />
+    <Token byte="$E8" string="NPPlot " />
+    <Token byte="$E9" string="TwoSampleTTest " />
+    <Token byte="$ED" string="TwoSampleFTest " />
+    <Token byte="$EE" string="OneSampleTTest " />
+    <Token byte="$EF" string="TwoWayANOVA " />
+    <Token byte="$F0" string="X1InvN " />
+    <Token byte="$F1" string="X2 " />
+    <Token byte="$F2" string="Xfct " />
+    <Token byte="$F3" string="SketchThin " />
+    <Token byte="$F4" string="S-L-Thin " />
+    <Token byte="$F5" string="ThinG " />
+    <Token byte="$FB" string="z " />
+    <Token byte="$FC" string="ZoomAuto " />
+    <Token byte="$FD" string="tLow " />
+    <Token byte="$FE" string="tUp " />
+  </Token>
+  <Token byte="$F7" string="Break" stringTerminator="false">
+    <Token byte="$2F" string="➧DMS" />
+    <Token byte="$CD" string="ab/c" />
+    <Token byte="$90" string="An Type" />
+    <Token byte="$91" string="An+1 Type" />
+    <Token byte="$92" string="An+2 Type" />
+    <Token byte="$D2" string="AxesOff" />
+    <Token byte="$C2" string="AxesOn" />
+    <Token byte="$3C" string="Bar" />
+    <Token byte="$78" string="BG-None" />
+    <Token byte="$79" string="BG-Pict" />
+    <Token byte="$56" string="Broken" />
+    <Token byte="$2D" string="BrokenThickG" />
+    <Token byte="$A6" string="Circle" />
+    <Token byte="$14" string="CloseComport38k" />
+    <Token byte="$19" string="ClrGraph" />
+    <Token byte="$1A" string="ClrList" />
+    <Token byte="$18" string="ClrText" />
+    <Token byte="$D3" string="CoordOn" />
+    <Token byte="$C3" string="cos" />
+    <Token byte="$4E" string="Cubic" />
+    <Token byte="$5A" string="CubicReg" />
+    <Token byte="$45" string="Cuml" />
+    <Token byte="$DA" string="D SelOn" />
+    <Token byte="$CA" string="D Start" />
+    <Token byte="$80" string="d/c" />
+    <Token byte="$CE" string="d/dx (" />
+    <Token byte="$9A" string="DateMode360" />
+    <Token byte="$D5" string="DerivOn" />
+    <Token byte="$C5" string="Det" />
+    <Token byte="$2E" string="DispR-Tbl" />
+    <Token byte="$0A" string="Dot" />
+    <Token byte="$4F" string="DotG" />
+    <Token byte="$3F" string="DrawDistChi" />
+    <Token byte="$22" string="DrawFTG-Con" />
+    <Token byte="$24" string="DrawFTG-Plt" />
+    <Token byte="$25" string="DrawGraph" />
+    <Token byte="$20" string="DrawOff" />
+    <Token byte="$DC" string="DrawOn" />
+    <Token byte="$CC" string="DrawR-Con" />
+    <Token byte="$26" string="DrawR-Plt" />
+    <Token byte="$27" string="DrawR∑-Con" />
+    <Token byte="$28" string="DrawR∑-Plt" />
+    <Token byte="$29" string="DrawStat" />
+    <Token byte="$23" string="DrawWeb" />
+    <Token byte="$2A" string="Dsz" />
+    <Token byte="$02" string="Eng" />
+    <Token byte="$7E" string="Exp(a*e^bx)" />
+    <Token byte="$5D" string="ExpReg(a*b^x)" />
+    <Token byte="$5F" string="ExpReg(a*e^bx)" />
+    <Token byte="$A7" string="F" />
+    <Token byte="$48" string="F End" />
+    <Token byte="$04" string="FPD(" />
+    <Token byte="$D0" string="FuncOn" />
+    <Token byte="$C0" string="FV" />
+    <Token byte="$D8" string="G SelOn" />
+    <Token byte="$C8" string="G-Connect" />
+    <Token byte="$70" string="G-Plot" />
+    <Token byte="$71" string="GCD(" />
+    <Token byte="$62" string="Graph X&lt;" />
+    <Token byte="$7C" string="GridOff" />
+    <Token byte="$7A" string="GridOn" />
+    <Token byte="$7D" string="H pitch" />
+    <Token byte="$52" string="Horizontal" />
+    <Token byte="$A4" string="HypergeoCD(" />
+    <Token byte="$00" string="If " />
+    <Token byte="$03" string="IfEnd" />
+    <Token byte="$A2" string="InvFCD(" />
+    <Token byte="$D4" string="LabelOn" />
+    <Token byte="$C4" string="Lbl" />
+    <Token byte="$57" string="LinearReg(a+bx)" />
+    <Token byte="$1B" string="LinearReg(ax+b)" />
+    <Token byte="$42" string="LinRegTTest" />
+    <Token byte="$10" string="Locate " />
+    <Token byte="$D6" string="LocusOn" />
+    <Token byte="$C6" string="log" />
+    <Token byte="$5C" string="logab(" />
+    <Token byte="$35" string="LogisticReg" />
+    <Token byte="$36" string="LogReg" />
+    <Token byte="$47" string="Lower" />
+    <Token byte="$0B" string="Magenta" />
+    <Token byte="$58" string="Med-MedLine" />
+    <Token byte="$43" string="MedBox" />
+    <Token byte="$53" string="Median" />
+    <Token byte="$9E" string="Min(" />
+    <Token byte="$55" string="n(STAT)" />
+    <Token byte="$07" string="n1" />
+    <Token byte="$01" string="Then " />
+    <Token byte="$05" string=" To " />
+    <Token byte="$06" string=" Step " />
+    <Token byte="$08" string="While " />
+    <Token byte="$09" string="WhileEnd" />
+    <Token byte="$0C" string="Resid-None " />
+    <Token byte="$0E" string="Stop " />
+    <Token byte="$11" string="Send( " />
+    <Token byte="$12" string="Rec( " />
+    <Token byte="$13" string="OneSampleZTest " />
+    <Token byte="$15" string="Send38k " />
+    <Token byte="$16" string="Receive( " />
+    <Token byte="$1C" string="S-L-Normal " />
+    <Token byte="$1D" string="S-L-Thick " />
+    <Token byte="$1E" string="S-L-Broken " />
+    <Token byte="$1F" string="S-L-Dot " />
+    <Token byte="$21" string="PlotOff " />
+    <Token byte="$2B" string="Norm " />
+    <Token byte="$2C" string="ThickG " />
+    <Token byte="$30" string="SimplifyAuto " />
+    <Token byte="$31" string="SimplifyMan " />
+    <Token byte="$32" string="NormPD( " />
+    <Token byte="$33" string="Sinusoidal " />
+    <Token byte="$34" string="SinReg " />
+    <Token byte="$3A" string="PeriodsAnnual " />
+    <Token byte="$40" string="1-Variable " />
+    <Token byte="$41" string="2-Variable " />
+    <Token byte="$44" string="{Q3} " />
+    <Token byte="$46" string="QuadReg " />
+    <Token byte="$49" string="Pol( " />
+    <Token byte="$4A" string="S-Gph1 " />
+    <Token byte="$4B" string="S-Gph2 " />
+    <Token byte="$4C" string="S-Gph3 " />
+    <Token byte="$4D" string="Square " />
+    <Token byte="$50" string="Scatter " />
+    <Token byte="$51" string="Xt " />
+    <Token byte="$59" string="Q1Q3TypeStd " />
+    <Token byte="$5B" string="Quad " />
+    <Token byte="$5E" string="PoissonPD( " />
+    <Token byte="$60" string="S-WindAuto " />
+    <Token byte="$61" string="S-WindMan " />
+    <Token byte="$63" string="Y=DrawSpeedNorm " />
+    <Token byte="$64" string="R( " />
+    <Token byte="$65" string="pa " />
+    <Token byte="$67" string="X=Type " />
+    <Token byte="$68" string="X&gt;Type " />
+    <Token byte="$69" string="X&lt;Type " />
+    <Token byte="$6A" string="Y&lt;Type " />
+    <Token byte="$6B" string="Y=Type " />
+    <Token byte="$6C" string="Y{&lt;=}Type " />
+    <Token byte="$6D" string="Y&gt;Type " />
+    <Token byte="$6E" string="X{&gt;=}Type " />
+    <Token byte="$6F" string="X{&lt;=}Type " />
+    <Token byte="$76" string="Resid-List " />
+    <Token byte="$77" string="ReP " />
+    <Token byte="$87" string="{Q1} " />
+    <Token byte="$88" string="VarRange " />
+    <Token byte="$89" string="Q( " />
+    <Token byte="$8C" string="SketchNormal " />
+    <Token byte="$8D" string="SketchThick " />
+    <Token byte="$8E" string="SketchBroken " />
+    <Token byte="$8F" string="SketchDot " />
+    <Token byte="$93" string="StoPict " />
+    <Token byte="$94" string="RclGMEM " />
+    <Token byte="$95" string="StoGMEM " />
+    <Token byte="$96" string="RclCapt " />
+    <Token byte="$97" string="StoV-Win " />
+    <Token byte="$98" string="RclPict " />
+    <Token byte="$99" string="ParamType " />
+    <Token byte="$9F" string="RanNorm#( " />
+    <Token byte="$A0" string="Tangent " />
+    <Token byte="$A1" string="None " />
+    <Token byte="$A3" string="Vertical " />
+    <Token byte="$A5" string="Text " />
+    <Token byte="$A8" string="PlotChg " />
+    <Token byte="$A9" string="Plot/Line-Color " />
+    <Token byte="$AA" string="Plot " />
+    <Token byte="$AB" string="PxlChg " />
+    <Token byte="$AC" string="PV " />
+    <Token byte="$AD" string="Prog " />
+    <Token byte="$AF" string="PxlOff " />
+    <Token byte="$B0" string="SortA( " />
+    <Token byte="$B1" string="SortD( " />
+    <Token byte="$BE" string="Y=DrawSpeedHigh " />
+    <Token byte="$BF" string="{y bold} " />
+    <Token byte="$C1" string="SimulOn " />
+    <Token byte="$C7" string="{sigma}dispOn " />
+    <Token byte="$C9" string="T SelOn " />
+    <Token byte="$CB" string="R SelOff " />
+    <Token byte="$D1" string="SimulOff " />
+    <Token byte="$D7" string="{sigma}dispOff " />
+    <Token byte="$D9" string="T SelOff " />
+    <Token byte="$DB" string="R EndjR Result " />
+  </Token>
+  <Token byte="$C8" string="a(Reg)" />
+  <Token byte="$97" string="Abs" />
+  <Token byte="$C0" string="Ans" />
+  <Token byte="$C9" string="b" />
+  <Token byte="$98" string="C" />
+  <Token byte="$D1" string="Cls" />
+  <Token byte="$82" string="cos^-1" />
+  <Token byte="$92" string="cosh" />
+  <Token byte="$A2" string="cosh^-1" />
+  <Token byte="$B2" string="Cost(" />
+  <Token byte="$DA" string="DerivOff" />
+  <Token byte="$A5" string="E" />
+  <Token byte="$E8" string="e" />
+  <Token byte="$0F" string="Edf" />
+  <Token byte="$DD" string="EngOff" />
+  <Token byte="$EA" string="Fb" />
+  <Token byte="$E3" string="FMax(" />
+  <Token byte="$B6" string="FuncOff" />
+  <Token byte="$EC" string="Gra" />
+  <Token byte="$F2" string="Graph ∫" />
+  <Token byte="$DC" string="Graph r=" />
+  <Token byte="$F4" string="Graph X=" />
+  <Token byte="$EE" string="Graph Y&lt;" />
+  <Token byte="$F5" string="Graph Y=" />
+  <Token byte="$F1" string="Graph Y&gt;" />
+  <Token byte="$F0" string="Graph Y≤" />
+  <Token byte="$F3" string="Graph Y≥" />
+  <Token byte="$EF" string="Green" />
+  <Token byte="$DE" string="Int ÷" />
+  <Token byte="$8D" string="Intg" />
+  <Token byte="$E9" string="LabelOff" />
+  <Token byte="$E2" string="LCM(" />
+  <Token byte="$E5" stringTerminator="false">
+    <Token byte="$E2" string="&lt;3" />
+  </Token>
+  <Token byte="$E1" string="Linear" />
+  <Token byte="$85" string="LocusOff" />
+  <Token byte="$95" string="Log" />
+  <Token byte="$BE" string="maxY" />
+  <Token byte="$BD" string="Mean" />
+  <Token byte="$9E" string="Med-Med" />
+  <Token byte="$AE" string="minY" />
+  <Token byte="$AD" string="Mod" />
+  <Token byte="$8E" string="MOD(" />
+  <Token byte="$D9" string="Next" />
+  <Token byte="$10" string="Err:520" />
+  <Token byte="$11" string="!=" />
+  <Token byte="$12" string="{&lt;=} " />
+  <Token byte="$13" />
+  <Token byte="$22" string="&quot;" />
+  <Token byte="$27" />
+  <Token byte="$80" string="PoissonCD( " />
+  <Token byte="$81" string="sin " />
+  <Token byte="$83" string="tan " />
+  <Token byte="$86" string="{box} " />
+  <Token byte="$87" string="{bottom right corner} " />
+  <Token byte="$88" string="{^p1} " />
+  <Token byte="$91" string="sin{-1} " />
+  <Token byte="$93" string="tan{-1} " />
+  <Token byte="$96" string="{sqrt} " />
+  <Token byte="$0C" string="? " />
+  <Token byte="$3A" string=":" />
+  <Token byte="$3C" string="&lt;" />
+  <Token byte="$3D" string="=" />
+  <Token byte="$3E" string="&gt;" />
+  <Token byte="$3F" />
+  <Token byte="$8B" string="{-1} " />
+  <Token byte="$8C" string="{g} " />
+  <Token byte="$8F" string="{xigma}x{2} " />
+  <Token byte="$9B" string="{10} " />
+  <Token byte="$9C" string="! " />
+  <Token byte="$9F" string="{sigma}x " />
+  <Token byte="$A0" string="Real " />
+  <Token byte="$A1" string="sinh " />
+  <Token byte="$A3" string="tanh " />
+  <Token byte="$A8" string="{2} " />
+  <Token byte="$AB" string="{pi} " />
+  <Token byte="$AC" string="{degree} " />
+  <Token byte="$B1" string="sinh{-1} " />
+  <Token byte="$B3" string="tanh{-1} " />
+  <Token byte="$B5" string="{x root} " />
+  <Token byte="$B8" string="{cube root} " />
+  <Token byte="$BB" string="^ " />
+  <Token byte="$BC" string="{r} " />
+  <Token byte="$BF" string="{sigma}y{2} " />
+  <Token byte="$C1" string="Rad " />
+  <Token byte="$C2" string="{x var} " />
+  <Token byte="$C3" string="xyLine " />
+  <Token byte="$C4" string="{little sigma}x " />
+  <Token byte="$C5" string="sx " />
+  <Token byte="$C6" string="{little sigma}y " />
+  <Token byte="$C7" string="sy " />
+  <Token byte="$CA" string="QuartReg " />
+  <Token byte="$CB" string="{x circumflex} " />
+  <Token byte="$CC" string="{y bar} " />
+  <Token byte="$CF" string="{sigma}y " />
+  <Token byte="$D0" string="zUp " />
+  <Token byte="$D3" string="Rnd " />
+  <Token byte="$DB" string="{&gt;r angle theta} " />
+  <Token byte="$DF" string="{sigma}xy " />
+  <Token byte="$E0" string="PeriodsSemi " />
+  <Token byte="$E4" string="Sci " />
+  <Token byte="$EB" string="ViewWindow " />
+  <Token byte="$ED" string="PowerReg " />
+  <Token byte="$FB" string="{P bold} " />
+  <Token byte="$FC" string="PxlOn " />
+  <Token byte="$FD" string="R Start " />
+  <Token byte="$FE" string="t( " />
+  <Token byte="$2C" string="," />
+</Tokens>
