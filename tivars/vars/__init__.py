@@ -1,2 +1,2 @@
-from .types import *
+import types
 from .var import *
