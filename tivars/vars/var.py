@@ -62,7 +62,7 @@ class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "n
 
 class TIVar:
     extensions = {}
-    type_id = b'\x00'
+    type_id = None
 
     _type_ids = {}
 

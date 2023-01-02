@@ -58,7 +58,7 @@ models = [TI_82, TI_83, TI_82a, TI_82p, TI_83p,
           TI_83pce, TI_83pceep, TI_82aep]
 
 
-__all__ = ["TI_82", "TI_83", "TI_82a", "TI_83p",
+__all__ = ["TI_82", "TI_83", "TI_82a", "TI_82p", "TI_83p",
            "TI_84p", "TI_84t", "TI_84pcse", "TI_84pce", "TI_83pce", "TI_84pcet", "TI_84pcetpy", "TI_84pcepy",
            "TI_83pce", "TI_83pceep", "TI_82aep",
            "models", "TIFeatures", "features", "TIModel"]
