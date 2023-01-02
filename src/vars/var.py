@@ -138,7 +138,7 @@ class TIVar:
         if self.model.has(TIFeatures.FLASH):
             self.archived = True
         else:
-            raise TypeError("Calculator model does not support archiving")
+            raise TypeError("Calculator model does not support archiving.")
 
     def dump(self) -> bytearray:
         return self.header.dump() + self.entry.dump() + self.checksum.to_bytes(2, 'little')
@@ -167,14 +167,14 @@ class TIVar:
 
         elif self.meta_length != TIEntry.pre_flash_meta_length:
             if strict:
-                raise ValueError("The var entry meta length has an unexpected value")
+                raise ValueError("The var entry meta length has an unexpected value.")
             else:
                 self.corrupt = True
 
         data_length2 = int.from_bytes(file.read(2), 'little')
         if data_length != data_length2:
             if strict:
-                raise ValueError("The var entry second data length doesn't match its initial entry")
+                raise ValueError("The var entry data lengths are mismatched.")
             else:
                 self.corrupt = True
 
@@ -182,7 +182,7 @@ class TIVar:
 
         if entry_length != self.entry_length:
             if strict:
-                raise ValueError("The var entry length is incorrect")
+                raise ValueError("The var entry length is incorrect.")
             else:
                 self.corrupt = True
 
@@ -193,7 +193,7 @@ class TIVar:
         if self.model.has(TIFeatures.FLASH):
             self.archived = False
         else:
-            raise TypeError("Calculator model does not support archiving")
+            raise TypeError("Calculator model does not support archiving.")
 
 
 __all__ = ["TIHeader", "TIEntry", "TIVar"]

@@ -25,7 +25,7 @@ def load_tokens_xml(filename: str) -> TokenMap:
 
             case "Alt":
                 if curr_name is None:
-                    raise ValueError("Invalid XML provided")
+                    raise ValueError("Invalid XML provided.")
 
                 tokens[attributes["string"]] = tokens[curr_name]
 
