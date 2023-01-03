@@ -1,14 +1,18 @@
 import re
 
-from collections import namedtuple
+from dataclasses import dataclass
 from typing import BinaryIO
 
 
 from tivars.models import *
 
 
-class TIHeader(namedtuple("TIHeader", ["signature", "export", "comment", "entry_length"])):
-    __slots__ = ()
+@dataclass(frozen=True)
+class TIHeader:
+    signature: bytes
+    export: bytes
+    comment: str
+    entry_length: int
 
     def dump(self) -> bytes:
         dump = bytearray()
@@ -21,15 +25,19 @@ class TIHeader(namedtuple("TIHeader", ["signature", "export", "comment", "entry_
         return bytes(dump)
 
 
-class TIEntry(namedtuple("TIEntry", ["meta_length", "data_length", "type_id", "name", "version", "archived", "data"])):
-    base_meta_length = 0x0B
-    flash_meta_length = 0x0D
-
-    __slots__ = ()
+@dataclass(frozen=True)
+class TIEntry:
+    meta_length: int
+    data_length: int
+    type_id: bytes
+    name: str
+    version: bytes
+    archived: bool
+    data: bytes
 
     @property
     def flash_bytes(self) -> int:
-        return self.meta_length - TIEntry.base_meta_length
+        return self.meta_length - TIVar.base_meta_length
 
     @property
     def varname(self) -> bytes:
@@ -66,6 +74,9 @@ class TIVar:
 
     _type_ids = {}
 
+    base_meta_length = 0x0B
+    flash_meta_length = 0x0D
+
     def __init__(self, name: str = "MyVar", model: 'TIModel' = TI_84p):
         self.model = model
 
@@ -73,7 +84,7 @@ class TIVar:
         self.export = b'\x1A\x0A\x00'
         self.comment = "Created by tivars_lib_py"
 
-        self.meta_length = TIEntry.flash_meta_length if model.has(TIFeatures.FLASH) else TIEntry.base_meta_length
+        self.meta_length = TIVar.flash_meta_length if model.has(TIFeatures.FLASH) else TIVar.base_meta_length
 
         self.name = name
 
@@ -194,11 +205,11 @@ class TIVar:
 
         self.name = file.read(8).decode('utf8')
 
-        if self.meta_length == TIEntry.flash_meta_length:
+        if self.meta_length == TIVar.flash_meta_length:
             self.version = file.read(1)
             self.archived = file.read(1) != b'\x00'
 
-        elif self.meta_length != TIEntry.base_meta_length:
+        elif self.meta_length != TIVar.base_meta_length:
             if strict:
                 raise ValueError("The var entry meta length has an unexpected value.")
             else:
@@ -211,7 +222,7 @@ class TIVar:
             else:
                 self.corrupt = True
 
-        self.data = file.read(data_length)
+        self.data = bytearray(file.read(data_length))
 
         if entry_length != self.entry_length:
             if strict:

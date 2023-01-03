@@ -50,12 +50,22 @@ my_program.save()
 
 print(my_program.dumps())
 ```
+### Headers and Entries
+
+Each var is composed of a _header_ and _entry_ section, which can be exported as read-only `TIHeader` and `TIEntry` objects respectively from a var object:
+```python
+header, entry = my_var.header, my_var.entry
+```
+It is generally ill-advised to generate these independently, as the header specifies the length of the entry (and thus their contents are interdependent).
+
 ### Models
+
 All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, signature, and feature flags. Models are also used to determine var file extensions.
 
 For these reasons, it is _not_ recommended to instantiate your own models.
 
 ### Corrupt files
+
 Files with corrupted metadata will not initialize with `load` unless `strict=False` is set. Corrupt vars can be identified by the `corrupt` attribute. 
 
 ## Other Functionalities
