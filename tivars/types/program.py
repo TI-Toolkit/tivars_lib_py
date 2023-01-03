@@ -26,11 +26,11 @@ class TIProgram(TIVar):
 
     tokens = {
         TI_82: (TI82_TOKENS, TI82_BYTES),
-        TI_83: (NOLIB_TOKENS, NOLIB_BYTES),
-        TI_82a: (NOLIB_TOKENS, NOLIB_BYTES),
-        TI_83p: (NOLIB_TOKENS, NOLIB_BYTES),
-        TI_84p: (NOLIB_TOKENS, NOLIB_BYTES),
-        TI_84t: (NOLIB_TOKENS, NOLIB_BYTES),
+        TI_83: (TI83_TOKENS, TI83_BYTES),
+        TI_82a: (TI83_TOKENS, TI83_BYTES),
+        TI_83p: (TI83_TOKENS, TI83_BYTES),
+        TI_84p: (TI83_TOKENS, TI83_BYTES),
+        TI_84t: (TI83_TOKENS, TI83_BYTES),
         TI_84pcse: (CSE_TOKENS, CSE_BYTES),
         TI_84pce: (CE_TOKENS, CE_BYTES),
         TI_84pcet: (CE_TOKENS, CE_BYTES),

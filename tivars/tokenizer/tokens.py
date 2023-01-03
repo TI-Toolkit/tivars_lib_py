@@ -7,18 +7,18 @@ _dir = path.dirname(__file__)
 
 AXE_TOKENS, AXE_BYTES = load_tokens_xml(path.join(_dir, "tokens/Axe.xml"))
 
-CE_TOKENS, CE_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-84+CE.xml"))
+CE_TOKENS, CE_BYTES = load_tokens_xml(path.join(_dir, "tokens/CE-BASIC.xml"))
 
-CSE_TOKENS, CSE_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-84+CSE.xml"))
+CSE_TOKENS, CSE_BYTES = load_tokens_xml(path.join(_dir, "tokens/CSE-BASIC.xml"))
 
 GRAMMER_TOKENS, GRAMMER_BYTES = load_tokens_xml(path.join(_dir, "tokens/Grammer.xml"))
 
-NOLIB_TOKENS, NOLIB_BYTES = load_tokens_xml(path.join(_dir, "tokens/NoLib.xml"))
+TI83_TOKENS, TI83_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-83-BASIC.xml"))
 
 PRIZM_TOKENS, PRIZM_BYTES = load_tokens_xml(path.join(_dir, "tokens/Prizm.xml"))
 
-TI82_TOKENS, TI82_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-82.xml"))
+TI82_TOKENS, TI82_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-82-BASIC.xml"))
 
 
-__all__ = ["AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS", "NOLIB_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS",
-           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES", "NOLIB_BYTES", "PRIZM_BYTES", "TI82_BYTES"]
+__all__ = ["AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS", "TI83_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS",
+           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES", "TI83_BYTES", "PRIZM_BYTES", "TI82_BYTES"]
