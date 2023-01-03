@@ -61,4 +61,4 @@ Files with corrupted metadata will not initialize with `load` unless `strict=Fal
 
 ### Tokenization
 
-Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 83-series BASIC, Axe, Grammer, Prizm, and DCS8, as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to CE-Fauxgramming/tokens.
+Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 82/83/84 series BASIC, Axe, Grammer, Prizm, and DCS8, as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to CE-Fauxgramming/tokens.
