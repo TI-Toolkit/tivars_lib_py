@@ -24,14 +24,31 @@ class TIProgram(TIVar):
         TI_82aep: "8xp"
     }
 
+    tokens = {
+        TI_82: (TI82_TOKENS, TI82_BYTES),
+        TI_83: (NOLIB_TOKENS, NOLIB_BYTES),
+        TI_82a: (NOLIB_TOKENS, NOLIB_BYTES),
+        TI_83p: (NOLIB_TOKENS, NOLIB_BYTES),
+        TI_84p: (NOLIB_TOKENS, NOLIB_BYTES),
+        TI_84t: (NOLIB_TOKENS, NOLIB_BYTES),
+        TI_84pcse: (CSE_TOKENS, CSE_BYTES),
+        TI_84pce: (CE_TOKENS, CE_BYTES),
+        TI_84pcet: (CE_TOKENS, CE_BYTES),
+        TI_84pcetpy: (CE_TOKENS, CE_BYTES),
+        TI_84pcepy: (CE_TOKENS, CE_BYTES),
+        TI_83pce: (CE_TOKENS, CE_BYTES),
+        TI_83pceep: (CE_TOKENS, CE_BYTES),
+        TI_82aep: (CE_TOKENS, CE_BYTES)
+    }
+
     type_id = b'\x05'
 
     def dumps(self) -> str:
-        byte_map = CE_BYTES if self.model in (TI_83pce, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy) else CSE_BYTES
+        byte_map = self.tokens[self.model][1]
         return decode(self.data, byte_map)
 
     def loads(self, string: str):
-        token_map = CE_TOKENS if self.model in (TI_83pce, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy) else CSE_TOKENS
+        token_map = self.tokens[self.model][0]
         self.data = encode(string, token_map)
 
 

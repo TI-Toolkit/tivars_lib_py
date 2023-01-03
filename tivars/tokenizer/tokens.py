@@ -17,6 +17,8 @@ NOLIB_TOKENS, NOLIB_BYTES = load_tokens_xml(path.join(_dir, "tokens/NoLib.xml"))
 
 PRIZM_TOKENS, PRIZM_BYTES = load_tokens_xml(path.join(_dir, "tokens/Prizm.xml"))
 
+TI82_TOKENS, TI82_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-82.xml"))
 
-__all__ = ["AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS", "NOLIB_TOKENS", "PRIZM_TOKENS",
-           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES", "NOLIB_BYTES", "PRIZM_BYTES"]
+
+__all__ = ["AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS", "NOLIB_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS",
+           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES", "NOLIB_BYTES", "PRIZM_BYTES", "TI82_BYTES"]
