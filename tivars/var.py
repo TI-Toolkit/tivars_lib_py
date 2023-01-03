@@ -187,7 +187,7 @@ class TIVar:
     def dumps(self) -> str:
         pass
 
-    def load(self, file: BinaryIO, strict=True):
+    def load(self, file: BinaryIO, strict: bool = True):
         self.signature = file.read(8)
         self.export = file.read(3)
         self.comment = file.read(42).decode('utf8')
@@ -232,6 +232,10 @@ class TIVar:
 
     def loads(self, string: str):
         pass
+
+    def open(self, filename: str, strict: bool = True):
+        with open(filename, 'rb') as file:
+            self.load(file, strict=strict)
 
     def save(self, filename: str = None):
         filename = filename or f"{self.name}.{self.extension}"

@@ -9,10 +9,13 @@ class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
         test_program = TIProgram("HELLO", TI_84pce)
 
+        test_program.open("tests/HELLO.8xp")
         with open("tests/HELLO.8xp", 'rb') as file:
-            test_program.load(file)
+            self.assertEqual(test_program.dump(), file.read())
             file.seek(0)
 
+            test_program.load(file)
+            file.seek(0)
             self.assertEqual(test_program.dump(), file.read())
 
     def test_load_from_string(self):

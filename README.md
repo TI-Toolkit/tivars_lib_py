@@ -33,6 +33,9 @@ Load an existing file via `load` or interpret from a string using `loads`:
 ```python
 with open("HELLO.8xp", 'rb') as file:
     my_program.load(file)
+    
+# Alternative
+my_program.open("HELLO.8xp")
 
 # See the type classes for string formats
 my_program.loads("Disp \"HELLO WORLD!\"")
