@@ -40,7 +40,7 @@ my_program.loads("Disp \"HELLO WORLD!\"")
 Write the contents of a var as bytes or as a string with `dump` and `dumps`:
 ```python
 with open("HELLO.8xp", 'wb+') as file:
-    file.write(my_program.dumps())
+    file.write(my_program.dump())
     
 # Alternative
 my_program.save("HELLO.8xp")
