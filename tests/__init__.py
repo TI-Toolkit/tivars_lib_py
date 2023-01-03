@@ -2,7 +2,7 @@ import unittest
 
 
 from tivars.models import *
-from tivars.vars.types import *
+from tivars.types import *
 
 
 class TokenizationTests(unittest.TestCase):
