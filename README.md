@@ -6,7 +6,7 @@ Much of the functionality of this package has been ported over from [tivars_lib_
 
 ## Installation
 
-Clone this repository into your next project and import this package via `import tivars`. You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`.
+Clone this repository into your next project and import the package via `import tivars`. You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`.
 
 ## How to Use
 
@@ -23,6 +23,7 @@ If you're not sure of a var's type or model, use `TIVar.infer` to guess given a 
 ```python
 with open("MyVar", 'rb') as file:
     my_var = TIVar.infer(file)
+    my_var_for83p = TIVar.infer(file, model=TI_83p)
 ```
 
 ### Reading and writing
@@ -33,10 +34,9 @@ with open("HELLO.8xp", 'rb') as file:
     my_program.load(file)
 
 # See the type classes for string formats
-# Programs use tokenization like you'd find in TI-Connect
 my_program.loads("Disp \"HELLO WORLD!\"")
 ```
-Write the contents of a var as a bytes or as a string with `dump` and `dumps`:
+Write the contents of a var as bytes or as a string with `dump` and `dumps`:
 ```python
 with open("HELLO.8xp", 'wb+') as file:
     file.write(my_program.dumps())
@@ -49,3 +49,16 @@ my_program.save()
 
 print(my_program.dumps())
 ```
+### Models
+All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, signature, and feature flags. Models are also used to determine var file extensions.
+
+For these reasons, it is _not_ recommended to instantiate your own models.
+
+### Corrupt files
+Files with corrupted metadata will not initialize with `load` unless `strict=False` is set. Corrupt vars can be identified by the `corrupt` attribute. 
+
+## Other Functionalities
+
+### Tokenization
+
+Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 83-series BASIC, Axe, Grammer, Prizm, and DCS8, as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to CE-Fauxgramming/tokens.
