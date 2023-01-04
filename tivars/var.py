@@ -84,7 +84,7 @@ class TIVar:
         self.export = b'\x1A\x0A\x00'
         self.comment = "Created by tivars_lib_py"
 
-        self.meta_length = TIVar.flash_meta_length if model.has(TIFeatures.FLASH) else TIVar.base_meta_length
+        self.meta_length = TIVar.flash_meta_length if model.has(TIFeature.FLASH) else TIVar.base_meta_length
 
         self.name = name
 
@@ -176,7 +176,7 @@ class TIVar:
         TIVar._type_ids[var_type.type_id] = var_type
 
     def archive(self):
-        if self.model.has(TIFeatures.FLASH):
+        if self.model.has(TIFeature.FLASH):
             self.archived = True
         else:
             raise TypeError("Calculator model does not support archiving.")
@@ -243,7 +243,7 @@ class TIVar:
             file.write(self.dump())
 
     def unarchive(self):
-        if self.model.has(TIFeatures.FLASH):
+        if self.model.has(TIFeature.FLASH):
             self.archived = False
         else:
             raise TypeError("Calculator model does not support archiving.")

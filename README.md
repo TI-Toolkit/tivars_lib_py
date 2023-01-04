@@ -73,7 +73,7 @@ It is generally ill-advised to generate these independently, as the header speci
 
 ### Models
 
-All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, signature, and feature flags; use `has` on a member of `TIFeatures` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
+All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, signature, and feature flags; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
 
 For these reasons, it is _not_ recommended to instantiate your own models.
 

@@ -8,7 +8,7 @@ class TIModel:
         return self.flags & feature
 
 
-class TIFeatures:
+class TIFeature:
     NONE = 0
     DEFAULT = 1 << 0
     COMPLEX = 1 << 1
@@ -21,21 +21,21 @@ class TIFeatures:
     PYTHON = 1 << 8
 
 
-features = [TIFeatures.NONE, TIFeatures.DEFAULT, TIFeatures.COMPLEX, TIFeatures.FLASH, TIFeatures.APPS,
-            TIFeatures.CLOCK, TIFeatures.COLOR, TIFeatures.EZ80, TIFeatures.EXACT_MATH, TIFeatures.PYTHON]
+FEATURES = [TIFeature.NONE, TIFeature.DEFAULT, TIFeature.COMPLEX, TIFeature.FLASH, TIFeature.APPS,
+            TIFeature.CLOCK, TIFeature.COLOR, TIFeature.EZ80, TIFeature.EXACT_MATH, TIFeature.PYTHON]
 
 
-flags82 = 0 | TIFeatures.DEFAULT
-flags83 = flags82 | TIFeatures.COMPLEX
-flags82a = flags83 | TIFeatures.FLASH
-flags83p = flags82a | TIFeatures.APPS
-flags84p = flags83p | TIFeatures.CLOCK
-flags84pcse = flags84p | TIFeatures.COLOR
-flags84pce = flags84pcse | TIFeatures.EZ80
-flags83pce = flags84pce | TIFeatures.EXACT_MATH
-flags83pceep = flags83pce | TIFeatures.PYTHON
-flags84pcepy = flags84pce | TIFeatures.PYTHON
-flags82aep = flags83pceep & ~TIFeatures.APPS
+flags82 = 0 | TIFeature.DEFAULT
+flags83 = flags82 | TIFeature.COMPLEX
+flags82a = flags83 | TIFeature.FLASH
+flags83p = flags82a | TIFeature.APPS
+flags84p = flags83p | TIFeature.CLOCK
+flags84pcse = flags84p | TIFeature.COLOR
+flags84pce = flags84pcse | TIFeature.EZ80
+flags83pce = flags84pce | TIFeature.EXACT_MATH
+flags83pceep = flags83pce | TIFeature.PYTHON
+flags84pcepy = flags84pce | TIFeature.PYTHON
+flags82aep = flags83pceep & ~TIFeature.APPS
 
 TI_82 = TIModel("82", flags82, "**TI82**")
 TI_83 = TIModel("83", flags83, "**TI83**")
@@ -53,7 +53,7 @@ TI_83pce = TIModel("83PCE", flags83pce, "**TI83F*")
 TI_83pceep = TIModel("83PCEEP", flags83pceep, "**TI83F*")
 TI_82aep = TIModel("82AEP", flags82aep, "**TI83F*")
 
-models = [TI_82, TI_83, TI_82a, TI_82p, TI_83p,
+MODELS = [TI_82, TI_83, TI_82a, TI_82p, TI_83p,
           TI_84p, TI_84t, TI_84pcse, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy,
           TI_83pce, TI_83pceep, TI_82aep]
 
@@ -61,4 +61,4 @@ models = [TI_82, TI_83, TI_82a, TI_82p, TI_83p,
 __all__ = ["TI_82", "TI_83", "TI_82a", "TI_82p", "TI_83p",
            "TI_84p", "TI_84t", "TI_84pcse", "TI_84pce", "TI_83pce", "TI_84pcet", "TI_84pcetpy", "TI_84pcepy",
            "TI_83pce", "TI_83pceep", "TI_82aep",
-           "models", "TIFeatures", "features", "TIModel"]
+           "MODELS", "TIFeature", "FEATURES", "TIModel"]

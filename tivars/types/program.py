@@ -1,5 +1,4 @@
 from tivars.models import *
-
 from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
 from ..var import TIVar
