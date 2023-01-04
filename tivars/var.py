@@ -36,8 +36,8 @@ class TIEntry:
     data: bytes
 
     @property
-    def flash_bytes(self) -> int:
-        return self.meta_length - TIVar.base_meta_length
+    def flash_bytes(self) -> bytes:
+        return (self.version + bytes([self.archived]))[:self.meta_length - TIVar.base_meta_length]
 
     @property
     def varname(self) -> bytes:
@@ -140,7 +140,7 @@ class TIVar:
                         entry_length=self.entry_length)
 
     @property
-    def flash_bytes(self) -> int:
+    def flash_bytes(self) -> bytes:
         return self.entry.flash_bytes
 
     @property
