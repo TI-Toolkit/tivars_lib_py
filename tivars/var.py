@@ -1,4 +1,5 @@
 import re
+import warnings
 
 from dataclasses import dataclass
 from typing import BinaryIO
@@ -187,7 +188,7 @@ class TIVar:
     def dumps(self) -> str:
         pass
 
-    def load(self, file: BinaryIO, strict: bool = True):
+    def load(self, file: BinaryIO):
         self.signature = file.read(8)
         self.export = file.read(3)
         self.comment = file.read(42).decode('utf8')
@@ -198,10 +199,7 @@ class TIVar:
 
         type_id = file.read(1)
         if type_id != self.type_id:
-            if strict:
-                raise TypeError("The var type is incorrect. Use TIVar.infer if you don't know the type.")
-            else:
-                self.corrupt = True
+            raise TypeError("The var type is incorrect. Use TIVar.infer if you don't know the type.")
 
         self.name = file.read(8).decode('utf8')
 
@@ -210,32 +208,29 @@ class TIVar:
             self.archived = file.read(1) != b'\x00'
 
         elif self.meta_length != TIVar.base_meta_length:
-            if strict:
-                raise ValueError("The var entry meta length has an unexpected value.")
-            else:
-                self.corrupt = True
+            warnings.warn(f"The var entry meta length has an unexpected value ({self.meta_length}).",
+                          BytesWarning)
+            self.corrupt = True
 
         data_length2 = int.from_bytes(file.read(2), 'little')
         if data_length != data_length2:
-            if strict:
-                raise ValueError("The var entry data lengths are mismatched.")
-            else:
-                self.corrupt = True
+            warnings.warn(f"The var entry data lengths are mismatched (expected {data_length}, got {data_length2}).",
+                          BytesWarning)
+            self.corrupt = True
 
         self.data = bytearray(file.read(data_length))
 
         if entry_length != self.entry_length:
-            if strict:
-                raise ValueError("The var entry length is incorrect.")
-            else:
-                self.corrupt = True
+            warnings.warn(f"The var entry length is incorrect (expected {self.entry_length}, got {entry_length}).",
+                          BytesWarning)
+            self.corrupt = True
 
     def loads(self, string: str):
         pass
 
-    def open(self, filename: str, strict: bool = True):
+    def open(self, filename: str):
         with open(filename, 'rb') as file:
-            self.load(file, strict=strict)
+            self.load(file)
 
     def save(self, filename: str = None):
         filename = filename or f"{self.name}.{self.extension}"
