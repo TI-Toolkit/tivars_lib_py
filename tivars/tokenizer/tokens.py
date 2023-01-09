@@ -19,6 +19,10 @@ PRIZM_TOKENS, PRIZM_BYTES = load_tokens_xml(path.join(_dir, "tokens/Prizm.xml"))
 
 TI82_TOKENS, TI82_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-82-BASIC.xml"))
 
+TI73_TOKENS, TI73_BYTES = load_tokens_xml(path.join(_dir, "tokens/TI-73-BASIC.xml"))
 
-__all__ = ["AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS", "TI83_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS",
-           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES", "TI83_BYTES", "PRIZM_BYTES", "TI82_BYTES"]
+
+__all__ = ["AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS",
+           "TI83_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS", "TI73_TOKENS",
+           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES",
+           "TI83_BYTES", "PRIZM_BYTES", "TI82_BYTES", "TI73_BYTES"]
