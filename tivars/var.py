@@ -1,3 +1,4 @@
+import io
 import warnings
 
 from typing import Iterator
@@ -146,10 +147,10 @@ class TIVar(TIHeader, TIEntry):
 
         return dump
 
-    def load_bytes(self, data: bytes | Iterator[bytes]):
-        data = iter(data)
+    def load_bytes(self, data: bytes):
+        data = io.BytesIO(data)
 
-        self.load_buffer(TIVar.signature, data)
+        self.signature_bytes = data.read(8)
         match self.signature:
             case TI_82.signature:
                 model = TI_82
@@ -164,14 +165,14 @@ class TIVar(TIHeader, TIEntry):
         if self.model is None:
             self.model = model
 
-        self.load_buffer(TIVar.export, data)
-        self.load_buffer(TIVar.comment, data)
-        entry_length = int.from_bytes([next(data), next(data)], 'little')
+        self.export_bytes = data.read(3)
+        self.comment_bytes = data.read(42)
+        entry_length = int.from_bytes(data.read(2), 'little')
 
-        self.load_buffer(TIVar.meta_length, data)
-        data_length = int.from_bytes([next(data), next(data)], 'little')
+        self.meta_length_bytes = data.read(2)
+        data_length = int.from_bytes(data.read(2), 'little')
 
-        type_id = bytes([next(data)])
+        type_id = data.read(1)
         if self.type_id is None:
             try:
                 self.__class__ = TIVar.type_ids[type_id]
@@ -182,30 +183,30 @@ class TIVar(TIHeader, TIEntry):
         elif type_id != self.type_id:
             raise TypeError("The var type is incorrect. Use a TIVar instance if you don't know the type.")
 
-        self.load_buffer(TIVar.name, data)
+        self.name_bytes = data.read(8)
 
         if self.meta_length == TIVar.flash_meta_length:
             if self.model is not None and not self.model.has(TIFeature.FLASH):
                 warnings.warn(f"Calculator model does ")
 
-            self.load_buffer(TIVar.version, data)
-            self.load_buffer(TIVar.archived, data)
+            self.version = data.read(1)
+            self.archived_bytes = data.read(1)
 
         elif self.meta_length != TIVar.base_meta_length:
             warnings.warn(f"The var entry meta length has an unexpected value ({self.meta_length}).",
                           BytesWarning)
 
-        data_length2 = int.from_bytes([next(data), next(data)], 'little')
+        data_length2 = int.from_bytes(data.read(2), 'little')
         if data_length != data_length2:
             warnings.warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
                           BytesWarning)
 
-        self.load_buffer(TIVar.data, data, data_length)
+        self.data = data.read(data_length)
         if entry_length != self.entry_length:
             warnings.warn(f"The var entry length is incorrect (expected {self.entry_length}, got {entry_length}).",
                           BytesWarning)
 
-        checksum = int.from_bytes([next(data), next(data)], 'little')
+        checksum = int.from_bytes(data.read(2), 'little')
         if checksum != self.checksum:
             warnings.warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
                           BytesWarning)

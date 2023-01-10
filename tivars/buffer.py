@@ -121,19 +121,9 @@ class Section:
         except AttributeError:
             self.load_bytes(data)
 
-    def load_buffer(self, buffer: 'Buffer', data: Iterator[bytes], width: int = None):
-        width = buffer.width or width
-        value = b''
-        for _ in range(width):
-            value += bytes([next(data)])
-
-        setattr(self, buffer.name, value.ljust(width, b'\x00'))
-
-    def load_bytes(self, data: bytes | Iterator[bytes]):
-        data = iter(data)
-        for attr in vars(Section).values():
-            if isinstance(attr, Buffer):
-                self.load_buffer(attr, data)
+    @abstractmethod
+    def load_bytes(self, data: bytes):
+        pass
 
     def load_file(self, file: BinaryIO):
         self.load_bytes(file.read())
