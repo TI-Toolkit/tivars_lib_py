@@ -1,8 +1,6 @@
 import io
 import warnings
 
-from typing import Iterator
-
 from tivars.models import *
 from .buffer import *
 
@@ -201,7 +199,7 @@ class TIVar(TIHeader, TIEntry):
             warnings.warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
                           BytesWarning)
 
-        self.data = data.read(data_length)
+        self.data = bytearray(data.read(data_length))
         if entry_length != self.entry_length:
             warnings.warn(f"The var entry length is incorrect (expected {self.entry_length}, got {entry_length}).",
                           BytesWarning)
