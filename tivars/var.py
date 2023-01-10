@@ -7,18 +7,18 @@ from .buffer import *
 
 
 class TIHeader(Section):
-    signature = StringBuffer(8)
+    magic = StringBuffer(8)
     export = Buffer(3)
     comment = StringBuffer(42)
 
     size = 55
 
     def __init__(self,
-                 signature: str = "**TI83F*",
+                 magic: str = "**TI83F*",
                  export: bytes = b'\x1A\x0A\x00',
                  comment: str = "Created by tivars_lib_py",
                  entry_length: int = 0):
-        self.signature = signature
+        self.magic = magic
         self.export = export
         self.comment = comment
         self._entry_length = entry_length
@@ -26,7 +26,7 @@ class TIHeader(Section):
     def bytes(self) -> bytes:
         dump = b''
 
-        dump += self.signature_bytes
+        dump += self.magic_bytes
         dump += self.export
         dump += self.comment_bytes
         dump += self.entry_length_bytes
@@ -44,7 +44,7 @@ class TIHeader(Section):
     def load_bytes(self, data: bytes):
         data = io.BytesIO(data)
 
-        self.signature_bytes = data.read(8)
+        self.magic_bytes = data.read(8)
         self.export_bytes = data.read(3)
         self.comment_bytes = data.read(42)
         self._entry_length = int.from_bytes(data.read(2), 'little')
@@ -183,12 +183,12 @@ class TIVar(TIHeader, TIEntry):
     type_id = None
 
     def __init__(self, *, name: str = 'UNNAMED', model: 'TIModel' = None):
-        signature = "**TI83F*" if model is None else model.signature
+        magic = "**TI83F*" if model is None else model.magic
 
         meta_length = TIEntry.flash_meta_length if \
             model is None or model.has(TIFeature.FLASH) else TIEntry.base_meta_length
 
-        super().__init__(signature=signature)
+        super().__init__(magic=magic)
         super(TIHeader, self).__init__(meta_length=meta_length,
                                        type_id=self.type_id,
                                        name=name)
@@ -208,7 +208,7 @@ class TIVar(TIHeader, TIEntry):
 
     @property
     def header(self) -> 'TIHeader':
-        return TIHeader(self.signature, self.export, self.comment, self.entry_length)
+        return TIHeader(self.magic, self.export, self.comment, self.entry_length)
 
     @staticmethod
     def register(var_type: type['TIVar']):
@@ -226,15 +226,15 @@ class TIVar(TIHeader, TIEntry):
     def load_bytes(self, data: bytes):
         super().load_bytes(data)
 
-        match self.signature:
-            case TI_82.signature:
+        match self.magic:
+            case TI_82.magic:
                 model = TI_82
-            case TI_83.signature:
+            case TI_83.magic:
                 model = TI_83
-            case TI_84p.signature:
+            case TI_84p.magic:
                 model = TI_84pcepy
             case _:
-                warn(f"The var signature is not recognized ({self.signature}).",
+                warn(f"The var file magic is not recognized ({self.magic}).",
                      BytesWarning)
                 model = None
 

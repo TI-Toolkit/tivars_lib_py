@@ -1,8 +1,8 @@
 class TIModel:
-    def __init__(self, name: str, flags: int, signature: str):
+    def __init__(self, name: str, flags: int, magic: str):
         self.name = name
         self.flags = flags
-        self.signature = signature
+        self.magic = magic
 
     def __str__(self):
         return self.name
