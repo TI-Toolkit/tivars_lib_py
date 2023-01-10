@@ -4,6 +4,9 @@ class TIModel:
         self.flags = flags
         self.signature = signature
 
+    def __str__(self):
+        return self.name
+
     def has(self, feature: int):
         return self.flags & feature
 

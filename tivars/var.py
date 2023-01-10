@@ -185,14 +185,25 @@ class TIVar(TIHeader, TIEntry):
 
         if self.meta_length == TIVar.flash_meta_length:
             if self.model is not None and not self.model.has(TIFeature.FLASH):
-                warnings.warn(f"Calculator model does ")
+                warnings.warn(f"The var contains flash bytes, but the {self.model} does not have a flash chip.",
+                              BytesWarning)
 
             self.version = data.read(1)
             self.archived_bytes = data.read(1)
 
+        elif self.meta_length == TIVar.base_meta_length:
+            if self.model is not None and self.model.has(TIFeature.FLASH):
+                warnings.warn(f"The var doesn't contain flash bytes, but the {self.model} uses a flash chip.",
+                              BytesWarning)
+
         elif self.meta_length != TIVar.base_meta_length:
             warnings.warn(f"The var entry meta length has an unexpected value ({self.meta_length}).",
                           BytesWarning)
+
+            if self.model is not None:
+                if self.model.has(TIFeature.FLASH):
+                    self.version = data.read(1)
+                    self.archived_bytes = data.read(1)
 
         data_length2 = int.from_bytes(data.read(2), 'little')
         if data_length != data_length2:
