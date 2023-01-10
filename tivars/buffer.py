@@ -5,24 +5,17 @@ from typing import BinaryIO, Iterator
 
 
 class Buffer:
-    def __init__(self, width: int = None, default: bytes = None):
+    def __init__(self, width: int = None):
         self._width = width
-        self._default = default.ljust(width, b'\x00')
 
     def __set_name__(self, owner, name: str):
-        self._name = f"_{name}"
+        self._name = f"{name}_bytes"
 
-    def __get__(self, instance, owner: type = None) -> 'Buffer' | bytes | bytearray:
+    def __get__(self, instance, owner: type = None):
         if instance is None:
             return self
 
-        if self._width is None:
-            default = self._default or bytearray()
-
-        else:
-            default = self._default or bytes(self._width)
-
-        return getattr(instance, self._name, default)
+        return getattr(instance, self._name, bytearray() if self._width is None else bytes(self._width))
 
     def __set__(self, instance, value: bytes | bytearray):
         if self._width is not None:
@@ -43,10 +36,10 @@ class Buffer:
 
 
 class BoolBuffer(Buffer):
-    def __init__(self, default: bool = False):
-        super().__init__(1, bytes([default]))
+    def __init__(self):
+        super().__init__(1)
 
-    def __get__(self, instance, owner: type = None) -> 'BoolBuffer' | bool:
+    def __get__(self, instance, owner: type = None):
         if instance is None:
             return self
 
@@ -57,10 +50,10 @@ class BoolBuffer(Buffer):
 
 
 class IntBuffer(Buffer):
-    def __init__(self, width: int = 0, default: int = 0):
-        super().__init__(width, bytes([default]))
+    def __init__(self, width: int = 0):
+        super().__init__(width)
 
-    def __get__(self, instance, owner: type = None) -> 'IntBuffer' | int:
+    def __get__(self, instance, owner: type = None):
         if instance is None:
             return self
 
@@ -74,10 +67,10 @@ class IntBuffer(Buffer):
 
 
 class StringBuffer(Buffer):
-    def __init__(self, width: int = 0, default: str = None):
-        super().__init__(width, default.encode('utf8'))
+    def __init__(self, width: int = 0):
+        super().__init__(width)
 
-    def __get__(self, instance, owner: type = None) -> 'Buffer' | str:
+    def __get__(self, instance, owner: type = None):
         if instance is None:
             return self
 
@@ -93,7 +86,7 @@ class NameBuffer(StringBuffer):
         varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
         varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
 
-        if not value or value[0].isnumeric():
+        if not varname or varname[0].isnumeric():
             raise ValueError(f"Var has invalid name: {value} -> {varname}.")
 
         super().__set__(instance, varname)
@@ -105,6 +98,10 @@ class Section:
 
     def __str__(self):
         return self.string()
+
+    @abstractmethod
+    def bytes(self) -> bytes:
+        pass
 
     @abstractmethod
     def export(self, **params) -> bytes:
@@ -124,7 +121,11 @@ class Section:
 
     def load_buffer(self, buffer: 'Buffer', data: Iterator[bytes], width: int = None):
         width = buffer.width or width
-        setattr(self, buffer.name, bytes(byte for byte, _ in zip(data, range(width))).ljust(width, b'\x00'))
+        value = b''
+        for _ in range(width):
+            value += bytes([next(data)])
+
+        setattr(self, buffer.name, value.ljust(width, b'\x00'))
 
     def load_bytes(self, data: bytes | Iterator[bytes]):
         data = iter(data)
@@ -154,10 +155,6 @@ class Section:
     @property
     def width(self) -> int:
         return sum(attr.width for attr in vars(Section).values() if isinstance(attr, Buffer))
-
-    # Timeout corner for PyCharm's type checker
-    def bytes(self) -> bytes:
-        return b''.join(getattr(self, attr.name) for attr in vars(Section).values() if isinstance(attr, Buffer))
 
 
 __all__ = ["Buffer", "BoolBuffer", "IntBuffer", "StringBuffer", "NameBuffer", "Section"]

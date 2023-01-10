@@ -42,13 +42,13 @@ class TIProgram(TIVar):
 
     type_id = b'\x05'
 
-    def dumps(self) -> str:
-        byte_map = self.tokens[self.model][1]
-        return decode(self.data, byte_map)
-
-    def loads(self, string: str):
+    def load_string(self, string: str):
         token_map = self.tokens[self.model][0]
         self.data = encode(string, token_map)
+
+    def string(self) -> str:
+        byte_map = self.tokens[self.model][1]
+        return decode(self.data, byte_map)
 
 
 class TIProtectedProgram(TIProgram):
