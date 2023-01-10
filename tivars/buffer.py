@@ -1,4 +1,5 @@
 import re
+import warnings
 
 from abc import abstractmethod
 from typing import BinaryIO, Iterator
@@ -20,9 +21,9 @@ class Buffer:
     def __set__(self, instance, value: bytes | bytearray):
         if self._width is not None:
             if len(value) > self._width:
-                raise OverflowError("Value is too large for this buffer.")
-            else:
-                value = value.ljust(self._width, b'\x00')
+                warnings.warn("Value is too large for this buffer.", BytesWarning)
+
+            value = value[:self._width].ljust(self._width, b'\x00')
 
         setattr(instance, self._name, value)
 
@@ -63,7 +64,8 @@ class IntBuffer(Buffer):
         try:
             super().__set__(instance, int.to_bytes(value, self._width, 'little'))
         except OverflowError:
-            raise OverflowError("Value is too large for this buffer.")
+            warnings.warn("Value is too large for this buffer.", BytesWarning)
+            super().__set__(instance, int.to_bytes(value % (1 << self._width), self._width, 'little'))
 
 
 class StringBuffer(Buffer):
@@ -87,7 +89,7 @@ class NameBuffer(StringBuffer):
         varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
-            raise ValueError(f"Var has invalid name: {value} -> {varname}.")
+            warnings.warn(f"Var has invalid name: {varname}.", BytesWarning)
 
         super().__set__(instance, varname)
 
