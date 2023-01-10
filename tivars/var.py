@@ -155,7 +155,7 @@ class TIVar(TIHeader, TIEntry):
             case TI_83.signature:
                 model = TI_83
             case TI_84p.signature:
-                model = TI_84p
+                model = TI_84pcepy
             case _:
                 raise warnings.warn(f"The var signature is not recognized ({self.signature}).",
                                     BytesWarning)
