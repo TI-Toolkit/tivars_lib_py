@@ -1,5 +1,6 @@
 import io
-import warnings
+
+from warnings import warn
 
 from tivars.models import *
 from .buffer import *
@@ -9,6 +10,8 @@ class TIHeader(Section):
     signature = StringBuffer(8)
     export = Buffer(3)
     comment = StringBuffer(42)
+
+    size = 55
 
     def __init__(self,
                  signature: str = "**TI83F*",
@@ -20,12 +23,42 @@ class TIHeader(Section):
         self.comment = comment
         self._entry_length = entry_length
 
+    def bytes(self) -> bytes:
+        dump = b''
+
+        dump += self.signature_bytes
+        dump += self.export
+        dump += self.comment_bytes
+        dump += self.entry_length_bytes
+
+        return dump
+
+    @property
+    def entry_length(self) -> int:
+        return self._entry_length
+
+    @property
+    def entry_length_bytes(self) -> bytes:
+        return int.to_bytes(self._entry_length, 2, 'little')
+
+    def load_bytes(self, data: bytes):
+        data = io.BytesIO(data)
+
+        self.signature_bytes = data.read(8)
+        self.export_bytes = data.read(3)
+        self.comment_bytes = data.read(42)
+        self._entry_length = int.from_bytes(data.read(2), 'little')
+
+    def load_string(self, string: str):
+        raise NotImplementedError
+
+    def string(self) -> str:
+        raise NotImplementedError
+
 
 class TIEntry(Section):
     base_meta_length = 0x0B
     flash_meta_length = 0x0D
-
-    type_id = None
 
     meta_length = IntBuffer(2)
     name = NameBuffer(8)
@@ -35,11 +68,13 @@ class TIEntry(Section):
 
     def __init__(self,
                  meta_length: int = 0x0D,
+                 type_id: bytes = b'\x00',
                  name: str = "UNNAMED",
                  version: bytes = b'\x00',
                  archived: bool = False,
                  data: bytearray = bytearray()):
         self.meta_length = meta_length
+        self.type_id = type_id
         self.name = name
         self.version = version
         self.archived = archived
@@ -84,10 +119,68 @@ class TIEntry(Section):
     def flash_bytes(self) -> bytes:
         return (self.version + bytes([self.archived]))[:self.meta_length - TIEntry.base_meta_length]
 
+    def bytes(self) -> bytes:
+        dump = b''
+
+        dump += self.meta_length_bytes
+        dump += self.data_length_bytes
+        dump += self.type_id
+        dump += self.name_bytes
+
+        if self.flash_bytes:
+            dump += self.version
+            dump += self.archived_bytes
+
+        dump += self.data_length_bytes
+        dump += self.data
+        dump += self.checksum_bytes
+
+        return dump
+
+    def load_bytes(self, data: bytes, *, offset: bool = False):
+        data = io.BytesIO(data)
+
+        if offset:
+            data.read(TIHeader.size)
+
+        self.meta_length_bytes = data.read(2)
+        data_length = int.from_bytes(data.read(2), 'little')
+
+        self.type_id = data.read(1)
+        self.name_bytes = data.read(8)
+
+        if self.meta_length == TIEntry.flash_meta_length:
+            self.version = data.read(1)
+            self.archived_bytes = data.read(1)
+
+        elif self.meta_length != TIEntry.base_meta_length:
+            warn(f"The entry meta length has an unexpected value ({self.meta_length}).",
+                 BytesWarning)
+
+        data_length2 = int.from_bytes(data.read(2), 'little')
+        if data_length != data_length2:
+            warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
+                 BytesWarning)
+
+        self.data = bytearray(data.read(data_length))
+
+        checksum = int.from_bytes(data.read(2), 'little')
+        if checksum != self.checksum:
+            warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
+                 BytesWarning)
+
+    def load_string(self, string: str):
+        raise NotImplementedError
+
+    def string(self) -> str:
+        raise NotImplementedError
+
 
 class TIVar(TIHeader, TIEntry):
     extensions = {}
     type_ids = {}
+
+    type_id = None
 
     def __init__(self, *, name: str = 'UNNAMED', model: 'TIModel' = None):
         signature = "**TI83F*" if model is None else model.signature
@@ -97,12 +190,17 @@ class TIVar(TIHeader, TIEntry):
 
         super().__init__(signature=signature)
         super(TIHeader, self).__init__(meta_length=meta_length,
+                                       type_id=self.type_id,
                                        name=name)
         self.model = model
 
     @property
     def entry(self) -> 'TIEntry':
-        return TIEntry(self.meta_length, self.name, self.version, self.archived, self.data)
+        return TIEntry(self.meta_length, self.type_id, self.name, self.version, self.archived, self.data)
+
+    @property
+    def entry_length(self) -> int:
+        return TIEntry.entry_length.__get__(self)
 
     @property
     def extension(self) -> str:
@@ -123,32 +221,11 @@ class TIVar(TIHeader, TIEntry):
             raise TypeError(f"The {self.model} does not support archiving.")
 
     def bytes(self) -> bytes:
-        dump = b''
-
-        dump += self.signature_bytes
-        dump += self.export
-        dump += self.comment_bytes
-        dump += self.entry_length_bytes
-
-        dump += self.meta_length_bytes
-        dump += self.data_length_bytes
-        dump += self.type_id
-        dump += self.name_bytes
-
-        if self.flash_bytes:
-            dump += self.version
-            dump += self.archived_bytes
-
-        dump += self.data_length_bytes
-        dump += self.data
-        dump += self.checksum_bytes
-
-        return dump
+        return self.header.bytes() + self.entry.bytes()
 
     def load_bytes(self, data: bytes):
-        data = io.BytesIO(data)
+        super().load_bytes(data)
 
-        self.signature_bytes = data.read(8)
         match self.signature:
             case TI_82.signature:
                 model = TI_82
@@ -157,15 +234,15 @@ class TIVar(TIHeader, TIEntry):
             case TI_84p.signature:
                 model = TI_84pcepy
             case _:
-                raise warnings.warn(f"The var signature is not recognized ({self.signature}).",
-                                    BytesWarning)
+                warn(f"The var signature is not recognized ({self.signature}).",
+                     BytesWarning)
+                model = None
 
         if self.model is None:
             self.model = model
 
-        self.export_bytes = data.read(3)
-        self.comment_bytes = data.read(42)
-        entry_length = int.from_bytes(data.read(2), 'little')
+        data = io.BytesIO(data)
+        data.read(TIHeader.size)
 
         self.meta_length_bytes = data.read(2)
         data_length = int.from_bytes(data.read(2), 'little')
@@ -185,20 +262,20 @@ class TIVar(TIHeader, TIEntry):
 
         if self.meta_length == TIVar.flash_meta_length:
             if self.model is not None and not self.model.has(TIFeature.FLASH):
-                warnings.warn(f"The var contains flash bytes, but the {self.model} does not have a flash chip.",
-                              BytesWarning)
+                warn(f"The var contains flash bytes, but the {self.model} does not have a flash chip.",
+                     BytesWarning)
 
             self.version = data.read(1)
             self.archived_bytes = data.read(1)
 
         elif self.meta_length == TIVar.base_meta_length:
             if self.model is not None and self.model.has(TIFeature.FLASH):
-                warnings.warn(f"The var doesn't contain flash bytes, but the {self.model} uses a flash chip.",
-                              BytesWarning)
+                warn(f"The var doesn't contain flash bytes, but the {self.model} uses a flash chip.",
+                     BytesWarning)
 
         elif self.meta_length != TIVar.base_meta_length:
-            warnings.warn(f"The var entry meta length has an unexpected value ({self.meta_length}).",
-                          BytesWarning)
+            warn(f"The var entry meta length has an unexpected value ({self.meta_length}).",
+                 BytesWarning)
 
             if self.model is not None:
                 if self.model.has(TIFeature.FLASH):
@@ -207,21 +284,27 @@ class TIVar(TIHeader, TIEntry):
 
         data_length2 = int.from_bytes(data.read(2), 'little')
         if data_length != data_length2:
-            warnings.warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
-                          BytesWarning)
+            warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
+                 BytesWarning)
 
         self.data = bytearray(data.read(data_length))
-        if entry_length != self.entry_length:
-            warnings.warn(f"The var entry length is incorrect (expected {self.entry_length}, got {entry_length}).",
-                          BytesWarning)
+        if self._entry_length != self.entry_length:
+            warn(f"The var entry length is incorrect (expected {self.entry_length}, got {self._entry_length}).",
+                 BytesWarning)
 
         checksum = int.from_bytes(data.read(2), 'little')
         if checksum != self.checksum:
-            warnings.warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
-                          BytesWarning)
+            warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
+                 BytesWarning)
+
+    def load_string(self, string: str):
+        raise NotImplementedError
 
     def save(self, filename: str = None):
         super().save(filename or f"{self.name}.{self.extension}")
+
+    def string(self) -> str:
+        raise NotImplementedError
 
     def unarchive(self):
         if self.model is None or self.model.has(TIFeature.FLASH):

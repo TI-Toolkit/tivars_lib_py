@@ -1,8 +1,8 @@
 import re
-import warnings
 
 from abc import abstractmethod
-from typing import BinaryIO, Iterator
+from typing import BinaryIO
+from warnings import warn
 
 
 class Buffer:
@@ -21,7 +21,7 @@ class Buffer:
     def __set__(self, instance, value: bytes | bytearray):
         if self._width is not None:
             if len(value) > self._width:
-                warnings.warn("Value is too large for this buffer.", BytesWarning)
+                warn("Value is too large for this buffer.", BytesWarning)
 
             value = value[:self._width].ljust(self._width, b'\x00')
 
@@ -64,7 +64,7 @@ class IntBuffer(Buffer):
         try:
             super().__set__(instance, int.to_bytes(value, self._width, 'little'))
         except OverflowError:
-            warnings.warn("Value is too large for this buffer.", BytesWarning)
+            warn("Value is too large for this buffer.", BytesWarning)
             super().__set__(instance, int.to_bytes(value % (1 << self._width), self._width, 'little'))
 
 
@@ -89,7 +89,7 @@ class NameBuffer(StringBuffer):
         varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
-            warnings.warn(f"Var has invalid name: {varname}.", BytesWarning)
+            warn(f"Var has invalid name: {varname}.", BytesWarning)
 
         super().__set__(instance, varname)
 
@@ -98,16 +98,19 @@ class Section:
     def __bytes__(self) -> bytes:
         return self.bytes()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.string()
+
+    @property
+    def width(self) -> int:
+        return sum(attr.width for attr in vars(Section).values() if isinstance(attr, Buffer))
 
     @abstractmethod
     def bytes(self) -> bytes:
         pass
 
-    @abstractmethod
     def export(self, **params) -> bytes:
-        pass
+        return self.__init__(**params).bytes()
 
     def load(self, data):
         if isinstance(data, str):
@@ -143,10 +146,6 @@ class Section:
     @abstractmethod
     def string(self) -> str:
         pass
-
-    @property
-    def width(self) -> int:
-        return sum(attr.width for attr in vars(Section).values() if isinstance(attr, Buffer))
 
 
 __all__ = ["Buffer", "BoolBuffer", "IntBuffer", "StringBuffer", "NameBuffer", "Section"]
