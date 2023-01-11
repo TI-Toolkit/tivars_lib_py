@@ -6,6 +6,7 @@ from ..var import TIVar
 
 class TIProgram(TIVar):
     extensions = {
+        None: "8xp",
         TI_82: "82p",
         TI_83: "83p",
         TI_82A: "8xp",

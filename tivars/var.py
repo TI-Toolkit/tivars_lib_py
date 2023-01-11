@@ -210,7 +210,12 @@ class TIVar(TIHeader, TIEntry):
 
     @property
     def extension(self) -> str:
-        return self.extensions[self.model]
+        try:
+            return self.extensions[self.model]
+
+        except KeyError:
+            warn(f"Model {self.model} not recognized.")
+            return self.extensions[None]
 
     @property
     def header(self) -> 'TIHeader':
@@ -313,6 +318,16 @@ class TIVar(TIHeader, TIEntry):
 
     def load_string(self, string: str):
         raise NotImplementedError
+
+    def open(self, filename: str):
+        if not any(filename.endswith(extension) for extension in self.extensions.values()):
+            warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {type(self)}; "
+                 f"attempting to read anyway.")
+
+        elif self.model is not None and not filename.endswith(self.extension):
+            warn(f"Var type {type(self)} on the {self.model} uses .{self.extension} extension.")
+
+        super().open(filename)
 
     def save(self, filename: str = None):
         super().save(filename or f"{self.name}.{self.extension}")

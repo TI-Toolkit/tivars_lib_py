@@ -4,6 +4,7 @@ from ..var import TIVar
 
 class TIReal(TIVar):
     extensions = {
+        None: "8xn",
         TI_82: "82n",
         TI_83: "83n",
         TI_82A: "8xn",
