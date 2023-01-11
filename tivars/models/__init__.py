@@ -1,8 +1,9 @@
 class TIModel:
-    def __init__(self, name: str, flags: int, magic: str):
+    def __init__(self, name: str, flags: int, magic: str, product_id: bytes):
         self.name = name
         self.flags = flags
         self.magic = magic
+        self.product_id = product_id
 
     def __str__(self):
         return self.name
@@ -40,21 +41,21 @@ flags83pceep = flags83pce | TIFeature.PYTHON
 flags84pcepy = flags84pce | TIFeature.PYTHON
 flags82aep = flags83pceep & ~TIFeature.APPS
 
-TI_82 = TIModel("82", flags82, "**TI82**")
-TI_83 = TIModel("83", flags83, "**TI83**")
-TI_82a = TIModel("82A", flags82a, "**TI83F*")
-TI_82p = TIModel("82+", flags83p, "**TI83F*")
-TI_83p = TIModel("83+", flags83p, "**TI83F*")
-TI_84p = TIModel("84+", flags84p, "**TI83F*")
-TI_84t = TIModel("84+T", flags84p, "**TI83F*")
-TI_84pcse = TIModel("84+CSE", flags84pcse, "**TI83F*")
-TI_84pce = TIModel("84+CE", flags84pce, "**TI83F*")
-TI_84pcet = TIModel("84+CET", flags84pce, "**TI83F*")
-TI_84pcetpy = TIModel("84+CETPE", flags84pcepy, "**TI83F*")
-TI_84pcepy = TIModel("84+CEPy", flags84pcepy, "**TI83F*")
-TI_83pce = TIModel("83PCE", flags83pce, "**TI83F*")
-TI_83pceep = TIModel("83PCEEP", flags83pceep, "**TI83F*")
-TI_82aep = TIModel("82AEP", flags82aep, "**TI83F*")
+TI_82 = TIModel("82", flags82, "**TI82**", b'\x00')
+TI_83 = TIModel("83", flags83, "**TI83**", b'\x00')
+TI_82a = TIModel("82A", flags82a, "**TI83F*", b'\x0B')
+TI_82p = TIModel("82+", flags83p, "**TI83F*", b'\x00')
+TI_83p = TIModel("83+", flags83p, "**TI83F*", b'\x04')
+TI_84p = TIModel("84+", flags84p, "**TI83F*", b'\x0A')
+TI_84t = TIModel("84+T", flags84p, "**TI83F*", b'\x1B')
+TI_84pcse = TIModel("84+CSE", flags84pcse, "**TI83F*", b'\x0F')
+TI_84pce = TIModel("84+CE", flags84pce, "**TI83F*", b'\x13')
+TI_84pcet = TIModel("84+CET", flags84pce, "**TI83F*", b'\x13')
+TI_84pcetpy = TIModel("84+CETPE", flags84pcepy, "**TI83F*", b'\x13')
+TI_84pcepy = TIModel("84+CEPy", flags84pcepy, "**TI83F*", b'\x13')
+TI_83pce = TIModel("83PCE", flags83pce, "**TI83F*", b'\x13')
+TI_83pceep = TIModel("83PCEEP", flags83pceep, "**TI83F*", b'\x13')
+TI_82aep = TIModel("82AEP", flags82aep, "**TI83F*", b'\x00')
 
 MODELS = [TI_82, TI_83, TI_82a, TI_82p, TI_83p,
           TI_84p, TI_84t, TI_84pcse, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy,

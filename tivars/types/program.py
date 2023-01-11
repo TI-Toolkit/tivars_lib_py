@@ -43,11 +43,11 @@ class TIProgram(TIVar):
     type_id = b'\x05'
 
     def load_string(self, string: str):
-        token_map = self.tokens[self.model][0]
+        token_map = self.tokens[self.model or TI_84pcepy][0]
         self.data = encode(string, token_map)
 
     def string(self) -> str:
-        byte_map = self.tokens[self.model][1]
+        byte_map = self.tokens[self.model or TI_84pcepy][1]
         return decode(self.data, byte_map)
 
 

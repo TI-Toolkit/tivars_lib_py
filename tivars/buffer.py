@@ -109,9 +109,6 @@ class Section:
     def bytes(self) -> bytes:
         pass
 
-    def export(self, **params) -> bytes:
-        return self.__init__(**params).bytes()
-
     def load(self, data):
         if isinstance(data, str):
             self.load_string(data)

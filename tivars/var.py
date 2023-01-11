@@ -8,18 +8,21 @@ from .buffer import *
 
 class TIHeader(Section):
     magic = StringBuffer(8)
-    export = Buffer(3)
+    extra = Buffer(2)
+    product_id = Buffer(1)
     comment = StringBuffer(42)
 
     size = 55
 
     def __init__(self,
                  magic: str = "**TI83F*",
-                 export: bytes = b'\x1A\x0A\x00',
+                 extra: bytes = b'\x1A\x0A',
+                 product_id: bytes = b'\x00',
                  comment: str = "Created by tivars_lib_py",
                  entry_length: int = 0):
         self.magic = magic
-        self.export = export
+        self.extra = extra
+        self.product_id = product_id
         self.comment = comment
         self._entry_length = entry_length
 
@@ -27,7 +30,8 @@ class TIHeader(Section):
         dump = b''
 
         dump += self.magic_bytes
-        dump += self.export
+        dump += self.extra
+        dump += self.product_id
         dump += self.comment_bytes
         dump += self.entry_length_bytes
 
@@ -45,7 +49,8 @@ class TIHeader(Section):
         data = io.BytesIO(data)
 
         self.magic_bytes = data.read(8)
-        self.export_bytes = data.read(3)
+        self.extra_bytes = data.read(2)
+        self.product_id_bytes = data.read(1)
         self.comment_bytes = data.read(42)
         self._entry_length = int.from_bytes(data.read(2), 'little')
 
@@ -184,11 +189,12 @@ class TIVar(TIHeader, TIEntry):
 
     def __init__(self, *, name: str = 'UNNAMED', model: 'TIModel' = None):
         magic = "**TI83F*" if model is None else model.magic
+        product_id = b'\x00' if model is None else model.product_id
 
         meta_length = TIEntry.flash_meta_length if \
             model is None or model.has(TIFeature.FLASH) else TIEntry.base_meta_length
 
-        super().__init__(magic=magic)
+        super().__init__(magic=magic, product_id=product_id)
         super(TIHeader, self).__init__(meta_length=meta_length,
                                        type_id=self.type_id,
                                        name=name)
@@ -208,7 +214,7 @@ class TIVar(TIHeader, TIEntry):
 
     @property
     def header(self) -> 'TIHeader':
-        return TIHeader(self.magic, self.export, self.comment, self.entry_length)
+        return TIHeader(self.magic, self.extra, self.product_id, self.comment, self.entry_length)
 
     @staticmethod
     def register(var_type: type['TIVar']):
@@ -232,7 +238,15 @@ class TIVar(TIHeader, TIEntry):
             case TI_83.magic:
                 model = TI_83
             case TI_84p.magic:
-                model = TI_84pcepy
+                try:
+                    model = max(filter(lambda m: m.product_id == self.product_id, MODELS),
+                                key=lambda m: m.flags)
+
+                except ValueError:
+                    warn(f"The var product id is not recognized ({self.product_id}).",
+                         BytesWarning)
+                    model = None
+
             case _:
                 warn(f"The var file magic is not recognized ({self.magic}).",
                      BytesWarning)
