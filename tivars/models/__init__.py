@@ -43,26 +43,24 @@ flags82aep = flags83pceep & ~TIFeature.APPS
 
 TI_82 = TIModel("82", flags82, "**TI82**", b'\x00')
 TI_83 = TIModel("83", flags83, "**TI83**", b'\x00')
-TI_82a = TIModel("82A", flags82a, "**TI83F*", b'\x0B')
-TI_82p = TIModel("82+", flags83p, "**TI83F*", b'\x00')
-TI_83p = TIModel("83+", flags83p, "**TI83F*", b'\x04')
-TI_84p = TIModel("84+", flags84p, "**TI83F*", b'\x0A')
-TI_84t = TIModel("84+T", flags84p, "**TI83F*", b'\x1B')
-TI_84pcse = TIModel("84+CSE", flags84pcse, "**TI83F*", b'\x0F')
-TI_84pce = TIModel("84+CE", flags84pce, "**TI83F*", b'\x13')
-TI_84pcet = TIModel("84+CET", flags84pce, "**TI83F*", b'\x13')
-TI_84pcetpy = TIModel("84+CETPE", flags84pcepy, "**TI83F*", b'\x13')
-TI_84pcepy = TIModel("84+CEPy", flags84pcepy, "**TI83F*", b'\x13')
-TI_83pce = TIModel("83PCE", flags83pce, "**TI83F*", b'\x13')
-TI_83pceep = TIModel("83PCEEP", flags83pceep, "**TI83F*", b'\x13')
-TI_82aep = TIModel("82AEP", flags82aep, "**TI83F*", b'\x00')
+TI_82A = TIModel("82A", flags82a, "**TI83F*", b'\x0B')
+TI_82P = TIModel("82+", flags83p, "**TI83F*", b'\x00')
+TI_83P = TIModel("83+", flags83p, "**TI83F*", b'\x04')
+TI_84P = TIModel("84+", flags84p, "**TI83F*", b'\x0A')
+TI_84T = TIModel("84+T", flags84p, "**TI83F*", b'\x1B')
+TI_84PCSE = TIModel("84+CSE", flags84pcse, "**TI83F*", b'\x0F')
+TI_84PCE = TIModel("84+CE", flags84pce, "**TI83F*", b'\x13')
+TI_84PCEPY = TIModel("84+CEPY", flags84pcepy, "**TI83F*", b'\x13')
+TI_83PCE = TIModel("83PCE", flags83pce, "**TI83F*", b'\x13')
+TI_83PCEEP = TIModel("83PCEEP", flags83pceep, "**TI83F*", b'\x13')
+TI_82AEP = TIModel("82AEP", flags82aep, "**TI83F*", b'\x00')
 
-MODELS = [TI_82, TI_83, TI_82a, TI_82p, TI_83p,
-          TI_84p, TI_84t, TI_84pcse, TI_84pce, TI_84pcet, TI_84pcetpy, TI_84pcepy,
-          TI_83pce, TI_83pceep, TI_82aep]
+MODELS = [TI_82, TI_83, TI_82A, TI_82P, TI_83P,
+          TI_84P, TI_84T, TI_84PCSE, TI_84PCE, TI_84PCEPY,
+          TI_83PCE, TI_83PCEEP, TI_82AEP]
 
 
-__all__ = ["TI_82", "TI_83", "TI_82a", "TI_82p", "TI_83p",
-           "TI_84p", "TI_84t", "TI_84pcse", "TI_84pce", "TI_83pce", "TI_84pcet", "TI_84pcetpy", "TI_84pcepy",
-           "TI_83pce", "TI_83pceep", "TI_82aep",
+__all__ = ["TI_82", "TI_83", "TI_82A", "TI_82P", "TI_83P",
+           "TI_84P", "TI_84T", "TI_84PCSE", "TI_84PCE", "TI_83PCE", "TI_84PCEPY",
+           "TI_83PCE", "TI_83PCEEP", "TI_82AEP",
            "MODELS", "TIFeature", "FEATURES", "TIModel"]

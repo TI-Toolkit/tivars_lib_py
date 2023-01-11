@@ -237,7 +237,7 @@ class TIVar(TIHeader, TIEntry):
                 model = TI_82
             case TI_83.magic:
                 model = TI_83
-            case TI_84p.magic:
+            case TI_84P.magic:
                 try:
                     model = max(filter(lambda m: m.product_id == self.product_id, MODELS),
                                 key=lambda m: m.flags)
