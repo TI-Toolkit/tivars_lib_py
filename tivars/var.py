@@ -244,8 +244,11 @@ class TIVar(TIHeader, TIEntry):
                 model = TI_83
             case TI_84P.magic:
                 try:
-                    model = max(filter(lambda m: m.product_id == self.product_id, MODELS),
-                                key=lambda m: m.flags)
+                    models = [m for m in MODELS if m.magic == self.magic]
+                    if self.product_id != b'\x00':
+                        models = [m for m in models if m.product_id == self.product_id]
+
+                    model = max(models, key=lambda m: m.flags)
 
                 except ValueError:
                     warn(f"The var product id is not recognized ({self.product_id}).",
