@@ -96,7 +96,7 @@ class TIEntry(Section):
 
         if self.flash_bytes:
             checksum += int.from_bytes(self.version, 'little')
-            checksum += self.archived
+            checksum += int.from_bytes(self.archived_bytes, 'little')
 
         return checksum & 0xFFFF
 
@@ -122,7 +122,7 @@ class TIEntry(Section):
 
     @property
     def flash_bytes(self) -> bytes:
-        return (self.version + bytes([self.archived]))[:self.meta_length - TIEntry.base_meta_length]
+        return (self.version + self.archived_bytes)[:self.meta_length - TIEntry.base_meta_length]
 
     def bytes(self) -> bytes:
         dump = b''
@@ -131,11 +131,7 @@ class TIEntry(Section):
         dump += self.data_length_bytes
         dump += self.type_id
         dump += self.name_bytes
-
-        if self.flash_bytes:
-            dump += self.version
-            dump += self.archived_bytes
-
+        dump += self.flash_bytes
         dump += self.data_length_bytes
         dump += self.data
         dump += self.checksum_bytes

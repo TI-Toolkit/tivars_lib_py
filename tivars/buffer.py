@@ -47,7 +47,7 @@ class BoolBuffer(Buffer):
         return super().__get__(instance, owner) != b'\x00'
 
     def __set__(self, instance, value: bool):
-        super().__set__(instance, bytes([value]))
+        super().__set__(instance, b'\x80' if value else b'\x00')
 
 
 class IntBuffer(Buffer):
