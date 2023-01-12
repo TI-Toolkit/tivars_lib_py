@@ -18,7 +18,7 @@ class TokenizationTests(unittest.TestCase):
             self.assertEqual(test_program.bytes(), file.read())
 
     def test_load_from_string(self):
-        test_program = TIProgram(name="HELLO")
+        test_program = TIProgram(name="HELLO", model=TI_84P, default_product_id=True)
 
         test_program.load_string(string := "Disp \"HELLO WORLD!\"")
 

@@ -187,9 +187,9 @@ class TIVar(TIHeader, TIEntry):
 
     type_id = None
 
-    def __init__(self, *, name: str = 'UNNAMED', model: 'TIModel' = None):
+    def __init__(self, *, name: str = 'UNNAMED', model: 'TIModel' = None, default_product_id: bool = False):
         magic = "**TI83F*" if model is None else model.magic
-        product_id = b'\x00' if model is None else model.product_id
+        product_id = b'\x00' if default_product_id or model is None else model.product_id
 
         meta_length = TIEntry.flash_meta_length if \
             model is None or model.has(TIFeature.FLASH) else TIEntry.base_meta_length
