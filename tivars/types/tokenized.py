@@ -4,7 +4,7 @@ from tivars.tokenizer.tokens import *
 from ..var import TIVar
 
 
-class TIProgram(TIVar):
+class TokenizedVar(TIVar):
     extensions = {
         None: "8xp",
         TI_82: "82p",
@@ -37,8 +37,6 @@ class TIProgram(TIVar):
         TI_82AEP: (CE_TOKENS, CE_BYTES)
     }
 
-    type_id = b'\x05'
-
     def load_string(self, string: str):
         token_map = self.tokens[self.model or TI_84PCEPY][0]
         self.data = encode(string, token_map)
@@ -48,8 +46,20 @@ class TIProgram(TIVar):
         return decode(self.data, byte_map)
 
 
+class TIEquation(TokenizedVar):
+    type_id = b'\x03'
+
+
+class TIString(TokenizedVar):
+    type_id = b'\x04'
+
+
+class TIProgram(TokenizedVar):
+    type_id = b'\x05'
+
+
 class TIProtectedProgram(TIProgram):
     type_id = b'\x06'
 
 
-__all__ = ["TIProgram", "TIProtectedProgram"]
+__all__ = ["TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]
