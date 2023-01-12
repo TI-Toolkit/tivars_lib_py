@@ -260,6 +260,9 @@ class TIVar(TIHeader, TIEntry):
         if self.model is None:
             self.model = model
 
+        elif self.model != model:
+            warn(f"The var file comes from a different model (expected {self.model}, got {model}).")
+
         data = io.BytesIO(data)
         data.read(TIHeader.size)
 
