@@ -76,7 +76,7 @@ class StringBuffer(Buffer):
         if instance is None:
             return self
 
-        return super().__get__(instance, owner).decode('utf8')
+        return super().__get__(instance, owner).decode('utf8').rstrip('\0')
 
     def __set__(self, instance, value: str):
         super().__set__(instance, value.encode('utf8'))
