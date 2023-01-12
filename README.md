@@ -14,75 +14,79 @@ Official releases are coming soon. All versions require Python 3.10+ to run.
 
 ### Creating vars
 
-To create an empty var, instantiate its corresponding type from `tivars.types` with a name and calculator model:
+To create an empty var, instantiate its corresponding type from `tivars.types`. You can specify additional parameters as you like:
 
 ```python
 from tivars.models import *
 from tivars.types import *
 
-my_program = TIProgram("HELLO", TI_84p)
+my_program = TIProgram(name="HELLO", model=TI_84P)
 ```
 
-If you're not sure of a var's type or model, use `TIVar.infer` to guess given a file's contents:
+If you're not sure of a var's type or model, instantiate a base `TIVar`:
 
 ```python
-with open("MyVar", 'rb') as file:
-    my_var = TIVar.infer(file)
-    my_var_for83p = TIVar.infer(file, model=TI_83p)
+my_var = TIVar()
+my_var_for83 = TIVar(model=TI_83)
 ```
 
 ### Reading and writing
 
-Load an existing file via `load` or interpret from a string using `loads`:
+Vars can be loaded from files, strings, or raw bytes. If you're unsure of the input format, use `load`.
 
 ```python
-with open("HELLO.8xp", 'rb') as file:
-    my_program.load(file)
-    
-# Alternative
 my_program.open("HELLO.8xp")
 
-# See the type classes for string formats
-my_program.loads("Disp \"HELLO WORLD!\"")
+with open("HELLO.8xp", 'rb') as file:
+    my_program.load_file(file)
+    my_program.load_bytes(file.read())
 
+my_program.loads("Disp \"HELLO WORLD!\"")
 ```
-Write the contents of a var as bytes or as a string with `dump` and `dumps`:
+
+Export the contents of a var as a string, bytes, or straight to a file. Use `export` to specify additional parameters without modifying the current object.
 
 ```python
-with open("HELLO.8xp", 'wb+') as file:
-    file.write(my_program.dump())
-    
-# Alternative
 my_program.save("HELLO.8xp")
+my_program.save()                # Infer the filename
 
-# Infer the output filename
-my_program.save()
+with open("HELLO.8xp", 'wb+') as file:
+    file.write(my_program.bytes())
+    file.write(my_program.export(model=TI84PCSE))
 
-print(my_program.dumps())
+print(my_program.string())
+```
 
+You can also read and write to individual sections of the var. Each section can be interfaced as its "canonical" type, or as a raw bytes object by appending `_bytes` to the attribute name.
+
+```python
+my_program.comment = "This is my comment!"
+my_program.magic_bytes = b'\x0A\x11'
+
+assert my_program.type_id == b'\x05'
 ```
 ### Headers and Entries
 
-Each var is composed of a _header_ and _entry_ section, which can be exported as read-only `TIHeader` and `TIEntry` objects respectively from a var object:
+Each var is composed of a _header_ and _entry_ section, which can be exported as `TIHeader` and `TIEntry` objects respectively. They can also be instantiated on their own.
 
 ```python
 header, entry = my_var.header, my_var.entry
 ```
 
-It is generally ill-advised to generate these independently, as the header specifies the length of the entry (and thus their contents are interdependent).
+Note that the header contents dependent directly on the entry section in order to be valid.
 
 ### Models
 
-All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, signature, and feature flags; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
+All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, file magic, and feature flags; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
 
 For these reasons, it is _not_ recommended to instantiate your own models.
 
 ### Corrupt files
 
-Files with corrupted metadata will not initialize with `load` or `open` unless `strict=False` is set. Corrupt vars can be identified by the `corrupt` attribute.
+`TIVar` objects are unable to maintain corrupted metadata. When instantiating from a corrupted file object, warnings will be raised concerning the corrupted bytes; the corrected bytes will be stored in their place.
 
 ## Other Functionalities
 
 ### Tokenization
 
-Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 82/83/84 series BASIC, Axe, Grammer, Prizm, and DCS8, as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to [CE-Fauxgramming/tokens](https://github.com/CE-Fauxgramming/tokens).
+Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 82/83/84 series BASIC as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to [CE-Fauxgramming/tokens](https://github.com/CE-Fauxgramming/tokens).
