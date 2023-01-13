@@ -207,7 +207,11 @@ class TIVar(TIHeader, TIEntry):
     @property
     def extension(self) -> str:
         try:
-            return self.extensions[self.model]
+            extension = self.extensions[self.model]
+            if not extension:
+                raise TypeError(f"The {self.model} does not support this var type.")
+
+            return extension
 
         except KeyError:
             warn(f"Model {self.model} not recognized.")
