@@ -89,4 +89,4 @@ For these reasons, it is _not_ recommended to instantiate your own models.
 
 ### Tokenization
 
-Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 82/83/84 series BASIC as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to [CE-Fauxgramming/tokens](https://github.com/CE-Fauxgramming/tokens).
+Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 82/83/84 series BASIC as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to [ti-toolkit/tokens](https://github.com/ti-toolkit/tokens).
