@@ -47,19 +47,19 @@ class TokenizedVar(TIVar):
 
 
 class TIEquation(TokenizedVar):
-    type_id = b'\x03'
+    _type_id = b'\x03'
 
 
 class TIString(TokenizedVar):
-    type_id = b'\x04'
+    _type_id = b'\x04'
 
 
 class TIProgram(TokenizedVar):
-    type_id = b'\x05'
+    _type_id = b'\x05'
 
 
 class TIProtectedProgram(TIProgram):
-    type_id = b'\x06'
+    _type_id = b'\x06'
 
 
 __all__ = ["TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]
