@@ -338,7 +338,8 @@ class TIEntry:
                 self.__class__ = TIEntry.type_ids[self.raw.type_id]
 
             except KeyError:
-                raise TypeError(f"Type id 0x{self.raw.type_id} is not recognized.")
+                warn(f"Type id 0x{sum(self.raw.type_id):x} is not recognized; entry will not be coerced to a subclass.",
+                     BytesWarning)
 
         elif self.raw.type_id != self._type_id:
             warn(f"The entry type is incorrect (expected {type(self)}, got {TIEntry.type_ids[self.raw.type_id]}). "

@@ -54,6 +54,13 @@ class VarTests(unittest.TestCase):
 
         self.assertEqual(test_var.checksum, b'M\x03')
 
+    def test_multiple_entries(self):
+        clibs = TIVar()
+        clibs.open("tests/data/clibs.8xg")
+
+        self.assertEqual(len(clibs.entries), 9)
+        self.assertTrue(all(entry.type_id == b'\x15' for entry in clibs.entries))
+
     def test_save_to_file(self):
         test_var = TIVar()
         test_var.open("tests/data/Program.8xp")
