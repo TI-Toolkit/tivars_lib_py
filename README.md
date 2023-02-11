@@ -50,7 +50,7 @@ Vars can be loaded from files or raw bytes:
 my_var.open("HELLO.8xp")
 
 with open("HELLO.8xp", 'rb') as file:
-    my_var.load_file(file)
+    my_var.load_var_file(file)
     
     file.seek(0)
     my_var.load_bytes(file.read())
@@ -64,7 +64,7 @@ my_program.open("HELLO.8xp")
 
 with open("HELLO.8xp", 'rb') as file:
     # Offset counts the number of entries to skip; defaults to zero
-    my_program.load_file(file, offset=1)
+    my_program.load_from_file(file, offset=1)
     
     file.seek(0)
     my_program.load_bytes(file.read())
