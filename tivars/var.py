@@ -1,3 +1,4 @@
+import copy
 import io
 import re
 
@@ -5,49 +6,38 @@ from typing import BinaryIO
 from warnings import warn
 
 from tivars.models import *
-from .byteview import *
+from .data import *
 
 
-class TIVar(ByteArray):
-    extensions = {}
-    type_ids = {}
+class TIHeaderRaw(Raw):
+    __slots__ = "magic", "extra", "product_id", "comment"
 
-    _type_id = None
 
-    base_meta_length = 11
-    flash_meta_length = 13
+class TIHeader:
+    def __len__(self) -> int:
+        return 53
 
-    @byteview()[:55]
-    def header(self):
-        """
-        The header section of the var
+    def __bytes__(self) -> bytes:
+        return self.bytes()
 
-        Contains the file magic, export bytes, product ID, comment, and entry length
-        """
-        pass
+    def __copy__(self) -> 'TIHeader':
+        cls = self.__class__
+        new = cls.__new__(cls)
+        new.__dict__.update(self.__dict__)
+        return new
 
-    @byteview()[55:-2]
-    def entry(self):
-        """
-        The entry section of the var
+    def __deepcopy__(self, memo) -> 'TIHeader':
+        cls = self.__class__
+        new = cls.__new__(cls)
+        memo[id(self)] = new
 
-        Contains the meta length, meta section, data length, and data section
-        """
-        pass
+        for k, v in self.__dict__.items():
+            setattr(new, k, copy.deepcopy(v, memo))
 
-    @byteview()[-2:]
-    def checksum(self):
-        """
-        The checksum for the var
+        return new
 
-        This is equal to the lower 2 bytes of the sum of all bytes in the entry section
-        Note that if the flash bytes are undefined, they are not included in the sum
-        """
-
-        return int.to_bytes(sum(self.entry) - (0 if self.flash_bytes else 510) & 0xFFFF, 2, 'little')
-
-    @stringview(header)[:8]
-    def magic(self):
+    @Section(8, String)
+    def magic(self) -> str:
         """
         The file magic for the var
 
@@ -56,18 +46,18 @@ class TIVar(ByteArray):
         """
         pass
 
-    @byteview(header)[8:10]
-    def extra(self):
+    @Section(2)
+    def extra(self) -> bytes:
         """
         Extra export bytes for the var
 
         Exact meaning and interpretation of these bytes is not yet determined
-        These bytes can often be incorrect without causing issues
+        These bytes are set by different export tools and can often be "incorrect" without causing issues
         """
         pass
 
-    @byteview(header)[10:11]
-    def product_id(self):
+    @Section(1)
+    def product_id(self) -> bytes:
         """
         The product ID for the var
 
@@ -76,198 +66,26 @@ class TIVar(ByteArray):
         """
         pass
 
-    @stringview(header)[11:53]
-    def comment(self):
+    @Section(42, String)
+    def comment(self) -> str:
         """
         The comment attached to the var
         """
         pass
 
-    @intview(header)[53:]
-    def entry_length(self) -> int:
-        """
-        The length of the var entry
+    def __init__(self, *, magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = None,
+                 comment: str = "Created with tivars_lib_py v1.0", model: TIModel = None):
+        self.raw = TIHeaderRaw()
 
-        Should be 57 less than the total var size
-        """
+        self.magic = magic or model.magic if model is not None else TI_83P.magic
+        self.extra = extra
+        self.product_id = product_id or model.product_id if model is not None else b'\x00'
+        self.comment = comment
 
-        return len(self.entry)
+    def bytes(self) -> bytes:
+        return self.raw.bytes()
 
-    @intview(entry)[:2]
-    def meta_length(self) -> int:
-        """
-        The length of the meta section of the var
-
-        Can be 13 (contains flash) or 11 (lacks flash)
-        Internally, the meta is always 13 bytes; if the var lacks flash bytes, they are set to 0xFFFF
-        """
-
-        return 13 - 2 * (self.meta[-1] == b'\xFF')
-
-    @byteview(entry)[2:15]
-    def meta(self):
-        """
-        The meta section of the var
-
-        Contains the data length, type ID, var name, and flash bytes
-        """
-        pass
-
-    @intview(meta)[:2]
-    def _data_length(self) -> int:
-        return len(self.data)
-
-    @byteview(meta)[2:3]
-    def type_id(self):
-        """
-        The type ID of the var
-
-        Specifies how the data section of the var is interpreted
-        Must match the type ID of the object type; else, raises a TypeError when loading new data
-        If the type ID is not known a priori, use TIVar to construct the object
-        """
-
-        return self._type_id
-
-    @stringview(meta)[3:11]
-    def name(self, value):
-        """
-        The name of the var
-
-        Must be 1 to 8 characters in length
-        Can include any characters A-Z, 0-9, or Θ
-        Cannot start with a digit
-        """
-
-        varname = value[:8].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
-        varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
-
-        if not varname or varname[0].isnumeric():
-            warn(f"Var has invalid name: {varname}.")
-
-        return varname
-
-    @intview(meta)[11:12]
-    def version(self):
-        """
-        The version number of this var
-
-        Is undefined for vars without flash bytes
-        Internally, is set to 0xFF (read as 255) if undefined
-        """
-        pass
-
-    @boolview(meta)[12:13]
-    def archived(self):
-        """
-        Whether this var is archived
-        A value of 0x80 is truthy; all others are falsy
-
-        Is not present for vars without flash bytes
-        Internally, is set to 0xFF (read as False) if undefined
-        """
-        pass
-
-    @intview(entry)[15:17]
-    def data_length(self):
-        """
-        The length of the data section of the var
-
-        Can be zero
-        """
-
-        return self._data_length
-
-    @dataview(entry)[17:]
-    def data(self):
-        """
-        The data section of the var
-
-        See individual var types for how this data is interpreted
-        """
-        pass
-
-    @property
-    def flash_bytes(self):
-        return bytes(self.meta[-2:]) if self.meta[-1] != b'\xFF' else b''
-
-    def __init__(self, *, name: str = 'UNNAMED', model: 'TIModel' = None, default_product_id: bool = False):
-        super().__init__(74)
-
-        self.name = name
-        self.model = model
-
-        self.magic = TI_84P.magic if self.model is None else model.magic
-        self.extra = b'\x1a\x0a'
-
-        if not default_product_id and model is not None:
-            self.product_id = model.product_id
-
-        self.update()
-
-    def __str__(self) -> str:
-        return self.string()
-
-    @property
-    def extension(self) -> str:
-        try:
-            extension = self.extensions[self.model]
-            if not extension:
-                raise TypeError(f"The {self.model} does not support this var type.")
-
-            return extension
-
-        except KeyError:
-            warn(f"Model {self.model} not recognized.")
-            return self.extensions[None]
-
-    @staticmethod
-    def register(var_type: type['TIVar']):
-        TIVar.type_ids[var_type.type_id] = var_type
-
-    def archive(self):
-        if self.model is None or self.model.has(TIFeature.FLASH):
-            self.archived = True
-        else:
-            raise TypeError(f"The {self.model} does not support archiving.")
-
-    def bytes(self):
-        self.update()
-
-        dump = b''
-
-        dump += self.header
-        dump += self.entry[:4]
-        dump += self.type_id
-        dump += self.meta[3:11]
-        dump += self.flash_bytes
-        dump += self.entry[15:17]
-        dump += self.data
-        dump += self.checksum
-
-        return dump
-
-    def load(self, data):
-        if isinstance(data, str):
-            self.load_string(data)
-            return
-
-        try:
-            self.load_file(data)
-            return
-
-        except AttributeError:
-            self.load_bytes(data)
-
-    def load_bytes(self, data: bytes):
-        data = io.BytesIO(data)
-        self.clear()
-
-        # Read header
-        self.extend(data.read(55))
-
-        # Discern model
+    def derive_model(self) -> TIModel:
         match self.magic:
             case TI_82.magic:
                 model = TI_82
@@ -282,7 +100,7 @@ class TIVar(ByteArray):
                     model = max(models, key=lambda m: m.flags)
 
                 except ValueError:
-                    warn(f"The var product id is not recognized ({self.product_id}).",
+                    warn(f"The var product ID is not recognized ({self.product_id}).",
                          BytesWarning)
                     model = None
 
@@ -291,75 +109,292 @@ class TIVar(ByteArray):
                      BytesWarning)
                 model = None
 
-        if self.model is None:
-            self.model = model
+        return model
 
-        elif self.model != model:
-            warn(f"The var file comes from a different model (expected {self.model}, got {model}).")
+    def load_bytes(self, data: bytes):
+        data = io.BytesIO(data)
+
+        # Read magic
+        self.raw.magic = data.read(8)
+
+        # Read export bytes
+        self.raw.extra = data.read(2)
+
+        # Read product ID
+        self.raw.product_id = data.read(1)
+
+        # Read comment
+        self.raw.comment = data.read(42)
+
+    def load_from_file(self, file: BinaryIO):
+        self.load_bytes(file.read(len(self)))
+
+    def open(self, filename: str):
+        with open(filename, 'rb') as file:
+            self.load_bytes(file.read())
+
+
+class TIEntryRaw(Raw):
+    __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", "data"
+
+    @property
+    def data_length(self) -> bytes:
+        return int.to_bytes(len(self.data), 2, 'little')
+
+    @property
+    def flash_bytes(self) -> bytes:
+        return (self.version + self.archived)[:int.from_bytes(self.meta_length, 'little') - TIEntry.base_meta_length]
+
+
+class TIEntry:
+    extensions = {None: "8xg"}
+    type_ids = {}
+
+    base_meta_length = 11
+    flash_meta_length = 13
+
+    _type_id = None
+
+    def __len__(self) -> int:
+        return 2 + self.meta_length + 2 + self.data_length
+
+    def __bytes__(self) -> bytes:
+        return self.bytes()
+
+    def __str__(self) -> str:
+        return self.string()
+
+    def __copy__(self) -> 'TIEntry':
+        cls = self.__class__
+        new = cls.__new__(cls)
+        new.__dict__.update(self.__dict__)
+        return new
+
+    def __deepcopy__(self, memo) -> 'TIEntry':
+        cls = self.__class__
+        new = cls.__new__(cls)
+        memo[id(self)] = new
+
+        for k, v in self.__dict__.items():
+            setattr(new, k, copy.deepcopy(v, memo))
+
+        return new
+
+    @Section(2, Integer)
+    def meta_length(self) -> int:
+        """
+        The length of the meta section of the entry
+
+        Can be 13 (contains flash) or 11 (lacks flash)
+        """
+
+    @property
+    def data_length(self) -> int:
+        """
+        The length of the data section of the entry
+
+        Can be zero
+        """
+
+        return len(self.data)
+
+    @Section(1)
+    def type_id(self) -> bytes:
+        """
+        The type ID of the entry
+
+        Used the interpret the contents of the data section of the entry
+        """
+
+    @Section(8, String)
+    def name(self, value) -> str:
+        """
+        The name of the entry
+
+        Must be 1 to 8 characters in length
+        Can include any characters A-Z, 0-9, or Θ
+        Cannot start with a digit
+        """
+
+        varname = value[:8].upper()
+        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
+        varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
+
+        if not varname or varname[0].isnumeric():
+            warn(f"Var has invalid name: {varname}.",
+                 BytesWarning)
+
+        return varname
+
+    @Section(1)
+    def version(self) -> bytes:
+        """
+        The version number of the entry
+
+        Is not present for vars without flash bytes
+        """
+        pass
+
+    @Section(1, Boolean)
+    def archived(self) -> bool:
+        """
+        Whether the entry is archived
+        A value of 0x80 is truthy; all others are falsy
+
+        Is not present for vars without flash bytes
+        """
+        pass
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        See individual entry types for how this data is interpreted
+        """
+        pass
+
+    def __init__(self, *, model: TIModel = None, name: str = "UNNAMED",
+                 version: bytes = b'\x00', archived: bool = False):
+        self.raw = TIEntryRaw()
+
+        self.name = name
+        self._model = model
+        self.raw.type_id = self._type_id
+
+        if model is not None:
+            if model.has(TIFeature.FLASH):
+                self.version = version
+                self.archived = archived
+                self.meta_length = TIEntry.flash_meta_length
+
+            else:
+                self.meta_length = TIEntry.base_meta_length
+
+        else:
+            self.meta_length = TIEntry.flash_meta_length
+
+    @property
+    def extension(self) -> str:
+        try:
+            extension = self.extensions[self.model]
+            if not extension:
+                raise TypeError(f"The {self.model} does not support this var type.")
+
+            return extension
+
+        except KeyError:
+            warn(f"Model {self.model} not recognized.")
+            return self.extensions[None]
+
+    @property
+    def flash_bytes(self) -> bytes:
+        return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]
+
+    @property
+    def model(self) -> TIModel:
+        return self._model
+
+    @staticmethod
+    def register(var_type: type['TIEntry']):
+        TIEntry.type_ids[var_type._type_id] = var_type
+
+    def archive(self):
+        if self.flash_bytes:
+            self.archived = True
+        else:
+            raise TypeError(f"This entry does not support archiving.")
+
+    def bytes(self) -> bytes:
+        return self.raw.bytes()
+
+    def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
+        var = TIVar(header=header, name=name, model=model)
+        var.add_entry(self)
+        return var
+
+    def load_bytes(self, data: bytes):
+        data = io.BytesIO(data)
 
         # Read meta length
-        self.extend(data.read(2))
+        self.raw.meta_length = data.read(2)
 
         # Read data length
-        self.extend(data_length := data.read(2))
+        data_length = data.read(2)
 
-        # Read type ID
-        self.extend(type_id := data.read(1))
+        # Read and check type ID
+        self.raw.type_id = data.read(1)
 
-        # Read varname
-        self.extend(data.read(8))
-
-        # Check type ID
-        # Needs to come later since the checksum buffer is already allotted
-        if self.type_id is None:
+        if self._type_id is None:
             try:
-                self.__class__ = TIVar.type_ids[type_id]
+                self.__class__ = TIEntry.type_ids[self.raw.type_id]
 
             except KeyError:
-                raise TypeError(f"Type id 0x{type_id:x} is not recognized.")
+                raise TypeError(f"Type id 0x{self.raw.type_id} is not recognized.")
 
-        elif type_id != self.type_id:
-            raise TypeError("The var type is incorrect. Use a TIVar instance if you don't know the type.")
+        elif self.raw.type_id != self._type_id:
+            warn(f"The entry type is incorrect (expected {type(self)}, got {TIEntry.type_ids[self.raw.type_id]}). "
+                 f"Load the entire var file into a TIVar instance if you don't know the entry type(s).",
+                 BytesWarning)
+
+        # Read varname
+        self.raw.name = data.read(8)
 
         # Read flash meta
         match self.meta_length:
-            case TIVar.flash_meta_length:
-                flash = data.read(2)
+            case TIEntry.flash_meta_length:
+                self.raw.version = data.read(1)
+                self.raw.archived = data.read(1)
 
-                if flash == b'\xFF\xFF':
-                    warn(f"The flash bytes are undefined.",
-                         BytesWarning)
-
-                elif flash[-1] not in b'\x00\x80':
+                if self.raw.archived not in b'\x00\x80':
                     warn(f"The archive flag is set to an unexpected value.",
                          BytesWarning)
 
-            case TIVar.base_meta_length:
-                flash = b'\xFF\xFF'
+            case TIEntry.base_meta_length:
+                self.raw.version = b'\x00'
+                self.raw.archived = b'\x00'
 
             case _:
                 warn(f"The entry meta length has an unexpected value ({self.meta_length}); "
                      f"attempting to read flash bytes anyway.",
                      BytesWarning)
-                flash = data.read(2)
+                self.raw.version = data.read(1)
+                self.raw.archived = data.read(1)
 
-        self.extend(flash)
+                if self.raw.archived not in b'\x00\x80':
+                    warn(f"The archive flag is set to an unexpected value.",
+                         BytesWarning)
 
-        # Read data
-        self.extend(data_length2 := data.read(2))
+        # Read data and check length
+        data_length2 = data.read(2)
         if data_length != data_length2:
             warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
                  BytesWarning)
 
-        self.extend(data.read(int.from_bytes(data_length2, 'little')))
+        self.raw.data = data.read(int.from_bytes(data_length2, 'little'))
 
-        # Read checksum
-        self.extend(checksum := data.read(2))
-        if checksum != self.checksum:
-            warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
-                 BytesWarning)
+    def load_from_file(self, file: BinaryIO, *, offset: int = 0):
+        # Load header
+        header = TIHeader()
+        header.load_bytes(file.read(55))
 
-    def load_file(self, file: BinaryIO):
+        # Discern model
+        model = header.derive_model()
+
+        if self._model is None:
+            self._model = model
+
+        elif self._model != model:
+            warn(f"The var file comes from a different model (expected {self._model}, got {model}).")
+
+        # Seek to offset
+        while offset:
+            meta_length = int.from_bytes(file.read(2), 'little')
+            data_length = int.from_bytes(file.read(2), 'little')
+            file.seek(meta_length + data_length, 1)
+
+            offset -= 1
+
         self.load_bytes(file.read())
 
     def load_string(self, string: str):
@@ -370,9 +405,150 @@ class TIVar(ByteArray):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {type(self)}; "
                  f"attempting to read anyway.")
 
-        elif self.model is not None and not filename.endswith(self.extension):
-            warn(f"Var type {type(self)} on the {self.model} uses .{self.extension} extension.")
+        with open(filename, 'rb') as file:
+            file.seek(55)
+            self.load_bytes(file.read())
 
+    def save(self, filename: str = None, *, header: TIHeader = TIHeader()):
+        self.export(header=header).save(filename)
+
+    def string(self) -> str:
+        raise NotImplementedError
+
+    def unarchive(self):
+        if self.flash_bytes:
+            self.archived = False
+        else:
+            raise TypeError(f"This entry does not support archiving.")
+
+
+class TIVar:
+    def __len__(self):
+        return len(self.header) + self.entry_length + 2
+
+    def __bytes__(self):
+        return self.bytes()
+
+    def __copy__(self) -> 'TIVar':
+        cls = self.__class__
+        new = cls.__new__(cls)
+        new.__dict__.update(self.__dict__)
+        return new
+
+    def __deepcopy__(self, memo) -> 'TIVar':
+        cls = self.__class__
+        new = cls.__new__(cls)
+        memo[id(self)] = new
+
+        for k, v in self.__dict__.items():
+            setattr(new, k, copy.deepcopy(v, memo))
+
+        return new
+
+    @property
+    def entry_length(self) -> int:
+        """
+        The total length of the var entries
+
+        Should be 57 less than the total var size
+        """
+
+        return sum(len(entry) for entry in self.entries)
+
+    @property
+    def checksum(self):
+        """
+        The checksum for the var
+
+        This is equal to the lower 2 bytes of the sum of all bytes in the entries
+        """
+
+        return int.to_bytes(sum(sum(entry.bytes()) for entry in self.entries) & 0xFFFF, 2, 'little')
+
+    def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
+        super().__init__()
+
+        self.header = header or TIHeader(model=model)
+        self.entries = []
+
+        self.name = name
+        self._model = model
+
+    @property
+    def extension(self) -> str:
+        try:
+            extension = self.entries[0].extensions[self._model]
+            if not extension:
+                raise TypeError(f"The {self._model} does not support this var type.")
+
+        except KeyError:
+            warn(f"Model {self._model} not recognized.")
+            extension = self.entries[0].extensions[None]
+
+        if len(self.entries) == 1:
+            return extension
+
+        else:
+            return "8xg"
+
+    @property
+    def model(self) -> TIModel:
+        return self.model
+
+    def add_entry(self, entry: TIEntry = None):
+        self.entries.append(entry or TIEntry(model=self._model))
+
+    def bytes(self):
+        dump = self.header.bytes()
+        dump += int.to_bytes(self.entry_length, 2, 'little')
+
+        for entry in self.entries:
+            dump += entry.bytes()
+
+        dump += self.checksum
+        return dump
+
+    def load_bytes(self, data: bytes):
+        data = io.BytesIO(data)
+
+        # Read header
+        self.header.load_bytes(data.read(53))
+        entry_length = int.from_bytes(data.read(2), 'little')
+
+        # Read entries
+        while entry_length:
+            self.add_entry()
+
+            meta_length = int.from_bytes(data.read(2), 'little')
+            data_length = int.from_bytes(data.read(2), 'little')
+
+            self.entries[-1].load_bytes(int.to_bytes(meta_length, 2, 'little') +
+                                        int.to_bytes(data_length, 2, 'little') +
+                                        data.read(meta_length + data_length))
+
+            entry_length -= 2 + meta_length + 2 + data_length
+
+        # Read checksum
+        checksum = data.read(2)
+
+        # Discern model
+        model = self.header.derive_model()
+
+        if self._model is None:
+            self._model = model
+
+        elif self._model != model:
+            warn(f"The var file comes from a different model (expected {self._model}, got {model}).")
+
+        # Check² sum
+        if checksum != self.checksum:
+            warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
+                 BytesWarning)
+
+    def load_var_file(self, file: BinaryIO):
+        self.load_bytes(file.read())
+
+    def open(self, filename: str):
         with open(filename, 'rb') as file:
             self.load_bytes(file.read())
 
@@ -380,17 +556,5 @@ class TIVar(ByteArray):
         with open(filename or f"{self.name}.{self.extension}", 'wb+') as file:
             file.write(self.bytes())
 
-    def string(self) -> str:
-        raise NotImplementedError
 
-    def unarchive(self):
-        if self.model is None or self.model.has(TIFeature.FLASH):
-            self.archived = False
-        else:
-            raise TypeError(f"The {self.model} does not support archiving.")
-
-    def update(self):
-        updated = self.data_length, self.meta_length, self.type_id, self.entry_length, self.checksum
-
-
-__all__ = ["TIVar"]
+__all__ = ["TIHeader", "TIEntry", "TIVar"]
