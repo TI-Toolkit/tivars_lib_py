@@ -94,7 +94,7 @@ class EntryTests(unittest.TestCase):
             file.seek(0)
 
             test_var.load_var_file(file)
-            self.assertEqual((test_header | test_program).bytes(), test_var.bytes())
+            self.assertEqual((test_header | [test_program]).bytes(), test_var.bytes())
 
 
 class TokenizationTests(unittest.TestCase):

@@ -45,15 +45,13 @@ class TIHeader:
 
         return new
 
-    def __or__(self, other: 'TIEntry'):
-        if isinstance(other, TIEntry):
-            return other.export(header=self, name=other.name, model=other.model)
+    def __or__(self, other: list['TIEntry']):
+        new = other[0].export(header=self, name=other[0].name, model=other[0].model)
 
-        elif isinstance(other, TIHeader):
-            raise TypeError("Cannot attach two headers.")
+        for entry in other[1:]:
+            new.add_entry(entry)
 
-        else:
-            raise TypeError("Can only attach headers or entries to form vars.")
+        return new
 
     @Section(8, String)
     def magic(self) -> str:
@@ -209,19 +207,6 @@ class TIEntry:
             setattr(new, k, copy.deepcopy(v, memo))
 
         return new
-
-    def __or__(self, other: 'TIEntry') -> 'TIVar':
-        if isinstance(other, TIEntry):
-            new = self.export(name=self.name, model=self._model)
-            new.add_entry(other)
-
-            return new
-
-        elif isinstance(other, TIHeader):
-            raise TypeError("Attach the header to the front of the entries.")
-
-        else:
-            raise TypeError("Can only attach headers or entries to form vars.")
 
     @Section(2, Integer)
     def meta_length(self) -> int:
@@ -476,22 +461,6 @@ class TIVar:
             setattr(new, k, copy.deepcopy(v, memo))
 
         return new
-
-    def __ior__(self, other: TIEntry):
-        if isinstance(other, TIEntry):
-            self.add_entry(other)
-
-        else:
-            raise TypeError("Can only add a TIEntry to an existing var.")
-
-    def __or__(self, other: TIEntry) -> 'TIVar':
-        new = copy.copy(self)
-        if isinstance(other, TIEntry):
-            new.add_entry(other)
-            return new
-
-        else:
-            raise TypeError("Can only add a TIEntry to an existing var.")
 
     @property
     def entry_length(self) -> int:
