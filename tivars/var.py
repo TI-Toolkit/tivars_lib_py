@@ -14,6 +14,15 @@ class TIHeaderRaw(Raw):
 
 
 class TIHeader:
+    def __init__(self, *, magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = None,
+                 comment: str = "Created with tivars_lib_py v1.0", model: TIModel = None):
+        self.raw = TIHeaderRaw()
+
+        self.magic = magic or model.magic if model is not None else TI_83P.magic
+        self.extra = extra
+        self.product_id = product_id or model.product_id if model is not None else b'\x00'
+        self.comment = comment
+
     def __len__(self) -> int:
         return 53
 
@@ -72,15 +81,6 @@ class TIHeader:
         The comment attached to the var
         """
         pass
-
-    def __init__(self, *, magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = None,
-                 comment: str = "Created with tivars_lib_py v1.0", model: TIModel = None):
-        self.raw = TIHeaderRaw()
-
-        self.magic = magic or model.magic if model is not None else TI_83P.magic
-        self.extra = extra
-        self.product_id = product_id or model.product_id if model is not None else b'\x00'
-        self.comment = comment
 
     def bytes(self) -> bytes:
         return self.raw.bytes()
@@ -154,6 +154,26 @@ class TIEntry:
     flash_meta_length = 13
 
     _type_id = None
+
+    def __init__(self, *, model: TIModel = None, name: str = "UNNAMED",
+                 version: bytes = b'\x00', archived: bool = False):
+        self.raw = TIEntryRaw()
+
+        self.name = name
+        self._model = model
+        self.raw.type_id = self._type_id
+
+        if model is not None:
+            if model.has(TIFeature.FLASH):
+                self.version = version
+                self.archived = archived
+                self.meta_length = TIEntry.flash_meta_length
+
+            else:
+                self.meta_length = TIEntry.base_meta_length
+
+        else:
+            self.meta_length = TIEntry.flash_meta_length
 
     def __len__(self) -> int:
         return 2 + self.meta_length + 2 + self.data_length
@@ -253,26 +273,6 @@ class TIEntry:
         See individual entry types for how this data is interpreted
         """
         pass
-
-    def __init__(self, *, model: TIModel = None, name: str = "UNNAMED",
-                 version: bytes = b'\x00', archived: bool = False):
-        self.raw = TIEntryRaw()
-
-        self.name = name
-        self._model = model
-        self.raw.type_id = self._type_id
-
-        if model is not None:
-            if model.has(TIFeature.FLASH):
-                self.version = version
-                self.archived = archived
-                self.meta_length = TIEntry.flash_meta_length
-
-            else:
-                self.meta_length = TIEntry.base_meta_length
-
-        else:
-            self.meta_length = TIEntry.flash_meta_length
 
     @property
     def extension(self) -> str:
@@ -423,6 +423,15 @@ class TIEntry:
 
 
 class TIVar:
+    def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
+        super().__init__()
+
+        self.header = header or TIHeader(model=model)
+        self.entries = []
+
+        self.name = name
+        self._model = model
+
     def __len__(self):
         return len(self.header) + self.entry_length + 2
 
@@ -464,15 +473,6 @@ class TIVar:
         """
 
         return int.to_bytes(sum(sum(entry.bytes()) for entry in self.entries) & 0xFFFF, 2, 'little')
-
-    def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
-        super().__init__()
-
-        self.header = header or TIHeader(model=model)
-        self.entries = []
-
-        self.name = name
-        self._model = model
 
     @property
     def extension(self) -> str:
