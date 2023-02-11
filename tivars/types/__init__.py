@@ -1,12 +1,12 @@
 from .tokenized import *
 
-from ..var import TIVar
+from ..var import TIEntry
 
 
-TIVar.register(TIEquation)
-TIVar.register(TIString)
-TIVar.register(TIProgram)
-TIVar.register(TIProtectedProgram)
+TIEntry.register(TIEquation)
+TIEntry.register(TIString)
+TIEntry.register(TIProgram)
+TIEntry.register(TIProtectedProgram)
 
 
-__all__ = ["TIVar", "TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]
+__all__ = ["TIEntry", "TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]

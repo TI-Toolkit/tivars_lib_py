@@ -1,8 +1,8 @@
 from tivars.models import *
-from ..var import TIVar
+from ..var import TIEntry
 
 
-class TIReal(TIVar):
+class TIReal(TIEntry):
     extensions = {
         None: "8xn",
         TI_82: "82n",
@@ -20,4 +20,4 @@ class TIReal(TIVar):
         TI_82AEP: "8xn"
     }
 
-    type_id = b'\x00'
+    _type_id = b'\x00'

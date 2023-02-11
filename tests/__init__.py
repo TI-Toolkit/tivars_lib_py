@@ -2,102 +2,124 @@ import unittest
 
 from tivars.models import *
 from tivars.types import *
+from tivars import TIHeader, TIVar
 
 
 class VarTests(unittest.TestCase):
     def test_all_attributes(self):
-        test_var = TIProgram()
+        test_var = TIVar()
         test_var.open("tests/data/Program.8xp")
 
-        self.assertEqual(test_var.magic, "**TI83F*")
-        self.assertEqual(test_var.extra, b'\x1A\x0A')
-        self.assertEqual(test_var.product_id, b'\x0A')
-        self.assertEqual(test_var.comment, "Created by TI Connect CE 5.1.0.68")
+        self.assertEqual(test_var.header.magic, "**TI83F*")
+        self.assertEqual(test_var.header.extra, b'\x1A\x0A')
+        self.assertEqual(test_var.header.product_id, b'\x0A')
+        self.assertEqual(test_var.header.comment, "Created by TI Connect CE 5.1.0.68")
 
-        self.assertEqual(test_var.meta_length, TIVar.flash_meta_length)
-        self.assertEqual(test_var.name, "SETDATE")
-        self.assertEqual(test_var.version, 4)
-        self.assertEqual(test_var.archived, False)
+        self.assertEqual(test_var.entries[0].meta_length, TIEntry.flash_meta_length)
+        self.assertEqual(test_var.entries[0].name, "SETDATE")
+        self.assertEqual(test_var.entries[0].version, b'\x04')
+        self.assertEqual(test_var.entries[0].archived, False)
 
-        self.assertEqual(str(test_var), "setDate(1")
+        self.assertEqual(str(test_var.entries[0]), "setDate(1")
         self.assertEqual(test_var.checksum, b'M\x03')
 
     def test_all_byte_sections(self):
-        test_var = TIProgram()
+        test_var = TIVar()
         test_var.open("tests/data/Program.8xp")
 
-        self.assertEqual(test_var[TIVar.magic], b'**TI83F*')
-        self.assertEqual(test_var[TIVar.extra], b'\x1A\x0A')
-        self.assertEqual(test_var[TIVar.product_id], b'\x0A')
-        self.assertEqual(test_var[TIVar.comment], b'Created by TI Connect CE 5.1.0.68'.ljust(42, b'\x00'))
+        self.assertEqual(test_var.header.raw.magic, b'**TI83F*')
+        self.assertEqual(test_var.header.raw.extra, b'\x1A\x0A')
+        self.assertEqual(test_var.header.raw.product_id, b'\x0A')
+        self.assertEqual(test_var.header.raw.comment, b'Created by TI Connect CE 5.1.0.68'.ljust(42, b'\x00'))
 
-        self.assertEqual(test_var[TIVar.header], test_var[TIVar.magic] + test_var[TIVar.extra] +
-                         test_var[TIVar.product_id] + test_var[TIVar.comment] + test_var[TIVar.entry_length])
+        self.assertEqual(test_var.header.bytes(),
+                         test_var.header.raw.magic + test_var.header.raw.extra +
+                         test_var.header.raw.product_id + test_var.header.raw.comment)
 
-        self.assertEqual(test_var["meta_length"], b'\x0D\x00')
-        self.assertEqual(test_var["name"], b'SETDATE\x00')
-        self.assertEqual(test_var["version"], b'\x04')
-        self.assertEqual(test_var["archived"], b'\x00')
+        self.assertEqual(test_var.entries[0].raw.meta_length, b'\x0D\x00')
+        self.assertEqual(test_var.entries[0].raw.name, b'SETDATE\x00')
+        self.assertEqual(test_var.entries[0].raw.version, b'\x04')
+        self.assertEqual(test_var.entries[0].raw.archived, b'\x00')
 
-        self.assertEqual(test_var["data"], bytearray(b'\x03\x00\xef\x001'))
-        self.assertEqual(test_var["entry"], test_var["meta_length"] + test_var["meta"] +
-                         test_var["data_length"] + test_var["data"])
+        self.assertEqual(test_var.entries[0].flash_bytes,
+                         test_var.entries[0].raw.version + test_var.entries[0].raw.archived)
 
-        self.assertEqual(test_var["checksum"], b'M\x03')
+        self.assertEqual(test_var.entries[0].raw.data, bytearray(b'\x03\x00\xef\x001'))
+        self.assertEqual(test_var.entries[0].bytes(),
+                         test_var.entries[0].raw.meta_length + test_var.entries[0].raw.data_length +
+                         test_var.entries[0].raw.type_id +
+                         test_var.entries[0].raw.name + test_var.entries[0].raw.version +
+                         test_var.entries[0].raw.archived + test_var.entries[0].raw.data_length +
+                         test_var.entries[0].raw.data)
 
-    def test_metadata_update(self):
-        test_var = TIProgram()
+        self.assertEqual(test_var.checksum, b'M\x03')
+
+    def test_save_to_file(self):
+        test_var = TIVar()
         test_var.open("tests/data/Program.8xp")
 
-        test_var[TIVar.entry_length] = b'iB'
-        test_var["checksum"] = b'xD'
+        self.assertEqual(test_var.extension, "8xp")
+        test_var.save("tests/data/Program_new.8xp")
 
-        with open("tests/data/Program.8xp", 'rb') as file:
-            self.assertNotEqual(test_var, file.read())
+        with open("tests/data/Program.8xp", 'rb') as orig:
+            with open("tests/data/Program_new.8xp", 'rb') as new:
+                self.assertEqual(new.read(), orig.read())
 
-            file.seek(0)
-            self.assertEqual(test_var.bytes(), file.read())
+
+class EntryTests(unittest.TestCase):
+    def test_save_to_file(self):
+        test_program = TIProgram()
+        test_header = TIHeader()
+
+        test_program.open("tests/data/Program.8xp")
+        test_header.open("tests/data/Program.8xp")
+
+        self.assertEqual(test_program.extension, "8xp")
+        test_program.save("tests/data/Program_new.8xp", header=test_header)
+
+        with open("tests/data/Program.8xp", 'rb') as orig:
+            with open("tests/data/Program_new.8xp", 'rb') as new:
+                self.assertEqual(new.read(), orig.read())
 
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
+        test_var = TIVar()
+        test_var.open("tests/data/Program.8xp")
+
         test_program = TIProgram()
         test_program.open("tests/data/Program.8xp")
 
-        with open("tests/data/Program.8xp", 'rb') as file:
-            self.assertEqual(test_program.bytes(), file.read())
-            file.seek(0)
+        self.assertEqual(test_program.bytes(), test_var.entries[0].bytes())
 
-            test_program.load(file)
-            file.seek(0)
-            self.assertEqual(test_program.bytes(), file.read())
+        del test_program
+        test_program = TIProgram()
+
+        with open("tests/data/Program.8xp", 'rb') as file:
+            test_program.load_from_file(file)
+
+            file.seek(55)
+            self.assertEqual(test_program.bytes(), file.read()[:-2])
+
+        self.assertEqual(test_program.bytes(), test_var.entries[0].bytes())
 
     def test_load_from_string(self):
         test_program = TIProgram(name="SETDATE", model=TI_84P)
         test_program.comment = "Created by TI Connect CE 5.1.0.68"
-        test_program.version = 4
+        test_program.version = b'\x04'
 
         test_program.load_string(string := "setDate(1")
+        self.assertEqual(test_program.string(), string)
 
         with open("tests/data/Program.8xp", 'rb') as file:
-            self.assertEqual(test_program.bytes(), file.read())
-            self.assertEqual(test_program.string(), string)
+            file.seek(55)
+            self.assertEqual(test_program.bytes(), file.read()[:-2])
 
     def test_all_tokens(self):
         test_program = TIProgram()
 
         with open("tests/data/ALLTOKS.8Xp", 'rb') as file:
-            test_program.load(file)
-            file.seek(0)
+            test_program.load_from_file(file)
+            file.seek(55)
 
-            self.assertEqual(test_program.bytes(), file.read())
-
-    def test_save_to_file(self):
-        test_program = TIProgram()
-
-        test_program.open("tests/data/Program.8xp")
-        test_program.save("tests/data/Program_new.8xp")
-
-        with open("tests/data/Program.8xp", 'rb') as orig:
-            with open("tests/data/Program_new.8xp", 'rb') as new:
-                self.assertEqual(new.read(), orig.read())
+            self.assertEqual(test_program.bytes(), file.read()[:-2])

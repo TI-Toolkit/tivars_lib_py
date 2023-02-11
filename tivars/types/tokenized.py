@@ -1,10 +1,10 @@
 from tivars.models import *
 from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
-from ..var import TIVar
+from ..var import TIEntry
 
 
-class TokenizedVar(TIVar):
+class TokenizedVar(TIEntry):
     extensions = {
         None: "8xp",
         TI_82: "82p",
@@ -38,11 +38,11 @@ class TokenizedVar(TIVar):
     }
 
     def load_string(self, string: str):
-        token_map = self.tokens[self.model or TI_84PCEPY][0]
+        token_map = self.tokens[TI_84PCEPY][0]
         self.data = encode(string, token_map)
 
     def string(self) -> str:
-        byte_map = self.tokens[self.model or TI_84PCEPY][1]
+        byte_map = self.tokens[TI_84PCEPY][1]
         return decode(self.data, byte_map)
 
 

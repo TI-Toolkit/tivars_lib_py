@@ -14,7 +14,9 @@ Official releases are coming soon. All versions require Python 3.10+ to run.
 
 ### Creating vars
 
-To create an empty var, instantiate its corresponding type from `tivars.types`. You can specify additional parameters as you like:
+Every var file has two parts: a _header_ and a number of _entries_, where entry contains the data for a single variable. Usually, var files contain just one entry; in these cases, there's not much distinction between a var and an entry for the purposes of messing with its data.
+
+To create an empty entry, instantiate its corresponding type from `tivars.types`. You can specify additional parameters as you like:
 
 ```python
 from tivars.models import *
@@ -23,69 +25,84 @@ from tivars.types import *
 my_program = TIProgram(name="HELLO", model=TI_84P)
 ```
 
-If you're not sure of a var's type or model, instantiate a base `TIVar`:
+If you're not sure of a entry's type or model, instantiate a base `TIEntry`:
+
+```python
+my_entry = TIEntry()
+my_entry_for83 = TIEntry(model=TI_83)
+```
+
+If you want to create an entire var or just a header, use `TIVar` or `TIHeader` instead:
 
 ```python
 my_var = TIVar()
-my_var_for83 = TIVar(model=TI_83)
+my_var_for84pce = TIVar(model=TI_84PCE)
+
+my_header = TIHeader()
+my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
 ```
 
 ### Reading and writing
 
-Vars can be loaded from files, strings, or raw bytes. If you're unsure of the input format, use `load`.
+Vars can be loaded from files or raw bytes:
 
 ```python
+my_var.open("HELLO.8xp")
+
+with open("HELLO.8xp", 'rb') as file:
+    my_var.load_file(file)
+    
+    file.seek(0)
+    my_var.load_bytes(file.read())
+```
+
+Entries can be loaded from files, raw bytes, or strings representing their data. When loading from a file, you may specify which entry to load if there are multiple:
+
+```python
+# Raises an error if the var has multiple entries; use load_from_file instead
 my_program.open("HELLO.8xp")
 
 with open("HELLO.8xp", 'rb') as file:
-    my_program.load_file(file)
+    # Offset counts the number of entries to skip; defaults to zero
+    my_program.load_file(file, offset=1)
+    
+    file.seek(0)
     my_program.load_bytes(file.read())
 
-my_program.loads("Disp \"HELLO WORLD!\"")
+my_program.load_string("Disp \"HELLO WORLD!\"")
 ```
 
-Export the contents of a var as a string, bytes, or straight to a file. Use `export` to specify additional parameters without modifying the current object.
+Export a var as bytes or straight to a file:
 
 ```python
-my_program.save("HELLO.8xp")
-my_program.save()                # Infer the filename
+my_var.save("HELLO.8xp")
+my_var.save()                               # Infer the filename
 
 with open("HELLO.8xp", 'wb+') as file:
-    file.write(my_program.bytes())
-    file.write(my_program.export(model=TI84PCSE))
+    file.write(my_var.bytes())
+```
 
-print(my_program.string())
+Entries can be passed an explicit header to attach when exporting:
+```python
+my_program.save("HELLO.8xp")
+my_program.save()
+
+with open("HELLO.8xp", 'wb+') as file:
+    file.write(my_program.export(header=my_header).bytes())
 ```
 
 ### Data Sections
 
-The var is composed of individual _sections_ which represent different forms of data. All sections belong to either the _header_, _entry_, or _checksum_. These sections are then divided into their own sections (except the checksum).
+Vars are comprised of individual _sections_ which represent different forms of data, split across the header and entries. The var itself also contains the total entry length and checksum sections, but these are read-only to prevent file corruption.
 
-You can read and write to individual sections of the var as their "canonical" type.
+You can read and write to individual sections of an entry or header as their "canonical" type.
 
 ```python
-my_program.comment = "This is my comment!"
+my_header.comment = "This is my (even cooler) comment!"
 my_program.archived = True
 
 assert my_program.type_id == b'\x05'
 ```
-
-`TIVar` objects are also inherently arrays of bytes, meaning you can interface with them using any `bytearray` methods to access the raw bytes. Slicing using section attributes or names is also supported.
-
-```python
-my_program[TIVar.comment] = b'This is my comment!'.ljust(42, b'\x00')
-my_program["archived"] = b'\x80'
-
-assert my_program[59] == b'\x05'
-```
-
-### Metadata and Corrupt Files
-
-Some data sections are considered _metadata_, meaning they exist only to describe other sections of data. Thus, for a file to be valid, its metadata must match the sections it describes.
-
-Whenever you access a metadata field or export the entire var, its metadata is updated. You may explicitly update all metadata using `update`. Metadata fields cannot be set directly.
-
-To prevent updates to the metadata, or to set explicitly corrupt metadata, interface with the var object as a `bytearray`. In doing so, no checks will be performed on the validity of the var.
 
 ### Models
 
