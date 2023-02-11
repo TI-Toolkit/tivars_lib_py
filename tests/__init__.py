@@ -81,6 +81,21 @@ class EntryTests(unittest.TestCase):
             with open("tests/data/Program_new.8xp", 'rb') as new:
                 self.assertEqual(new.read(), orig.read())
 
+    def test_form_vars(self):
+        test_program = TIProgram()
+        test_header = TIHeader()
+        test_var = TIVar()
+
+        with open("tests/data/Program.8xp", 'rb') as file:
+            test_program.load_from_file(file)
+            file.seek(0)
+
+            test_header.load_from_file(file)
+            file.seek(0)
+
+            test_var.load_var_file(file)
+            self.assertEqual((test_header | test_program).bytes(), test_var.bytes())
+
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):

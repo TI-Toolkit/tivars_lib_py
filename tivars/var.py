@@ -45,6 +45,16 @@ class TIHeader:
 
         return new
 
+    def __or__(self, other: 'TIEntry'):
+        if isinstance(other, TIEntry):
+            return other.export(header=self, name=other.name, model=other.model)
+
+        elif isinstance(other, TIHeader):
+            raise TypeError("Cannot attach two headers.")
+
+        else:
+            raise TypeError("Can only attach headers or entries to form vars.")
+
     @Section(8, String)
     def magic(self) -> str:
         """
@@ -200,6 +210,19 @@ class TIEntry:
 
         return new
 
+    def __or__(self, other: 'TIEntry') -> 'TIVar':
+        if isinstance(other, TIEntry):
+            new = self.export(name=self.name, model=self._model)
+            new.add_entry(other)
+
+            return new
+
+        elif isinstance(other, TIHeader):
+            raise TypeError("Attach the header to the front of the entries.")
+
+        else:
+            raise TypeError("Can only attach headers or entries to form vars.")
+
     @Section(2, Integer)
     def meta_length(self) -> int:
         """
@@ -309,7 +332,7 @@ class TIEntry:
         return self.raw.bytes()
 
     def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
-        var = TIVar(header=header, name=name, model=model)
+        var = TIVar(header=header, name=name or self.name, model=model or self._model)
         var.add_entry(self)
         return var
 
@@ -453,6 +476,22 @@ class TIVar:
             setattr(new, k, copy.deepcopy(v, memo))
 
         return new
+
+    def __ior__(self, other: TIEntry):
+        if isinstance(other, TIEntry):
+            self.add_entry(other)
+
+        else:
+            raise TypeError("Can only add a TIEntry to an existing var.")
+
+    def __or__(self, other: TIEntry) -> 'TIVar':
+        new = copy.copy(self)
+        if isinstance(other, TIEntry):
+            new.add_entry(other)
+            return new
+
+        else:
+            raise TypeError("Can only add a TIEntry to an existing var.")
 
     @property
     def entry_length(self) -> int:
