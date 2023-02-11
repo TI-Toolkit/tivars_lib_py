@@ -158,6 +158,8 @@ class TIEntry:
     extensions = {None: "8xg"}
     type_ids = {}
 
+    versions = []
+
     base_meta_length = 11
     flash_meta_length = 13
 
@@ -338,7 +340,7 @@ class TIEntry:
                 self.__class__ = TIEntry.type_ids[self.raw.type_id]
 
             except KeyError:
-                warn(f"Type id 0x{sum(self.raw.type_id):x} is not recognized; entry will not be coerced to a subclass.",
+                warn(f"Type id 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
                      BytesWarning)
 
         elif self.raw.type_id != self._type_id:
@@ -355,8 +357,12 @@ class TIEntry:
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
+                if self.versions and self.raw.version not in self.versions:
+                    warn(f"The version ({self.raw.version.hex()}) is not recognized.",
+                         BytesWarning)
+
                 if self.raw.archived not in b'\x00\x80':
-                    warn(f"The archive flag is set to an unexpected value.",
+                    warn(f"The archive flag ({self.raw.archived.hex()}) is set to an unexpected value.",
                          BytesWarning)
 
             case TIEntry.base_meta_length:

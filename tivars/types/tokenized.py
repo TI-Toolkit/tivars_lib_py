@@ -22,6 +22,13 @@ class TokenizedVar(TIEntry):
         TI_82AEP: "8xp"
     }
 
+    versions = [
+        b'\x00', b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
+        b'\x0A', b'\x0B', b'\x0C',
+        b'\x20', b'\x21', b'\x22', b'\x23', b'\x24', b'\x25', b'\x26',
+        b'\x2A', b'\x2B', b'\x2C'
+    ]
+
     tokens = {
         TI_82: (TI82_TOKENS, TI82_BYTES),
         TI_83: (TI83_TOKENS, TI83_BYTES),
@@ -39,7 +46,7 @@ class TokenizedVar(TIEntry):
 
     def load_string(self, string: str):
         token_map = self.tokens[TI_84PCEPY][0]
-        self.data = encode(string, token_map)
+        self.raw.data = encode(string, token_map)
 
     def string(self) -> str:
         byte_map = self.tokens[TI_84PCEPY][1]
