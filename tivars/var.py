@@ -349,7 +349,7 @@ class TIEntry:
         # Read varname
         self.raw.name = data.read(8)
 
-        # Read flash meta
+        # Read flash bytes
         match self.meta_length:
             case TIEntry.flash_meta_length:
                 self.raw.version = data.read(1)
@@ -377,7 +377,8 @@ class TIEntry:
         # Read data and check length
         data_length2 = data.read(2)
         if data_length != data_length2:
-            warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}).",
+            warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}); "
+                 f"using {data_length2} to read the data section.",
                  BytesWarning)
 
         self.raw.data = data.read(int.from_bytes(data_length2, 'little'))
@@ -394,7 +395,8 @@ class TIEntry:
             self._model = model
 
         elif self._model != model:
-            warn(f"The var file comes from a different model (expected {self._model}, got {model}).")
+            warn(f"The var file comes from a different model (expected {self._model}, got {model}).",
+                 UserWarning)
 
         # Seek to offset
         while offset:
