@@ -101,7 +101,7 @@ class EntryTests(unittest.TestCase):
             file.seek(0)
 
             test_var.load_var_file(file)
-            self.assertEqual((test_header | [test_program]).bytes(), test_var.bytes())
+            self.assertEqual(test_header | [test_program], test_var)
 
 
 class TokenizationTests(unittest.TestCase):
@@ -112,7 +112,7 @@ class TokenizationTests(unittest.TestCase):
         test_program = TIProgram()
         test_program.open("tests/data/Program.8xp")
 
-        self.assertEqual(test_program.bytes(), test_var.entries[0].bytes())
+        self.assertEqual(test_program, test_var.entries[0])
 
         del test_program
         test_program = TIProgram()
@@ -123,7 +123,7 @@ class TokenizationTests(unittest.TestCase):
             file.seek(55)
             self.assertEqual(test_program.bytes(), file.read()[:-2])
 
-        self.assertEqual(test_program.bytes(), test_var.entries[0].bytes())
+        self.assertEqual(test_program, test_var.entries[0])
 
     def test_load_from_string(self):
         test_program = TIProgram(name="SETDATE", model=TI_84P)

@@ -23,9 +23,6 @@ class TIHeader:
         self.product_id = product_id or model.product_id if model is not None else b'\x00'
         self.comment = comment
 
-    def __len__(self) -> int:
-        return 53
-
     def __bytes__(self) -> bytes:
         return self.bytes()
 
@@ -45,6 +42,13 @@ class TIHeader:
 
         return new
 
+    def __eq__(self, other: 'TIHeader') -> bool:
+        try:
+            return self.__class__ == other.__class__ and self.bytes() == other.bytes()
+
+        except AttributeError:
+            return False
+
     def __or__(self, other: list['TIEntry']):
         new = other[0].export(header=self, name=other[0].name, model=other[0].model)
 
@@ -52,6 +56,9 @@ class TIHeader:
             new.add_entry(entry)
 
         return new
+
+    def __len__(self) -> int:
+        return 53
 
     @Section(8, String)
     def magic(self) -> str:
@@ -185,14 +192,8 @@ class TIEntry:
         else:
             self.meta_length = TIEntry.flash_meta_length
 
-    def __len__(self) -> int:
-        return 2 + self.meta_length + 2 + self.data_length
-
     def __bytes__(self) -> bytes:
         return self.bytes()
-
-    def __str__(self) -> str:
-        return self.string()
 
     def __copy__(self) -> 'TIEntry':
         cls = self.__class__
@@ -209,6 +210,19 @@ class TIEntry:
             setattr(new, k, copy.deepcopy(v, memo))
 
         return new
+
+    def __eq__(self, other: 'TIEntry') -> bool:
+        try:
+            return self.__class__ == other.__class__ and self.bytes() == other.bytes()
+
+        except AttributeError:
+            return False
+
+    def __len__(self) -> int:
+        return 2 + self.meta_length + 2 + self.data_length
+
+    def __str__(self) -> str:
+        return self.string()
 
     @Section(2, Integer)
     def meta_length(self) -> int:
@@ -449,9 +463,6 @@ class TIVar:
         self.name = name
         self._model = model
 
-    def __len__(self):
-        return len(self.header) + self.entry_length + 2
-
     def __bytes__(self):
         return self.bytes()
 
@@ -470,6 +481,17 @@ class TIVar:
             setattr(new, k, copy.deepcopy(v, memo))
 
         return new
+
+    def __eq__(self, other: 'TIVar'):
+        try:
+            eq = self.__class__ == other.__class__ and len(self.entries) == len(other.entries)
+            return eq and all(entry == other_entry for entry, other_entry in zip(self.entries, other.entries))
+
+        except AttributeError:
+            return False
+
+    def __len__(self):
+        return len(self.header) + self.entry_length + 2
 
     @property
     def entry_length(self) -> int:
