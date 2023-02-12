@@ -463,6 +463,10 @@ class TIVar:
         self.name = name
         self._model = model
 
+        if self._model and self._model != self.header.derive_model():
+            warn(f"The var's model ({self._model}) doesn't match its header's ({self.header.derive_model()}).",
+                 UserWarning)
+
     def __bytes__(self):
         return self.bytes()
 
