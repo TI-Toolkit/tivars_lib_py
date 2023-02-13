@@ -320,6 +320,14 @@ class TIEntry:
         return self._model
 
     @staticmethod
+    def next_entry_length(stream: BinaryIO) -> int:
+        meta_length = int.from_bytes(stream.read(2), 'little')
+        data_length = int.from_bytes(stream.read(2), 'little')
+        stream.seek(-4, 1)
+
+        return 2 + meta_length + 2 + data_length
+
+    @staticmethod
     def register(var_type: type['TIEntry']):
         TIEntry.type_ids[var_type._type_id] = var_type
 
@@ -358,9 +366,14 @@ class TIEntry:
                      BytesWarning)
 
         elif self.raw.type_id != self._type_id:
-            warn(f"The entry type is incorrect (expected {type(self)}, got {TIEntry.type_ids[self.raw.type_id]}). "
-                 f"Load the entire var file into a TIVar instance if you don't know the entry type(s).",
-                 BytesWarning)
+            if self.raw.type_id in TIEntry.type_ids:
+                warn(f"The entry type is incorrect (expected {type(self)}, got {TIEntry.type_ids[self.raw.type_id]}).",
+                     BytesWarning)
+
+            else:
+                warn(f"The entry type is incorrect (expected {type(self)}, got an unknown type). "
+                     f"Load the entire var file into a TIVar instance if you don't know the entry type(s).",
+                     BytesWarning)
 
         # Read varname
         self.raw.name = data.read(8)
@@ -420,10 +433,7 @@ class TIEntry:
 
         # Seek to offset
         while offset:
-            meta_length = int.from_bytes(file.read(2), 'little')
-            data_length = int.from_bytes(file.read(2), 'little')
-            file.seek(meta_length + data_length, 1)
-
+            file.seek(self.next_entry_length(file), 1)
             offset -= 1
 
         self.load_bytes(file.read())
@@ -438,7 +448,13 @@ class TIEntry:
 
         with open(filename, 'rb') as file:
             file.seek(55)
-            self.load_bytes(file.read())
+            self.load_bytes(file.read(self.next_entry_length(file)))
+            file.seek(2, 1)
+
+            if file.read():
+                warn("The selected var file contains multiple entries; only the first will be loaded. "
+                     "Use load_from_file to select a particular entry, or load the entire file in a TIVar object.",
+                     UserWarning)
 
     def save(self, filename: str = None, *, header: TIHeader = TIHeader()):
         self.export(header=header).save(filename)
@@ -562,14 +578,10 @@ class TIVar:
         while entry_length:
             self.add_entry()
 
-            meta_length = int.from_bytes(data.read(2), 'little')
-            data_length = int.from_bytes(data.read(2), 'little')
+            length = TIEntry.next_entry_length(data)
+            self.entries[-1].load_bytes(data.read(length))
 
-            self.entries[-1].load_bytes(int.to_bytes(meta_length, 2, 'little') +
-                                        int.to_bytes(data_length, 2, 'little') +
-                                        data.read(meta_length + data_length))
-
-            entry_length -= 2 + meta_length + 2 + data_length
+            entry_length -= length
 
         # Read checksum
         checksum = data.read(2)

@@ -61,6 +61,12 @@ class VarTests(unittest.TestCase):
         self.assertEqual(len(clibs.entries), 9)
         self.assertTrue(all(entry.type_id == b'\x15' for entry in clibs.entries))
 
+        second = TIEntry()
+        with open("tests/data/clibs.8xg", 'rb') as file:
+            second.load_from_file(file, offset=1)
+
+        self.assertEqual(second, clibs.entries[1])
+
     def test_save_to_file(self):
         test_var = TIVar()
         test_var.open("tests/data/Program.8xp")
