@@ -68,7 +68,6 @@ class TIHeader:
         Used to identify if the file is intended for the TI-82, TI-83, or TI-83+ and onward
         Can be one of **TI82**, **TI83**, or **TI83F*
         """
-        pass
 
     @Section(2)
     def extra(self) -> bytes:
@@ -78,7 +77,6 @@ class TIHeader:
         Exact meaning and interpretation of these bytes is not yet determined
         These bytes are set by different export tools and can often be "incorrect" without causing issues
         """
-        pass
 
     @Section(1)
     def product_id(self) -> bytes:
@@ -88,14 +86,12 @@ class TIHeader:
         Used to identify the model the var was created on, though has no actual functional ramifications
         Does not constitute a 1-to-1 mapping to distinct models
         """
-        pass
 
     @Section(42, String)
     def comment(self) -> str:
         """
         The comment attached to the var
         """
-        pass
 
     def bytes(self) -> bytes:
         return self.raw.bytes()
@@ -282,7 +278,6 @@ class TIEntry:
 
         Is not present for vars without flash bytes
         """
-        pass
 
     @Section(1, Boolean)
     def archived(self) -> bool:
@@ -292,7 +287,6 @@ class TIEntry:
 
         Is not present for vars without flash bytes
         """
-        pass
 
     @Section()
     def data(self) -> bytearray:
@@ -301,7 +295,6 @@ class TIEntry:
 
         See individual entry types for how this data is interpreted
         """
-        pass
 
     @property
     def extension(self) -> str:
