@@ -183,6 +183,8 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_real.sign, -1)
         self.assertEqual(test_real.exponent, 129)
         self.assertEqual(test_real.mantissa, 4213370000000000)
+        self.assertEqual(test_real.is_undefined, False)
+        self.assertEqual(test_real.is_complex_component, False)
 
         self.assertEqual(str(test_real), "-42.1337")
 

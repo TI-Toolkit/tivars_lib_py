@@ -191,7 +191,7 @@ class TIEntry:
         self.clear()
 
     def __bool__(self) -> bool:
-        return bool(self.raw.data)
+        return not self.is_empty
 
     def __bytes__(self) -> bytes:
         return self.bytes()
@@ -312,6 +312,10 @@ class TIEntry:
     @property
     def flash_bytes(self) -> bytes:
         return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]
+
+    @property
+    def is_empty(self) -> bool:
+        return len(self.raw.data) == 0
 
     @property
     def model(self) -> TIModel:
@@ -486,7 +490,7 @@ class TIVar:
                  UserWarning)
 
     def __bool__(self) -> bool:
-        return bool(self.entries)
+        return not self.is_empty
 
     def __bytes__(self) -> bytes:
         return self.bytes()
@@ -554,6 +558,10 @@ class TIVar:
 
         else:
             return "8xg"
+
+    @property
+    def is_empty(self) -> bool:
+        return len(self.entries) == 0
 
     @property
     def model(self) -> TIModel:
