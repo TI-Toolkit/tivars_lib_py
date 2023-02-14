@@ -154,10 +154,12 @@ class TokenizationTests(unittest.TestCase):
     def test_load_from_string(self):
         test_program = TIProgram(name="SETDATE", model=TI_84P)
         test_program.comment = "Created by TI Connect CE 5.1.0.68"
-        test_program.version = b'\x04'
 
         test_program.load_string(string := "setDate(1")
         self.assertEqual(test_program.string(), string)
+
+        # Version is wrong(?)
+        test_program.version = b'\x04'
 
         with open("tests/data/Program.8xp", 'rb') as file:
             file.seek(55)

@@ -1,3 +1,5 @@
+from warnings import warn
+
 from tivars.models import *
 from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
@@ -44,9 +46,61 @@ class TokenizedVar(TIEntry):
         TI_82AEP: (CE_TOKENS, CE_BYTES)
     }
 
+    clock_tokens = [
+        b'\xEF\x00', b'\xEF\x01', b'\xEF\x02', b'\xEF\x03', b'\xEF\x04',
+        b'\xEF\x07', b'\xEF\x08', b'\xEF\x09', b'\xEF\x0A', b'\xEF\x0B', b'\xEF\x0C', b'\xEF\x0D',
+        b'\xEF\x0E', b'\xEF\x0F', b'\xEF\x10'
+    ]
+
+    def derive_version(self) -> bytes:
+        def has_bytes_in(prefix: bytes, start: int, end: int):
+            return any(prefix + int.to_bytes(byte, 1, 'little') in self.raw.data for byte in range(start, end + 1))
+
+        version = 0x0
+        match self.raw.data:
+            case _TI_84PCE if has_bytes_in(b'\xEF', 0x9E, 0xA6):
+                version = 0xC
+
+            case _TI_84PCE if has_bytes_in(b'\xEF', 0x73, 0x98):
+                version = 0xB
+
+            case _TI_84PCSE if has_bytes_in(b'\xEF', 0x41, 0x6C):
+                version = 0xA
+
+            case _TI_84P if has_bytes_in(b'\xEF', 0x17, 0x3D):
+                version = 0x6
+
+            case _TI_84P if has_bytes_in(b'\xEF', 0x13, 0x16):
+                version = 0x5
+
+            case _TI_84P if has_bytes_in(b'\xEF', 0x00, 0x12):
+                version = 0x4
+
+            case _TI_83P if has_bytes_in(b'\xBB', 0xDB, 0xF5):
+                version = 0x3
+
+            case _TI_83P if has_bytes_in(b'\xBB', 0xCF, 0xDA):
+                version = 0x2
+
+            case _TI_83P if has_bytes_in(b'\xBB', 0x68, 0xCE):
+                version = 0x1
+
+        if any(token in self.raw.data for token in self.clock_tokens):
+            version += 0x20
+
+        return int.to_bytes(version, 1, 'little')
+
+    def load_bytes(self, data: bytes):
+        super().load_bytes(data)
+
+        if self.raw.version != (version := self.derive_version()):
+            warn(f"The version is incorrect (expected {version}, got {self.raw.version}).",
+                 BytesWarning)
+
     def load_string(self, string: str):
         token_map = self.tokens[TI_84PCEPY][0]
         self.raw.data = encode(string, token_map)
+        self.raw.version = self.derive_version()
 
     def string(self) -> str:
         byte_map = self.tokens[TI_84PCEPY][1]
