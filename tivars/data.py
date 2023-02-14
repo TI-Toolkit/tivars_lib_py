@@ -63,9 +63,6 @@ class Section:
 
         setattr(instance.raw, self._name, value)
 
-    def __delete__(self, instance):
-        setattr(instance.raw, self._name, bytearray(b'\x00' * (self._width or 0)))
-
     def __call__(self, func) -> 'Section':
         new = copy.copy(self)
         new.__doc__ = func.__doc__
@@ -127,13 +124,6 @@ class View:
             value = value.rjust(self.width, b'\x00')
 
         getattr(instance.raw, self._target.name)[self._indices] = value
-
-    def __delete__(self, instance):
-        if self.width is None:
-            instance[self._indices] = b''
-
-        else:
-            instance[self._indices] = b'\x00' * self.width
 
     def __getitem__(self, indices: slice) -> 'View':
         return self.__class__(self._target, (self._in, self._out), indices)
