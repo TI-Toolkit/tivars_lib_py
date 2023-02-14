@@ -25,7 +25,7 @@ from tivars.types import *
 my_program = TIProgram(name="HELLO", model=TI_84P)
 ```
 
-If you're not sure of a entry's type or model, instantiate a base `TIEntry`:
+If you're not sure of an entry's type or model, instantiate a base `TIEntry`:
 
 ```python
 my_entry = TIEntry()
