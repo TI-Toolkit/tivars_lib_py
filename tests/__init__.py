@@ -173,6 +173,7 @@ class TokenizationTests(unittest.TestCase):
             file.seek(55)
 
             self.assertEqual(test_program.bytes(), file.read()[:-2])
+            self.assertEqual(test_program.is_protected, False)
 
 
 class NumericTests(unittest.TestCase):

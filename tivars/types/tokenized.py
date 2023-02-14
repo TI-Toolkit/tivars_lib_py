@@ -118,9 +118,17 @@ class TIString(TokenizedVar):
 class TIProgram(TokenizedVar):
     _type_id = b'\x05'
 
+    @property
+    def is_protected(self) -> bool:
+        return False
+
 
 class TIProtectedProgram(TIProgram):
     _type_id = b'\x06'
+
+    @property
+    def is_protected(self) -> bool:
+        return True
 
 
 __all__ = ["TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]
