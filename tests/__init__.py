@@ -173,3 +173,23 @@ class TokenizationTests(unittest.TestCase):
             file.seek(55)
 
             self.assertEqual(test_program.bytes(), file.read()[:-2])
+
+
+class NumericTests(unittest.TestCase):
+    def test_real_number(self):
+        test_real = TIReal()
+        test_real.open("tests/data/Real.8xn")
+
+        self.assertEqual(test_real.sign, -1)
+        self.assertEqual(test_real.exponent, 129)
+        self.assertEqual(test_real.mantissa, 4213370000000000)
+
+        self.assertEqual(str(test_real), "-42.1337")
+
+        test_real.clear()
+        test_real.load_string(string := "-42.1337")
+        self.assertEqual(test_real.string(), string)
+
+        with open("tests/data/Real.8xn", 'rb') as file:
+            file.seek(55)
+            self.assertEqual(test_real.bytes(), file.read()[:-2])

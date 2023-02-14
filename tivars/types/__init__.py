@@ -9,7 +9,7 @@ from .window import *
 from ..var import TIEntry
 
 
-# TIEntry.register(TIReal)
+TIEntry.register(TIReal)
 # TIEntry.register(TIRealList)
 # TIEntry.register(TIMatrix)
 TIEntry.register(TIEquation)
@@ -55,5 +55,6 @@ TIEntry.register(TIProtectedProgram)
 
 
 __all__ = ["TIEntry",
+           "TIReal",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram"
            ]
