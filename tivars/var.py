@@ -178,7 +178,7 @@ class TIEntry:
 
         self.name = name
         self._model = model
-        self.raw.type_id = self._type_id
+        self.type_id = self._type_id if self._type_id else b'\x00'
 
         if model is not None:
             if model.has(TIFeature.FLASH):
@@ -191,6 +191,11 @@ class TIEntry:
 
         else:
             self.meta_length = TIEntry.flash_meta_length
+
+        self.data = bytearray()
+
+    def __bool__(self) -> bool:
+        return bool(self.raw.data)
 
     def __bytes__(self) -> bytes:
         return self.bytes()
@@ -340,6 +345,9 @@ class TIEntry:
     def bytes(self) -> bytes:
         return self.raw.bytes()
 
+    def clear(self):
+        self.raw.data = bytearray()
+
     def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
         var = TIVar(header=header, name=name or self.name, model=model or self._model)
         var.add_entry(self)
@@ -442,7 +450,8 @@ class TIEntry:
         raise NotImplementedError
 
     def open(self, filename: str):
-        if not any(filename.endswith(extension) for extension in self.extensions.values()):
+        if self._type_id is not None and \
+                not any(filename.endswith(extension) for extension in self.extensions.values()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {type(self)}; "
                  f"attempting to read anyway.")
 
@@ -483,7 +492,10 @@ class TIVar:
             warn(f"The var's model ({self._model}) doesn't match its header's ({self.header.derive_model()}).",
                  UserWarning)
 
-    def __bytes__(self):
+    def __bool__(self) -> bool:
+        return bool(self.entries)
+
+    def __bytes__(self) -> bytes:
         return self.bytes()
 
     def __copy__(self) -> 'TIVar':
@@ -555,7 +567,7 @@ class TIVar:
         return self.model
 
     def add_entry(self, entry: TIEntry = None):
-        self.entries.append(entry or TIEntry(model=self._model))
+        self.entries.append(TIEntry(model=self._model) if entry is None else entry)
 
     def bytes(self):
         dump = self.header.bytes()
@@ -566,6 +578,9 @@ class TIVar:
 
         dump += self.checksum
         return dump
+
+    def clear(self):
+        self.entries.clear()
 
     def load_bytes(self, data: bytes):
         data = io.BytesIO(data)
