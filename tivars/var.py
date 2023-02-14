@@ -115,12 +115,12 @@ class TIHeader:
                     model = max(models, key=lambda m: m.flags)
 
                 except ValueError:
-                    warn(f"The var product ID is not recognized ({self.product_id}).",
+                    warn(f"The var product ID ({self.product_id}) is not recognized.",
                          BytesWarning)
                     model = None
 
             case _:
-                warn(f"The var file magic is not recognized ({self.magic}).",
+                warn(f"The var file magic ({self.magic}) is not recognized.",
                      BytesWarning)
                 model = None
 
@@ -372,7 +372,7 @@ class TIEntry:
 
             else:
                 warn(f"The entry type is incorrect (expected {type(self)}, got an unknown type). "
-                     f"Load the entire var file into a TIVar instance if you don't know the entry type(s).",
+                     f"Load the var file into a TIVar instance if you don't know the entry type(s).",
                      BytesWarning)
 
         # Read varname
