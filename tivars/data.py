@@ -149,7 +149,7 @@ class View:
             if self._indices.start is None or self._indices.start < 0:
                 return None
 
-            return max(ceil(((self._indices.stop or 0) - (self._indices.start or 0)) // self._indices.step), 0)
+            return max(ceil(((self._indices.stop or 0) - (self._indices.start or 0)) // (self._indices.step or 1)), 0)
 
         else:
             return len(range(*self._indices.indices(self._target.width)))

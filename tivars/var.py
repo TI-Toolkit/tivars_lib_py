@@ -188,7 +188,7 @@ class TIEntry:
         else:
             self.meta_length = TIEntry.flash_meta_length
 
-        self.data = bytearray()
+        self.clear()
 
     def __bool__(self) -> bool:
         return bool(self.raw.data)
@@ -339,7 +339,7 @@ class TIEntry:
         return self.raw.bytes()
 
     def clear(self):
-        self.raw.data = bytearray()
+        self.raw.data = bytearray(type(self).data.width or 0)
 
     def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
         var = TIVar(header=header, name=name or self.name, model=model or self._model)
