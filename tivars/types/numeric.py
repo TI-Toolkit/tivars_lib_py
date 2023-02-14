@@ -77,8 +77,16 @@ class TIReal(TIEntry):
         """
 
     @property
+    def complex_component(self) -> bool:
+        return self.flags & 1 << 2 & 1 << 3 & ~1 << 1
+
+    @property
     def sign(self) -> int:
         return -1 if self.flags & 1 << 7 else 1
+
+    @property
+    def undefined(self) -> bool:
+        return self.flags & 1 << 1
 
     def load_string(self, string: str):
         string = string.lower().replace("~", "-").replace("|e", "e")
