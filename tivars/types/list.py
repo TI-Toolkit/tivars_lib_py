@@ -1,8 +1,8 @@
 from tivars.models import *
-from ..var import TIVar
+from ..var import TIEntry
 
 
-class TIRealList(TIVar):
+class TIRealList(TIEntry):
     extensions = {
         None: "8xl",
         TI_82: "82l",
@@ -23,7 +23,7 @@ class TIRealList(TIVar):
     type_id = b'\x01'
 
 
-class TIComplexList(TIVar):
+class TIComplexList(TIEntry):
     extensions = {
         None: "8xl",
         TI_82: "",

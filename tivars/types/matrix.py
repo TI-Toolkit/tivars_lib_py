@@ -1,8 +1,8 @@
 from tivars.models import *
-from ..var import TIVar
+from ..var import TIEntry
 
 
-class TIMatrix(TIVar):
+class TIMatrix(TIEntry):
     extensions = {
         None: "8xm",
         TI_82: "82m",

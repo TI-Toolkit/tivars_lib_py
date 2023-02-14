@@ -1,8 +1,8 @@
 from tivars.models import *
-from ..var import TIVar
+from ..var import TIEntry
 
 
-class TIWindowSettings(TIVar):
+class TIWindowSettings(TIEntry):
     extensions = {
         None: "8xw",
         TI_82: "82w",
@@ -23,7 +23,7 @@ class TIWindowSettings(TIVar):
     type_id = b'\x0F'
 
 
-class TIRecallWindow(TIVar):
+class TIRecallWindow(TIEntry):
     extensions = {
         None: "8xz",
         TI_82: "82z",

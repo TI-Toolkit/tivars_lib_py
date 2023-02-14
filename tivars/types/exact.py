@@ -1,8 +1,8 @@
 from tivars.models import *
-from ..var import TIVar
+from ..var import TIEntry
 
 
-class TIExactComplexFraction(TIVar):
+class TIExactComplexFraction(TIEntry):
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -23,7 +23,7 @@ class TIExactComplexFraction(TIVar):
     _type_id = b'\x1B'
 
 
-class TIExactRealRadical(TIVar):
+class TIExactRealRadical(TIEntry):
     extensions = {
         None: "8xn",
         TI_82: "",
@@ -44,7 +44,7 @@ class TIExactRealRadical(TIVar):
     _type_id = b'\x1C'
 
 
-class TIExactComplexRadical(TIVar):
+class TIExactComplexRadical(TIEntry):
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -65,7 +65,7 @@ class TIExactComplexRadical(TIVar):
     _type_id = b'\x1D'
 
 
-class TIExactComplexPi(TIVar):
+class TIExactComplexPi(TIEntry):
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -86,7 +86,7 @@ class TIExactComplexPi(TIVar):
     _type_id = b'\x1E'
 
 
-class TIExactComplexPiFraction(TIVar):
+class TIExactComplexPiFraction(TIEntry):
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -107,7 +107,7 @@ class TIExactComplexPiFraction(TIVar):
     _type_id = b'\x1F'
 
 
-class TIExactRealPi(TIVar):
+class TIExactRealPi(TIEntry):
     extensions = {
         None: "8xn",
         TI_82: "",
@@ -128,7 +128,7 @@ class TIExactRealPi(TIVar):
     _type_id = b'\x20'
 
 
-class TIExactRealPiFraction(TIVar):
+class TIExactRealPiFraction(TIEntry):
     extensions = {
         None: "8xn",
         TI_82: "",
