@@ -196,3 +196,25 @@ class NumericTests(unittest.TestCase):
         with open("tests/data/Real.8xn", 'rb') as file:
             file.seek(55)
             self.assertEqual(test_real.bytes(), file.read()[:-2])
+
+    def test_complex_number(self):
+        test_complex = TIComplex()
+        test_complex.open("tests/data/Complex.8xc")
+
+        self.assertEqual(test_complex.real.sign, -1)
+        self.assertEqual(test_complex.real.exponent, 128)
+        self.assertEqual(test_complex.real.mantissa, 5000000000000000)
+
+        self.assertEqual(test_complex.imag.sign, 1)
+        self.assertEqual(test_complex.imag.exponent, 128)
+        self.assertEqual(test_complex.imag.mantissa, 2000000000000000)
+
+        self.assertEqual(str(test_complex), "-5.0 + 2.0[i]")
+
+        test_complex.clear()
+        test_complex.load_string(string := "-5.0 + 2.0[i]")
+        self.assertEqual(test_complex.string(), string)
+
+        with open("tests/data/Complex.8xc", 'rb') as file:
+            file.seek(55)
+            self.assertEqual(test_complex.bytes(), file.read()[:-2])

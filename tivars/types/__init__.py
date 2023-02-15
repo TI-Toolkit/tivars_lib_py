@@ -21,7 +21,7 @@ TIEntry.register(TIProtectedProgram)
 
 
 # TIEntry.register(TISmartEquation)
-# TIEntry.register(TIComplex)
+TIEntry.register(TIComplex)
 # TIEntry.register(TIComplexList)
 
 # TIEntry.register(TIWindowSettings)
@@ -56,5 +56,6 @@ TIEntry.register(TIProtectedProgram)
 
 __all__ = ["TIEntry",
            "TIReal",
-           "TIEquation", "TIString", "TIProgram", "TIProtectedProgram"
+           "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
+           "TIComplex"
            ]

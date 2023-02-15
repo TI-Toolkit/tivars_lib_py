@@ -18,6 +18,31 @@ def from_bcd(bcd: bytes) -> int:
     return number
 
 
+def read_string(string: str) -> (int, int, bool):
+    string = ''.join(string.split()).lower().replace("~", "-").replace("|e", "e")
+
+    if "e" not in string:
+        string += "e0"
+
+    if "." not in string:
+        string = string.replace("e", ".e")
+
+    neg = string.startswith("-")
+    string = string.strip("+-")
+
+    number, exponent = string.split("e")
+    integer, decimal = number.split(".")
+    integer, decimal = integer or "0", decimal or "0"
+
+    exponent = int(exponent or "0")
+    while len(integer) > 1:
+        decimal = integer[-1] + decimal
+        integer = integer[:-1]
+        exponent += 1
+
+    return int((integer + decimal).ljust(14, "0")), exponent + 0x80, neg
+
+
 Mantissa = (to_bcd, from_bcd)
 
 
@@ -89,29 +114,7 @@ class TIReal(TIEntry):
         return -1 if self.flags & 1 << 7 else 1
 
     def load_string(self, string: str):
-        string = string.lower().replace("~", "-").replace("|e", "e")
-
-        if "e" not in string:
-            string += "e0"
-
-        if "." not in string:
-            string = string.replace("e", ".e")
-
-        neg = string.startswith("-")
-        string = string.strip("+-")
-
-        number, exponent = string.split("e")
-        integer, decimal = number.split(".")
-        integer, decimal = integer or "0", decimal or "0"
-
-        exponent = int(exponent or "0")
-        while len(integer) > 1:
-            decimal = integer[-1] + decimal
-            integer = integer[:-1]
-            exponent += 1
-
-        self.mantissa = int((integer + decimal).ljust(14, "0"))
-        self.exponent = exponent + 0x80
+        self.mantissa, self.exponent, neg = read_string(string)
 
         if neg:
             self.negate()
@@ -142,6 +145,122 @@ class TIComplex(TIEntry):
     }
 
     _type_id = b'\x0C'
+
+    @Section(18)
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains two real numbers, the real and imaginary parts
+        """
+
+    @View(data, Integer)[0:1]
+    def real_flags(self) -> int:
+        """
+        Flags for the real part of the complex number
+
+        Bits 2 and 3 are set
+        If bit 6 is set, something happened
+        If bit 7 is set, the part is negative
+        """
+
+    @View(data, Integer)[1:2]
+    def real_exponent(self) -> int:
+        """
+        The exponent of the real part of the complex number
+
+        The exponent has a bias of 0x80
+        """
+
+    @View(data, Mantissa)[2:9]
+    def real_mantissa(self) -> int:
+        """
+        The mantissa of the real part of the complex number
+
+        The mantissa is 14 digits stored in BCD format, two digits per byte
+        """
+
+    @View(data, Integer)[9:10]
+    def imag_flags(self) -> int:
+        """
+        Flags for the imaginary part of the complex number
+
+        Bits 2 and 3 are set
+        If bit 6 is set, something happened
+        If bit 7 is set, the part is negative
+        """
+
+    @View(data, Integer)[10:11]
+    def imag_exponent(self) -> int:
+        """
+        The exponent of the imaginary part of the complex number
+
+        The exponent has a bias of 0x80
+        """
+
+    @View(data, Mantissa)[11:18]
+    def imag_mantissa(self) -> int:
+        """
+        The mantissa of the imaginary part of the complex number
+
+        The mantissa is 14 digits stored in BCD format, two digits per byte
+        """
+
+    @property
+    def imag(self) -> TIReal:
+        imag = TIReal()
+
+        imag.meta_length = self.meta_length
+        imag.type_id = b'\x00'
+        imag.name = self.name
+        imag.version = self.version
+        imag.archived = self.archived
+
+        imag.raw.data = self.raw.data[9:18]
+        return imag
+
+    @property
+    def real(self) -> TIReal:
+        real = TIReal()
+
+        real.meta_length = self.meta_length
+        real.type_id = b'\x00'
+        real.name = self.name
+        real.version = self.version
+        real.archived = self.archived
+
+        real.raw.data = self.raw.data[0:9]
+        return real
+
+    def load_string(self, string: str):
+        string = ''.join(string.split()).replace("-", "+-").replace("[i]", "i")
+
+        parts = string.split("+")
+        if not parts[0]:
+            parts = parts[1:]
+
+        if len(parts) == 1:
+            if "i" in parts[0]:
+                parts = ["0", parts[0]]
+
+            else:
+                parts = [parts[0], "0i"]
+
+        self.real_mantissa, self.real_exponent, real_neg = read_string(parts[0])
+        self.imag_mantissa, self.imag_exponent, imag_neg = read_string(parts[1].replace("i", ""))
+
+        self.real_flags |= 1 << 3 | 1 << 2
+        self.real_flags &= ~1 << 1
+        if real_neg:
+            self.real_flags ^= 1 << 7
+
+        self.imag_flags |= 1 << 3 | 1 << 2
+        self.imag_flags &= ~1 << 1
+        if imag_neg:
+            self.imag_flags ^= 1 << 7
+
+    def string(self) -> str:
+        return f"{self.real} + {self.imag}[i]".replace("+ -", "- ")
 
 
 __all__ = ["TIReal", "TIComplex"]
