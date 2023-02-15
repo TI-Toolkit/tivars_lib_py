@@ -568,7 +568,19 @@ class TIVar:
         return self.model
 
     def add_entry(self, entry: TIEntry = None):
-        self.entries.append(TIEntry(model=self._model) if entry is None else entry)
+        entry = entry or TIEntry(model=self._model)
+
+        if not self.is_empty:
+            if entry.model != self.entries[0].model:
+                warn(f"The new entry has a conflicting model (expected {self.entries[0].model}, got {entry.model}).",
+                     UserWarning)
+
+            if entry.meta_length != self.entries[0].meta_length:
+                warn(f"The new entry has a conflicting meta length "
+                     f"(expected {self.entries[0].meta_length}, got {entry.meta_length}).",
+                     UserWarning)
+
+        self.entries.append(entry)
 
     def bytes(self):
         dump = self.header.bytes()
