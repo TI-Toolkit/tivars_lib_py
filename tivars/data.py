@@ -110,7 +110,7 @@ class View:
         if instance is None:
             return self
 
-        return self._out(getattr(instance, self._target.name)[self._indices])
+        return self._out(getattr(instance.raw, self._target.name)[self._indices])
 
     def __set__(self, instance, value: _T):
         value = self._in(value)
