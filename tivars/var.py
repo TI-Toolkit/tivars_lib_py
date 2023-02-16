@@ -174,7 +174,10 @@ class TIEntry:
 
         self.name = name
         self._model = model
+
         self.type_id = self._type_id if self._type_id else b'\x00'
+        self.version = b'\x00'
+        self.archived = False
 
         if model is not None:
             if model.has(TIFeature.FLASH):
@@ -419,7 +422,7 @@ class TIEntry:
                  f"using {data_length2} to read the data section.",
                  BytesWarning)
 
-        self.raw.data = data.read(int.from_bytes(data_length2, 'little'))
+        self.raw.data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
 
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         # Load header

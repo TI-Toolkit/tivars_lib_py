@@ -10,10 +10,9 @@ def to_bcd(number: int) -> bytes:
 def from_bcd(bcd: bytes) -> int:
     number = 0
     for byte in bcd:
-        tens, ones = divmod(byte, 16)
-
-        number += 10 * tens + ones
         number *= 100
+        tens, ones = divmod(byte, 16)
+        number += 10 * tens + ones
 
     return number
 
@@ -119,11 +118,15 @@ class TIReal(TIEntry):
         if neg:
             self.negate()
 
+    def make_complex_component(self):
+        self.flags |= 1 << 3 | 1 << 2
+        self.flags &= ~1 << 1
+
     def negate(self):
         self.flags ^= 1 << 7
 
     def string(self) -> str:
-        return f"{self.sign * self.mantissa * 10 ** (self.exponent - 0x80 - 15):-}"
+        return f"{self.sign * self.mantissa * 10 ** (self.exponent - 0x80 - 13):-}"
 
 
 class TIComplex(TIEntry):
@@ -232,6 +235,18 @@ class TIComplex(TIEntry):
         real.raw.data = self.raw.data[0:9]
         return real
 
+    def load_components(self, *, components: (TIReal, TIReal) = (None, None), real: TIReal = None, imag: TIReal = None):
+        real = real or components[0]
+        imag = imag or components[1]
+
+        if real is not None:
+            self.real_flags, self.real_exponent, self.real_mantissa = real.flags, real.exponent, real.mantissa
+
+        if imag is not None:
+            self.imag_flags, self.imag_exponent, self.imag_mantissa = imag.flags, imag.exponent, imag.mantissa
+
+        self.set_flags()
+
     def load_string(self, string: str):
         string = ''.join(string.split()).replace("-", "+-").replace("[i]", "i")
 
@@ -249,15 +264,20 @@ class TIComplex(TIEntry):
         self.real_mantissa, self.real_exponent, real_neg = read_string(parts[0])
         self.imag_mantissa, self.imag_exponent, imag_neg = read_string(parts[1].replace("i", ""))
 
-        self.real_flags |= 1 << 3 | 1 << 2
-        self.real_flags &= ~1 << 1
         if real_neg:
             self.real_flags ^= 1 << 7
 
-        self.imag_flags |= 1 << 3 | 1 << 2
-        self.imag_flags &= ~1 << 1
         if imag_neg:
             self.imag_flags ^= 1 << 7
+
+        self.set_flags()
+
+    def set_flags(self):
+        self.real_flags |= 1 << 3 | 1 << 2
+        self.real_flags &= ~1 << 1
+
+        self.imag_flags |= 1 << 3 | 1 << 2
+        self.imag_flags &= ~1 << 1
 
     def string(self) -> str:
         return f"{self.real} + {self.imag}[i]".replace("+ -", "- ")

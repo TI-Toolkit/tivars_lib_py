@@ -183,7 +183,7 @@ class NumericTests(unittest.TestCase):
 
         self.assertEqual(test_real.sign, -1)
         self.assertEqual(test_real.exponent, 129)
-        self.assertEqual(test_real.mantissa, 4213370000000000)
+        self.assertEqual(test_real.mantissa, 42133700000000)
         self.assertEqual(test_real.is_undefined, False)
         self.assertEqual(test_real.is_complex_component, False)
 
@@ -203,13 +203,17 @@ class NumericTests(unittest.TestCase):
 
         self.assertEqual(test_complex.real.sign, -1)
         self.assertEqual(test_complex.real.exponent, 128)
-        self.assertEqual(test_complex.real.mantissa, 5000000000000000)
+        self.assertEqual(test_complex.real.mantissa, 50000000000000)
 
         self.assertEqual(test_complex.imag.sign, 1)
         self.assertEqual(test_complex.imag.exponent, 128)
-        self.assertEqual(test_complex.imag.mantissa, 2000000000000000)
+        self.assertEqual(test_complex.imag.mantissa, 20000000000000)
 
         self.assertEqual(str(test_complex), "-5.0 + 2.0[i]")
+
+        test_components = TIComplex(name="C")
+        test_components.load_components(real=test_complex.real, imag=test_complex.imag)
+        self.assertEqual(test_complex.bytes(), test_components.bytes())
 
         test_complex.clear()
         test_complex.load_string(string := "-5.0 + 2.0[i]")
