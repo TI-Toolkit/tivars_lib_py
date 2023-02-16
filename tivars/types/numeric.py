@@ -210,6 +210,10 @@ class TIComplex(TIEntry):
         """
 
     @property
+    def components(self) -> (TIReal, TIReal):
+        return self.real, self.imag
+
+    @property
     def imag(self) -> TIReal:
         imag = TIReal()
 
