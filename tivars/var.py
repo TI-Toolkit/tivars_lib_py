@@ -14,13 +14,16 @@ class TIHeaderRaw(Raw):
 
 
 class TIHeader:
-    def __init__(self, *, magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = None,
-                 comment: str = "Created with tivars_lib_py v1.0", model: TIModel = None):
+    def __init__(self, model: TIModel = None, *,
+                 magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
+                 comment: str = "Created with tivars_lib_py v0.3"):
         self.raw = TIHeaderRaw()
 
-        self.magic = magic or model.magic if model is not None else TI_83P.magic
+        model = model or TI_82AEP
+
+        self.magic = magic or model.magic
         self.extra = extra
-        self.product_id = product_id or model.product_id if model is not None else b'\x00'
+        self.product_id = product_id or model.product_id
         self.comment = comment
 
     def __bytes__(self) -> bytes:
@@ -50,7 +53,7 @@ class TIHeader:
             return False
 
     def __or__(self, other: list['TIEntry']):
-        new = other[0].export(header=self, name=other[0].name, model=other[0].model)
+        new = other[0].export(header=self, name=other[0].name, model=self.derive_model())
 
         for entry in other[1:]:
             new.add_entry(entry)
@@ -168,28 +171,15 @@ class TIEntry:
 
     _type_id = None
 
-    def __init__(self, *, model: TIModel = None, name: str = "UNNAMED",
-                 version: bytes = b'\x00', archived: bool = False):
+    def __init__(self, *, name: str = "UNNAMED", version: bytes = b'\x00', archived: bool = False):
         self.raw = TIEntryRaw()
 
         self.name = name
-        self._model = model
 
         self.type_id = self._type_id if self._type_id else b'\x00'
-        self.version = b'\x00'
-        self.archived = False
-
-        if model is not None:
-            if model.has(TIFeature.FLASH):
-                self.version = version
-                self.archived = archived
-                self.meta_length = TIEntry.flash_meta_length
-
-            else:
-                self.meta_length = TIEntry.base_meta_length
-
-        else:
-            self.meta_length = TIEntry.flash_meta_length
+        self.meta_length = TIEntry.flash_meta_length
+        self.version = version
+        self.archived = archived
 
         self.clear()
 
@@ -300,29 +290,12 @@ class TIEntry:
         """
 
     @property
-    def extension(self) -> str:
-        try:
-            extension = self.extensions[self.model]
-            if not extension:
-                raise TypeError(f"The {self.model} does not support this var type.")
-
-            return extension
-
-        except KeyError:
-            warn(f"Model {self.model} not recognized.")
-            return self.extensions[None]
-
-    @property
     def flash_bytes(self) -> bytes:
         return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]
 
     @property
     def is_empty(self) -> bool:
         return len(self.raw.data) == 0
-
-    @property
-    def model(self) -> TIModel:
-        return self._model
 
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:
@@ -349,7 +322,7 @@ class TIEntry:
         self.raw.data = bytearray(type(self).data.width or 0)
 
     def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
-        var = TIVar(header=header, name=name or self.name, model=model or self._model)
+        var = TIVar(header=header, name=name or self.name, model=model)
         var.add_entry(self)
         return var
 
@@ -429,16 +402,6 @@ class TIEntry:
         header = TIHeader()
         header.load_bytes(file.read(55))
 
-        # Discern model
-        model = header.derive_model()
-
-        if self._model is None:
-            self._model = model
-
-        elif self._model != model:
-            warn(f"The var file comes from a different model (expected {self._model}, got {model}).",
-                 UserWarning)
-
         # Seek to offset
         while offset:
             file.seek(self.next_entry_length(file), 1)
@@ -465,8 +428,8 @@ class TIEntry:
                      "Use load_from_file to select a particular entry, or load the entire file in a TIVar object.",
                      UserWarning)
 
-    def save(self, filename: str = None, *, header: TIHeader = TIHeader()):
-        self.export(header=header).save(filename)
+    def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
+        self.export(header=header, model=model).save(filename)
 
     def string(self) -> str:
         raise NotImplementedError
@@ -482,7 +445,7 @@ class TIVar:
     def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
         super().__init__()
 
-        self.header = header or TIHeader(model=model)
+        self.header = header or TIHeader(magic=model.magic if model is not None else None)
         self.entries = []
 
         self.name = name
@@ -571,13 +534,9 @@ class TIVar:
         return self.model
 
     def add_entry(self, entry: TIEntry = None):
-        entry = entry or TIEntry(model=self._model)
+        entry = entry or TIEntry()
 
         if not self.is_empty:
-            if entry.model != self.entries[0].model:
-                warn(f"The new entry has a conflicting model (expected {self.entries[0].model}, got {entry.model}).",
-                     UserWarning)
-
             if entry.meta_length != self.entries[0].meta_length:
                 warn(f"The new entry has a conflicting meta length "
                      f"(expected {self.entries[0].meta_length}, got {entry.meta_length}).",

@@ -97,8 +97,8 @@ class TokenizedVar(TIEntry):
             warn(f"The version is incorrect (expected {version}, got {self.raw.version}).",
                  BytesWarning)
 
-    def load_string(self, string: str):
-        token_map = self.tokens[TI_84PCEPY][0]
+    def load_string(self, string: str, *, model: TIModel = None):
+        token_map = self.tokens[model or TI_84PCEPY][0]
         self.raw.data = encode(string, token_map)
         self.raw.version = self.derive_version()
 

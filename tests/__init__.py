@@ -97,7 +97,6 @@ class EntryTests(unittest.TestCase):
         test_program.open("tests/data/Program.8xp")
         test_header.open("tests/data/Program.8xp")
 
-        self.assertEqual(test_program.extension, "8xp")
         test_program.save("tests/data/Program_new.8xp", header=test_header)
 
         with open("tests/data/Program.8xp", 'rb') as orig:
@@ -152,7 +151,7 @@ class TokenizationTests(unittest.TestCase):
         self.assertEqual(test_program, test_var.entries[0])
 
     def test_load_from_string(self):
-        test_program = TIProgram(name="SETDATE", model=TI_84P)
+        test_program = TIProgram(name="SETDATE")
         test_program.comment = "Created by TI Connect CE 5.1.0.68"
 
         test_program.load_string(string := "setDate(1")

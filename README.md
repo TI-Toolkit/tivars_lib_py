@@ -22,14 +22,13 @@ To create an empty entry, instantiate its corresponding type from `tivars.types`
 from tivars.models import *
 from tivars.types import *
 
-my_program = TIProgram(name="HELLO", model=TI_84P)
+my_program = TIProgram(name="HELLO")
 ```
 
-If you're not sure of an entry's type or model, instantiate a base `TIEntry`:
+If you're not sure of an entry's type, instantiate a base `TIEntry`:
 
 ```python
 my_entry = TIEntry()
-my_entry_for83 = TIEntry(model=TI_83)
 ```
 
 If you want to create an entire var or just a header, use `TIVar` or `TIHeader` instead:
@@ -82,7 +81,7 @@ with open("HELLO.8xp", 'wb+') as file:
     file.write(my_var.bytes())
 ```
 
-Entries can be passed an explicit header to attach when exporting:
+Entries can be passed an explicit header to attach or model to target when exporting:
 ```python
 my_program.save("HELLO.8xp")
 my_program.save()
