@@ -171,17 +171,25 @@ class TIEntry:
 
     _type_id = None
 
-    def __init__(self, *, name: str = "UNNAMED", version: bytes = b'\x00', archived: bool = False):
+    def __init__(self, *, for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
         self.raw = TIEntryRaw()
 
-        self.name = name
-
+        self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
         self.type_id = self._type_id if self._type_id else b'\x00'
-        self.meta_length = TIEntry.flash_meta_length
-        self.version = version
-        self.archived = archived
+        self.name = name
+        self.version = version or b'\x00'
+        self.archived = archived or False
 
-        self.clear()
+        if not for_flash and (version is not None or archived is not None):
+            warn("Models without flash chips do not support versioning or archiving.",
+                 UserWarning)
+
+        if data:
+            self.data = data
+        else:
+            self.clear()
 
     def __bool__(self) -> bool:
         return not self.is_empty

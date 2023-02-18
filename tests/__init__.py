@@ -1,6 +1,5 @@
 import unittest
 
-from tivars.models import *
 from tivars.types import *
 from tivars import TIHeader, TIVar
 
