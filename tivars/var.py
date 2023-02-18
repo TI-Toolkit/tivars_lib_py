@@ -159,6 +159,10 @@ class TIEntryRaw(Raw):
     def flash_bytes(self) -> bytes:
         return (self.version + self.archived)[:int.from_bytes(self.meta_length, 'little') - TIEntry.base_meta_length]
 
+    @property
+    def meta(self) -> bytes:
+        return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
+
 
 class TIEntry:
     extensions = {None: "8xg"}
@@ -304,6 +308,10 @@ class TIEntry:
     @property
     def is_empty(self) -> bool:
         return len(self.raw.data) == 0
+
+    @property
+    def meta(self) -> bytes:
+        return self.bytes()[2:self.meta_length + 2]
 
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:

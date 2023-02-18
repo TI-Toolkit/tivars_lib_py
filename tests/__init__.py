@@ -43,13 +43,15 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.entries[0].flash_bytes,
                          test_var.entries[0].raw.version + test_var.entries[0].raw.archived)
 
+        self.assertEqual(test_var.entries[0].meta,
+                         test_var.entries[0].raw.data_length + test_var.entries[0].raw.type_id +
+                         test_var.entries[0].raw.name + test_var.entries[0].raw.version +
+                         test_var.entries[0].raw.archived)
+
         self.assertEqual(test_var.entries[0].raw.data, bytearray(b'\x03\x00\xef\x001'))
         self.assertEqual(test_var.entries[0].bytes(),
-                         test_var.entries[0].raw.meta_length + test_var.entries[0].raw.data_length +
-                         test_var.entries[0].raw.type_id +
-                         test_var.entries[0].raw.name + test_var.entries[0].raw.version +
-                         test_var.entries[0].raw.archived + test_var.entries[0].raw.data_length +
-                         test_var.entries[0].raw.data)
+                         test_var.entries[0].raw.meta_length + test_var.entries[0].raw.meta +
+                         test_var.entries[0].raw.data_length + test_var.entries[0].raw.data)
 
         self.assertEqual(test_var.checksum, b'M\x03')
 
