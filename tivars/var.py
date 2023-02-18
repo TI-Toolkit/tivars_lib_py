@@ -177,7 +177,7 @@ class TIEntry:
         self.raw = TIEntryRaw()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
-        self.type_id = self._type_id if self._type_id else b'\x00'
+        self.type_id = self._type_id if self._type_id else b'\xFF'
         self.name = name
         self.version = version or b'\x00'
         self.archived = archived or False
