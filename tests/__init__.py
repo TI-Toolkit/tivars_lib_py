@@ -1,3 +1,4 @@
+import decimal
 import unittest
 
 from tivars.types import *
@@ -188,6 +189,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_real.is_complex_component, False)
 
         self.assertEqual(str(test_real), "-42.1337")
+        self.assertEqual(test_real.decimal(), decimal.Decimal("-42.1337"))
 
         test_real.clear()
         test_real.load_string(string := "-42.1337")
@@ -209,16 +211,46 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_complex.imag.exponent, 128)
         self.assertEqual(test_complex.imag.mantissa, 20000000000000)
 
-        self.assertEqual(str(test_complex), "-5.0 + 2.0[i]")
+        self.assertEqual(str(test_complex), "-5 + 2[i]")
 
         test_components = TIComplex(name="C")
         test_components.load_components(real=test_complex.real, imag=test_complex.imag)
         self.assertEqual(test_complex.bytes(), test_components.bytes())
 
         test_complex.clear()
-        test_complex.load_string(string := "-5.0 + 2.0[i]")
+        test_complex.load_string(string := "-5 + 2[i]")
         self.assertEqual(test_complex.string(), string)
 
         with open("tests/data/Complex.8xc", 'rb') as file:
             file.seek(55)
             self.assertEqual(test_complex.bytes(), file.read()[:-2])
+
+    def test_real_list(self):
+        test_real_list = TIRealList()
+        test_real_list.open("tests/data/RealList.8xl")
+
+        test_list = [TIReal(name=test_real_list.name),
+                     TIReal(name=test_real_list.name),
+                     TIReal(name=test_real_list.name)]
+        test_list[0].load_string("-1.0")
+        test_list[1].load_string("2.0")
+        test_list[2].load_string("999")
+
+        self.assertEqual(test_real_list.length, 3)
+        self.assertEqual(test_real_list.list(), test_list)
+        self.assertEqual(str(test_real_list), "[-1, 2, 999]")
+
+    def test_complex_list(self):
+        test_comp_list = TIComplexList()
+        test_comp_list.open("tests/data/ComplexList.8xl")
+
+        test_list = [TIComplex(name=test_comp_list.name),
+                     TIComplex(name=test_comp_list.name),
+                     TIComplex(name=test_comp_list.name)]
+        test_list[0].load_string("1 + i")
+        test_list[1].load_string("-3 + 2i")
+        test_list[2].load_string("4")
+
+        self.assertEqual(test_comp_list.length, 3)
+        self.assertEqual(test_comp_list.list(), test_list)
+        self.assertEqual(str(test_comp_list), "[1 + 1[i], -3 + 2[i], 4]")

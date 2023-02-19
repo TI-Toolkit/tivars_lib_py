@@ -1,3 +1,6 @@
+import decimal as dec
+import warnings
+
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
@@ -39,7 +42,7 @@ def read_string(string: str) -> (int, int, bool):
         integer = integer[:-1]
         exponent += 1
 
-    return int((integer + decimal).ljust(14, "0")), exponent + 0x80, neg
+    return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
 Mantissa = (to_bcd, from_bcd)
@@ -112,6 +115,18 @@ class TIReal(TIEntry):
     def sign(self) -> int:
         return -1 if self.flags & 1 << 7 else 1
 
+    # Out of order because type annotations suck
+    def load_decimal(self, decimal: dec.Decimal):
+        self.load_string(str(decimal))
+
+    def decimal(self) -> dec.Decimal:
+        with dec.localcontext() as ctx:
+            ctx.prec = 14
+            decimal = dec.Decimal(self.sign * self.mantissa)
+            decimal *= dec.Decimal(10) ** (self.exponent - 0x80 - 13)
+
+        return decimal
+
     def load_string(self, string: str):
         self.mantissa, self.exponent, neg = read_string(string)
 
@@ -126,7 +141,7 @@ class TIReal(TIEntry):
         self.flags ^= 1 << 7
 
     def string(self) -> str:
-        return f"{self.sign * self.mantissa * 10 ** (self.exponent - 0x80 - 13):-}"
+        return f"{self.decimal().quantize(dec.Decimal(10) ** -10):.10g}".rstrip("0").rstrip(".").replace("0e-1", "0")
 
 
 class TIComplex(TIEntry):
@@ -209,7 +224,6 @@ class TIComplex(TIEntry):
         The mantissa is 14 digits stored in BCD format, two digits per byte
         """
 
-    @property
     def components(self) -> (TIReal, TIReal):
         return self.real, self.imag
 
@@ -217,26 +231,20 @@ class TIComplex(TIEntry):
     def imag(self) -> TIReal:
         imag = TIReal()
 
-        imag.meta_length = self.meta_length
-        imag.type_id = b'\x00'
-        imag.name = self.name
-        imag.version = self.version
-        imag.archived = self.archived
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            imag.load_bytes(self.bytes()[:-18] + self.bytes()[-9:])
 
-        imag.raw.data = self.raw.data[9:18]
         return imag
 
     @property
     def real(self) -> TIReal:
         real = TIReal()
 
-        real.meta_length = self.meta_length
-        real.type_id = b'\x00'
-        real.name = self.name
-        real.version = self.version
-        real.archived = self.archived
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            real.load_bytes(self.bytes()[:-9])
 
-        real.raw.data = self.raw.data[0:9]
         return real
 
     def load_components(self, *, components: (TIReal, TIReal) = (None, None), real: TIReal = None, imag: TIReal = None):
@@ -266,7 +274,8 @@ class TIComplex(TIEntry):
                 parts = [parts[0], "0i"]
 
         self.real_mantissa, self.real_exponent, real_neg = read_string(parts[0])
-        self.imag_mantissa, self.imag_exponent, imag_neg = read_string(parts[1].replace("i", ""))
+        self.imag_mantissa, self.imag_exponent, imag_neg = read_string(parts[1].replace("i", "")
+                                                                       if parts[1] != "i" else "1")
 
         if real_neg:
             self.real_flags ^= 1 << 7
@@ -284,7 +293,107 @@ class TIComplex(TIEntry):
         self.imag_flags &= ~1 << 1
 
     def string(self) -> str:
-        return f"{self.real} + {self.imag}[i]".replace("+ -", "- ")
+        return f"{self.real} + {self.imag}[i]".replace("+ -", "- ").replace("0 + ", "").replace(" + 0[i]", "")
 
 
-__all__ = ["TIReal", "TIComplex"]
+class ListVar(TIEntry):
+    item_type = TIEntry
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the length of the list, followed by sequential variable data sections
+        """
+
+    @View(data, Integer)[0:2]
+    def length(self) -> int:
+        """
+        The length of the list
+        """
+
+    # ALSO out of order because type annotations suck
+    def load_list(self, lst: list[item_type]):
+        self.clear()
+        self.data += int.to_bytes(len(lst), 2, 'little')
+
+        for entry in lst:
+            self.data += entry.data
+
+    def list(self) -> list[item_type]:
+        lst = []
+        for i in range(self.length):
+            entry = self.item_type()
+
+            entry.meta_length = self.meta_length
+            entry.name = self.name
+            entry.version = self.version
+            entry.archived = self.archived
+
+            entry.data = self.data[entry.data_length * i + 2:][:entry.data_length]
+            lst.append(entry)
+
+        return lst
+
+    def load_string(self, string: str):
+        lst = []
+
+        for string in ''.join(string.strip("[]").split()).split(","):
+            entry = self.item_type()
+            entry.load_string(string)
+            lst.append(entry)
+
+        self.load_list(lst)
+
+    def string(self) -> str:
+        return f"[{', '.join(str(entry) for entry in self.list())}]"
+
+
+class TIRealList(ListVar):
+    item_type = TIReal
+
+    extensions = {
+        None: "8xl",
+        TI_82: "82l",
+        TI_83: "83l",
+        TI_82A: "8xl",
+        TI_82P: "8xl",
+        TI_83P: "8xl",
+        TI_84P: "8xl",
+        TI_84T: "8xl",
+        TI_84PCSE: "8xl",
+        TI_84PCE: "8xl",
+        TI_84PCEPY: "8xl",
+        TI_83PCE: "8xl",
+        TI_83PCEEP: "8xl",
+        TI_82AEP: "8xl"
+    }
+
+    _type_id = b'\x01'
+
+
+class TIComplexList(ListVar):
+    item_type = TIComplex
+
+    extensions = {
+        None: "8xl",
+        TI_82: "",
+        TI_83: "83l",
+        TI_82A: "8xl",
+        TI_82P: "8xl",
+        TI_83P: "8xl",
+        TI_84P: "8xl",
+        TI_84T: "8xl",
+        TI_84PCSE: "8xl",
+        TI_84PCE: "8xl",
+        TI_84PCEPY: "8xl",
+        TI_83PCE: "8xl",
+        TI_83PCEEP: "8xl",
+        TI_82AEP: "8xl"
+    }
+
+    _type_id = b'\x0D'
+
+
+__all__ = ["TIReal", "TIComplex", "TIRealList", "TIComplexList"]

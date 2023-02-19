@@ -1,6 +1,5 @@
 from .exact import *
 from .fraction import *
-from .list import *
 from .matrix import *
 from .numeric import *
 from .tokenized import *
@@ -10,7 +9,7 @@ from ..var import TIEntry
 
 
 TIEntry.register(TIReal)
-# TIEntry.register(TIRealList)
+TIEntry.register(TIRealList)
 # TIEntry.register(TIMatrix)
 TIEntry.register(TIEquation)
 TIEntry.register(TIString)
@@ -22,7 +21,7 @@ TIEntry.register(TIProtectedProgram)
 
 # TIEntry.register(TISmartEquation)
 TIEntry.register(TIComplex)
-# TIEntry.register(TIComplexList)
+TIEntry.register(TIComplexList)
 
 # TIEntry.register(TIWindowSettings)
 # TIEntry.register(TIRecallWindow)
@@ -55,7 +54,7 @@ TIEntry.register(TIComplex)
 
 
 __all__ = ["TIEntry",
-           "TIReal",
+           "TIReal", "TIRealList",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
-           "TIComplex"
+           "TIComplex", "TIComplexList"
            ]
