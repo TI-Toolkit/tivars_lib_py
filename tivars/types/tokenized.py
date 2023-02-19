@@ -114,6 +114,12 @@ class TIEquation(TokenizedVar):
 class TIString(TokenizedVar):
     _type_id = b'\x04'
 
+    def load_string(self, string: str, *, model: TIModel = None):
+        super().load_string(string.strip("\"'"))
+
+    def string(self) -> str:
+        return f"\"{super().string()}\""
+
 
 class TIProgram(TokenizedVar):
     _type_id = b'\x05'
