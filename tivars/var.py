@@ -175,7 +175,8 @@ class TIEntry:
 
     _type_id = None
 
-    def __init__(self, *, for_flash: bool = True, name: str = "UNNAMED",
+    def __init__(self, string: str = None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
         self.raw = TIEntryRaw()
@@ -194,6 +195,8 @@ class TIEntry:
             self.data = data
         else:
             self.clear()
+            if string is not None:
+                self.load_string(string)
 
     def __bool__(self) -> bool:
         return not self.is_empty

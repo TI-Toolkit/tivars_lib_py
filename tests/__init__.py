@@ -229,12 +229,9 @@ class NumericTests(unittest.TestCase):
         test_real_list = TIRealList()
         test_real_list.open("tests/data/RealList.8xl")
 
-        test_list = [TIReal(name=test_real_list.name),
-                     TIReal(name=test_real_list.name),
-                     TIReal(name=test_real_list.name)]
-        test_list[0].load_string("-1.0")
-        test_list[1].load_string("2.0")
-        test_list[2].load_string("999")
+        test_list = [TIReal("-1.0", name=test_real_list.name),
+                     TIReal("2.0", name=test_real_list.name),
+                     TIReal("999", name=test_real_list.name)]
 
         self.assertEqual(test_real_list.length, 3)
         self.assertEqual(test_real_list.list(), test_list)
@@ -244,12 +241,9 @@ class NumericTests(unittest.TestCase):
         test_comp_list = TIComplexList()
         test_comp_list.open("tests/data/ComplexList.8xl")
 
-        test_list = [TIComplex(name=test_comp_list.name),
-                     TIComplex(name=test_comp_list.name),
-                     TIComplex(name=test_comp_list.name)]
-        test_list[0].load_string("1 + i")
-        test_list[1].load_string("-3 + 2i")
-        test_list[2].load_string("4")
+        test_list = [TIComplex("1 + i", name=test_comp_list.name),
+                     TIComplex("-3 + 2i", name=test_comp_list.name),
+                     TIComplex("4", name=test_comp_list.name)]
 
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)

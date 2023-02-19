@@ -69,6 +69,9 @@ with open("HELLO.8xp", 'rb') as file:
     my_program.load_bytes(file.read())
 
 my_program.load_string("Disp \"HELLO WORLD!\"")
+
+# Create a new instance directly from a string
+my_program = TIProgram("Disp \"HELLO WORLD!\"")
 ```
 
 Export a var as bytes or straight to a file:
@@ -89,6 +92,8 @@ my_program.save()
 with open("HELLO.8xp", 'wb+') as file:
     file.write(my_program.export(header=my_header).bytes())
 ```
+
+Many entry types also support additional export formats (e.g. `TIReal.decimal()` and `TIComplexList.list()`).
 
 ### Data Sections
 
