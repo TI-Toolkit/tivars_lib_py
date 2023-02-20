@@ -6,23 +6,24 @@ from typing import Callable, TypeVar
 from warnings import warn
 
 
+_E = TypeVar('_E')
 _T = TypeVar('_T')
-Converter = tuple[Callable[[_T], bytes], Callable[[bytes], _T]]
+Converter = tuple[Callable[[_T, _E], bytes], Callable[[bytes, _E], _T]]
 
 
-Boolean = (lambda value: b'\x80' if value else b'\x00',
-           lambda data: data == b'\x80')
+Boolean = (lambda value, instance: b'\x80' if value else b'\x00',
+           lambda data, instance: data == b'\x80')
 
-Integer = (lambda value: int.to_bytes(value, ceil(value.bit_length() / 8), 'little'),
-           lambda data: int.from_bytes(data, 'little'))
+Integer = (lambda value, instance: int.to_bytes(value, ceil(value.bit_length() / 8), 'little'),
+           lambda data, instance: int.from_bytes(data, 'little'))
 
-String = (lambda value: value.encode('utf8'),
-          lambda data: data.decode('utf8').rstrip('\0'))
+String = (lambda value, instance: value.encode('utf8'),
+          lambda data, instance: data.decode('utf8').rstrip('\0'))
 
 
 class Section:
     def __init__(self, width: int = None, converter: Converter = None):
-        self._in, self._out = converter or (lambda value: value, lambda data: data)
+        self._in, self._out = converter or (lambda value, instance: value, lambda data, instance: data)
         self._width = width
 
     def __copy__(self) -> 'Section':
@@ -48,10 +49,10 @@ class Section:
         if instance is None:
             return self
 
-        return self._out(getattr(instance.raw, self._name))
+        return self._out(getattr(instance.raw, self._name), instance)
 
     def __set__(self, instance, value: _T):
-        value = self._in(value)
+        value = self._in(value, instance)
 
         if self._width is not None:
             if len(value) > self._width:
@@ -70,7 +71,7 @@ class Section:
         signature = inspect.signature(func)
         match len(signature.parameters):
             case 1: pass
-            case 2: new._in = lambda value, _in=new._in: _in(func(None, value))
+            case 2: new._in = lambda value, instance, _in=new._in: _in(func(instance, value), instance)
             case _: raise TypeError("Data section function definitions can only take 1 or 2 parameters.")
 
         return new
@@ -87,7 +88,7 @@ class Section:
 class View:
     def __init__(self, target: Section, converter: Converter = None, indices: slice = slice(None)):
         self._target = target
-        self._in, self._out = converter or (lambda value: value, lambda data: data)
+        self._in, self._out = converter or (lambda value, instance: value, lambda data, instance: data)
         self._indices = indices
 
     def __copy__(self) -> 'View':
@@ -110,10 +111,10 @@ class View:
         if instance is None:
             return self
 
-        return self._out(getattr(instance.raw, self._target.name)[self._indices])
+        return self._out(getattr(instance.raw, self._target.name)[self._indices], instance)
 
     def __set__(self, instance, value: _T):
-        value = self._in(value)
+        value = self._in(value, instance)
 
         if self.width is not None:
             if len(value) > self.width:
@@ -135,7 +136,7 @@ class View:
         signature = inspect.signature(func)
         match len(signature.parameters):
             case 1: pass
-            case 2: new._in = lambda value, _in=new._in: _in(func(None, value))
+            case 2: new._in = lambda value, instance, _in=new._in: _in(func(instance, value), instance)
             case _: raise TypeError("Data view function definitions can only take 1 or 2 parameters.")
 
         return new

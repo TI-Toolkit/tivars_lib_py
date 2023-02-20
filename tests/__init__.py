@@ -214,7 +214,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(str(test_complex), "-5 + 2[i]")
 
         test_components = TIComplex(name="C")
-        test_components.load_components(real=test_complex.real, imag=test_complex.imag)
+        test_components.real, test_components.imag = test_complex.real, test_complex.imag
         self.assertEqual(test_complex.bytes(), test_components.bytes())
 
         test_complex.clear()

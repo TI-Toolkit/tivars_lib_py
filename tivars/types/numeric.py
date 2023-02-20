@@ -1,5 +1,4 @@
 import decimal as dec
-import warnings
 
 from tivars.models import *
 from ..data import *
@@ -45,7 +44,8 @@ def read_string(string: str) -> (int, int, bool):
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
-Mantissa = (to_bcd, from_bcd)
+Mantissa = (lambda value, instance: to_bcd(value),
+            lambda data, instance: from_bcd(data))
 
 
 class TIReal(TIEntry):
@@ -141,7 +141,35 @@ class TIReal(TIEntry):
         self.flags ^= 1 << 7
 
     def string(self) -> str:
-        return f"{self.decimal().quantize(dec.Decimal(10) ** -10):.10g}".rstrip("0").rstrip(".").replace("0e-1", "0")
+        string = f"{self.decimal().quantize(dec.Decimal(10) ** -10):.10g}".rstrip("0").rstrip(".")
+
+        if string == "0e-1":
+            return "0"
+        else:
+            return string
+
+
+def to_real(data: bytes, instance: TIEntry):
+    real = TIReal()
+
+    real.meta_length = instance.meta_length
+    real.name = instance.name
+    real.version = instance.version
+    real.archived = instance.archived
+
+    real.data = data
+
+    return real
+
+
+def from_real(real: TIReal, instance: TIEntry):
+    if isinstance(instance, TIComplex):
+        instance.set_flags()
+
+    return real.data
+
+
+Real = (from_real, to_real)
 
 
 class TIComplex(TIEntry):
@@ -172,11 +200,22 @@ class TIComplex(TIEntry):
         Contains two real numbers, the real and imaginary parts
         """
 
+    @View(data, Real)[0:9]
+    def real(self):
+        """
+        The real part of the complex number
+        """
+
+    @View(data, Real)[9:18]
+    def imag(self):
+        """
+        The imaginary part of the complex number
+        """
+
     @View(data, Integer)[0:1]
     def real_flags(self) -> int:
         """
         Flags for the real part of the complex number
-
         Bits 2 and 3 are set
         If bit 6 is set, something happened
         If bit 7 is set, the part is negative
@@ -186,7 +225,6 @@ class TIComplex(TIEntry):
     def real_exponent(self) -> int:
         """
         The exponent of the real part of the complex number
-
         The exponent has a bias of 0x80
         """
 
@@ -194,7 +232,6 @@ class TIComplex(TIEntry):
     def real_mantissa(self) -> int:
         """
         The mantissa of the real part of the complex number
-
         The mantissa is 14 digits stored in BCD format, two digits per byte
         """
 
@@ -202,7 +239,6 @@ class TIComplex(TIEntry):
     def imag_flags(self) -> int:
         """
         Flags for the imaginary part of the complex number
-
         Bits 2 and 3 are set
         If bit 6 is set, something happened
         If bit 7 is set, the part is negative
@@ -227,38 +263,6 @@ class TIComplex(TIEntry):
     def components(self) -> (TIReal, TIReal):
         return self.real, self.imag
 
-    @property
-    def imag(self) -> TIReal:
-        imag = TIReal()
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            imag.load_bytes(self.bytes()[:-18] + self.bytes()[-9:])
-
-        return imag
-
-    @property
-    def real(self) -> TIReal:
-        real = TIReal()
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            real.load_bytes(self.bytes()[:-9])
-
-        return real
-
-    def load_components(self, *, components: (TIReal, TIReal) = (None, None), real: TIReal = None, imag: TIReal = None):
-        real = real or components[0]
-        imag = imag or components[1]
-
-        if real is not None:
-            self.real_flags, self.real_exponent, self.real_mantissa = real.flags, real.exponent, real.mantissa
-
-        if imag is not None:
-            self.imag_flags, self.imag_exponent, self.imag_mantissa = imag.flags, imag.exponent, imag.mantissa
-
-        self.set_flags()
-
     def load_string(self, string: str):
         string = ''.join(string.split()).replace("-", "+-").replace("[i]", "i")
 
@@ -273,15 +277,8 @@ class TIComplex(TIEntry):
             else:
                 parts = [parts[0], "0i"]
 
-        self.real_mantissa, self.real_exponent, real_neg = read_string(parts[0])
-        self.imag_mantissa, self.imag_exponent, imag_neg = read_string(parts[1].replace("i", "")
-                                                                       if parts[1] != "i" else "1")
-
-        if real_neg:
-            self.real_flags ^= 1 << 7
-
-        if imag_neg:
-            self.imag_flags ^= 1 << 7
+        self.real = TIReal(parts[0])
+        self.imag = TIReal(parts[1].replace("i", "") if parts[1] != "i" else "1")
 
         self.set_flags()
 
@@ -293,7 +290,11 @@ class TIComplex(TIEntry):
         self.imag_flags &= ~1 << 1
 
     def string(self) -> str:
-        return f"{self.real} + {self.imag}[i]".replace("+ -", "- ").replace("0 + ", "").replace(" + 0[i]", "")
+        match str(self.real), str(self.imag):
+            case "0", "0": return "0"
+            case "0", _: return f"{self.imag}[i]"
+            case _, "0": return f"{self.real}"
+            case _, _: return f"{self.real} + {self.imag}[i]".replace("+ -", "- ")
 
 
 class ListVar(TIEntry):
