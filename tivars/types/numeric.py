@@ -1,5 +1,7 @@
 import decimal as dec
 
+from warnings import warn
+
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
@@ -313,6 +315,14 @@ class ListVar(TIEntry):
         """
         The length of the list
         """
+
+    def load_bytes(self, data: bytes):
+        super().load_bytes(data)
+
+        if self.data_length // self.item_type.data.width != self.length:
+            warn(f"The list has an unexpected length "
+                 f"(expected {self.data_length // self.item_type.data.width}, got {self.length}).",
+                 BytesWarning)
 
     # ALSO out of order because type annotations suck
     def load_list(self, lst: list[item_type]):
