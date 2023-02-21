@@ -1,4 +1,5 @@
 import decimal as dec
+import re
 
 from warnings import warn
 
@@ -328,6 +329,26 @@ class TIComplex(TIEntry):
 class ListVar(TIEntry):
     item_type = TIEntry
 
+    @Section(8, String)
+    def name(self, value) -> str:
+        """
+        The name of the entry
+
+        Must be 1 to 5 characters in length
+        Can include any characters A-Z, 0-9, or Θ
+        Cannot start with a digit
+        """
+
+        varname = value[:5].upper()
+        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
+        varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
+
+        if not varname or varname[0].isnumeric():
+            warn(f"Var has invalid name: {varname}.",
+                 BytesWarning)
+
+        return varname
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -337,10 +358,16 @@ class ListVar(TIEntry):
         """
 
     @View(data, Integer)[0:2]
-    def length(self) -> int:
+    def length(self, value) -> int:
         """
         The length of the list
         """
+
+        if value > 999:
+            warn(f"The list is too long ({value} > 999).",
+                 UserWarning)
+
+        return value
 
     def load_bytes(self, data: bytes):
         super().load_bytes(data)
