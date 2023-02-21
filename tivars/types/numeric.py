@@ -37,11 +37,18 @@ def read_string(string: str) -> (int, int, bool):
     integer, decimal = number.split(".")
     integer, decimal = integer or "0", decimal or "0"
 
+    if int(integer) == int(decimal) == 0:
+        return 0, 0x80, neg
+
     exponent = int(exponent or "0")
-    while len(integer) > 1:
-        decimal = integer[-1] + decimal
-        integer = integer[:-1]
-        exponent += 1
+    while not 0 < (value := int(integer)) < 10:
+        if value == 0:
+            integer, decimal = decimal[0], decimal[1:]
+            exponent -= 1
+
+        else:
+            integer, decimal = integer[:-1], integer[-1] + decimal
+            exponent += 1
 
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
@@ -133,11 +140,11 @@ class TIReal(TIEntry):
 
     @property
     def is_complex_component(self) -> bool:
-        return self.flags & 1 << 2 & 1 << 3 & ~1 << 1
+        return bool(self.flags & 1 << 2 & 1 << 3 & ~1 << 1)
 
     @property
     def is_undefined(self) -> bool:
-        return self.flags & 1 << 1
+        return bool(self.flags & 1 << 1)
 
     @property
     def sign(self) -> int:
@@ -174,9 +181,9 @@ class TIReal(TIEntry):
             self.negate()
 
     def string(self) -> str:
-        string = f"{self.decimal().quantize(dec.Decimal(10) ** -10):.10g}".rstrip("0").rstrip(".")
+        string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
 
-        if string == "0e-1":
+        if string.startswith("0"):
             return "0"
         else:
             return string

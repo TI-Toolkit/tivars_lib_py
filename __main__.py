@@ -1,3 +1,4 @@
+from tivars import *
 from tests import *
 
 
