@@ -1,5 +1,7 @@
 from tivars.models import *
+from ..data import *
 from ..var import TIEntry
+from .numeric import TIReal
 
 
 class TIMatrix(TIEntry):
@@ -21,6 +23,30 @@ class TIMatrix(TIEntry):
     }
 
     type_id = b'\x02'
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the dimensions of the matrix, followed by sequential real variable data sections
+        """
+
+    @View(data, Integer)[0:1]
+    def width(self) -> int:
+        """
+        The number of columns in the matrix
+
+        Cannot exceed 255, though TI-OS imposes a limit of 99
+        """
+
+    @View(data, Integer)[1:2]
+    def width(self) -> int:
+        """
+        The number of columns in the matrix
+
+        Cannot exceed 255, though TI-OS imposes a limit of 99
+        """
 
 
 __all__ = ["TIMatrix"]

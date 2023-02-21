@@ -165,6 +165,8 @@ class TIEntryRaw(Raw):
 
 
 class TIEntry:
+    flash_only = False
+
     extensions = {None: "8xg"}
     type_ids = {}
 
@@ -187,9 +189,14 @@ class TIEntry:
         self.version = version or b'\x00'
         self.archived = archived or False
 
-        if not for_flash and (version is not None or archived is not None):
-            warn("Models without flash chips do not support versioning or archiving.",
-                 UserWarning)
+        if not for_flash:
+            if version is not None or archived is not None:
+                warn("Models without flash chips do not support versioning or archiving.",
+                     UserWarning)
+
+            if self.flash_only:
+                warn(f"{type(self)} vars are not compatible with flashless chips.",
+                     UserWarning)
 
         if data:
             self.data = bytearray(data)
@@ -393,6 +400,10 @@ class TIEntry:
             case TIEntry.base_meta_length:
                 self.raw.version = b'\x00'
                 self.raw.archived = b'\x00'
+
+                if self.flash_only:
+                    warn(f"{type(self)} vars are not compatible with flashless chips.",
+                         BytesWarning)
 
             case _:
                 warn(f"The entry meta length has an unexpected value ({self.meta_length}); "

@@ -27,11 +27,12 @@ TIEntry.register(TIComplexList)
 TIEntry.register(TIWindowSettings)
 TIEntry.register(TIRecallWindow)
 TIEntry.register(TITableSettings)
+
 # TIEntry.register(TIBackup)
 # TIEntry.register(TIApp)
 # TIEntry.register(TIAppVar)
 # TIEntry.register(TIPythonAppVar)
-# TIEntry.register(TITemporaryItem)
+
 # TIEntry.register(TIGroup)
 # TIEntry.register(TIRealFraction)
 # TIEntry.register(TIMixedFraction)

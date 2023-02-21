@@ -3,6 +3,8 @@ from ..var import TIEntry
 
 
 class TIExactComplexFraction(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -24,6 +26,8 @@ class TIExactComplexFraction(TIEntry):
 
 
 class TIExactRealRadical(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xn",
         TI_82: "",
@@ -45,6 +49,8 @@ class TIExactRealRadical(TIEntry):
 
 
 class TIExactComplexRadical(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -66,6 +72,8 @@ class TIExactComplexRadical(TIEntry):
 
 
 class TIExactComplexPi(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -87,6 +95,8 @@ class TIExactComplexPi(TIEntry):
 
 
 class TIExactComplexPiFraction(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -108,6 +118,8 @@ class TIExactComplexPiFraction(TIEntry):
 
 
 class TIExactRealPi(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xn",
         TI_82: "",
@@ -129,6 +141,8 @@ class TIExactRealPi(TIEntry):
 
 
 class TIExactRealPiFraction(TIEntry):
+    flash_only = True
+
     extensions = {
         None: "8xn",
         TI_82: "",
