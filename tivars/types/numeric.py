@@ -137,7 +137,13 @@ class TIReal(TIEntry):
     def sign(self) -> int:
         return -1 if self.flags & 1 << 7 else 1
 
-    # Out of order because type annotations suck
+    def make_complex_component(self):
+        self.flags |= 1 << 3 | 1 << 2
+        self.flags &= ~1 << 1
+
+    def negate(self):
+        self.flags ^= 1 << 7
+
     def load_decimal(self, decimal: dec.Decimal):
         self.load_string(str(decimal))
 
@@ -154,13 +160,6 @@ class TIReal(TIEntry):
 
         if neg:
             self.negate()
-
-    def make_complex_component(self):
-        self.flags |= 1 << 3 | 1 << 2
-        self.flags &= ~1 << 1
-
-    def negate(self):
-        self.flags ^= 1 << 7
 
     def string(self) -> str:
         string = f"{self.decimal().quantize(dec.Decimal(10) ** -10):.10g}".rstrip("0").rstrip(".")
@@ -262,6 +261,13 @@ class TIComplex(TIEntry):
     def components(self) -> (TIReal, TIReal):
         return self.real, self.imag
 
+    def set_flags(self):
+        self.real_flags |= 1 << 3 | 1 << 2
+        self.real_flags &= ~1 << 1
+
+        self.imag_flags |= 1 << 3 | 1 << 2
+        self.imag_flags &= ~1 << 1
+
     def load_string(self, string: str):
         string = ''.join(string.split()).replace("-", "+-").replace("[i]", "i")
 
@@ -280,13 +286,6 @@ class TIComplex(TIEntry):
         self.imag = TIReal(parts[1].replace("i", "") if parts[1] != "i" else "1")
 
         self.set_flags()
-
-    def set_flags(self):
-        self.real_flags |= 1 << 3 | 1 << 2
-        self.real_flags &= ~1 << 1
-
-        self.imag_flags |= 1 << 3 | 1 << 2
-        self.imag_flags &= ~1 << 1
 
     def string(self) -> str:
         match str(self.real), str(self.imag):
@@ -321,7 +320,6 @@ class ListVar(TIEntry):
                  f"(expected {self.data_length // self.item_type.data.width}, got {self.length}).",
                  BytesWarning)
 
-    # ALSO out of order because type annotations suck
     def load_list(self, lst: list[item_type]):
         self.clear()
         self.data += int.to_bytes(len(lst), 2, 'little')

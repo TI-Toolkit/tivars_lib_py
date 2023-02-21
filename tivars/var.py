@@ -346,16 +346,14 @@ class TIEntry:
         else:
             raise TypeError(f"This entry does not support archiving.")
 
-    def bytes(self) -> bytes:
-        return self.raw.bytes()
-
     def clear(self):
         self.raw.data = bytearray(type(self).data.width or 0)
 
-    def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
-        var = TIVar(header=header, name=name or self.name, model=model)
-        var.add_entry(self)
-        return var
+    def unarchive(self):
+        if self.flash_bytes:
+            self.archived = False
+        else:
+            raise TypeError(f"This entry does not support archiving.")
 
     def load_bytes(self, data: bytes):
         data = io.BytesIO(data)
@@ -428,6 +426,9 @@ class TIEntry:
 
         self.raw.data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
 
+    def bytes(self) -> bytes:
+        return self.raw.bytes()
+
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         # Load header
         header = TIHeader()
@@ -439,9 +440,6 @@ class TIEntry:
             offset -= 1
 
         self.load_bytes(file.read())
-
-    def load_string(self, string: str):
-        raise NotImplementedError
 
     def open(self, filename: str):
         if self._type_id is not None and \
@@ -462,14 +460,16 @@ class TIEntry:
     def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
         self.export(header=header, model=model).save(filename)
 
-    def string(self) -> str:
+    def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
+        var = TIVar(header=header, name=name or self.name, model=model)
+        var.add_entry(self)
+        return var
+
+    def load_string(self, string: str):
         raise NotImplementedError
 
-    def unarchive(self):
-        if self.flash_bytes:
-            self.archived = False
-        else:
-            raise TypeError(f"This entry does not support archiving.")
+    def string(self) -> str:
+        raise NotImplementedError
 
 
 class TIVar:
@@ -575,16 +575,6 @@ class TIVar:
 
         self.entries.append(entry)
 
-    def bytes(self):
-        dump = self.header.bytes()
-        dump += int.to_bytes(self.entry_length, 2, 'little')
-
-        for entry in self.entries:
-            dump += entry.bytes()
-
-        dump += self.checksum
-        return dump
-
     def clear(self):
         self.entries.clear()
 
@@ -620,6 +610,16 @@ class TIVar:
         if checksum != self.checksum:
             warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
                  BytesWarning)
+
+    def bytes(self):
+        dump = self.header.bytes()
+        dump += int.to_bytes(self.entry_length, 2, 'little')
+
+        for entry in self.entries:
+            dump += entry.bytes()
+
+        dump += self.checksum
+        return dump
 
     def load_var_file(self, file: BinaryIO):
         self.load_bytes(file.read())
