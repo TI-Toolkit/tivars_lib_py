@@ -70,6 +70,12 @@ class TIReal(TIEntry):
 
     _type_id = b'\x00'
 
+    def __int__(self):
+        return int(self.float())
+
+    def __float__(self):
+        return self.float()
+
     @Section(9)
     def data(self) -> bytearray:
         """
@@ -155,6 +161,12 @@ class TIReal(TIEntry):
 
         return decimal
 
+    def load_float(self, decimal: float):
+        self.load_decimal(dec.Decimal(decimal))
+
+    def float(self):
+        return float(self.decimal())
+
     def load_string(self, string: str):
         self.mantissa, self.exponent, neg = read_string(string)
 
@@ -189,6 +201,9 @@ class TIComplex(TIEntry):
     }
 
     _type_id = b'\x0C'
+
+    def __complex__(self):
+        return self.complex()
 
     @Section(18)
     def data(self) -> bytearray:
@@ -267,6 +282,17 @@ class TIComplex(TIEntry):
 
         self.imag_flags |= 1 << 3 | 1 << 2
         self.imag_flags &= ~1 << 1
+
+    def load_complex(self, comp: complex):
+        real, imag = TIReal(), TIReal()
+
+        real.load_float(comp.real)
+        imag.load_float(comp.imag)
+
+        self.real, self.imag = real, imag
+
+    def complex(self):
+        return self.real.float() + 1j * self.imag.float()
 
     def load_string(self, string: str):
         string = ''.join(string.split()).replace("-", "+-").replace("[i]", "i")
