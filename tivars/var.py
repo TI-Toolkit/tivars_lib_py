@@ -178,7 +178,7 @@ class TIEntry:
     def __init__(self, string: str = None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytearray | bytes = None):
         self.raw = TIEntryRaw()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
@@ -192,7 +192,7 @@ class TIEntry:
                  UserWarning)
 
         if data:
-            self.data = data
+            self.data = bytearray(data)
         else:
             self.clear()
             if string is not None:
@@ -304,22 +304,15 @@ class TIEntry:
         See individual entry types for how this data is interpreted
         """
 
-    @staticmethod
-    def _in(value: 'TIEntry', instance: 'TIEntry') -> bytes:
+    @classmethod
+    def _in(cls, value: 'TIEntry', instance: 'TIEntry') -> bytes:
         return value.data
 
-    @staticmethod
-    def _out(data: bytes, instance: 'TIEntry') -> 'TIEntry':
-        value = TIEntry()
-
-        value.meta_length = instance.meta_length
-        value.name = instance.name
-        value.version = instance.version
-        value.archived = instance.archived
-
-        value.data = data
-
-        return value
+    @classmethod
+    def _out(cls, data: bytes, instance: 'TIEntry') -> 'TIEntry':
+        return cls(for_flash=bool(instance.flash_bytes), name=instance.name,
+                   version=instance.version, archived=instance.archived,
+                   data=data)
 
     @classmethod
     def _converter(cls) -> Converter:

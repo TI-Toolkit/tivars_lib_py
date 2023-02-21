@@ -128,20 +128,12 @@ class TIReal(TIEntry):
         The mantissa is 14 digits stored in BCD format, two digits per byte
         """
 
-    @staticmethod
-    def _in(value: 'TIReal', instance: 'TIEntry') -> bytes:
+    @classmethod
+    def _in(cls, value: 'TIReal', instance: 'TIEntry') -> bytes:
         if isinstance(instance, TIComplex):
             instance.set_flags()
 
         return super(TIReal, TIReal)._in(value, instance)
-
-    @staticmethod
-    def _out(data: bytes, instance: 'TIEntry') -> 'TIReal':
-        value = super(TIReal, TIReal)._out(data, instance)
-        value.type_id = TIReal._type_id
-        value.__class__ = TIReal
-
-        return value
 
     @property
     def is_complex_component(self) -> bool:
