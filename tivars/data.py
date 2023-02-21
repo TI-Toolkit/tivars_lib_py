@@ -25,7 +25,7 @@ String = (lambda value, instance: value.encode('utf8'),
 
 
 class Section:
-    def __init__(self, width: int = None, converter: Converter = None):
+    def __init__(self, width: int = None, converter: Converter | type = None):
         self._in, self._out = converter.converter() if hasattr(converter, "converter") else converter or Bytes
         self._width = width
 
@@ -75,7 +75,7 @@ class Section:
         match len(signature.parameters):
             case 1: pass
             case 2: new._in = lambda value, instance, _in=new._in: _in(func(instance, value), instance)
-            case _: raise TypeError("Data section function definitions can only take 1 or 2 parameters.")
+            case _: raise TypeError("Section and View function definitions can only take 1 or 2 parameters.")
 
         return new
 
@@ -88,27 +88,12 @@ class Section:
         return self._width
 
 
-class View:
-    def __init__(self, target: Section, converter, indices: slice = slice(None)):
+class View(Section):
+    def __init__(self, target: Section, converter: Converter | type = None, indices: slice = slice(None)):
+        super().__init__(None, converter)
+
         self._target = target
-        self._in, self._out = converter.converter() if hasattr(converter, "converter") else converter or Bytes
         self._indices = indices
-
-    def __copy__(self) -> 'View':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        new.__dict__.update(self.__dict__)
-        return new
-
-    def __deepcopy__(self, memo) -> 'View':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        memo[id(self)] = new
-
-        for k, v in self.__dict__.items():
-            setattr(new, k, copy.deepcopy(v, memo))
-
-        return new
 
     def __get__(self, instance, owner: type = None) -> _T:
         if instance is None:
@@ -132,18 +117,6 @@ class View:
     def __getitem__(self, indices: slice) -> 'View':
         return self.__class__(self._target, (self._in, self._out), indices)
 
-    def __call__(self, func) -> 'View':
-        new = copy.copy(self)
-        new.__doc__ = func.__doc__
-
-        signature = inspect.signature(func)
-        match len(signature.parameters):
-            case 1: pass
-            case 2: new._in = lambda value, instance, _in=new._in: _in(func(instance, value), instance)
-            case _: raise TypeError("Data view function definitions can only take 1 or 2 parameters.")
-
-        return new
-
     @property
     def width(self) -> int | None:
         if self._target.width is None:
@@ -164,4 +137,4 @@ class Raw:
         return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__)
 
 
-__all__ = ["Section", "View", "Raw", "Bytes", "Boolean", "Integer", "String"]
+__all__ = ["Section", "View", "Raw", "Converter", "Bytes", "Boolean", "Integer", "String"]

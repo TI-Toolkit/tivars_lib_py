@@ -23,8 +23,8 @@ TIEntry.register(TIProtectedProgram)
 TIEntry.register(TIComplex)
 TIEntry.register(TIComplexList)
 
-# TIEntry.register(TIWindowSettings)
-# TIEntry.register(TIRecallWindow)
+TIEntry.register(TIWindowSettings)
+TIEntry.register(TIRecallWindow)
 # TIEntry.register(TITableRange)
 # TIEntry.register(TIBackup)
 # TIEntry.register(TIApp)
@@ -56,5 +56,6 @@ TIEntry.register(TIComplexList)
 __all__ = ["TIEntry",
            "TIReal", "TIRealList",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
-           "TIComplex", "TIComplexList"
+           "TIComplex", "TIComplexList",
+           "TIWindowSettings", "TIRecallWindow"
            ]

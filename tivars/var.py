@@ -306,14 +306,23 @@ class TIEntry:
 
     @staticmethod
     def _in(value: 'TIEntry', instance: 'TIEntry') -> bytes:
-        raise NotImplementedError
+        return value.data
 
     @staticmethod
     def _out(data: bytes, instance: 'TIEntry') -> 'TIEntry':
-        raise NotImplementedError
+        value = TIEntry()
+
+        value.meta_length = instance.meta_length
+        value.name = instance.name
+        value.version = instance.version
+        value.archived = instance.archived
+
+        value.data = data
+
+        return value
 
     @classmethod
-    def converter(cls):
+    def converter(cls) -> Converter:
         return cls._in, cls._out
 
     @property

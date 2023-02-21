@@ -77,6 +77,16 @@ class TIReal(TIEntry):
 
     _type_id = b'\x00'
 
+    def __init__(self, string: str = None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None,
+                 flags: int = None):
+        super().__init__(string, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        if flags is not None:
+            self.flags = flags
+
     def __int__(self):
         return int(self.float())
 
@@ -123,20 +133,15 @@ class TIReal(TIEntry):
         if isinstance(instance, TIComplex):
             instance.set_flags()
 
-        return value.data
+        return super(TIReal, TIReal)._in(value, instance)
 
     @staticmethod
     def _out(data: bytes, instance: 'TIEntry') -> 'TIReal':
-        real = TIReal()
+        value = super(TIReal, TIReal)._out(data, instance)
+        value.type_id = TIReal._type_id
+        value.__class__ = TIReal
 
-        real.meta_length = instance.meta_length
-        real.name = instance.name
-        real.version = instance.version
-        real.archived = instance.archived
-
-        real.data = data
-
-        return real
+        return value
 
     @property
     def is_complex_component(self) -> bool:
@@ -436,4 +441,4 @@ class TIComplexList(ListVar):
 
 
 __all__ = ["TIReal", "TIComplex", "TIRealList", "TIComplexList",
-           "to_bcd", "from_bcd", "BCD"]
+           "to_bcd", "from_bcd"]
