@@ -260,24 +260,10 @@ class TIEntry:
         """
 
     @Section(8, String)
-    def name(self, value) -> str:
+    def name(self) -> str:
         """
         The name of the entry
-
-        Must be 1 to 8 characters in length
-        Can include any characters A-Z, 0-9, or Θ
-        Cannot start with a digit
         """
-
-        varname = value[:8].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
-        varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
-
-        if not varname or varname[0].isnumeric():
-            warn(f"Var has invalid name: {varname}.",
-                 BytesWarning)
-
-        return varname
 
     @Section(1)
     def version(self) -> bytes:
