@@ -417,4 +417,69 @@ class TIRecallWindow(TIEntry):
         """
 
 
-__all__ = ["TIWindowSettings", "TIRecallWindow"]
+class TITableSettings(TIEntry):
+    extensions = {
+        None: "8xt",
+        TI_82: "82t",
+        TI_83: "83t",
+        TI_82A: "8xt",
+        TI_82P: "8xt",
+        TI_83P: "8xt",
+        TI_84P: "8xt",
+        TI_84T: "8xt",
+        TI_84PCSE: "8xt",
+        TI_84PCE: "8xt",
+        TI_84PCEPY: "8xt",
+        TI_83PCE: "8xt",
+        TI_83PCEEP: "8xt",
+        TI_82AEP: "8xt"
+    }
+
+    _type_id = b'\x11'
+
+    def __init__(self, string: str = None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        super().__init__(string, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        self.raw.data[0:2] = b'\x12\x00'
+
+    @Section(20)
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the table parameter values
+        """
+
+    @View(data, TIReal)[2:11]
+    def TblMin(self, value) -> TIReal:
+        """
+        TblMin: the initial value for the table
+
+        Must be an integer
+        """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer for TblMin, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[11:20]
+    def DeltaTbl(self, value) -> TIReal:
+        """
+        ΔTbl: the increment for the table
+
+        Must be an integer
+        """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer for ΔTbl, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+
+__all__ = ["TIWindowSettings", "TIRecallWindow", "TITableSettings"]

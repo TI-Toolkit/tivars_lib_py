@@ -255,9 +255,9 @@ class WindowTests(unittest.TestCase):
         test_window = TIWindowSettings()
         test_window.open("tests/data/Window.8xw")
 
-        zero, one = TIReal("0", name="WINDOW"), TIReal("1", name="WINDOW")
-        undef = TIReal("1", name="WINDOW", flags=14)
-        tau, pi_twelfths = TIReal("6.283185307", name="WINDOW"), TIReal("0.13089969389957", name="WINDOW")
+        zero, one = TIReal("0", name="Window"), TIReal("1", name="Window")
+        undef = TIReal("1", name="Window", flags=14)
+        tau, pi_twelfths = TIReal("6.283185307", name="Window"), TIReal("0.13089969389957", name="Window")
 
         self.assertEqual(test_window.PlotStart, one)
         self.assertEqual(test_window.PlotStep, one)
@@ -277,22 +277,22 @@ class WindowTests(unittest.TestCase):
         self.assertEqual(test_window.wnMin0, undef)
         self.assertEqual(test_window.wnMin1, undef)
 
-        self.assertEqual(test_window.Xmax, TIReal("10", name="WINDOW"))
-        self.assertEqual(test_window.Xmin, TIReal("-10", name="WINDOW"))
-        self.assertEqual(test_window.Xres, TIReal("2", name="WINDOW"))
-        self.assertEqual(test_window.Xscl, TIReal("1", name="WINDOW"))
+        self.assertEqual(test_window.Xmax, TIReal("10", name="Window"))
+        self.assertEqual(test_window.Xmin, TIReal("-10", name="Window"))
+        self.assertEqual(test_window.Xres, TIReal("2", name="Window"))
+        self.assertEqual(test_window.Xscl, TIReal("1", name="Window"))
 
-        self.assertEqual(test_window.Ymax, TIReal("20", name="WINDOW"))
-        self.assertEqual(test_window.Ymin, TIReal("-20", name="WINDOW"))
-        self.assertEqual(test_window.Yscl, TIReal("2", name="WINDOW"))
+        self.assertEqual(test_window.Ymax, TIReal("20", name="Window"))
+        self.assertEqual(test_window.Ymin, TIReal("-20", name="Window"))
+        self.assertEqual(test_window.Yscl, TIReal("2", name="Window"))
 
     def test_recall(self):
         test_recall = TIRecallWindow()
         test_recall.open("tests/data/RecallWindow.8xz")
 
-        zero, one = TIReal("0", name="RCLWINDW"), TIReal("1", name="RCLWINDW")
-        undef = TIReal("1", name="RCLWINDW", flags=14)
-        tau, pi_twelfths = TIReal("6.283185307", name="RCLWINDW"), TIReal("0.13089969389957", name="RCLWINDW")
+        zero, one = TIReal("0", name="RclWindw"), TIReal("1", name="RclWindw")
+        undef = TIReal("1", name="RclWindw", flags=14)
+        tau, pi_twelfths = TIReal("6.283185307", name="RclWindw"), TIReal("0.13089969389957", name="RclWindw")
 
         self.assertEqual(test_recall.PlotStart, one)
         self.assertEqual(test_recall.PlotStep, one)
@@ -312,11 +312,18 @@ class WindowTests(unittest.TestCase):
         self.assertEqual(test_recall.wnMin0, undef)
         self.assertEqual(test_recall.wnMin1, undef)
 
-        self.assertEqual(test_recall.Xmax, TIReal("10", name="RCLWINDW"))
-        self.assertEqual(test_recall.Xmin, TIReal("-10", name="RCLWINDW"))
-        self.assertEqual(test_recall.Xres, TIReal("1", name="RCLWINDW"))
-        self.assertEqual(test_recall.Xscl, TIReal("1", name="RCLWINDW"))
+        self.assertEqual(test_recall.Xmax, TIReal("10", name="RclWindw"))
+        self.assertEqual(test_recall.Xmin, TIReal("-10", name="RclWindw"))
+        self.assertEqual(test_recall.Xres, TIReal("1", name="RclWindw"))
+        self.assertEqual(test_recall.Xscl, TIReal("1", name="RclWindw"))
 
-        self.assertEqual(test_recall.Ymax, TIReal("10", name="RCLWINDW"))
-        self.assertEqual(test_recall.Ymin, TIReal("-10", name="RCLWINDW"))
-        self.assertEqual(test_recall.Yscl, TIReal("1", name="RCLWINDW"))
+        self.assertEqual(test_recall.Ymax, TIReal("10", name="RclWindw"))
+        self.assertEqual(test_recall.Ymin, TIReal("-10", name="RclWindw"))
+        self.assertEqual(test_recall.Yscl, TIReal("1", name="RclWindw"))
+
+    def test_table(self):
+        test_table = TITableSettings()
+        test_table.open("tests/data/TableRange.8xt")
+
+        self.assertEqual(test_table.TblMin, TIReal("0", name="TblSet"))
+        self.assertEqual(test_table.DeltaTbl, TIReal("1", name="TblSet"))
