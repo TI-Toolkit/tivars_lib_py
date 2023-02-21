@@ -218,13 +218,13 @@ class TIComplex(TIEntry):
         """
 
     @View(data, TIReal)[0:9]
-    def real(self):
+    def real(self) -> TIReal:
         """
         The real part of the complex number
         """
 
     @View(data, TIReal)[9:18]
-    def imag(self):
+    def imag(self) -> TIReal:
         """
         The imaginary part of the complex number
         """
