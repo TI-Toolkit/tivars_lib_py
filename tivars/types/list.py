@@ -43,6 +43,8 @@ class ListVar(TIEntry):
     def length(self, value) -> int:
         """
         The length of the list
+
+        Cannot exceed 999
         """
 
         if value > 999:
