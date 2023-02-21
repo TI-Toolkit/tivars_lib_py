@@ -322,7 +322,7 @@ class TIEntry:
         return value
 
     @classmethod
-    def converter(cls) -> Converter:
+    def _converter(cls) -> Converter:
         return cls._in, cls._out
 
     @property

@@ -26,7 +26,7 @@ String = (lambda value, instance: value.encode('utf8'),
 
 class Section:
     def __init__(self, width: int = None, converter: Converter | type = None):
-        self._in, self._out = converter.converter() if hasattr(converter, "converter") else converter or Bytes
+        self._in, self._out = getattr(converter, "_converter", lambda: converter)() or Bytes
         self._width = width
 
     def __copy__(self) -> 'Section':
