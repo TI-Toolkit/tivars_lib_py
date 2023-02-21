@@ -304,6 +304,18 @@ class TIEntry:
         See individual entry types for how this data is interpreted
         """
 
+    @staticmethod
+    def _in(value: 'TIEntry', instance: 'TIEntry') -> bytes:
+        raise NotImplementedError
+
+    @staticmethod
+    def _out(data: bytes, instance: 'TIEntry') -> 'TIEntry':
+        raise NotImplementedError
+
+    @classmethod
+    def converter(cls):
+        return cls._in, cls._out
+
     @property
     def flash_bytes(self) -> bytes:
         return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]

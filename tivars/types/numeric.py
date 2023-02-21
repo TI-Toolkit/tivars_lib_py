@@ -46,8 +46,8 @@ def read_string(string: str) -> (int, int, bool):
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
-Mantissa = (lambda value, instance: to_bcd(value),
-            lambda data, instance: from_bcd(data))
+BCD = (lambda value, instance: to_bcd(value),
+       lambda data, instance: from_bcd(data))
 
 
 class TIReal(TIEntry):
@@ -97,13 +97,33 @@ class TIReal(TIEntry):
         The exponent has a bias of 0x80
         """
 
-    @View(data, Mantissa)[2:9]
+    @View(data, BCD)[2:9]
     def mantissa(self) -> int:
         """
         The mantissa of the real number
 
         The mantissa is 14 digits stored in BCD format, two digits per byte
         """
+
+    @staticmethod
+    def _in(value: 'TIReal', instance: 'TIEntry') -> bytes:
+        if isinstance(instance, TIComplex):
+            instance.set_flags()
+
+        return value.data
+
+    @staticmethod
+    def _out(data: bytes, instance: 'TIEntry') -> 'TIReal':
+        real = TIReal()
+
+        real.meta_length = instance.meta_length
+        real.name = instance.name
+        real.version = instance.version
+        real.archived = instance.archived
+
+        real.data = data
+
+        return real
 
     @property
     def is_complex_component(self) -> bool:
@@ -151,29 +171,6 @@ class TIReal(TIEntry):
             return string
 
 
-def to_real(data: bytes, instance: TIEntry):
-    real = TIReal()
-
-    real.meta_length = instance.meta_length
-    real.name = instance.name
-    real.version = instance.version
-    real.archived = instance.archived
-
-    real.data = data
-
-    return real
-
-
-def from_real(real: TIReal, instance: TIEntry):
-    if isinstance(instance, TIComplex):
-        instance.set_flags()
-
-    return real.data
-
-
-Real = (from_real, to_real)
-
-
 class TIComplex(TIEntry):
     extensions = {
         None: "8xc",
@@ -202,13 +199,13 @@ class TIComplex(TIEntry):
         Contains two real numbers, the real and imaginary parts
         """
 
-    @View(data, Real)[0:9]
+    @View(data, TIReal)[0:9]
     def real(self):
         """
         The real part of the complex number
         """
 
-    @View(data, Real)[9:18]
+    @View(data, TIReal)[9:18]
     def imag(self):
         """
         The imaginary part of the complex number
@@ -230,7 +227,7 @@ class TIComplex(TIEntry):
         The exponent has a bias of 0x80
         """
 
-    @View(data, Mantissa)[2:9]
+    @View(data, BCD)[2:9]
     def real_mantissa(self) -> int:
         """
         The mantissa of the real part of the complex number
@@ -254,7 +251,7 @@ class TIComplex(TIEntry):
         The exponent has a bias of 0x80
         """
 
-    @View(data, Mantissa)[11:18]
+    @View(data, BCD)[11:18]
     def imag_mantissa(self) -> int:
         """
         The mantissa of the imaginary part of the complex number
@@ -407,4 +404,5 @@ class TIComplexList(ListVar):
     _type_id = b'\x0D'
 
 
-__all__ = ["TIReal", "TIComplex", "TIRealList", "TIComplexList"]
+__all__ = ["TIReal", "TIComplex", "TIRealList", "TIComplexList",
+           "to_bcd", "from_bcd", "BCD"]

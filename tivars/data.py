@@ -11,6 +11,9 @@ _T = TypeVar('_T')
 Converter = tuple[Callable[[_T, _E], bytes], Callable[[bytes, _E], _T]]
 
 
+Bytes = (lambda value, instance: value,
+         lambda data, instance: data)
+
 Boolean = (lambda value, instance: b'\x80' if value else b'\x00',
            lambda data, instance: data == b'\x80')
 
@@ -23,7 +26,7 @@ String = (lambda value, instance: value.encode('utf8'),
 
 class Section:
     def __init__(self, width: int = None, converter: Converter = None):
-        self._in, self._out = converter or (lambda value, instance: value, lambda data, instance: data)
+        self._in, self._out = converter.converter() if hasattr(converter, "converter") else converter or Bytes
         self._width = width
 
     def __copy__(self) -> 'Section':
@@ -86,9 +89,9 @@ class Section:
 
 
 class View:
-    def __init__(self, target: Section, converter: Converter = None, indices: slice = slice(None)):
+    def __init__(self, target: Section, converter, indices: slice = slice(None)):
         self._target = target
-        self._in, self._out = converter or (lambda value, instance: value, lambda data, instance: data)
+        self._in, self._out = converter.converter() if hasattr(converter, "converter") else converter or Bytes
         self._indices = indices
 
     def __copy__(self) -> 'View':
@@ -161,4 +164,4 @@ class Raw:
         return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__)
 
 
-__all__ = ["Section", "View", "Raw", "Boolean", "Integer", "String"]
+__all__ = ["Section", "View", "Raw", "Bytes", "Boolean", "Integer", "String"]
