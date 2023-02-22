@@ -26,12 +26,12 @@ class TIWindowSettings(TIEntry):
 
     _type_id = b'\x0F'
 
-    def __init__(self, string: str = None, *,
+    def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
 
-        super().__init__(string, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.raw.data[0:3] = b'\xD0\x00\x00'
 
@@ -457,11 +457,11 @@ class TITableSettings(TIEntry):
 
     _type_id = b'\x11'
 
-    def __init__(self, string: str = None, *,
+    def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        super().__init__(string, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.raw.data[0:2] = b'\x12\x00'
 

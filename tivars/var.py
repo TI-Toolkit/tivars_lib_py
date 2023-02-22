@@ -1,6 +1,6 @@
 import copy
+import inspect
 import io
-import re
 
 from typing import BinaryIO
 from warnings import warn
@@ -177,7 +177,7 @@ class TIEntry:
 
     _type_id = None
 
-    def __init__(self, string: str = None, *,
+    def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: bytearray | bytes = None):
@@ -202,8 +202,8 @@ class TIEntry:
             self.data = bytearray(data)
         else:
             self.clear()
-            if string is not None:
-                self.load_string(string)
+            if init is not None:
+                self.load(init)
 
     def __bool__(self) -> bool:
         return not self.is_empty
@@ -347,6 +347,18 @@ class TIEntry:
             self.archived = False
         else:
             raise TypeError(f"This entry does not support archiving.")
+
+    def load(self, data):
+        for name in dir(self):
+            if name.startswith("load_"):
+                loader = getattr(self, name)
+                arg_type = [t for n, t in inspect.get_annotations(loader).items() if n not in ("self", "return")][0]
+
+                if isinstance(data, arg_type):
+                    loader(data)
+                    return
+
+        raise ValueError("could not find valid loader")
 
     def load_bytes(self, data: bytes):
         data = io.BytesIO(data)

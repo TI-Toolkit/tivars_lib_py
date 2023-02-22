@@ -239,7 +239,7 @@ class NumericTests(unittest.TestCase):
         test_comp_list = TIComplexList()
         test_comp_list.open("tests/data/ComplexList.8xl")
 
-        test_list = [TIComplex("1 + i"), TIComplex("-3 + 2i"), TIComplex("4")]
+        test_list = [TIComplex(1 + 1j), TIComplex("-3 + 2i"), TIComplex(4 + 0j)]
 
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
@@ -249,9 +249,9 @@ class NumericTests(unittest.TestCase):
         test_matrix = TIMatrix()
         test_matrix.open("tests/data/Matrix_3x3_standard.8xm")
 
-        test_array = [[TIReal("0.5"), TIReal("-1"), TIReal("2.6457513110646")],
+        test_array = [[TIReal(0.5), TIReal(-1.0), TIReal("2.6457513110646")],
                       [TIReal("2.7386127875258"), TIReal("0.5"), TIReal("3.1415926535898")],
-                      [TIReal("1"), TIReal("99999999"), TIReal("0")]]
+                      [TIReal("1"), TIReal(99999999), TIReal(0)]]
 
         self.assertEqual(test_matrix.height, 3)
         self.assertEqual(test_matrix.width, 3)
@@ -267,7 +267,7 @@ class WindowTests(unittest.TestCase):
         test_window = TIWindowSettings()
         test_window.open("tests/data/Window.8xw")
 
-        zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1", flags=14)
+        zero, one, undef = TIReal(0), TIReal(1), TIReal(1, flags=14)
         tau, pi_twelfths = TIReal("6.283185307"), TIReal("0.13089969389957")
 
         self.assertEqual(test_window.PlotStart, one)
@@ -290,11 +290,11 @@ class WindowTests(unittest.TestCase):
 
         self.assertEqual(test_window.Xmax, TIReal("10"))
         self.assertEqual(test_window.Xmin, TIReal("-10"))
-        self.assertEqual(test_window.Xres, TIReal("2"))
+        self.assertEqual(test_window.Xres, TIReal(2))
         self.assertEqual(test_window.Xscl, TIReal("1"))
 
         self.assertEqual(test_window.Ymax, TIReal("20"))
-        self.assertEqual(test_window.Ymin, TIReal("-20"))
+        self.assertEqual(test_window.Ymin, TIReal(-20))
         self.assertEqual(test_window.Yscl, TIReal("2"))
 
     def test_recall(self):
@@ -302,7 +302,7 @@ class WindowTests(unittest.TestCase):
         test_recall.open("tests/data/RecallWindow.8xz")
 
         zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1", flags=14)
-        tau, pi_twelfths = TIReal("6.283185307"), TIReal("0.13089969389957")
+        tau, pi_twelfths = TIReal(6.283185307), TIReal("0.13089969389957")
 
         self.assertEqual(test_recall.PlotStart, one)
         self.assertEqual(test_recall.PlotStep, one)
@@ -323,17 +323,17 @@ class WindowTests(unittest.TestCase):
         self.assertEqual(test_recall.wnMin1, undef)
 
         self.assertEqual(test_recall.Xmax, TIReal("10"))
-        self.assertEqual(test_recall.Xmin, TIReal("-10"))
+        self.assertEqual(test_recall.Xmin, TIReal(-10.0))
         self.assertEqual(test_recall.Xres, TIReal("1"))
         self.assertEqual(test_recall.Xscl, TIReal("1"))
 
         self.assertEqual(test_recall.Ymax, TIReal("10"))
         self.assertEqual(test_recall.Ymin, TIReal("-10"))
-        self.assertEqual(test_recall.Yscl, TIReal("1"))
+        self.assertEqual(test_recall.Yscl, TIReal(1))
 
     def test_table(self):
         test_table = TITableSettings()
         test_table.open("tests/data/TableRange.8xt")
 
-        self.assertEqual(test_table.TblMin, TIReal("0"))
+        self.assertEqual(test_table.TblMin, TIReal(0.0))
         self.assertEqual(test_table.DeltaTbl, TIReal("1"))

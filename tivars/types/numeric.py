@@ -1,5 +1,7 @@
 import decimal as dec
 
+from warnings import warn
+
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
@@ -75,18 +77,18 @@ class TIReal(TIEntry):
 
     _type_id = b'\x00'
 
-    def __init__(self, string: str = None, *,
+    def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None,
                  flags: int = None):
-        super().__init__(string, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if flags is not None:
             self.flags = flags
 
     def __int__(self):
-        return int(self.float())
+        return self.int()
 
     def __float__(self):
         return self.float()
@@ -169,6 +171,12 @@ class TIReal(TIEntry):
     def float(self):
         return float(self.decimal())
 
+    def load_int(self, decimal: int):
+        self.load_decimal(dec.Decimal(decimal))
+
+    def int(self):
+        return int(self.decimal())
+
     def load_string(self, string: str):
         self.mantissa, self.exponent, neg = read_string(string)
 
@@ -203,6 +211,21 @@ class TIComplex(TIEntry):
     }
 
     _type_id = b'\x0C'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        if data:
+            if self.real_flags & 0b1100 < 0b1100:
+                warn("Bits 2 and 3 of the real component flags should be set in a complex entry.",
+                     BytesWarning)
+
+            if self.imag_flags & 0b1100 < 0b1100:
+                warn("Bits 2 and 3 of the imaginary component flags should be set in a complex entry.",
+                     BytesWarning)
 
     def __complex__(self):
         return self.complex()
@@ -292,6 +315,7 @@ class TIComplex(TIEntry):
         imag.load_float(comp.imag)
 
         self.real, self.imag = real, imag
+        self.set_flags()
 
     def complex(self):
         return self.real.float() + 1j * self.imag.float()
@@ -312,7 +336,6 @@ class TIComplex(TIEntry):
 
         self.real = TIReal(parts[0])
         self.imag = TIReal(parts[1].replace("i", "") if parts[1] != "i" else "1")
-
         self.set_flags()
 
     def string(self) -> str:
