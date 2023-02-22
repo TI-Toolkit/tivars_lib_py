@@ -87,10 +87,10 @@ class TIReal(TIEntry):
         if flags is not None:
             self.flags = flags
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.int()
 
-    def __float__(self):
+    def __float__(self) -> float:
         return self.float()
 
     @Section(9)
@@ -168,13 +168,13 @@ class TIReal(TIEntry):
     def load_float(self, decimal: float):
         self.load_decimal(dec.Decimal(decimal))
 
-    def float(self):
+    def float(self) -> float:
         return float(self.decimal())
 
     def load_int(self, decimal: int):
         self.load_decimal(dec.Decimal(decimal))
 
-    def int(self):
+    def int(self) -> int:
         return int(self.decimal())
 
     def load_string(self, string: str):
