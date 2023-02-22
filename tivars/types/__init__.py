@@ -11,7 +11,7 @@ from ..var import TIEntry
 
 TIEntry.register(TIReal)
 TIEntry.register(TIRealList)
-# TIEntry.register(TIMatrix)
+TIEntry.register(TIMatrix)
 TIEntry.register(TIEquation)
 TIEntry.register(TIString)
 TIEntry.register(TIProgram)
@@ -56,7 +56,7 @@ TIEntry.register(TITableSettings)
 
 
 __all__ = ["TIEntry",
-           "TIReal", "TIRealList",
+           "TIReal", "TIRealList", "TIMatrix",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
            "TIComplex", "TIComplexList",
            "TIWindowSettings", "TIRecallWindow", "TITableSettings"

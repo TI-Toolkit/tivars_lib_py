@@ -74,8 +74,6 @@ class ListVar(TIEntry):
             entry = self.item_type()
 
             entry.meta_length = self.meta_length
-            entry.name = self.name
-            entry.version = self.version
             entry.archived = self.archived
 
             entry.data = self.data[entry.data_length * i + 2:][:entry.data_length]

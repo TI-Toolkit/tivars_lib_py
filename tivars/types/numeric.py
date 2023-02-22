@@ -178,7 +178,7 @@ class TIReal(TIEntry):
     def string(self) -> str:
         string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
 
-        if string.startswith("0"):
+        if string.startswith("0e"):
             return "0"
         else:
             return string

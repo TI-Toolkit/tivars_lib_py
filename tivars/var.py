@@ -303,9 +303,7 @@ class TIEntry:
 
     @classmethod
     def _out(cls, data: bytes, instance: 'TIEntry') -> 'TIEntry':
-        return cls(for_flash=bool(instance.flash_bytes), name=instance.name,
-                   version=instance.version, archived=instance.archived,
-                   data=data)
+        return cls(for_flash=bool(instance.flash_bytes), archived=instance.archived, data=data)
 
     @classmethod
     def _converter(cls) -> Converter:

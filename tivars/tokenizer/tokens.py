@@ -1,6 +1,6 @@
 import os.path as path
 
-from tivars.tokenizer import load_tokens_xml
+from tivars.tokenizer.parse import load_tokens_xml
 
 
 _dir = path.dirname(__file__)

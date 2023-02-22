@@ -1,4 +1,5 @@
 from .parse import *
+from .tokens import *
 
 
 def decode(bytestream: bytearray, byte_map: ByteMap) -> str:

@@ -1,3 +1,5 @@
+from warnings import warn
+
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
@@ -22,7 +24,7 @@ class TIMatrix(TIEntry):
         TI_82AEP: "8xm"
     }
 
-    type_id = b'\x02'
+    _type_id = b'\x02'
 
     @Section()
     def data(self) -> bytearray:
@@ -41,12 +43,70 @@ class TIMatrix(TIEntry):
         """
 
     @View(data, Integer)[1:2]
-    def width(self) -> int:
+    def height(self) -> int:
         """
-        The number of columns in the matrix
+        The number of rows in the matrix
 
         Cannot exceed 255, though TI-OS imposes a limit of 99
         """
+
+    @property
+    def size(self) -> int:
+        return self.width * self.height
+
+    def load_bytes(self, data: bytes):
+        super().load_bytes(data)
+
+        if self.data_length // TIReal.data.width != self.size:
+            warn(f"The matrix has an unexpected size "
+                 f"(expected {self.data_length // TIReal.data.width}, got {self.size}).",
+                 BytesWarning)
+
+    def load_matrix(self, matrix: list[list[TIReal]]):
+        if len({len(row) for row in matrix}) != 1:
+            raise IndexError("matrix has uneven rows")
+
+        self.clear()
+        self.data += int.to_bytes(len(matrix[0]), 2, 'little')
+        self.data += int.to_bytes(len(matrix), 2, 'little')
+
+        for row in matrix:
+            for entry in row:
+                self.data += entry.data
+
+    def matrix(self) -> list[list[TIReal]]:
+        matrix = []
+        for i in range(self.height):
+            row = []
+            for j in range(self.width):
+                entry = TIReal()
+
+                entry.meta_length = self.meta_length
+                entry.archived = self.archived
+
+                entry.data = self.data[entry.data_length * (self.width * i + j) + 2:][:entry.data_length]
+                row.append(entry)
+
+            matrix.append(row.copy())
+
+        return matrix
+
+    def load_string(self, string: str):
+        matrix = []
+
+        for string in ''.join(string.split())[1:-1].split("],["):
+            row = []
+            for item in string.replace("[", "").replace("]", "").split(","):
+                entry = TIReal()
+                entry.load_string(item)
+                row.append(entry)
+
+            matrix.append(row.copy())
+
+        self.load_matrix(matrix)
+
+    def string(self) -> str:
+        return "[" + ', '.join(f"[{', '.join(str(entry) for entry in row)}]" for row in self.matrix()) + "]"
 
 
 __all__ = ["TIMatrix"]
