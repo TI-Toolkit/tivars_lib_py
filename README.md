@@ -14,7 +14,7 @@ Official releases are coming soon. All versions require Python 3.10+ to run.
 
 ### Creating vars
 
-Every var file has two parts: a _header_ and a number of _entries_, where entry contains the data for a single variable. Usually, var files contain just one entry; in these cases, there's not much distinction between a var and an entry for the purposes of messing with its data.
+Every var file has two parts: a _header_ and a number of _entries_, where an entry contains the data for a single variable. Usually, var files contain just one entry; in these cases, there's not much distinction between a var and an entry for the purposes of messing with its data.
 
 To create an empty entry, instantiate its corresponding type from `tivars.types`. You can specify additional parameters as you like:
 
@@ -78,7 +78,9 @@ Export a var as bytes or straight to a file:
 
 ```python
 my_var.save("HELLO.8xp")
-my_var.save()                               # Infer the filename
+
+# Infer the filename and extension
+my_var.save()
 
 with open("HELLO.8xp", 'wb+') as file:
     file.write(my_var.bytes())
