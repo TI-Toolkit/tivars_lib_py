@@ -342,6 +342,14 @@ class TIEntry:
     def clear(self):
         self.raw.data = bytearray(type(self).data.width or 0)
 
+    def coerce(self):
+        if self._type_id is None:
+            try:
+                self.__class__ = TIEntry.type_ids[self.raw.type_id]
+
+            except KeyError:
+                raise TypeError(f"type id 0x{self.raw.type_id.hex()} not recognized")
+
     def unarchive(self):
         if self.flash_bytes:
             self.archived = False
@@ -360,7 +368,7 @@ class TIEntry:
 
         raise ValueError("could not find valid loader")
 
-    def load_bytes(self, data: bytes):
+    def load_bytes(self, data: bytes, coerce: bool = True):
         data = io.BytesIO(data)
 
         # Read meta length
@@ -374,9 +382,10 @@ class TIEntry:
 
         if self._type_id is None:
             try:
-                self.__class__ = TIEntry.type_ids[self.raw.type_id]
+                if coerce:
+                    self.coerce()
 
-            except KeyError:
+            except TypeError:
                 warn(f"Type id 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
                      BytesWarning)
 
