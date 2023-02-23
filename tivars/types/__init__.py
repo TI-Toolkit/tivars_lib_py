@@ -1,10 +1,11 @@
 from .exact import *
 from .fraction import *
+from .gdb import *
 from .list import *
 from .matrix import *
 from .numeric import *
+from .settings import *
 from .tokenized import *
-from .window import *
 
 from ..var import TIEntry
 
@@ -17,7 +18,7 @@ TIEntry.register(TIString)
 TIEntry.register(TIProgram)
 TIEntry.register(TIProtectedProgram)
 # TIEntry.register(TIPicture)
-# TIEntry.register(TIGraphDatabase)
+# TIEntry.register(TIGDB)
 
 
 # TIEntry.register(TISmartEquation)
