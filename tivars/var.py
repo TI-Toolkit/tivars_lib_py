@@ -447,10 +447,14 @@ class TIEntry:
     def bytes(self) -> bytes:
         return self.raw.bytes()
 
+    def load_data_section(self, data: io.BytesIO):
+        self.raw.data = bytearray(data.read(int.from_bytes(data.read(2), 'little')))
+
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         # Load header
         header = TIHeader()
-        header.load_bytes(file.read(55))
+        header.load_from_file(file)
+        file.seek(2, 1)
 
         # Seek to offset
         while offset:
@@ -602,7 +606,7 @@ class TIVar:
     def clear(self):
         self.entries.clear()
 
-    def load_bytes(self, data: bytes):
+    def load_bytes(self, data: ByteString):
         data = io.BytesIO(data)
 
         # Read header
