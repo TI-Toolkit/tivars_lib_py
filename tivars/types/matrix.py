@@ -2,11 +2,11 @@ from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIEntry
+from ..var import TIType
 from .numeric import TIReal
 
 
-class TIMatrix(TIEntry):
+class TIMatrix(TIType):
     extensions = {
         None: "8xm",
         TI_82: "82m",

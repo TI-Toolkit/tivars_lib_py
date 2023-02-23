@@ -1,15 +1,16 @@
 import re
 
+from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIEntry
+from ..var import TIType
 from .numeric import TIReal, TIComplex
 
 
-class ListVar(TIEntry):
-    item_type = TIEntry
+class ListVar(TIType):
+    item_type = TIType
 
     @Section(8, String)
     def name(self, value) -> str:
@@ -53,7 +54,7 @@ class ListVar(TIEntry):
 
         return value
 
-    def load_bytes(self, data: bytes):
+    def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
         if self.data_length // self.item_type.data.width != self.length:

@@ -2,7 +2,7 @@ import copy
 import inspect
 import io
 
-from typing import BinaryIO
+from typing import BinaryIO, ByteString
 from warnings import warn
 
 from tivars.models import *
@@ -180,7 +180,7 @@ class TIEntry:
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray | bytes = None):
+                 data: ByteString = None):
         self.raw = TIEntryRaw()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
@@ -258,7 +258,7 @@ class TIEntry:
 
         return len(self.data)
 
-    @Section(1)
+    @Section(1, Bytes)
     def type_id(self) -> bytes:
         """
         The type ID of the entry
@@ -272,7 +272,7 @@ class TIEntry:
         The name of the entry
         """
 
-    @Section(1)
+    @Section(1, Bytes)
     def version(self) -> bytes:
         """
         The version number of the entry
@@ -346,6 +346,7 @@ class TIEntry:
         if self._type_id is None:
             try:
                 self.__class__ = TIEntry.type_ids[self.raw.type_id]
+                self.coerce()
 
             except KeyError:
                 raise TypeError(f"type id 0x{self.raw.type_id.hex()} not recognized")
@@ -368,7 +369,7 @@ class TIEntry:
 
         raise ValueError("could not find valid loader")
 
-    def load_bytes(self, data: bytes, coerce: bool = True):
+    def load_bytes(self, data: ByteString):
         data = io.BytesIO(data)
 
         # Read meta length
@@ -382,8 +383,7 @@ class TIEntry:
 
         if self._type_id is None:
             try:
-                if coerce:
-                    self.coerce()
+                self.coerce()
 
             except TypeError:
                 warn(f"Type id 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
@@ -457,7 +457,8 @@ class TIEntry:
             file.seek(self.next_entry_length(file), 1)
             offset -= 1
 
-        self.load_bytes(file.read())
+        self.load_bytes(file.read(self.next_entry_length(file)))
+        file.seek(2, 1)
 
     def open(self, filename: str):
         if self._type_id is not None and \
@@ -488,6 +489,11 @@ class TIEntry:
 
     def string(self) -> str:
         raise NotImplementedError
+
+
+class TIType(TIEntry):
+    def coerce(self):
+        pass
 
 
 class TIVar:
@@ -651,4 +657,4 @@ class TIVar:
             file.write(self.bytes())
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVar"]
+__all__ = ["TIHeader", "TIEntry", "TIType", "TIVar"]

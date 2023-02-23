@@ -1,15 +1,16 @@
 import re
 
+from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
 from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
 from ..data import *
-from ..var import TIEntry
+from ..var import TIType
 
 
-class TokenizedVar(TIEntry):
+class TokenizedVar(TIType):
     extensions = {
         None: "8xp",
         TI_82: "82p",
@@ -93,7 +94,7 @@ class TokenizedVar(TIEntry):
 
         return int.to_bytes(version, 1, 'little')
 
-    def load_bytes(self, data: bytes):
+    def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
         if self.raw.version != (version := self.derive_version()):

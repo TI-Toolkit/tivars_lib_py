@@ -4,7 +4,7 @@ from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIEntry
+from ..var import TIType
 
 
 def to_bcd(number: int) -> bytes:
@@ -57,7 +57,7 @@ BCD = (lambda value, instance: to_bcd(value),
        lambda data, instance: from_bcd(data))
 
 
-class TIReal(TIEntry):
+class TIReal(TIType):
     extensions = {
         None: "8xn",
         TI_82: "82n",
@@ -192,7 +192,7 @@ class TIReal(TIEntry):
             return string
 
 
-class TIComplex(TIEntry):
+class TIComplex(TIType):
     extensions = {
         None: "8xc",
         TI_82: "",
