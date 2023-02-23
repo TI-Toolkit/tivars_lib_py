@@ -1,3 +1,4 @@
+from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
@@ -6,7 +7,28 @@ from ..var import TIType
 from .numeric import TIReal
 
 
-class TIWindowSettings(TIType):
+class SettingsVar(TIType):
+    leading_bytes = b'\x00\x00'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        self.raw.data[:len(self.leading_bytes)] = self.leading_bytes
+
+    def load_bytes(self, data: ByteString):
+        super().load_bytes(data)
+
+        if self.data[0:len(self.leading_bytes)] != self.leading_bytes:
+            warn(f"The entry has unexpected leading bytes "
+                 f"(expected {self.leading_bytes}, got {self.data[0:len(self.leading_bytes)]}).",
+                 BytesWarning)
+
+
+class TIWindowSettings(SettingsVar):
     extensions = {
         None: "8xw",
         TI_82: "82w",
@@ -25,15 +47,7 @@ class TIWindowSettings(TIType):
     }
 
     _type_id = b'\x0F'
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.raw.data[0:3] = b'\xD0\x00\x00'
+    leading_bytes = b'\xD0\x00\x00'
 
     @Section(210)
     def data(self) -> bytearray:
@@ -222,7 +236,7 @@ class TIWindowSettings(TIType):
         """
 
 
-class TIRecallWindow(TIType):
+class TIRecallWindow(SettingsVar):
     extensions = {
         None: "8xz",
         TI_82: "82z",
@@ -241,14 +255,7 @@ class TIRecallWindow(TIType):
     }
 
     _type_id = b'\x10'
-
-    def __init__(self, string: str = None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        super().__init__(string, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.raw.data[0:2] = b'\xCF\x00'
+    leading_bytes = b'\xCF\x00'
 
     @Section(209)
     def data(self) -> bytearray:
@@ -437,7 +444,7 @@ class TIRecallWindow(TIType):
         """
 
 
-class TITableSettings(TIType):
+class TITableSettings(SettingsVar):
     extensions = {
         None: "8xt",
         TI_82: "82t",
@@ -456,14 +463,7 @@ class TITableSettings(TIType):
     }
 
     _type_id = b'\x11'
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.raw.data[0:2] = b'\x12\x00'
+    leading_bytes = b'\x12\x00'
 
     @Section(20)
     def data(self) -> bytearray:

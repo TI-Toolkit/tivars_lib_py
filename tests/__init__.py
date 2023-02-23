@@ -262,7 +262,7 @@ class NumericTests(unittest.TestCase):
                                            " [1, 99999999, 0]]")
 
 
-class WindowTests(unittest.TestCase):
+class SettingsTests(unittest.TestCase):
     def test_window(self):
         test_window = TIWindowSettings()
         test_window.open("tests/data/Window.8xw")

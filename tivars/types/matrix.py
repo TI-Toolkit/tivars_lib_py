@@ -1,3 +1,4 @@
+from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
@@ -54,7 +55,7 @@ class TIMatrix(TIType):
     def size(self) -> int:
         return self.width * self.height
 
-    def load_bytes(self, data: bytes):
+    def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
         if self.data_length // TIReal.data.width != self.size:
