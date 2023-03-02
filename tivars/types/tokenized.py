@@ -1,3 +1,4 @@
+import io
 import re
 
 from typing import ByteString
@@ -7,10 +8,10 @@ from tivars.models import *
 from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
 from ..data import *
-from ..var import TIType
+from ..var import TIEntry
 
 
-class TokenizedVar(TIType):
+class TokenizedVar(TIEntry):
     extensions = {
         None: "8xp",
         TI_82: "82p",
@@ -56,6 +57,20 @@ class TokenizedVar(TIType):
         b'\xEF\x0E', b'\xEF\x0F', b'\xEF\x10'
     ]
 
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the tokens and their total size
+        """
+
+    @View(data, Integer)[0:2]
+    def length(self) -> int:
+        """
+        The total size of the tokens
+        """
+
     def derive_version(self) -> bytes:
         def has_bytes_in(prefix: bytes, start: int, end: int):
             return any(prefix + int.to_bytes(byte, 1, 'little') in self.raw.data for byte in range(start, end + 1))
@@ -100,6 +115,10 @@ class TokenizedVar(TIType):
         if self.raw.version != (version := self.derive_version()):
             warn(f"The version is incorrect (expected {version}, got {self.raw.version}).",
                  BytesWarning)
+
+    def load_data_section(self, data: io.BytesIO):
+        data_length = int.from_bytes(data.read(2), 'little')
+        self.raw.data = bytearray(int.to_bytes(data_length, 2, 'little') + data.read(data_length))
 
     def load_string(self, string: str, *, model: TIModel = None):
         token_map = self.tokens[model or TI_84PCEPY][0]

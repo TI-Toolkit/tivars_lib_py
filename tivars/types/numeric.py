@@ -1,24 +1,30 @@
+import copy
 import decimal as dec
 
 from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIType
+from ..flags import *
+from ..var import TIEntry
 
 
-def to_bcd(number: int) -> bytes:
-    return int.to_bytes(int(str(number), 16), 7, 'big')
+class BCD(Converter):
+    _T = int
 
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        value = 0
+        for byte in data:
+            value *= 100
+            tens, ones = divmod(byte, 16)
+            value += 10 * tens + ones
 
-def from_bcd(bcd: bytes) -> int:
-    number = 0
-    for byte in bcd:
-        number *= 100
-        tens, ones = divmod(byte, 16)
-        number += 10 * tens + ones
+        return value
 
-    return number
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        return int.to_bytes(int(str(value), 16), 7, 'big')
 
 
 def read_string(string: str) -> (int, int, bool):
@@ -53,11 +59,20 @@ def read_string(string: str) -> (int, int, bool):
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
-BCD = (lambda value, instance: to_bcd(value),
-       lambda data, instance: from_bcd(data))
+class FloatFlags(Flags):
+    UNDEFINED = {1: 1}
+    DEFINED = {1: 0}
+    COMPLEX_COMPONENT = {1: 0, 2: 1, 3: 1}
+    MODIFIED = {6: 1}
+    POSITIVE = {7: 0}
+    NEGATIVE = {7: 1}
+
+    NEGATE = {7: -1}
 
 
-class TIReal(TIType):
+class TIReal(TIEntry):
+    _T = 'TIReal'
+
     extensions = {
         None: "8xn",
         TI_82: "82n",
@@ -81,17 +96,22 @@ class TIReal(TIType):
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None,
-                 flags: int = None):
+                 flags: dict[int, int] = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if flags is not None:
-            self.flags = flags
+            self.flags |= flags
 
     def __int__(self) -> int:
         return self.int()
 
     def __float__(self) -> float:
         return self.float()
+
+    def __neg__(self) -> 'TIReal':
+        negated = copy.copy(self)
+        negated.flags |= FloatFlags.NEGATE
+        return negated
 
     @Section(9)
     def data(self) -> bytearray:
@@ -101,8 +121,8 @@ class TIReal(TIType):
         Contains flags, a mantissa, and an exponent
         """
 
-    @View(data, Integer)[0:1]
-    def flags(self) -> int:
+    @View(data, FloatFlags)[0:1]
+    def flags(self) -> FloatFlags:
         """
         Flags for the real number
 
@@ -129,30 +149,26 @@ class TIReal(TIType):
         """
 
     @classmethod
-    def _in(cls, value: 'TIReal', instance: 'TIEntry') -> bytes:
+    def set(cls, value: _T, instance) -> bytes:
         if isinstance(instance, TIComplex):
             instance.set_flags()
 
-        return super(TIReal, TIReal)._in(value, instance)
+        return super(TIReal, TIReal).set(value, instance)
 
     @property
     def is_complex_component(self) -> bool:
-        return bool(self.flags & 1 << 2 & 1 << 3 & ~1 << 1)
+        return FloatFlags.COMPLEX_COMPONENT in self.flags
 
     @property
     def is_undefined(self) -> bool:
-        return bool(self.flags & 1 << 1)
+        return FloatFlags.UNDEFINED in self.flags
 
     @property
     def sign(self) -> int:
-        return -1 if self.flags & 1 << 7 else 1
+        return -1 if FloatFlags.NEGATIVE in self.flags else 1
 
     def make_complex_component(self):
-        self.flags |= 1 << 3 | 1 << 2
-        self.flags &= ~1 << 1
-
-    def negate(self):
-        self.flags ^= 1 << 7
+        self.flags |= FloatFlags.COMPLEX_COMPONENT
 
     def load_decimal(self, decimal: dec.Decimal):
         self.load_string(str(decimal))
@@ -181,7 +197,7 @@ class TIReal(TIType):
         self.mantissa, self.exponent, neg = read_string(string)
 
         if neg:
-            self.negate()
+            self.flags |= FloatFlags.NEGATE
 
     def string(self) -> str:
         string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
@@ -192,7 +208,7 @@ class TIReal(TIType):
             return string
 
 
-class TIComplex(TIType):
+class TIComplex(TIEntry):
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -219,11 +235,11 @@ class TIComplex(TIType):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if data:
-            if self.real_flags & 0b1100 < 0b1100:
+            if FloatFlags.COMPLEX_COMPONENT not in self.real_flags:
                 warn("Bits 2 and 3 of the real component flags should be set in a complex entry.",
                      BytesWarning)
 
-            if self.imag_flags & 0b1100 < 0b1100:
+            if FloatFlags.COMPLEX_COMPONENT not in self.imag_flags:
                 warn("Bits 2 and 3 of the imaginary component flags should be set in a complex entry.",
                      BytesWarning)
 
@@ -250,8 +266,8 @@ class TIComplex(TIType):
         The imaginary part of the complex number
         """
 
-    @View(data, Integer)[0:1]
-    def real_flags(self) -> int:
+    @View(data, FloatFlags)[0:1]
+    def real_flags(self) -> FloatFlags:
         """
         Flags for the real part of the complex number
         Bits 2 and 3 are set
@@ -273,8 +289,8 @@ class TIComplex(TIType):
         The mantissa is 14 digits stored in BCD format, two digits per byte
         """
 
-    @View(data, Integer)[9:10]
-    def imag_flags(self) -> int:
+    @View(data, FloatFlags)[9:10]
+    def imag_flags(self) -> FloatFlags:
         """
         Flags for the imaginary part of the complex number
         Bits 2 and 3 are set
@@ -302,11 +318,8 @@ class TIComplex(TIType):
         return self.real, self.imag
 
     def set_flags(self):
-        self.real_flags |= 1 << 3 | 1 << 2
-        self.real_flags &= ~1 << 1
-
-        self.imag_flags |= 1 << 3 | 1 << 2
-        self.imag_flags &= ~1 << 1
+        self.real_flags |= FloatFlags.COMPLEX_COMPONENT
+        self.imag_flags |= FloatFlags.COMPLEX_COMPONENT
 
     def load_complex(self, comp: complex):
         real, imag = TIReal(), TIReal()
@@ -346,5 +359,4 @@ class TIComplex(TIType):
             case _, _: return f"{self.real} + {self.imag}[i]".replace("+ -", "- ")
 
 
-__all__ = ["TIReal", "TIComplex",
-           "to_bcd", "from_bcd"]
+__all__ = ["TIReal", "TIComplex", "BCD", "FloatFlags"]

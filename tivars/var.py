@@ -164,7 +164,7 @@ class TIEntryRaw(Raw):
         return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
 
 
-class TIEntry:
+class TIEntry(Converter):
     flash_only = False
 
     extensions = {None: "8xg"}
@@ -298,16 +298,12 @@ class TIEntry:
         """
 
     @classmethod
-    def _in(cls, value: 'TIEntry', instance: 'TIEntry') -> bytes:
-        return value.data
-
-    @classmethod
-    def _out(cls, data: bytes, instance: 'TIEntry') -> 'TIEntry':
+    def get(cls, data: bytes, instance) -> 'TIEntry':
         return cls(for_flash=bool(instance.flash_bytes), archived=instance.archived, data=data)
 
     @classmethod
-    def _converter(cls) -> Converter:
-        return cls._in, cls._out
+    def set(cls, value: 'TIEntry', instance) -> bytes:
+        return value.data
 
     @property
     def flash_bytes(self) -> bytes:
@@ -381,15 +377,7 @@ class TIEntry:
         # Read and check type ID
         self.raw.type_id = data.read(1)
 
-        if self._type_id is None:
-            try:
-                self.coerce()
-
-            except TypeError:
-                warn(f"Type id 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
-                     BytesWarning)
-
-        elif self.raw.type_id != self._type_id:
+        if self._type_id is not None and self.raw.type_id != self._type_id:
             if self.raw.type_id in TIEntry.type_ids:
                 warn(f"The entry type is incorrect (expected {type(self)}, got {TIEntry.type_ids[self.raw.type_id]}).",
                      BytesWarning)
@@ -444,11 +432,18 @@ class TIEntry:
 
         self.raw.data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
 
+        try:
+            self.coerce()
+
+        except TypeError:
+            warn(f"Type id 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
+                 BytesWarning)
+
     def bytes(self) -> bytes:
         return self.raw.bytes()
 
     def load_data_section(self, data: io.BytesIO):
-        self.raw.data = bytearray(data.read(int.from_bytes(data.read(2), 'little')))
+        self.raw.data = bytearray(data.read(type(self).data.width))
 
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         # Load header
@@ -493,11 +488,6 @@ class TIEntry:
 
     def string(self) -> str:
         raise NotImplementedError
-
-
-class TIType(TIEntry):
-    def coerce(self):
-        pass
 
 
 class TIVar:
@@ -661,4 +651,4 @@ class TIVar:
             file.write(self.bytes())
 
 
-__all__ = ["TIHeader", "TIEntry", "TIType", "TIVar"]
+__all__ = ["TIHeader", "TIEntry", "TIVar"]

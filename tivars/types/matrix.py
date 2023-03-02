@@ -1,13 +1,15 @@
+import io
+
 from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIType
+from ..var import TIEntry
 from .numeric import TIReal
 
 
-class TIMatrix(TIType):
+class TIMatrix(TIEntry):
     extensions = {
         None: "8xm",
         TI_82: "82m",
@@ -62,6 +64,11 @@ class TIMatrix(TIType):
             warn(f"The matrix has an unexpected size "
                  f"(expected {self.data_length // TIReal.data.width}, got {self.size}).",
                  BytesWarning)
+
+    def load_data_section(self, data: io.BytesIO):
+        width, height = int.from_bytes(data.read(1), 'little'), int.from_bytes(data.read(1), 'little')
+        self.raw.data = bytearray(int.to_bytes(width, 2, 'little') + int.to_bytes(height, 2, 'little')
+                                  + data.read(width * height))
 
     def load_matrix(self, matrix: list[list[TIReal]]):
         if len({len(row) for row in matrix}) != 1:

@@ -1,3 +1,4 @@
+import io
 import re
 
 from typing import ByteString
@@ -5,12 +6,12 @@ from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIType
+from ..var import TIEntry
 from .numeric import TIReal, TIComplex
 
 
-class ListVar(TIType):
-    item_type = TIType
+class ListVar(TIEntry):
+    item_type = TIEntry
 
     @Section(8, String)
     def name(self, value) -> str:
@@ -61,6 +62,10 @@ class ListVar(TIType):
             warn(f"The list has an unexpected length "
                  f"(expected {self.data_length // self.item_type.data.width}, got {self.length}).",
                  BytesWarning)
+
+    def load_data_section(self, data: io.BytesIO):
+        data_length = int.from_bytes(data.read(2), 'little')
+        self.raw.data = bytearray(int.to_bytes(data_length, 2, 'little') + data.read(data_length))
 
     def load_list(self, lst: list[item_type]):
         self.clear()

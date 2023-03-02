@@ -2,31 +2,69 @@ import copy
 import inspect
 
 from math import ceil
-from typing import Callable, TypeVar
+from typing import TypeVar
 from warnings import warn
 
 
-_E = TypeVar('_E')
 _T = TypeVar('_T')
-Converter = tuple[Callable[[_T, _E], bytes], Callable[[bytes, _E], _T]]
 
 
-Bytes = (lambda value, instance: value,
-         lambda data, instance: data)
+class Converter:
+    _T = _T
 
-Boolean = (lambda value, instance: b'\x80' if value else b'\x00',
-           lambda data, instance: data == b'\x80')
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        return data
 
-Integer = (lambda value, instance: int.to_bytes(value, ceil(value.bit_length() / 8), 'little'),
-           lambda data, instance: int.from_bytes(data, 'little'))
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        return value
 
-String = (lambda value, instance: value.encode('utf8'),
-          lambda data, instance: data.decode('utf8').rstrip('\0'))
+
+class Bytes(Converter):
+    _T = bytes
+
+
+class Boolean(Converter):
+    _T = bool
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        return data == b'\x80'
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        return b'\x80' if value else b'\x00'
+
+
+class Integer(Converter):
+    _T = int
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        return int.from_bytes(data, 'little')
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        return int.to_bytes(value, ceil(value.bit_length() / 8), 'little')
+
+
+class String(Converter):
+    _T = str
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        return data.decode('utf8').rstrip('\0')
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        return value.encode('utf8')
 
 
 class Section:
-    def __init__(self, width: int = None, converter: Converter | type = None):
-        self._in, self._out = getattr(converter, "_converter", lambda: converter)() or Bytes
+    def __init__(self, width: int = None, converter: type[Converter] = None):
+        self._converter = converter or Bytes
+        self._get, self._set = self._converter.get, self._converter.set
         self._width = width
 
     def __copy__(self) -> 'Section':
@@ -52,10 +90,10 @@ class Section:
         if instance is None:
             return self
 
-        return self._out(getattr(instance.raw, self._name), instance)
+        return self._get(getattr(instance.raw, self._name), instance)
 
     def __set__(self, instance, value: _T):
-        value = self._in(value, instance)
+        value = self._set(value, instance)
 
         if self._width is not None:
             if len(value) > self._width:
@@ -74,7 +112,7 @@ class Section:
         signature = inspect.signature(func)
         match len(signature.parameters):
             case 1: pass
-            case 2: new._in = lambda value, instance, _in=new._in: _in(func(instance, value), instance)
+            case 2: new._set = lambda value, instance, _set=new._set: _set(func(instance, value), instance)
             case _: raise TypeError("Section and View function definitions can only take 1 or 2 parameters.")
 
         return new
@@ -89,7 +127,7 @@ class Section:
 
 
 class View(Section):
-    def __init__(self, target: Section, converter: Converter | type = None, indices: slice = slice(None)):
+    def __init__(self, target: Section, converter: type[Converter] = None, indices: slice = slice(None)):
         super().__init__(None, converter)
 
         self._target = target
@@ -99,10 +137,10 @@ class View(Section):
         if instance is None:
             return self
 
-        return self._out(getattr(instance.raw, self._target.name)[self._indices], instance)
+        return self._get(getattr(instance.raw, self._target.name)[self._indices], instance)
 
     def __set__(self, instance, value: _T):
-        value = self._in(value, instance)
+        value = self._set(value, instance)
 
         if self.width is not None:
             if len(value) > self.width:
@@ -115,7 +153,7 @@ class View(Section):
         getattr(instance.raw, self._target.name)[self._indices] = value
 
     def __getitem__(self, indices: slice) -> 'View':
-        return self.__class__(self._target, (self._in, self._out), indices)
+        return self.__class__(self._target, self._converter, indices)
 
     @property
     def width(self) -> int | None:

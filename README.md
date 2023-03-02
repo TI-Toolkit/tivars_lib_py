@@ -74,6 +74,12 @@ my_program.load_string("Disp \"HELLO WORLD!\"")
 my_program = TIProgram("Disp \"HELLO WORLD!\"")
 ```
 
+Base `TIEntry` objects, as well other parent types like `TIGDB`, will be automatically coerced to the correct type:
+```python
+# Coerces to a TIProgram
+my_entry.open("HELLO.8xp")
+```
+
 Export a var as bytes or straight to a file:
 
 ```python

@@ -3,11 +3,11 @@ from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..var import TIType
+from ..var import TIEntry
 from .numeric import TIReal
 
 
-class SettingsVar(TIType):
+class SettingsVar(TIEntry):
     leading_bytes = b'\x00\x00'
 
     def __init__(self, init=None, *,
