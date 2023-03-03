@@ -15,8 +15,10 @@ class GraphMode(Flags):
     Connected = {0: 0}
     Simul = {1: 1}
     Sequential = {1: 0}
-    GridOn = {2: 1}
-    GridOff = {2: 0}
+    GridOn = {2: 1, 7: 0}
+    GridOff = {2: 0, 7: 0}
+    GridLine = {2: 1, 7: 1}
+    GridDot = {2: 1, 7: 0}
     PolarGC = {3: 1}
     RectGC = {3: 0}
     CoordOff = {4: 0}
