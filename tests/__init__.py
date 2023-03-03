@@ -357,3 +357,6 @@ class GDBTests(unittest.TestCase):
         self.assertEqual(test_gdb.Y1, TIEquation("sin(X"))
         self.assertEqual(test_gdb.Y1Style, GraphStyle.THICK_LINE)
 
+        self.assertIn(GraphMode.Connected, test_gdb.mode_flags)
+        self.assertIn(GraphMode.AxesOn, test_gdb.mode_flags)
+

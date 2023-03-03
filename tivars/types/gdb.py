@@ -45,21 +45,19 @@ class GraphStyle(Converter):
     ANIMATE = 5
     DOTTED_LINE = 6
 
+    STYLES = [SOLID_LINE, THICK_LINE, SHADE_BELOW, SHADE_BELOW, TRACE, ANIMATE, DOTTED_LINE]
+
     @classmethod
     def get(cls, data: bytes, instance: 'TIGDB') -> int:
         return data[0]
 
     @classmethod
     def set(cls, value: int, instance: 'TIGDB') -> bytes:
-        if value not in STYLES:
+        if value not in cls.STYLES:
             warn(f"{value} is not a recognized style.",
                  BytesWarning)
 
         return bytes([value])
-
-
-STYLES = [GraphStyle.SOLID_LINE, GraphStyle.THICK_LINE, GraphStyle.SHADE_BELOW, GraphStyle.SHADE_BELOW,
-          GraphStyle.TRACE, GraphStyle.ANIMATE, GraphStyle.DOTTED_LINE]
 
 
 def equations_from_data(data: bytes, num_equations: int) -> tuple[TIEquation, ...]:
@@ -113,9 +111,11 @@ class TIGDB(TIEntry):
     }
 
     _type_id = b'\x08'
+    mode_byte = 0x00
 
     num_equations = 0
     num_parameters = 0
+    num_styles = 0
 
     @Section()
     def data(self) -> bytearray:
@@ -138,11 +138,14 @@ class TIGDB(TIEntry):
 
         One of Func, Param, Polar, or Seq
         """
-        match self.data[3]:
+        match graphing_mode_id := self.data[3]:
             case 0x10: return 'Func'
             case 0x40: return 'Param'
             case 0x20: return 'Polar'
             case 0x80: return 'Seq'
+
+            case _: warn(f"Graphing mode byte 0x{graphing_mode_id:x} not recognized.",
+                         BytesWarning)
 
     @View(data, GraphMode)[4:5]
     def mode_flags(self) -> GraphMode:
@@ -198,7 +201,7 @@ class TIGDB(TIEntry):
         The GDB's stored graph equations
         """
 
-        offset = 61 + TIReal.data.width * self.num_parameters + self.num_equations
+        offset = 61 + TIReal.data.width * self.num_parameters + self.num_styles
         return equations_from_data(self.data[offset:][:self.num_equations], self.num_equations)
 
     @property
@@ -207,16 +210,25 @@ class TIGDB(TIEntry):
         The GDB's stored graph styles
         """
 
-        return *self.data[61 + TIReal.data.width * self.num_parameters:][:self.num_equations],
+        return *self.data[61 + TIReal.data.width * self.num_parameters:][:self.num_styles],
 
     def coerce(self):
-        match self.data[3]:
+        match graphing_mode_id := self.data[3]:
             case 0x10: self.__class__ = TIFuncGDB
+            case 0x40: self.__class__ = TIParamGDB
+            case 0x20: self.__class__ = TIPolarGDB
+            case 0x80: self.__class__ = TISeqGDB
+
+            case _: warn(f"Graphing mode byte 0x{graphing_mode_id:x} not recognized.",
+                         BytesWarning)
 
 
 class TIFuncGDB(TIGDB):
+    mode_byte = 0x10
+
     num_equations = 10
     num_parameters = 1
+    num_styles = 10
 
     @Section()
     def data(self) -> bytearray:
@@ -373,4 +385,439 @@ class TIFuncGDB(TIGDB):
         """
 
 
-__all__ = ["TIGDB", "TIFuncGDB", "GraphMode", "GraphStyle"]
+class TIParamGDB(TIGDB):
+    mode_byte = 0x40
+
+    num_equations = 12
+    num_parameters = 3
+    num_styles = 6
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, TIReal)[61:70]
+    def Tmin(self) -> TIReal:
+        """
+        Tmin: the initial time
+        """
+
+    @View(data, TIReal)[70:79]
+    def Tmax(self) -> TIReal:
+        """
+        Tmax: the final time
+        """
+
+    @View(data, TIReal)[79:88]
+    def Tstep(self) -> TIReal:
+        """
+        Tstep: the time increment
+        """
+
+    @View(data, GraphStyle)[88:89]
+    def T1Style(self) -> bytes:
+        """
+        The style byte for X1T/Y1T
+        """
+
+    @View(data, GraphStyle)[89:90]
+    def T2Style(self) -> bytes:
+        """
+        The style byte for X2T/Y2T
+        """
+
+    @View(data, GraphStyle)[90:91]
+    def T3Style(self) -> bytes:
+        """
+        The style byte for X3T/Y3T
+        """
+
+    @View(data, GraphStyle)[91:92]
+    def T4Style(self) -> bytes:
+        """
+        The style byte for X4T/Y4T
+        """
+
+    @View(data, GraphStyle)[92:93]
+    def T5Style(self) -> bytes:
+        """
+        The style byte for X5T/Y5T
+        """
+
+    @View(data, GraphStyle)[93:94]
+    def T6Style(self) -> bytes:
+        """
+        The style byte for X6T/Y6T
+        """
+
+    @View(data, Bytes)[88:94]
+    def style_data(self) -> bytes:
+        """
+        The styles of the equations stored in the GDB
+        """
+
+    @View(data, IndexedEquation(1))[94:]
+    def X1T(self) -> TIEquation:
+        """
+        X1T: The first X-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(2))[94:]
+    def Y1T(self) -> TIEquation:
+        """
+        Y1T: The first Y-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(3))[94:]
+    def X2T(self) -> TIEquation:
+        """
+        X2T: The second X-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(4))[94:]
+    def Y2T(self) -> TIEquation:
+        """
+        Y2T: The second Y-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(5))[94:]
+    def X3T(self) -> TIEquation:
+        """
+        X3T: The third X-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(6))[94:]
+    def Y3T(self) -> TIEquation:
+        """
+        Y3T: The third Y-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(7))[94:]
+    def X4T(self) -> TIEquation:
+        """
+        X4T: The fourth X-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(8))[94:]
+    def Y4T(self) -> TIEquation:
+        """
+        Y4T: The fourth Y-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(9))[94:]
+    def X5T(self) -> TIEquation:
+        """
+        X5T: The fifth X-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(10))[94:]
+    def Y5T(self) -> TIEquation:
+        """
+        Y5T: The fifth Y-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(11))[94:]
+    def X6T(self) -> TIEquation:
+        """
+        X6T: The sixth X-component in parametric mode
+        """
+
+    @View(data, IndexedEquation(12))[94:]
+    def Y6T(self) -> TIEquation:
+        """
+        Y6T: The sixth Y-component in parametric mode
+        """
+
+    @View(data, Bytes)[94:]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+
+class TIPolarGDB(TIGDB):
+    mode_byte = 0x20
+
+    num_equations = 6
+    num_parameters = 3
+    num_styles = 6
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, TIReal)[61:70]
+    def Thetamin(self) -> TIReal:
+        """
+        Thetamin: the initial angle
+        """
+
+    @View(data, TIReal)[70:79]
+    def Thetamax(self) -> TIReal:
+        """
+        Thetamax: the final angle
+        """
+
+    @View(data, TIReal)[79:88]
+    def Thetastep(self) -> TIReal:
+        """
+        Thetastep: the angle increment
+        """
+
+    @View(data, GraphStyle)[88:89]
+    def r1Style(self) -> bytes:
+        """
+        The style byte for r1
+        """
+
+    @View(data, GraphStyle)[89:90]
+    def r2Style(self) -> bytes:
+        """
+        The style byte for r2
+        """
+
+    @View(data, GraphStyle)[90:91]
+    def r3Style(self) -> bytes:
+        """
+        The style byte for r3
+        """
+
+    @View(data, GraphStyle)[91:92]
+    def r4Style(self) -> bytes:
+        """
+        The style byte for r4
+        """
+
+    @View(data, GraphStyle)[92:93]
+    def r5Style(self) -> bytes:
+        """
+        The style byte for r5
+        """
+
+    @View(data, GraphStyle)[93:94]
+    def r6Style(self) -> bytes:
+        """
+        The style byte for r6
+        """
+
+    @View(data, Bytes)[88:94]
+    def style_data(self) -> bytes:
+        """
+        The styles of the equations stored in the GDB
+        """
+
+    @View(data, IndexedEquation(1))[94:]
+    def r1(self) -> TIEquation:
+        """
+        r1: The first equation in polar mode
+        """
+
+    @View(data, IndexedEquation(2))[94:]
+    def r2(self) -> TIEquation:
+        """
+        r1: The second equation in polar mode
+        """
+
+    @View(data, IndexedEquation(3))[94:]
+    def r3(self) -> TIEquation:
+        """
+        r3: The third equation in polar mode
+        """
+
+    @View(data, IndexedEquation(4))[94:]
+    def r4(self) -> TIEquation:
+        """
+        rr: The fourth equation in polar mode
+        """
+
+    @View(data, IndexedEquation(5))[94:]
+    def r5(self) -> TIEquation:
+        """
+        r5: The fifth equation in polar mode
+        """
+
+    @View(data, IndexedEquation(6))[94:]
+    def r6(self) -> TIEquation:
+        """
+        r6: The sixth equation in polar mode
+        """
+
+    @View(data, Bytes)[94:]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+
+class TISeqGDB(TIGDB):
+    mode_byte = 0x80
+
+    num_equations = 3
+    num_parameters = 10
+    num_styles = 3
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, GraphMode)[5:6]
+    def sequence_flags(self) -> GraphMode:
+        """
+        The flags for the sequence mode settings
+        """
+
+    @View(data, TIReal)[61:70]
+    def PlotStart(self, value) -> TIReal:
+        """
+        PlotStart: the initial value of n for sequential plots
+
+        Must be an integer
+        """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer for PlotStart, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[70:79]
+    def nMax(self, value: TIReal) -> TIReal:
+        """
+        nMax: the final value of n
+
+        Must be an integer
+        """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer for nMax, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[79:88]
+    def unMin0(self) -> TIReal:
+        """
+        u(nMin): the initial value of u at nMin
+        """
+
+    @View(data, TIReal)[88:97]
+    def vnMin0(self) -> TIReal:
+        """
+        v(nMin): the initial value of v at nMin
+        """
+
+    @View(data, TIReal)[97:106]
+    def nMin(self, value: TIReal) -> TIReal:
+        """
+        nMin: the initial value of n for sequential equations
+
+        Must be an integer
+        """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer for nMin, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[106:115]
+    def unMin1(self) -> TIReal:
+        """
+        u(nMin + 1): the initial value of u at nMin + 1
+        """
+
+    @View(data, TIReal)[115:124]
+    def vnMin1(self) -> TIReal:
+        """
+        v(nMin + 1): the initial value of v at nMin + 1
+        """
+
+    @View(data, TIReal)[124:133]
+    def wnMin0(self) -> TIReal:
+        """
+        w(nMin): the initial value of w at nMin
+        """
+
+    @View(data, TIReal)[133:142]
+    def PlotStep(self, value: TIReal) -> TIReal:
+        """
+        PlotStep: the n increment for sequential plots
+
+        Must be an integer
+        """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer for PlotStep, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[142:151]
+    def wnMin1(self) -> TIReal:
+        """
+        w(nMin + 1): the initial value of w at nMin + 1
+        """
+
+    @View(data, GraphStyle)[151:152]
+    def uStyle(self) -> bytes:
+        """
+        The style byte for u
+        """
+
+    @View(data, GraphStyle)[152:153]
+    def vStyle(self) -> bytes:
+        """
+        The style byte for v
+        """
+
+    @View(data, GraphStyle)[153:154]
+    def wStyle(self) -> bytes:
+        """
+        The style byte for w
+        """
+
+    @View(data, Bytes)[151:154]
+    def style_data(self) -> bytes:
+        """
+        The styles of the equations stored in the GDB
+        """
+
+    @View(data, IndexedEquation(1))[154:]
+    def u(self) -> TIEquation:
+        """
+        u: The first equation in sequence mode
+        """
+
+    @View(data, IndexedEquation(2))[154:]
+    def v(self) -> TIEquation:
+        """
+        v: The second equation in sequence mode
+        """
+
+    @View(data, IndexedEquation(3))[154:]
+    def w(self) -> TIEquation:
+        """
+        w: The third equation in sequence mode
+        """
+
+    @View(data, Bytes)[154:]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+
+__all__ = ["TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
+           "GraphMode", "GraphStyle"]
