@@ -1,35 +1,33 @@
+from ..flags import *
+
+
+Bitsets = dict[int, int]
+
+
 class TIModel:
-    def __init__(self, name: str, flags: int, magic: str, product_id: bytes):
+    def __init__(self, name: str, flags: Bitsets, magic: str, product_id: bytes):
         self.name = name
-        self.flags = flags
+        self.flags = TIFeature("000000000") | flags
         self.magic = magic
         self.product_id = product_id
 
     def __str__(self):
         return self.name
 
-    def has(self, feature: int):
-        return self.flags & feature
+
+class TIFeature(Flags):
+    DEFAULT = {0: 1}
+    COMPLEX = {1: 1}
+    FLASH = {2: 1}
+    APPS = {3: 1}
+    CLOCK = {4: 1}
+    COLOR = {5: 1}
+    EZ80 = {6: 1}
+    EXACT_MATH = {7: 1}
+    PYTHON = {8: 1}
 
 
-class TIFeature:
-    NONE = 0
-    DEFAULT = 1 << 0
-    COMPLEX = 1 << 1
-    FLASH = 1 << 2
-    APPS = 1 << 3
-    CLOCK = 1 << 4
-    COLOR = 1 << 5
-    EZ80 = 1 << 6
-    EXACT_MATH = 1 << 7
-    PYTHON = 1 << 8
-
-
-FEATURES = [TIFeature.NONE, TIFeature.DEFAULT, TIFeature.COMPLEX, TIFeature.FLASH, TIFeature.APPS,
-            TIFeature.CLOCK, TIFeature.COLOR, TIFeature.EZ80, TIFeature.EXACT_MATH, TIFeature.PYTHON]
-
-
-flags82 = 0 | TIFeature.DEFAULT
+flags82 = TIFeature.DEFAULT
 flags83 = flags82 | TIFeature.COMPLEX
 flags82a = flags83 | TIFeature.FLASH
 flags83p = flags82a | TIFeature.APPS
@@ -39,7 +37,7 @@ flags84pce = flags84pcse | TIFeature.EZ80
 flags83pce = flags84pce | TIFeature.EXACT_MATH
 flags83pceep = flags83pce | TIFeature.PYTHON
 flags84pcepy = flags84pce | TIFeature.PYTHON
-flags82aep = flags83pceep & ~TIFeature.APPS
+flags82aep = flags83pceep | {3: 0}
 
 TI_82 = TIModel("TI-82", flags82, "**TI82**", b'\x00')
 TI_83 = TIModel("TI-83", flags83, "**TI83**", b'\x00')
@@ -63,4 +61,4 @@ MODELS = [TI_82, TI_83, TI_82A, TI_82P, TI_83P,
 __all__ = ["TI_82", "TI_83", "TI_82A", "TI_82P", "TI_83P",
            "TI_84P", "TI_84T", "TI_84PCSE", "TI_84PCE", "TI_83PCE", "TI_84PCEPY",
            "TI_83PCE", "TI_83PCEEP", "TI_82AEP",
-           "MODELS", "TIFeature", "FEATURES", "TIModel"]
+           "MODELS", "TIFeature", "TIModel"]

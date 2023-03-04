@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from functools import total_ordering
 from warnings import warn
 
 from .data import *
@@ -25,20 +26,30 @@ class Enum(Converter):
         return bytes([value])
 
 
+@total_ordering
 class Flags(Converter):
     _T = 'Flags'
 
     def __init__(self, bits):
         try:
-            bits = f"{bits:b}"
+            bits = f"{bits:b}"[::-1]
 
         except TypeError:
             pass
 
-        self._bits = [int(bit) for bit in (bits[::-1] if isinstance(bits, str) else bits)]
+        except ValueError:
+            bits = bits[::-1]
+
+        self._bits = [int(bit) for bit in bits]
 
         if len(self._bits) % 8:
             self._bits += [0] * (8 - len(self._bits) % 8)
+
+    def __eq__(self, other) -> bool:
+        return int(self) == int(other)
+
+    def __gt__(self, other) -> bool:
+        return int(self) > int(other)
 
     def __int__(self) -> int:
         return int(str(self), 2)
@@ -57,6 +68,8 @@ class Flags(Converter):
 
     def __contains__(self, bitsets: Bitsets) -> bool:
         return all(self[bit] == int(bool(bitsets[bit])) for bit in bitsets)
+
+    has = __contains__
 
     def __or__(self, bitsets: Bitsets) -> 'Flags':
         new = Flags(self._bits)
