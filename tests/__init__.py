@@ -341,7 +341,7 @@ class SettingsTests(unittest.TestCase):
 
 class GDBTests(unittest.TestCase):
     def test_func_gdb(self):
-        test_gdb = TIGDB()
+        test_gdb = TIMonoGDB()
         test_gdb.open("tests/data/GraphDataBase.8xd")
 
         self.assertEqual(type(test_gdb), TIFuncGDB)
@@ -356,7 +356,10 @@ class GDBTests(unittest.TestCase):
 
         self.assertEqual(test_gdb.Y1, TIEquation("sin(X"))
         self.assertEqual(test_gdb.Y1Style, GraphStyle.THICK_LINE)
+        self.assertEqual(test_gdb.Y1Color, GraphColor.BLUE)
 
         self.assertIn(GraphMode.Connected, test_gdb.mode_flags)
         self.assertIn(GraphMode.AxesOn, test_gdb.mode_flags)
+        self.assertIn(GraphMode.ExprOn, test_gdb.extended_mode_flags)
+        self.assertIn(GraphMode.DetectAsymptotesOff, test_gdb.color_mode_flags)
 

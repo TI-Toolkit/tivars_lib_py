@@ -1,9 +1,28 @@
 from collections.abc import Iterator
+from warnings import warn
 
 from .data import *
 
 
 Bitsets = dict[int, int]
+
+
+class Enum(Converter):
+    _T = 'Enum'
+
+    _all = []
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> int:
+        return data[0]
+
+    @classmethod
+    def set(cls, value: int, instance) -> bytes:
+        if value not in cls._all:
+            warn(f"{value} is not a recognized style.",
+                 BytesWarning)
+
+        return bytes([value])
 
 
 class Flags(Converter):
@@ -56,4 +75,4 @@ class Flags(Converter):
         return int.to_bytes(int(value), len(value) // 8, 'little')
 
 
-__all__ = ["Flags"]
+__all__ = ["Enum", "Flags"]

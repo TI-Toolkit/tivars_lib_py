@@ -37,8 +37,11 @@ class GraphMode(Flags):
     vw = {0: 0, 2: 0, 3: 1, 4: 0}
     uw = {0: 0, 2: 0, 3: 0, 4: 1}
 
+    DetectAsymptotesOn = {0: 1}
+    DetectAsymptotesOff = {0: 0}
 
-class GraphStyle(Converter):
+
+class GraphStyle(Enum):
     SOLID_LINE = 0
     THICK_LINE = 1
     SHADE_ABOVE = 2
@@ -47,22 +50,54 @@ class GraphStyle(Converter):
     ANIMATE = 5
     DOTTED_LINE = 6
 
-    STYLES = [SOLID_LINE, THICK_LINE, SHADE_BELOW, SHADE_BELOW, TRACE, ANIMATE, DOTTED_LINE]
-
-    @classmethod
-    def get(cls, data: bytes, instance: 'TIGDB') -> int:
-        return data[0]
-
-    @classmethod
-    def set(cls, value: int, instance: 'TIGDB') -> bytes:
-        if value not in cls.STYLES:
-            warn(f"{value} is not a recognized style.",
-                 BytesWarning)
-
-        return bytes([value])
+    _all = [SOLID_LINE, THICK_LINE, SHADE_BELOW, SHADE_BELOW, TRACE, ANIMATE, DOTTED_LINE]
+    STYLES = _all
 
 
-def equations_from_data(data: bytes, num_equations: int) -> tuple[TIEquation, ...]:
+class GraphColor(Enum):
+    OFF = 0
+    BLUE = 1
+    RED = 2
+    BLACK = 3
+    MAGENTA = 4
+    GREEN = 5
+    ORANGE = 6
+    BROWN = 7
+    NAVY = 8
+    LTBLUE = 9
+    YELLOW = 10
+    WHITE = 11
+    LTGRAY = 12
+    MEDGRAY = 13
+    GRAY = 14
+    DARKGRAY = 15
+
+    _all = [OFF, BLUE, RED, BLACK, MAGENTA, GREEN, ORANGE, BROWN, NAVY,
+            LTBLUE, YELLOW, WHITE, LTGRAY, MEDGRAY, GRAY, DARKGRAY]
+    COLORS = _all[1:]
+
+
+class LineStyle(Enum):
+    THICK = 0
+    THIN = 1
+    DOT_THICK = 2
+    DOT_THIN = 3
+
+    _all = [THICK, THIN, DOT_THIN, DOT_THICK]
+    STYLES = _all
+
+
+class BorderColor(Enum):
+    GRAY = 1
+    TEAL = 2
+    LTBLUE = 3
+    WHITE = 4
+
+    _all = [GRAY, TEAL, LTBLUE, WHITE]
+    COLORS = _all
+
+
+def equations_from_data(data: bytes, num_equations: int) -> tuple[tuple[TIEquation, ...], bytes]:
     data = io.BytesIO(data)
     equations = ()
     for i in range(num_equations):
@@ -71,7 +106,7 @@ def equations_from_data(data: bytes, num_equations: int) -> tuple[TIEquation, ..
         equation.load_data_section(data)
         equations += (equation,)
 
-    return equations
+    return equations, data.read()
 
 
 def IndexedEquation(index: int):
@@ -81,11 +116,11 @@ def IndexedEquation(index: int):
         _T = TIEquation
 
         @classmethod
-        def get(cls, data: bytes, instance: 'TIGDB') -> _T:
-            return equations_from_data(data, instance.num_equations)[index]
+        def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
+            return equations_from_data(data, instance.num_equations)[0][index]
 
         @classmethod
-        def set(cls, value: _T, instance: 'TIGDB') -> bytes:
+        def set(cls, value: _T, instance: 'TIMonoGDB') -> bytes:
             equations = list(instance.equations)
             equations[index] = value
 
@@ -94,7 +129,7 @@ def IndexedEquation(index: int):
     return Equation
 
 
-class TIGDB(TIEntry):
+class TIMonoGDB(TIEntry):
     extensions = {
         None: "8xd",
         TI_82: "82d",
@@ -134,31 +169,44 @@ class TIGDB(TIEntry):
         """
 
     @property
+    def mode_id(self) -> int:
+        """
+        The mode ID for the GDB
+
+        One of 0x10, 0x20, 0x40, or 0x80
+        """
+        return self.data[3]
+
+    @property
     def mode(self) -> str:
         """
         The mode for the GDB
 
         One of Func, Param, Polar, or Seq
         """
-        match graphing_mode_id := self.data[3]:
+        match self.mode_id:
             case 0x10: return 'Func'
             case 0x40: return 'Param'
             case 0x20: return 'Polar'
             case 0x80: return 'Seq'
 
-            case _: warn(f"Graphing mode byte 0x{graphing_mode_id:x} not recognized.",
+            case _: warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                          BytesWarning)
 
     @View(data, GraphMode)[4:5]
     def mode_flags(self) -> GraphMode:
         """
         The flags for the mode settings
+
+        Dot/Connected, Simul/Sequential, GridOn/Line/Dot/Off, PolarGC/RectGC, CoordOn/Off, AxesOff/On, and LabelOn/Off
         """
 
     @View(data, GraphMode)[6:7]
     def extended_mode_flags(self) -> GraphMode:
         """
         The flags for the extended mode settings
+
+        Only ExprOn/Off is stored here
         """
 
     @View(data, TIReal)[7:16]
@@ -204,10 +252,10 @@ class TIGDB(TIEntry):
         """
 
         offset = 61 + TIReal.data.width * self.num_parameters + self.num_styles
-        return equations_from_data(self.data[offset:][:self.num_equations], self.num_equations)
+        return equations_from_data(self.data[offset:], self.num_equations)[0]
 
     @property
-    def styles(self) -> tuple[bytes, ...]:
+    def styles(self) -> tuple[int, ...]:
         """
         The GDB's stored graph styles
         """
@@ -215,17 +263,77 @@ class TIGDB(TIEntry):
         return *self.data[61 + TIReal.data.width * self.num_parameters:][:self.num_styles],
 
     def coerce(self):
-        match graphing_mode_id := self.data[3]:
+        offset = 61 + TIReal.data.width * self.num_parameters + self.num_styles
+
+        if equations_from_data(self.data[offset:], self.num_equations)[1]:
+            self.__class__ = TIGDB
+            self.coerce()
+        else:
+            match self.mode_id:
+                case 0x10: self.__class__ = TIMonoFuncGDB
+                case 0x40: self.__class__ = TIMonoParamGDB
+                case 0x20: self.__class__ = TIMonoPolarGDB
+                case 0x80: self.__class__ = TIMonoSeqGDB
+
+                case _:
+                    warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
+                         BytesWarning)
+
+
+class TIGDB(TIMonoGDB):
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, GraphColor)[-5:-4]
+    def grid_color(self) -> int:
+        """
+        The color of the grid
+        """
+
+    @View(data, GraphColor)[-4:-3]
+    def axes_color(self) -> int:
+        """
+        The color of the axes
+        """
+
+    @View(data, LineStyle)[-3:-2]
+    def line_style(self) -> int:
+        """
+        The line style for all plotted equations
+        """
+
+    @View(data, BorderColor)[-2:-1]
+    def border_color(self) -> int:
+        """
+        The color of the graph border
+        """
+
+    @View(data, GraphMode)[-1:]
+    def color_mode_flags(self) -> GraphMode:
+        """
+        The flags for extended color mode settings
+
+        Only DetectAsymptotesOn/Off is stored here
+        """
+
+    def coerce(self):
+        match self.mode_id:
             case 0x10: self.__class__ = TIFuncGDB
             case 0x40: self.__class__ = TIParamGDB
             case 0x20: self.__class__ = TIPolarGDB
             case 0x80: self.__class__ = TISeqGDB
 
-            case _: warn(f"Graphing mode byte 0x{graphing_mode_id:x} not recognized.",
-                         BytesWarning)
+            case _:
+                warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
+                     BytesWarning)
 
 
-class TIFuncGDB(TIGDB):
+class TIMonoFuncGDB(TIMonoGDB):
     mode_byte = 0x10
 
     num_equations = 10
@@ -255,67 +363,67 @@ class TIFuncGDB(TIGDB):
         return value
 
     @View(data, GraphStyle)[70:71]
-    def Y1Style(self) -> bytes:
+    def Y1Style(self) -> int:
         """
         The style byte for Y1
         """
 
     @View(data, GraphStyle)[71:72]
-    def Y2Style(self) -> bytes:
+    def Y2Style(self) -> int:
         """
         The style byte for Y2
         """
 
     @View(data, GraphStyle)[72:73]
-    def Y3Style(self) -> bytes:
+    def Y3Style(self) -> int:
         """
         The style byte for Y3
         """
 
     @View(data, GraphStyle)[73:74]
-    def Y4Style(self) -> bytes:
+    def Y4Style(self) -> int:
         """
         The style byte for Y4
         """
 
     @View(data, GraphStyle)[74:75]
-    def Y5Style(self) -> bytes:
+    def Y5Style(self) -> int:
         """
         The style byte for Y5
         """
 
     @View(data, GraphStyle)[75:76]
-    def Y6Style(self) -> bytes:
+    def Y6Style(self) -> int:
         """
         The style byte for Y6
         """
 
     @View(data, GraphStyle)[76:77]
-    def Y7Style(self) -> bytes:
+    def Y7Style(self) -> int:
         """
         The style byte for Y7
         """
 
     @View(data, GraphStyle)[77:78]
-    def Y8Style(self) -> bytes:
+    def Y8Style(self) -> int:
         """
         The style byte for Y8
         """
 
     @View(data, GraphStyle)[78:79]
-    def Y9Style(self) -> bytes:
+    def Y9Style(self) -> int:
         """
         The style byte for Y9
         """
 
     @View(data, GraphStyle)[79:80]
-    def Y0Style(self) -> bytes:
+    def Y0Style(self) -> int:
         """
         The style byte for Y0
         """
 
     @View(data, Bytes)[70:80]
-    def style_data(self) -> bytes:
+    def style_data(self) -> int:
         """
         The styles of the equations stored in the GDB
         """
@@ -387,7 +495,91 @@ class TIFuncGDB(TIGDB):
         """
 
 
-class TIParamGDB(TIGDB):
+class TIFuncGDB(TIGDB, TIMonoFuncGDB):
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, Bytes)[80:-18]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+    @View(data, String)[-18:-15]
+    def color_magic(self) -> str:
+        """
+        Magic to identify the GDB as color-oriented
+
+        Always set to 84C
+        """
+
+    @View(data, GraphColor)[-15:-14]
+    def Y1Color(self) -> int:
+        """
+        The color of Y1
+        """
+
+    @View(data, GraphColor)[-14:-13]
+    def Y2Color(self) -> int:
+        """
+        The color of Y2
+        """
+
+    @View(data, GraphColor)[-13:-12]
+    def Y3Color(self) -> int:
+        """
+        The color of Y3
+        """
+
+    @View(data, GraphColor)[-12:-11]
+    def Y4Color(self) -> int:
+        """
+        The color of Y4
+        """
+
+    @View(data, GraphColor)[-11:-10]
+    def Y5Color(self) -> int:
+        """
+        The color of Y5
+        """
+
+    @View(data, GraphColor)[-10:-9]
+    def Y6Color(self) -> int:
+        """
+        The color of Y6
+        """
+
+    @View(data, GraphColor)[-9:-8]
+    def Y7Color(self) -> int:
+        """
+        The color of Y7
+        """
+
+    @View(data, GraphColor)[-8:-7]
+    def Y8Color(self) -> int:
+        """
+        The color of Y8
+        """
+
+    @View(data, GraphColor)[-7:-6]
+    def Y9Color(self) -> int:
+        """
+        The color of Y9
+        """
+
+    @View(data, GraphColor)[-6:-5]
+    def Y0Color(self) -> int:
+        """
+        The color of Y0
+        """
+
+
+class TIMonoParamGDB(TIMonoGDB):
     mode_byte = 0x40
 
     num_equations = 12
@@ -541,7 +733,67 @@ class TIParamGDB(TIGDB):
         """
 
 
-class TIPolarGDB(TIGDB):
+class TIParamGDB(TIGDB, TIMonoParamGDB):
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, Bytes)[80:-14]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+    @View(data, String)[-14:-11]
+    def color_magic(self) -> str:
+        """
+        Magic to identify the GDB as color-oriented
+
+        Always set to 84C
+        """
+
+    @View(data, GraphColor)[-11:-10]
+    def T1Color(self) -> int:
+        """
+        The color of X1T/Y1T
+        """
+
+    @View(data, GraphColor)[-10:-9]
+    def T2Color(self) -> int:
+        """
+        The color of X2T/Y2T
+        """
+
+    @View(data, GraphColor)[-9:-8]
+    def T3Color(self) -> int:
+        """
+        The color of X3T/Y3T
+        """
+
+    @View(data, GraphColor)[-8:-7]
+    def T4Color(self) -> int:
+        """
+        The color of X4T/Y4T
+        """
+
+    @View(data, GraphColor)[-7:-6]
+    def T5Color(self) -> int:
+        """
+        The color of X5T/Y5T
+        """
+
+    @View(data, GraphColor)[-6:-5]
+    def T6Color(self) -> int:
+        """
+        The color of X6T/Y6T
+        """
+
+
+class TIMonoPolarGDB(TIMonoGDB):
     mode_byte = 0x20
 
     num_equations = 6
@@ -659,7 +911,67 @@ class TIPolarGDB(TIGDB):
         """
 
 
-class TISeqGDB(TIGDB):
+class TIPolarGDB(TIGDB, TIMonoPolarGDB):
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, Bytes)[80:-14]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+    @View(data, String)[-14:-11]
+    def color_magic(self) -> str:
+        """
+        Magic to identify the GDB as color-oriented
+
+        Always set to 84C
+        """
+
+    @View(data, GraphColor)[-11:-10]
+    def r1Color(self) -> int:
+        """
+        The color of r1
+        """
+
+    @View(data, GraphColor)[-10:-9]
+    def r2Color(self) -> int:
+        """
+        The color of r2
+        """
+
+    @View(data, GraphColor)[-9:-8]
+    def r3Color(self) -> int:
+        """
+        The color of r3
+        """
+
+    @View(data, GraphColor)[-8:-7]
+    def r4Color(self) -> int:
+        """
+        The color of r4
+        """
+
+    @View(data, GraphColor)[-7:-6]
+    def r5Color(self) -> int:
+        """
+        The color of r5
+        """
+
+    @View(data, GraphColor)[-6:-5]
+    def r6Color(self) -> int:
+        """
+        The color of r6
+        """
+
+
+class TIMonoSeqGDB(TIMonoGDB):
     mode_byte = 0x80
 
     num_equations = 3
@@ -821,5 +1133,49 @@ class TISeqGDB(TIGDB):
         """
 
 
-__all__ = ["TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "GraphMode", "GraphStyle"]
+class TISeqGDB(TIGDB, TIMonoSeqGDB):
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, Bytes)[80:-11]
+    def equation_data(self) -> bytes:
+        """
+        The equations stored in the GDB as a contiguous buffer of equation data sections
+        """
+
+    @View(data, String)[-11:-8]
+    def color_magic(self) -> str:
+        """
+        Magic to identify the GDB as color-oriented
+
+        Always set to 84C
+        """
+
+    @View(data, GraphColor)[-8:-7]
+    def uColor(self) -> int:
+        """
+        The color of u
+        """
+
+    @View(data, GraphColor)[-7:-6]
+    def vColor(self) -> int:
+        """
+        The color of v
+        """
+
+    @View(data, GraphColor)[-6:-5]
+    def wColor(self) -> int:
+        """
+        The color of w
+        """
+
+
+__all__ = ["TIMonoGDB",
+           "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
+           "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
+           "GraphMode", "GraphStyle", "GraphColor", "LineStyle"]

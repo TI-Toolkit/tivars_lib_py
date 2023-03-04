@@ -18,7 +18,7 @@ TIEntry.register(TIString)
 TIEntry.register(TIProgram)
 TIEntry.register(TIProtectedProgram)
 # TIEntry.register(TIPicture)
-TIEntry.register(TIGDB)
+TIEntry.register(TIMonoGDB)
 
 
 # TIEntry.register(TISmartEquation)
@@ -60,7 +60,9 @@ __all__ = ["TIEntry",
            "TIReal", "FloatFlags",
            "TIRealList", "TIMatrix",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
-           "TIGDB", "TIFuncGDB", "GraphMode", "GraphStyle",
+           "TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
+           "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
+           "GraphMode", "GraphStyle", "GraphColor", "LineStyle",
            "TIComplex", "TIComplexList",
            "TIWindowSettings", "TIRecallWindow", "TITableSettings"
            ]
