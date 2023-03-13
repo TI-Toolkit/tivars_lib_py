@@ -65,3 +65,9 @@ def encode(string: str, token_map: TokenMap) -> bytearray:
     data_length = len(data) - 2
     data[0:2] = data_length.to_bytes(2, 'little')
     return data
+
+__all__ = ["decode", "encode", "load_tokens_xml",
+           "AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS",
+           "TI83_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS", "TI73_TOKENS",
+           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES",
+           "TI83_BYTES", "PRIZM_BYTES", "TI82_BYTES", "TI73_BYTES"]
