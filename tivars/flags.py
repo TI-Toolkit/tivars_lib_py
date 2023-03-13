@@ -20,7 +20,7 @@ class Enum(Converter):
     @classmethod
     def set(cls, value: int, instance) -> bytes:
         if value not in cls._all:
-            warn(f"{value} is not a recognized style.",
+            warn(f"{value} is not recognized.",
                  BytesWarning)
 
         return bytes([value])
