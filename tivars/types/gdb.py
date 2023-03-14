@@ -209,7 +209,7 @@ class TIMonoGDB(TIEntry):
         """
         The flags for the extended mode settings
 
-        Only ExprOn/Off is stored here
+        ExprOn/Off and sequence plot offsets for sequence mode
         """
 
     @View(data, TIReal)[7:16]
