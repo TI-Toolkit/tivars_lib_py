@@ -30,6 +30,9 @@ class GraphMode(Flags):
 
     ExprOff = {0: 1}
     ExprOn = {0: 0}
+    SEQ_n = {1: 0, 2: 0}
+    SEQ_n_1 = {1: 1, 2: 0}
+    SEQ_n_2 = {1: 0, 2: 1}
 
     Time = {0: 0, 2: 0, 3: 0, 4: 0}
     Web = {0: 1, 2: 0, 3: 0, 4: 0}
