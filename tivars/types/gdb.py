@@ -172,10 +172,10 @@ def color_data(gdb: 'TIMonoGDB') -> bytes:
     return data.read()
 
 
-def IndexedEquation(index: int):
+def PlottedEquation(index: int):
     index -= 1
 
-    class Equation(Converter):
+    class IndexedEquation(Converter):
         _T = TIPlottedEquation
 
         @classmethod
@@ -201,7 +201,7 @@ def IndexedEquation(index: int):
 
             return instance.raw.data[:instance.offset] + data
 
-    return Equation
+    return IndexedEquation
 
 
 class TIMonoGDB(TIEntry):
@@ -470,61 +470,61 @@ class TIMonoFuncGDB(TIMonoGDB):
 
         return value
 
-    @View(data, IndexedEquation(1))
+    @View(data, PlottedEquation(1))
     def Y1(self) -> TIPlottedEquation:
         """
         Y1: The first equation in function mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, PlottedEquation(2))
     def Y2(self) -> TIPlottedEquation:
         """
         Y2: The second equation in function mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, PlottedEquation(3))
     def Y3(self) -> TIPlottedEquation:
         """
         Y3: The third equation in function mode
         """
 
-    @View(data, IndexedEquation(4))
+    @View(data, PlottedEquation(4))
     def Y4(self) -> TIPlottedEquation:
         """
         Y4: The fourth equation in function mode
         """
 
-    @View(data, IndexedEquation(5))
+    @View(data, PlottedEquation(5))
     def Y5(self) -> TIPlottedEquation:
         """
         Y5: The fifth equation in function mode
         """
 
-    @View(data, IndexedEquation(6))
+    @View(data, PlottedEquation(6))
     def Y6(self) -> TIPlottedEquation:
         """
         Y6: The sixth equation in function mode
         """
 
-    @View(data, IndexedEquation(7))
+    @View(data, PlottedEquation(7))
     def Y7(self) -> TIPlottedEquation:
         """
         Y7: The seventh equation in function mode
         """
 
-    @View(data, IndexedEquation(8))
+    @View(data, PlottedEquation(8))
     def Y8(self) -> TIPlottedEquation:
         """
         Y8: The eight equation in function mode
         """
 
-    @View(data, IndexedEquation(9))
+    @View(data, PlottedEquation(9))
     def Y9(self) -> TIPlottedEquation:
         """
         Y9: The ninth equation in function mode
         """
 
-    @View(data, IndexedEquation(10))
+    @View(data, PlottedEquation(10))
     def Y0(self) -> TIPlottedEquation:
         """
         Y0: The tenth equation in function mode
@@ -582,73 +582,73 @@ class TIMonoParamGDB(TIMonoGDB):
         Tstep: the time increment
         """
 
-    @View(data, IndexedEquation(1))
+    @View(data, PlottedEquation(1))
     def X1T(self) -> TIPlottedEquation:
         """
         X1T: The first X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, PlottedEquation(2))
     def Y1T(self) -> TIPlottedEquation:
         """
         Y1T: The first Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, PlottedEquation(3))
     def X2T(self) -> TIPlottedEquation:
         """
         X2T: The second X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(4))
+    @View(data, PlottedEquation(4))
     def Y2T(self) -> TIPlottedEquation:
         """
         Y2T: The second Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(5))
+    @View(data, PlottedEquation(5))
     def X3T(self) -> TIPlottedEquation:
         """
         X3T: The third X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(6))
+    @View(data, PlottedEquation(6))
     def Y3T(self) -> TIPlottedEquation:
         """
         Y3T: The third Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(7))
+    @View(data, PlottedEquation(7))
     def X4T(self) -> TIPlottedEquation:
         """
         X4T: The fourth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(8))
+    @View(data, PlottedEquation(8))
     def Y4T(self) -> TIPlottedEquation:
         """
         Y4T: The fourth Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(9))
+    @View(data, PlottedEquation(9))
     def X5T(self) -> TIPlottedEquation:
         """
         X5T: The fifth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(10))
+    @View(data, PlottedEquation(10))
     def Y5T(self) -> TIPlottedEquation:
         """
         Y5T: The fifth Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(11))
+    @View(data, PlottedEquation(11))
     def X6T(self) -> TIPlottedEquation:
         """
         X6T: The sixth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(12))
+    @View(data, PlottedEquation(12))
     def Y6T(self) -> TIPlottedEquation:
         """
         Y6T: The sixth Y-component in parametric mode
@@ -706,37 +706,37 @@ class TIMonoPolarGDB(TIMonoGDB):
         Thetastep: the angle increment
         """
 
-    @View(data, IndexedEquation(1))
+    @View(data, PlottedEquation(1))
     def r1(self) -> TIPlottedEquation:
         """
         r1: The first equation in polar mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, PlottedEquation(2))
     def r2(self) -> TIPlottedEquation:
         """
         r1: The second equation in polar mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, PlottedEquation(3))
     def r3(self) -> TIPlottedEquation:
         """
         r3: The third equation in polar mode
         """
 
-    @View(data, IndexedEquation(4))
+    @View(data, PlottedEquation(4))
     def r4(self) -> TIPlottedEquation:
         """
         rr: The fourth equation in polar mode
         """
 
-    @View(data, IndexedEquation(5))
+    @View(data, PlottedEquation(5))
     def r5(self) -> TIPlottedEquation:
         """
         r5: The fifth equation in polar mode
         """
 
-    @View(data, IndexedEquation(6))
+    @View(data, PlottedEquation(6))
     def r6(self) -> TIPlottedEquation:
         """
         r6: The sixth equation in polar mode
@@ -874,19 +874,19 @@ class TIMonoSeqGDB(TIMonoGDB):
         w(nMin + 1): the initial value of w at nMin + 1
         """
 
-    @View(data, IndexedEquation(1))
+    @View(data, PlottedEquation(1))
     def u(self) -> TIPlottedEquation:
         """
         u: The first equation in sequence mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, PlottedEquation(2))
     def v(self) -> TIPlottedEquation:
         """
         v: The second equation in sequence mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, PlottedEquation(3))
     def w(self) -> TIPlottedEquation:
         """
         w: The third equation in sequence mode
