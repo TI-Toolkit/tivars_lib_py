@@ -12,23 +12,6 @@ from ..var import TIEntry
 
 
 class TokenizedVar(TIEntry):
-    extensions = {
-        None: "8xp",
-        TI_82: "82p",
-        TI_83: "83p",
-        TI_82A: "8xp",
-        TI_82P: "8xp",
-        TI_83P: "8xp",
-        TI_84P: "8xp",
-        TI_84T: "8xp",
-        TI_84PCSE: "8xp",
-        TI_84PCE: "8xp",
-        TI_84PCEPY: "8xp",
-        TI_83PCE: "8xp",
-        TI_83PCEEP: "8xp",
-        TI_82AEP: "8xp"
-    }
-
     versions = [
         b'\x00', b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
         b'\x0A', b'\x0B', b'\x0C',
@@ -131,10 +114,44 @@ class TokenizedVar(TIEntry):
 
 
 class TIEquation(TokenizedVar):
+    extensions = {
+        None: "8xy",
+        TI_82: "82y",
+        TI_83: "83y",
+        TI_82A: "8xy",
+        TI_82P: "8xy",
+        TI_83P: "8xy",
+        TI_84P: "8xy",
+        TI_84T: "8xy",
+        TI_84PCSE: "8xy",
+        TI_84PCE: "8xy",
+        TI_84PCEPY: "8xy",
+        TI_83PCE: "8xy",
+        TI_83PCEEP: "8xy",
+        TI_82AEP: "8xy"
+    }
+
     _type_id = b'\x03'
 
 
 class TIString(TokenizedVar):
+    extensions = {
+        None: "8xs",
+        TI_82: "82s",
+        TI_83: "83s",
+        TI_82A: "8xs",
+        TI_82P: "8xs",
+        TI_83P: "8xs",
+        TI_84P: "8xs",
+        TI_84T: "8xs",
+        TI_84PCSE: "8xs",
+        TI_84PCE: "8xs",
+        TI_84PCEPY: "8xs",
+        TI_83PCE: "8xs",
+        TI_83PCEEP: "8xs",
+        TI_82AEP: "8xs"
+    }
+
     _type_id = b'\x04'
 
     def load_string(self, string: str, *, model: TIModel = None):
@@ -145,6 +162,23 @@ class TIString(TokenizedVar):
 
 
 class TIProgram(TokenizedVar):
+    extensions = {
+        None: "8xp",
+        TI_82: "82p",
+        TI_83: "83p",
+        TI_82A: "8xp",
+        TI_82P: "8xp",
+        TI_83P: "8xp",
+        TI_84P: "8xp",
+        TI_84T: "8xp",
+        TI_84PCSE: "8xp",
+        TI_84PCE: "8xp",
+        TI_84PCEPY: "8xp",
+        TI_83PCE: "8xp",
+        TI_83PCEEP: "8xp",
+        TI_82AEP: "8xp"
+    }
+
     _type_id = b'\x05'
 
     @Section(8, String)
