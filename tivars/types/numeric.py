@@ -270,6 +270,7 @@ class TIComplex(TIEntry):
     def real_flags(self) -> FloatFlags:
         """
         Flags for the real part of the complex number
+
         Bits 2 and 3 are set
         If bit 6 is set, something happened
         If bit 7 is set, the part is negative
@@ -293,6 +294,7 @@ class TIComplex(TIEntry):
     def imag_flags(self) -> FloatFlags:
         """
         Flags for the imaginary part of the complex number
+
         Bits 2 and 3 are set
         If bit 6 is set, something happened
         If bit 7 is set, the part is negative
