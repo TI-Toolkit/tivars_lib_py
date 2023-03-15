@@ -9,21 +9,21 @@ Bitsets = dict[int, int]
 
 
 class Enum(Converter):
-    _T = 'Enum'
+    _T = bytes
 
     _all = []
 
     @classmethod
-    def get(cls, data: bytes, instance) -> int:
-        return data[0]
+    def get(cls, data: bytes, instance) -> _T:
+        return bytes(data[0:1])
 
     @classmethod
-    def set(cls, value: int, instance) -> bytes:
+    def set(cls, value: _T, instance) -> bytes:
         if value not in cls._all:
             warn(f"{value} is not recognized.",
                  BytesWarning)
 
-        return bytes([value])
+        return value
 
 
 @total_ordering

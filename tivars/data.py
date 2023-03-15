@@ -172,7 +172,7 @@ class View(Section):
 
 class Raw:
     def bytes(self) -> bytes:
-        return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__)
+        return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__ if not attr.startswith("__"))
 
 
 __all__ = ["Section", "View", "Raw", "Converter", "Bytes", "Boolean", "Integer", "String"]

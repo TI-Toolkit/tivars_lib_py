@@ -5,7 +5,7 @@ from warnings import warn
 from tivars.models import *
 from ..flags import *
 from ..data import *
-from ..var import TIEntry
+from ..var import TIEntry, TIEntryRaw
 from .numeric import TIReal
 from .tokenized import TIEquation
 
@@ -45,89 +45,176 @@ class GraphMode(Flags):
 
 
 class GraphStyle(Enum):
-    SOLID_LINE = 0
-    THICK_LINE = 1
-    SHADE_ABOVE = 2
-    SHADE_BELOW = 3
-    TRACE = 4
-    ANIMATE = 5
-    DOTTED_LINE = 6
+    SOLID_LINE = b'\x00'
+    THICK_LINE = b'\x01'
+    SHADE_ABOVE = b'\x02'
+    SHADE_BELOW = b'\x03'
+    TRACE = b'\x04'
+    ANIMATE = b'\x05'
+    DOTTED_LINE = b'\x06'
 
     _all = [SOLID_LINE, THICK_LINE, SHADE_BELOW, SHADE_BELOW, TRACE, ANIMATE, DOTTED_LINE]
     STYLES = _all
 
 
 class GraphColor(Enum):
-    OFF = 0
-    BLUE = 1
-    RED = 2
-    BLACK = 3
-    MAGENTA = 4
-    GREEN = 5
-    ORANGE = 6
-    BROWN = 7
-    NAVY = 8
-    LTBLUE = 9
-    YELLOW = 10
-    WHITE = 11
-    LTGRAY = 12
-    MEDGRAY = 13
-    GRAY = 14
-    DARKGRAY = 15
+    MONO = b'\x00'
+    BLUE = b'\x01'
+    RED = b'\x02'
+    BLACK = b'\x03'
+    MAGENTA = b'\x04'
+    GREEN = b'\x05'
+    ORANGE = b'\x06'
+    BROWN = b'\x07'
+    NAVY = b'\x08'
+    LTBLUE = 'b\x09'
+    YELLOW = b'\x0A'
+    WHITE = b'\x0B'
+    LTGRAY = b'\x0C'
+    MEDGRAY = b'\x0D'
+    GRAY = b'\x0E'
+    DARKGRAY = b'\x0F'
 
-    _all = [OFF, BLUE, RED, BLACK, MAGENTA, GREEN, ORANGE, BROWN, NAVY,
+    _all = [MONO, BLUE, RED, BLACK, MAGENTA, GREEN, ORANGE, BROWN, NAVY,
             LTBLUE, YELLOW, WHITE, LTGRAY, MEDGRAY, GRAY, DARKGRAY]
     COLORS = _all[1:]
 
 
 class LineStyle(Enum):
-    THICK = 0
-    THIN = 1
-    DOT_THICK = 2
-    DOT_THIN = 3
+    THICK = b'\x00'
+    THIN = b'\x01'
+    DOT_THICK = b'\x02'
+    DOT_THIN = b'\x03'
 
     _all = [THICK, THIN, DOT_THIN, DOT_THICK]
     STYLES = _all
 
 
 class BorderColor(Enum):
-    GRAY = 1
-    TEAL = 2
-    LTBLUE = 3
-    WHITE = 4
+    GRAY = b'\x01'
+    TEAL = b'\x02'
+    LTBLUE = b'\x03'
+    WHITE = b'\x04'
 
     _all = [GRAY, TEAL, LTBLUE, WHITE]
     COLORS = _all
 
 
-def equations_from_data(data: bytes, num_equations: int) -> tuple[tuple[TIEquation, ...], bytes]:
-    data = io.BytesIO(data)
-    equations = ()
-    for i in range(num_equations):
-        data.seek(1, 1)
-        equation = TIEquation()
-        equation.load_data_section(data)
-        equations += (equation,)
+class EquationFlags(Flags):
+    SELECTED = {5: 1}
+    DESELECTED = {5: 0}
+    USED_FOR_GRAPH = {6: 1}
+    UNUSED_FOR_GRAPH = {6: 0}
+    LINK_TRANSFER_SET = {7: 1}
+    LINK_TRANSFER_CLEAR = {7: 0}
 
-    return equations, data.read()
+
+class TIPlottedEquationRaw(TIEntryRaw):
+    __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", \
+                "flags", "__style", "__color", "data"
+
+
+class TIPlottedEquation(TIEquation):
+    _raw_class = TIPlottedEquationRaw
+
+    @Section(1, EquationFlags)
+    def flags(self) -> EquationFlags:
+        """
+        The flags for the equation
+
+        Whether the equation is selected, used for graphing, or is participating in a link transfer
+        """
+
+    @Section(1, GraphStyle)
+    def style(self) -> bytes:
+        """
+        The style of the equation
+        """
+
+    @Section(1, GraphColor)
+    def color(self) -> bytes:
+        """
+        The color of the equation
+        """
+
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the tokens and their total size
+        """
+
+    @View(data, Integer)[0:2]
+    def length(self) -> int:
+        """
+        The total size of the tokens
+        """
+
+    def load_data_section(self, data: io.BytesIO):
+        self.raw.flags = data.read(1)
+        data_length = int.from_bytes(data.read(2), 'little')
+        self.raw.data = int.to_bytes(data_length, 2, 'little') + data.read(data_length)
+
+    def load_equation(self, equation: TIEquation):
+        self.raw.data = equation.data
+
+    def equation(self) -> TIEquation:
+        return TIEquation(self.bytes()[:-self.data_length - 1] + self.bytes()[-self.data_length:])
+
+
+def equations_from_data(data: bytes, gdb: 'TIMonoGDB') -> tuple[tuple[TIPlottedEquation, ...], bytes]:
+    data = io.BytesIO(data[61 + TIReal.data.width * gdb.num_parameters:])
+    equations = tuple(TIPlottedEquation() for _ in range(gdb.num_equations))
+
+    for i in range(gdb.num_styles):
+        style = data.read(1)
+        for j in range(r := gdb.num_equations // gdb.num_styles):
+            equations[r * i + j].style = style
+
+    for i in range(gdb.num_equations):
+        equations[i].load_data_section(data)
+
+    if rest := data.read():
+        data = io.BytesIO(rest)
+        data.seek(3, 1)
+
+        for i in range(gdb.num_styles):
+            color = data.read(1)
+            for j in range(r := gdb.num_equations // gdb.num_styles):
+                equations[r * i + j].color = color
+
+    return equations, rest
 
 
 def IndexedEquation(index: int):
     index -= 1
 
     class Equation(Converter):
-        _T = TIEquation
+        _T = TIPlottedEquation
 
         @classmethod
         def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
-            return equations_from_data(data, instance.num_equations)[0][index]
+            return equations_from_data(data, instance)[0][index]
 
         @classmethod
         def set(cls, value: _T, instance: 'TIMonoGDB') -> bytes:
             equations = list(instance.equations)
             equations[index] = value
 
-            return b''.join(equation.data for equation in equations)
+            data = b''
+            for i in range(instance.num_styles):
+                data += equations[i].style
+                i += instance.num_equations // instance.num_styles
+
+            data += b''.join(equation.bytes() for equation in equations)
+
+            if equations_from_data(instance.data, instance)[1]:
+                for i in range(instance.num_styles):
+                    data += equations[i].color
+                    i += instance.num_equations // instance.num_styles
+
+            return instance.raw.data[:instance.offset] + data
 
     return Equation
 
@@ -249,13 +336,16 @@ class TIMonoGDB(TIEntry):
         """
 
     @property
-    def equations(self) -> tuple[TIEquation, ...]:
+    def offset(self) -> int:
+        return 61 + TIReal.data.width * self.num_parameters
+
+    @property
+    def equations(self) -> tuple[TIPlottedEquation, ...]:
         """
         The GDB's stored graph equations
         """
 
-        offset = 61 + TIReal.data.width * self.num_parameters + self.num_styles
-        return equations_from_data(self.data[offset:], self.num_equations)[0]
+        return equations_from_data(self.data, self)[0]
 
     @property
     def styles(self) -> tuple[int, ...]:
@@ -263,12 +353,10 @@ class TIMonoGDB(TIEntry):
         The GDB's stored graph styles
         """
 
-        return *self.data[61 + TIReal.data.width * self.num_parameters:][:self.num_styles],
+        return *map(lambda b: bytes([b]), self.data[self.offset:][:self.num_styles]),
 
     def coerce(self):
-        offset = 61 + TIReal.data.width * self.num_parameters + self.num_styles
-
-        if equations_from_data(self.data[offset:], self.num_equations)[1]:
+        if equations_from_data(self.data, self)[1]:
             self.__class__ = TIGDB
             self.coerce()
         else:
@@ -293,25 +381,25 @@ class TIGDB(TIMonoGDB):
         """
 
     @View(data, GraphColor)[-5:-4]
-    def grid_color(self) -> int:
+    def grid_color(self) -> bytes:
         """
         The color of the grid
         """
 
     @View(data, GraphColor)[-4:-3]
-    def axes_color(self) -> int:
+    def axes_color(self) -> bytes:
         """
         The color of the axes
         """
 
     @View(data, LineStyle)[-3:-2]
-    def line_style(self) -> int:
+    def line_style(self) -> bytes:
         """
         The line style for all plotted equations
         """
 
     @View(data, BorderColor)[-2:-1]
-    def border_color(self) -> int:
+    def border_color(self) -> bytes:
         """
         The color of the graph border
         """
@@ -365,136 +453,64 @@ class TIMonoFuncGDB(TIMonoGDB):
 
         return value
 
-    @View(data, GraphStyle)[70:71]
-    def Y1Style(self) -> int:
-        """
-        The style byte for Y1
-        """
-
-    @View(data, GraphStyle)[71:72]
-    def Y2Style(self) -> int:
-        """
-        The style byte for Y2
-        """
-
-    @View(data, GraphStyle)[72:73]
-    def Y3Style(self) -> int:
-        """
-        The style byte for Y3
-        """
-
-    @View(data, GraphStyle)[73:74]
-    def Y4Style(self) -> int:
-        """
-        The style byte for Y4
-        """
-
-    @View(data, GraphStyle)[74:75]
-    def Y5Style(self) -> int:
-        """
-        The style byte for Y5
-        """
-
-    @View(data, GraphStyle)[75:76]
-    def Y6Style(self) -> int:
-        """
-        The style byte for Y6
-        """
-
-    @View(data, GraphStyle)[76:77]
-    def Y7Style(self) -> int:
-        """
-        The style byte for Y7
-        """
-
-    @View(data, GraphStyle)[77:78]
-    def Y8Style(self) -> int:
-        """
-        The style byte for Y8
-        """
-
-    @View(data, GraphStyle)[78:79]
-    def Y9Style(self) -> int:
-        """
-        The style byte for Y9
-        """
-
-    @View(data, GraphStyle)[79:80]
-    def Y0Style(self) -> int:
-        """
-        The style byte for Y0
-        """
-
-    @View(data, Bytes)[70:80]
-    def style_data(self) -> int:
-        """
-        The styles of the equations stored in the GDB
-        """
-
-    @View(data, IndexedEquation(1))[80:]
-    def Y1(self) -> TIEquation:
+    @View(data, IndexedEquation(1))
+    def Y1(self) -> TIPlottedEquation:
         """
         Y1: The first equation in function mode
         """
 
-    @View(data, IndexedEquation(2))[80:]
-    def Y2(self) -> TIEquation:
+    @View(data, IndexedEquation(2))
+    def Y2(self) -> TIPlottedEquation:
         """
         Y2: The second equation in function mode
         """
 
-    @View(data, IndexedEquation(3))[80:]
-    def Y3(self) -> TIEquation:
+    @View(data, IndexedEquation(3))
+    def Y3(self) -> TIPlottedEquation:
         """
         Y3: The third equation in function mode
         """
 
-    @View(data, IndexedEquation(4))[80:]
-    def Y4(self) -> TIEquation:
+    @View(data, IndexedEquation(4))
+    def Y4(self) -> TIPlottedEquation:
         """
         Y4: The fourth equation in function mode
         """
 
-    @View(data, IndexedEquation(5))[80:]
-    def Y5(self) -> TIEquation:
+    @View(data, IndexedEquation(5))
+    def Y5(self) -> TIPlottedEquation:
         """
         Y5: The fifth equation in function mode
         """
 
-    @View(data, IndexedEquation(6))[80:]
-    def Y6(self) -> TIEquation:
+    @View(data, IndexedEquation(6))
+    def Y6(self) -> TIPlottedEquation:
         """
         Y6: The sixth equation in function mode
         """
 
-    @View(data, IndexedEquation(7))[80:]
-    def Y7(self) -> TIEquation:
+    @View(data, IndexedEquation(7))
+    def Y7(self) -> TIPlottedEquation:
         """
         Y7: The seventh equation in function mode
         """
 
-    @View(data, IndexedEquation(8))[80:]
-    def Y8(self) -> TIEquation:
+    @View(data, IndexedEquation(8))
+    def Y8(self) -> TIPlottedEquation:
         """
         Y8: The eight equation in function mode
         """
 
-    @View(data, IndexedEquation(9))[80:]
-    def Y9(self) -> TIEquation:
+    @View(data, IndexedEquation(9))
+    def Y9(self) -> TIPlottedEquation:
         """
         Y9: The ninth equation in function mode
         """
 
-    @View(data, IndexedEquation(10))[80:]
-    def Y0(self) -> TIEquation:
+    @View(data, IndexedEquation(10))
+    def Y0(self) -> TIPlottedEquation:
         """
         Y0: The tenth equation in function mode
-        """
-
-    @View(data, Bytes)[80:]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
         """
 
 
@@ -507,78 +523,12 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
-    @View(data, Bytes)[80:-18]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
-        """
-
     @View(data, String)[-18:-15]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented
 
         Always set to 84C
-        """
-
-    @View(data, GraphColor)[-15:-14]
-    def Y1Color(self) -> int:
-        """
-        The color of Y1
-        """
-
-    @View(data, GraphColor)[-14:-13]
-    def Y2Color(self) -> int:
-        """
-        The color of Y2
-        """
-
-    @View(data, GraphColor)[-13:-12]
-    def Y3Color(self) -> int:
-        """
-        The color of Y3
-        """
-
-    @View(data, GraphColor)[-12:-11]
-    def Y4Color(self) -> int:
-        """
-        The color of Y4
-        """
-
-    @View(data, GraphColor)[-11:-10]
-    def Y5Color(self) -> int:
-        """
-        The color of Y5
-        """
-
-    @View(data, GraphColor)[-10:-9]
-    def Y6Color(self) -> int:
-        """
-        The color of Y6
-        """
-
-    @View(data, GraphColor)[-9:-8]
-    def Y7Color(self) -> int:
-        """
-        The color of Y7
-        """
-
-    @View(data, GraphColor)[-8:-7]
-    def Y8Color(self) -> int:
-        """
-        The color of Y8
-        """
-
-    @View(data, GraphColor)[-7:-6]
-    def Y9Color(self) -> int:
-        """
-        The color of Y9
-        """
-
-    @View(data, GraphColor)[-6:-5]
-    def Y0Color(self) -> int:
-        """
-        The color of Y0
         """
 
 
@@ -615,124 +565,76 @@ class TIMonoParamGDB(TIMonoGDB):
         Tstep: the time increment
         """
 
-    @View(data, GraphStyle)[88:89]
-    def T1Style(self) -> bytes:
-        """
-        The style byte for X1T/Y1T
-        """
-
-    @View(data, GraphStyle)[89:90]
-    def T2Style(self) -> bytes:
-        """
-        The style byte for X2T/Y2T
-        """
-
-    @View(data, GraphStyle)[90:91]
-    def T3Style(self) -> bytes:
-        """
-        The style byte for X3T/Y3T
-        """
-
-    @View(data, GraphStyle)[91:92]
-    def T4Style(self) -> bytes:
-        """
-        The style byte for X4T/Y4T
-        """
-
-    @View(data, GraphStyle)[92:93]
-    def T5Style(self) -> bytes:
-        """
-        The style byte for X5T/Y5T
-        """
-
-    @View(data, GraphStyle)[93:94]
-    def T6Style(self) -> bytes:
-        """
-        The style byte for X6T/Y6T
-        """
-
-    @View(data, Bytes)[88:94]
-    def style_data(self) -> bytes:
-        """
-        The styles of the equations stored in the GDB
-        """
-
-    @View(data, IndexedEquation(1))[94:]
-    def X1T(self) -> TIEquation:
+    @View(data, IndexedEquation(1))
+    def X1T(self) -> TIPlottedEquation:
         """
         X1T: The first X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(2))[94:]
-    def Y1T(self) -> TIEquation:
+    @View(data, IndexedEquation(2))
+    def Y1T(self) -> TIPlottedEquation:
         """
         Y1T: The first Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(3))[94:]
-    def X2T(self) -> TIEquation:
+    @View(data, IndexedEquation(3))
+    def X2T(self) -> TIPlottedEquation:
         """
         X2T: The second X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(4))[94:]
-    def Y2T(self) -> TIEquation:
+    @View(data, IndexedEquation(4))
+    def Y2T(self) -> TIPlottedEquation:
         """
         Y2T: The second Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(5))[94:]
-    def X3T(self) -> TIEquation:
+    @View(data, IndexedEquation(5))
+    def X3T(self) -> TIPlottedEquation:
         """
         X3T: The third X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(6))[94:]
-    def Y3T(self) -> TIEquation:
+    @View(data, IndexedEquation(6))
+    def Y3T(self) -> TIPlottedEquation:
         """
         Y3T: The third Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(7))[94:]
-    def X4T(self) -> TIEquation:
+    @View(data, IndexedEquation(7))
+    def X4T(self) -> TIPlottedEquation:
         """
         X4T: The fourth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(8))[94:]
-    def Y4T(self) -> TIEquation:
+    @View(data, IndexedEquation(8))
+    def Y4T(self) -> TIPlottedEquation:
         """
         Y4T: The fourth Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(9))[94:]
-    def X5T(self) -> TIEquation:
+    @View(data, IndexedEquation(9))
+    def X5T(self) -> TIPlottedEquation:
         """
         X5T: The fifth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(10))[94:]
-    def Y5T(self) -> TIEquation:
+    @View(data, IndexedEquation(10))
+    def Y5T(self) -> TIPlottedEquation:
         """
         Y5T: The fifth Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(11))[94:]
-    def X6T(self) -> TIEquation:
+    @View(data, IndexedEquation(11))
+    def X6T(self) -> TIPlottedEquation:
         """
         X6T: The sixth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(12))[94:]
-    def Y6T(self) -> TIEquation:
+    @View(data, IndexedEquation(12))
+    def Y6T(self) -> TIPlottedEquation:
         """
         Y6T: The sixth Y-component in parametric mode
-        """
-
-    @View(data, Bytes)[94:]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
         """
 
 
@@ -745,54 +647,12 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
-    @View(data, Bytes)[80:-14]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
-        """
-
     @View(data, String)[-14:-11]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented
 
         Always set to 84C
-        """
-
-    @View(data, GraphColor)[-11:-10]
-    def T1Color(self) -> int:
-        """
-        The color of X1T/Y1T
-        """
-
-    @View(data, GraphColor)[-10:-9]
-    def T2Color(self) -> int:
-        """
-        The color of X2T/Y2T
-        """
-
-    @View(data, GraphColor)[-9:-8]
-    def T3Color(self) -> int:
-        """
-        The color of X3T/Y3T
-        """
-
-    @View(data, GraphColor)[-8:-7]
-    def T4Color(self) -> int:
-        """
-        The color of X4T/Y4T
-        """
-
-    @View(data, GraphColor)[-7:-6]
-    def T5Color(self) -> int:
-        """
-        The color of X5T/Y5T
-        """
-
-    @View(data, GraphColor)[-6:-5]
-    def T6Color(self) -> int:
-        """
-        The color of X6T/Y6T
         """
 
 
@@ -829,88 +689,40 @@ class TIMonoPolarGDB(TIMonoGDB):
         Thetastep: the angle increment
         """
 
-    @View(data, GraphStyle)[88:89]
-    def r1Style(self) -> bytes:
-        """
-        The style byte for r1
-        """
-
-    @View(data, GraphStyle)[89:90]
-    def r2Style(self) -> bytes:
-        """
-        The style byte for r2
-        """
-
-    @View(data, GraphStyle)[90:91]
-    def r3Style(self) -> bytes:
-        """
-        The style byte for r3
-        """
-
-    @View(data, GraphStyle)[91:92]
-    def r4Style(self) -> bytes:
-        """
-        The style byte for r4
-        """
-
-    @View(data, GraphStyle)[92:93]
-    def r5Style(self) -> bytes:
-        """
-        The style byte for r5
-        """
-
-    @View(data, GraphStyle)[93:94]
-    def r6Style(self) -> bytes:
-        """
-        The style byte for r6
-        """
-
-    @View(data, Bytes)[88:94]
-    def style_data(self) -> bytes:
-        """
-        The styles of the equations stored in the GDB
-        """
-
-    @View(data, IndexedEquation(1))[94:]
-    def r1(self) -> TIEquation:
+    @View(data, IndexedEquation(1))
+    def r1(self) -> TIPlottedEquation:
         """
         r1: The first equation in polar mode
         """
 
-    @View(data, IndexedEquation(2))[94:]
-    def r2(self) -> TIEquation:
+    @View(data, IndexedEquation(2))
+    def r2(self) -> TIPlottedEquation:
         """
         r1: The second equation in polar mode
         """
 
-    @View(data, IndexedEquation(3))[94:]
-    def r3(self) -> TIEquation:
+    @View(data, IndexedEquation(3))
+    def r3(self) -> TIPlottedEquation:
         """
         r3: The third equation in polar mode
         """
 
-    @View(data, IndexedEquation(4))[94:]
-    def r4(self) -> TIEquation:
+    @View(data, IndexedEquation(4))
+    def r4(self) -> TIPlottedEquation:
         """
         rr: The fourth equation in polar mode
         """
 
-    @View(data, IndexedEquation(5))[94:]
-    def r5(self) -> TIEquation:
+    @View(data, IndexedEquation(5))
+    def r5(self) -> TIPlottedEquation:
         """
         r5: The fifth equation in polar mode
         """
 
-    @View(data, IndexedEquation(6))[94:]
-    def r6(self) -> TIEquation:
+    @View(data, IndexedEquation(6))
+    def r6(self) -> TIPlottedEquation:
         """
         r6: The sixth equation in polar mode
-        """
-
-    @View(data, Bytes)[94:]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
         """
 
 
@@ -923,54 +735,12 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
-    @View(data, Bytes)[80:-14]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
-        """
-
     @View(data, String)[-14:-11]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented
 
         Always set to 84C
-        """
-
-    @View(data, GraphColor)[-11:-10]
-    def r1Color(self) -> int:
-        """
-        The color of r1
-        """
-
-    @View(data, GraphColor)[-10:-9]
-    def r2Color(self) -> int:
-        """
-        The color of r2
-        """
-
-    @View(data, GraphColor)[-9:-8]
-    def r3Color(self) -> int:
-        """
-        The color of r3
-        """
-
-    @View(data, GraphColor)[-8:-7]
-    def r4Color(self) -> int:
-        """
-        The color of r4
-        """
-
-    @View(data, GraphColor)[-7:-6]
-    def r5Color(self) -> int:
-        """
-        The color of r5
-        """
-
-    @View(data, GraphColor)[-6:-5]
-    def r6Color(self) -> int:
-        """
-        The color of r6
         """
 
 
@@ -1087,52 +857,22 @@ class TIMonoSeqGDB(TIMonoGDB):
         w(nMin + 1): the initial value of w at nMin + 1
         """
 
-    @View(data, GraphStyle)[151:152]
-    def uStyle(self) -> bytes:
-        """
-        The style byte for u
-        """
-
-    @View(data, GraphStyle)[152:153]
-    def vStyle(self) -> bytes:
-        """
-        The style byte for v
-        """
-
-    @View(data, GraphStyle)[153:154]
-    def wStyle(self) -> bytes:
-        """
-        The style byte for w
-        """
-
-    @View(data, Bytes)[151:154]
-    def style_data(self) -> bytes:
-        """
-        The styles of the equations stored in the GDB
-        """
-
-    @View(data, IndexedEquation(1))[154:]
-    def u(self) -> TIEquation:
+    @View(data, IndexedEquation(1))
+    def u(self) -> TIPlottedEquation:
         """
         u: The first equation in sequence mode
         """
 
-    @View(data, IndexedEquation(2))[154:]
-    def v(self) -> TIEquation:
+    @View(data, IndexedEquation(2))
+    def v(self) -> TIPlottedEquation:
         """
         v: The second equation in sequence mode
         """
 
-    @View(data, IndexedEquation(3))[154:]
-    def w(self) -> TIEquation:
+    @View(data, IndexedEquation(3))
+    def w(self) -> TIPlottedEquation:
         """
         w: The third equation in sequence mode
-        """
-
-    @View(data, Bytes)[154:]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
         """
 
 
@@ -1145,12 +885,6 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
-    @View(data, Bytes)[80:-11]
-    def equation_data(self) -> bytes:
-        """
-        The equations stored in the GDB as a contiguous buffer of equation data sections
-        """
-
     @View(data, String)[-11:-8]
     def color_magic(self) -> str:
         """
@@ -1159,26 +893,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
         Always set to 84C
         """
 
-    @View(data, GraphColor)[-8:-7]
-    def uColor(self) -> int:
-        """
-        The color of u
-        """
 
-    @View(data, GraphColor)[-7:-6]
-    def vColor(self) -> int:
-        """
-        The color of v
-        """
-
-    @View(data, GraphColor)[-6:-5]
-    def wColor(self) -> int:
-        """
-        The color of w
-        """
-
-
-__all__ = ["TIMonoGDB",
-           "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
-           "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "GraphMode", "GraphStyle", "GraphColor", "LineStyle"]
+__all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
+           "TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
+           "TIPlottedEquation", "GraphMode", "GraphStyle", "GraphColor", "LineStyle"]

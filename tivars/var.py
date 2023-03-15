@@ -176,12 +176,13 @@ class TIEntry(Converter):
     flash_meta_length = 13
 
     _type_id = None
+    _raw_class = TIEntryRaw
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        self.raw = TIEntryRaw()
+        self.raw = self._raw_class()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
         self.type_id = self._type_id if self._type_id else b'\xFF'
