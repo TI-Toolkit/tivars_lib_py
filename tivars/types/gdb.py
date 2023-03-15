@@ -67,7 +67,7 @@ class GraphColor(Enum):
     ORANGE = b'\x06'
     BROWN = b'\x07'
     NAVY = b'\x08'
-    LTBLUE = 'b\x09'
+    LTBLUE = b'\x09'
     YELLOW = b'\x0A'
     WHITE = b'\x0B'
     LTGRAY = b'\x0C'
@@ -163,28 +163,12 @@ class TIPlottedEquation(TIEquation):
         return TIEquation(self.bytes()[:-self.data_length - 1] + self.bytes()[-self.data_length:])
 
 
-def equations_from_data(data: bytes, gdb: 'TIMonoGDB') -> tuple[tuple[TIPlottedEquation, ...], bytes]:
-    data = io.BytesIO(data[61 + TIReal.data.width * gdb.num_parameters:])
-    equations = tuple(TIPlottedEquation() for _ in range(gdb.num_equations))
-
-    for i in range(gdb.num_styles):
-        style = data.read(1)
-        for j in range(r := gdb.num_equations // gdb.num_styles):
-            equations[r * i + j].style = style
-
+def color_data(gdb: 'TIMonoGDB') -> bytes:
+    data = io.BytesIO(gdb.data[gdb.offset + gdb.num_styles:])
     for i in range(gdb.num_equations):
-        equations[i].load_data_section(data)
+        TIPlottedEquation().load_data_section(data)
 
-    if rest := data.read():
-        data = io.BytesIO(rest)
-        data.seek(3, 1)
-
-        for i in range(gdb.num_styles):
-            color = data.read(1)
-            for j in range(r := gdb.num_equations // gdb.num_styles):
-                equations[r * i + j].color = color
-
-    return equations, rest
+    return data.read()
 
 
 def IndexedEquation(index: int):
@@ -195,7 +179,7 @@ def IndexedEquation(index: int):
 
         @classmethod
         def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
-            return equations_from_data(data, instance)[0][index]
+            return instance.equations[index]
 
         @classmethod
         def set(cls, value: _T, instance: 'TIMonoGDB') -> bytes:
@@ -209,7 +193,7 @@ def IndexedEquation(index: int):
 
             data += b''.join(equation.bytes() for equation in equations)
 
-            if equations_from_data(instance.data, instance)[1]:
+            if color_data(instance):
                 for i in range(instance.num_styles):
                     data += equations[i].color
                     i += instance.num_equations // instance.num_styles
@@ -345,7 +329,27 @@ class TIMonoGDB(TIEntry):
         The GDB's stored graph equations
         """
 
-        return equations_from_data(self.data, self)[0]
+        data = io.BytesIO(self.data[self.offset:])
+        equations = tuple(TIPlottedEquation() for _ in range(self.num_equations))
+
+        for i in range(self.num_styles):
+            style = data.read(1)
+            for j in range(r := self.num_equations // self.num_styles):
+                equations[r * i + j].style = style
+
+        for i in range(self.num_equations):
+            equations[i].load_data_section(data)
+
+        if rest := data.read():
+            data = io.BytesIO(rest)
+            data.seek(3, 1)
+
+            for i in range(self.num_styles):
+                color = data.read(1)
+                for j in range(r := self.num_equations // self.num_styles):
+                    equations[r * i + j].color = color
+
+        return equations
 
     @property
     def styles(self) -> tuple[int, ...]:
@@ -356,7 +360,7 @@ class TIMonoGDB(TIEntry):
         return *map(lambda b: bytes([b]), self.data[self.offset:][:self.num_styles]),
 
     def coerce(self):
-        if equations_from_data(self.data, self)[1]:
+        if color_data(self):
             self.__class__ = TIGDB
             self.coerce()
         else:
