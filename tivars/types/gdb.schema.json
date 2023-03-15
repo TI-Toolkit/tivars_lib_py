@@ -1,0 +1,261 @@
+{
+	"type": "object",
+	"definitions": {
+		"colors": {
+			"enum": [
+				"Blue",
+				"Red",
+				"Black",
+				"Magenta",
+				"Green",
+				"Orange",
+				"Brown",
+				"Navy",
+				"LtBlue",
+				"Yellow",
+				"White",
+				"LtGray",
+				"MedGray",
+				"Gray",
+				"DarkGray"
+			]
+		}
+	},
+	"properties": {
+		"graphMode": {
+			"type": "string",
+			"enum": ["Function", "Parametric", "Polar", "Sequence"]
+		},
+		"formatSettings": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"enum": [
+					"Dot",
+					"Connected",
+					"Simul",
+					"Sequential",
+					"GridOn",
+					"GridOff",
+					"GridLine",
+					"GridDot",
+					"PolarGC",
+					"RectGC",
+					"CoordOff",
+					"CoordOn",
+					"AxesOff",
+					"AxesOn",
+					"LabelOn",
+					"LabelOff"
+				]
+			}
+		},
+		"seqSettings": {
+			"type": "object",
+			"properties": {
+				"mode": {
+					"type": "string",
+					"enum": [
+						"Time",
+						"Web",
+						"uv",
+						"vw",
+						"uw"
+					],
+					"default": "Time"
+				}
+			}
+		},
+		"extSettings": {
+			"type": "object",
+			"properties": {
+				"showExpr": {
+					"type": "boolean",
+					"default": true
+				},
+				"seqMode": {
+					"type": "string",
+					"enum": ["SEQ_n", "SEQ_np1", "SEQ_np2"]
+				}
+			}
+		},
+		"globalWindowSettings": {
+			"type": "object",
+			"properties": {
+				"Xmin": {
+					"type": [
+						"string",
+						"number"
+					]
+				},
+				"Xmax": {
+					"type": [
+						"string",
+						"number"
+					]
+				},
+				"Xscl": {
+					"type": [
+						"string",
+						"number"
+					]
+				},
+				"Ymin": {
+					"type": [
+						"string",
+						"number"
+					]
+				},
+				"Ymax": {
+					"type": [
+						"string",
+						"number"
+					]
+				},
+				"Yscl": {
+					"type": [
+						"string",
+						"number"
+					]
+				}
+			},
+			"required": [
+				"Xmin",
+				"Xmax",
+				"Xscl",
+				"Ymin",
+				"Ymax",
+				"Yscl"
+			]
+		},
+		"specificData": {
+			"type": "object",
+			"properties": {
+				"settings": {
+					"type": "object"
+				},
+				"styles": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"SolidLine",
+							"ThickLine",
+							"ShadeAbove",
+							"ShadeBelow",
+							"Trace",
+							"Animate",
+							"DottedLine"
+						]
+					}
+				},
+				"functions": {
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "object",
+								"properties": {
+									"flags": {
+										"type": "object",
+										"properties": {
+											"selected": {
+												"type": "boolean",
+												"default": "true"
+											},
+											"wasUsedForGraph": {
+												"type": "boolean",
+												"default": "false"
+											},
+											"linkTransfer": {
+												"type": "boolean",
+												"default": "false"
+											}
+										}
+									},
+									"expr": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"expr"
+								]
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"colors": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"$ref": "#/definitions/colors"
+						}
+					}
+				}
+			},
+			"required": [
+				"settings",
+				"styles",
+				"functions",
+				"colors"
+			]
+		},
+		"global84CSettings": {
+			"type": "object",
+			"properties": {
+				"colors": {
+					"type": "object",
+					"properties": {
+						"grid": {
+							"type": "string",
+							"$ref": "#/definitions/colors"
+						},
+						"axes": {
+							"type": "string",
+							"$ref": "#/definitions/colors",
+							"default": "Black"
+						},
+						"border": {
+							"type": "integer",
+							"enum": [1, 2, 3, 4],
+							"default": 1
+						}
+					},
+					"required": [
+						"grid"
+					]
+				},
+				"other": {
+					"type": "object",
+					"properties": {
+						"lineStyle": {
+							"type": "string",
+							"enum": [
+								"Thick",
+								"Thin",
+								"DotThick",
+								"DotThin"
+							],
+							"default": "Thick"
+						},
+						"detectAsymptotes": {
+							"type": "boolean",
+							"default": true
+						}
+					}
+				}
+			},
+			"required": [
+				"colors"
+			]
+		}
+	},
+	"required": [
+		"graphMode",
+		"formatSettings",
+		"globalWindowSettings",
+		"specificData"
+	]
+}

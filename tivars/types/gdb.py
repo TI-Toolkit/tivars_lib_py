@@ -1,4 +1,5 @@
 import io
+import json
 
 from warnings import warn
 
@@ -31,8 +32,8 @@ class GraphMode(Flags):
     ExprOff = {0: 1}
     ExprOn = {0: 0}
     SEQ_n = {1: 0, 2: 0}
-    SEQ_n_1 = {1: 1, 2: 0}
-    SEQ_n_2 = {1: 0, 2: 1}
+    SEQ_np1 = {1: 1, 2: 0}
+    SEQ_np2 = {1: 0, 2: 1}
 
     Time = {0: 0, 2: 0, 3: 0, 4: 0}
     Web = {0: 1, 2: 0, 3: 0, 4: 0}
@@ -259,10 +260,10 @@ class TIMonoGDB(TIEntry):
         One of Func, Param, Polar, or Seq
         """
         match self.mode_id:
-            case 0x10: return 'Func'
-            case 0x40: return 'Param'
+            case 0x10: return 'Function'
+            case 0x40: return 'Parametric'
             case 0x20: return 'Polar'
-            case 0x80: return 'Seq'
+            case 0x80: return 'Sequence'
 
             case _: warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                          BytesWarning)
@@ -358,6 +359,18 @@ class TIMonoGDB(TIEntry):
         """
 
         return *map(lambda b: bytes([b]), self.data[self.offset:][:self.num_styles]),
+
+    def load_dict(self, dct: dict):
+        raise NotImplementedError
+
+    def dict(self) -> dict:
+        raise NotImplementedError
+
+    def load_string(self, string: str):
+        self.load_dict(json.loads(string))
+
+    def string(self) -> str:
+        return json.dumps(self.dict())
 
     def coerce(self):
         if color_data(self):
