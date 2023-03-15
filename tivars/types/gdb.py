@@ -92,12 +92,12 @@ class LineStyle(Enum):
 
 
 class BorderColor(Enum):
-    Gray = b'\x01'
+    LtGray = b'\x01'
     Teal = b'\x02'
     LtBlue = b'\x03'
     White = b'\x04'
 
-    _all = [Gray, Teal, LtBlue, White]
+    _all = [LtGray, Teal, LtBlue, White]
     COLORS = _all
 
 

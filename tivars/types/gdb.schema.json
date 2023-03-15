@@ -75,7 +75,7 @@
 				},
 				"seqMode": {
 					"type": "string",
-					"enum": ["SEQ_n", "SEQ_np1", "SEQ_np2"]
+					"enum": ["SEQ_n", "SEQ_n+1", "SEQ_n+2"]
 				}
 			}
 		},
