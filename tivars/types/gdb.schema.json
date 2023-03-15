@@ -196,10 +196,7 @@
 				}
 			},
 			"required": [
-				"settings",
-				"styles",
-				"functions",
-				"colors"
+				"functions"
 			]
 		},
 		"global84CSettings": {
@@ -210,7 +207,8 @@
 					"properties": {
 						"grid": {
 							"type": "string",
-							"$ref": "#/definitions/colors"
+							"$ref": "#/definitions/colors",
+							"default": "MedGray"
 						},
 						"axes": {
 							"type": "string",
@@ -222,10 +220,7 @@
 							"enum": [1, 2, 3, 4],
 							"default": 1
 						}
-					},
-					"required": [
-						"grid"
-					]
+					}
 				},
 				"other": {
 					"type": "object",
@@ -246,16 +241,11 @@
 						}
 					}
 				}
-			},
-			"required": [
-				"colors"
-			]
+			}
 		}
 	},
 	"required": [
 		"graphMode",
-		"formatSettings",
-		"globalWindowSettings",
 		"specificData"
 	]
 }
