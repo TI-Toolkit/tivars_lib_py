@@ -46,68 +46,68 @@ class GraphMode(Flags):
 
 
 class GraphStyle(Enum):
-    SOLID_LINE = b'\x00'
-    THICK_LINE = b'\x01'
-    SHADE_ABOVE = b'\x02'
-    SHADE_BELOW = b'\x03'
-    TRACE = b'\x04'
-    ANIMATE = b'\x05'
-    DOTTED_LINE = b'\x06'
+    SolidLine = b'\x00'
+    ThickLine = b'\x01'
+    ShadeAbove = b'\x02'
+    ShadeBelow = b'\x03'
+    Trace = b'\x04'
+    Animate = b'\x05'
+    DottedLine = b'\x06'
 
-    _all = [SOLID_LINE, THICK_LINE, SHADE_BELOW, SHADE_BELOW, TRACE, ANIMATE, DOTTED_LINE]
+    _all = [SolidLine, ThickLine, ShadeBelow, ShadeBelow, Trace, Animate, DottedLine]
     STYLES = _all
 
 
 class GraphColor(Enum):
-    MONO = b'\x00'
-    BLUE = b'\x01'
-    RED = b'\x02'
-    BLACK = b'\x03'
-    MAGENTA = b'\x04'
-    GREEN = b'\x05'
-    ORANGE = b'\x06'
-    BROWN = b'\x07'
-    NAVY = b'\x08'
-    LTBLUE = b'\x09'
-    YELLOW = b'\x0A'
-    WHITE = b'\x0B'
-    LTGRAY = b'\x0C'
-    MEDGRAY = b'\x0D'
-    GRAY = b'\x0E'
-    DARKGRAY = b'\x0F'
+    Mono = b'\x00'
+    Blue = b'\x01'
+    Red = b'\x02'
+    Black = b'\x03'
+    Magenta = b'\x04'
+    Green = b'\x05'
+    Orange = b'\x06'
+    Brown = b'\x07'
+    Navy = b'\x08'
+    LtBlue = b'\x09'
+    Yellow = b'\x0A'
+    White = b'\x0B'
+    LtGray = b'\x0C'
+    MedGray = b'\x0D'
+    Gray = b'\x0E'
+    DarkGray = b'\x0F'
 
-    _all = [MONO, BLUE, RED, BLACK, MAGENTA, GREEN, ORANGE, BROWN, NAVY,
-            LTBLUE, YELLOW, WHITE, LTGRAY, MEDGRAY, GRAY, DARKGRAY]
+    _all = [Mono, Blue, Red, Black, Magenta, Green, Orange, Brown, Navy,
+            LtBlue, Yellow, White, LtGray, MedGray, Gray, DarkGray]
     COLORS = _all[1:]
 
 
 class LineStyle(Enum):
-    THICK = b'\x00'
-    THIN = b'\x01'
-    DOT_THICK = b'\x02'
-    DOT_THIN = b'\x03'
+    Thick = b'\x00'
+    Thin = b'\x01'
+    DotThick = b'\x02'
+    DotThin = b'\x03'
 
-    _all = [THICK, THIN, DOT_THIN, DOT_THICK]
+    _all = [Thick, Thin, DotThick, DotThin]
     STYLES = _all
 
 
 class BorderColor(Enum):
-    GRAY = b'\x01'
-    TEAL = b'\x02'
-    LTBLUE = b'\x03'
-    WHITE = b'\x04'
+    Gray = b'\x01'
+    Teal = b'\x02'
+    LtBlue = b'\x03'
+    White = b'\x04'
 
-    _all = [GRAY, TEAL, LTBLUE, WHITE]
+    _all = [Gray, Teal, LtBlue, White]
     COLORS = _all
 
 
 class EquationFlags(Flags):
-    SELECTED = {5: 1}
-    DESELECTED = {5: 0}
-    USED_FOR_GRAPH = {6: 1}
-    UNUSED_FOR_GRAPH = {6: 0}
-    LINK_TRANSFER_SET = {7: 1}
-    LINK_TRANSFER_CLEAR = {7: 0}
+    Selected = {5: 1}
+    Deselected = {5: 0}
+    UsedForGraph = {6: 1}
+    UnusedForGraph = {6: 0}
+    LinkTransferSet = {7: 1}
+    LinkTransferClear = {7: 0}
 
 
 class TIPlottedEquationRaw(TIEntryRaw):
@@ -257,7 +257,7 @@ class TIMonoGDB(TIEntry):
         """
         The mode for the GDB
 
-        One of Func, Param, Polar, or Seq
+        One of Function, Parametric, Polar, or Sequence
         """
         match self.mode_id:
             case 0x10: return 'Function'
