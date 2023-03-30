@@ -268,18 +268,18 @@ class SettingsTests(unittest.TestCase):
         test_window.open("tests/data/Window.8xw")
 
         zero, one, undef = TIReal(0), TIReal(1), TIReal(1, flags={1: 1, 2: 1, 3: 1})
-        tau, pi_twelfths = TIReal("6.283185307"), TIReal("0.13089969389957")
+        tau, pi_twenty_fourths = TIReal("6.283185307"), TIReal("0.13089969389957")
 
         self.assertEqual(test_window.PlotStart, one)
         self.assertEqual(test_window.PlotStep, one)
 
         self.assertEqual(test_window.Thetamax, tau)
         self.assertEqual(test_window.Thetamin, zero)
-        self.assertEqual(test_window.Thetastep, pi_twelfths)
+        self.assertEqual(test_window.Thetastep, pi_twenty_fourths)
 
         self.assertEqual(test_window.Tmax, tau)
         self.assertEqual(test_window.Tmin, zero)
-        self.assertEqual(test_window.Tstep, pi_twelfths)
+        self.assertEqual(test_window.Tstep, pi_twenty_fourths)
 
         self.assertEqual(test_window.unMin0, undef)
         self.assertEqual(test_window.unMin1, undef)
@@ -302,18 +302,18 @@ class SettingsTests(unittest.TestCase):
         test_recall.open("tests/data/RecallWindow.8xz")
 
         zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1", flags={1: 1, 2: 1, 3: 1})
-        tau, pi_twelfths = TIReal(6.283185307), TIReal("0.13089969389957")
+        tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
 
         self.assertEqual(test_recall.PlotStart, one)
         self.assertEqual(test_recall.PlotStep, one)
 
         self.assertEqual(test_recall.Thetamax, tau)
         self.assertEqual(test_recall.Thetamin, zero)
-        self.assertEqual(test_recall.Thetastep, pi_twelfths)
+        self.assertEqual(test_recall.Thetastep, pi_twenty_fourths)
 
         self.assertEqual(test_recall.Tmax, tau)
         self.assertEqual(test_recall.Tmin, zero)
-        self.assertEqual(test_recall.Tstep, pi_twelfths)
+        self.assertEqual(test_recall.Tstep, pi_twenty_fourths)
 
         self.assertEqual(test_recall.unMin0, undef)
         self.assertEqual(test_recall.unMin1, undef)
