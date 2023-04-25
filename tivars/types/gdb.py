@@ -1,6 +1,7 @@
 import io
 import json
 
+from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
@@ -35,14 +36,17 @@ class GraphMode(Flags):
     SEQ_np1 = {1: 1, 2: 0}
     SEQ_np2 = {1: 0, 2: 1}
 
-    Time = {0: 0, 2: 0, 3: 0, 4: 0}
-    Web = {0: 1, 2: 0, 3: 0, 4: 0}
-    uv = {0: 0, 2: 1, 3: 0, 4: 0}
-    vw = {0: 0, 2: 0, 3: 1, 4: 0}
-    uw = {0: 0, 2: 0, 3: 0, 4: 1}
-
     DetectAsymptotesOn = {0: 1}
     DetectAsymptotesOff = {0: 0}
+
+
+class SeqMode(Flags):
+    Time = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+    Web = {0: 1, 1: 0, 2: 0, 3: 0, 4: 0}
+    VertWeb = {0: 0, 1: 1, 2: 0, 3: 0, 4: 0}
+    uv = {0: 0, 1: 0, 2: 1, 3: 0, 4: 0}
+    vw = {0: 0, 1: 0, 2: 0, 3: 1, 4: 0}
+    uw = {0: 0, 1: 0, 2: 0, 3: 0, 4: 1}
 
 
 class GraphStyle(Enum):
@@ -54,8 +58,13 @@ class GraphStyle(Enum):
     Animate = b'\x05'
     DottedLine = b'\x06'
 
-    _all = [SolidLine, ThickLine, ShadeBelow, ShadeBelow, Trace, Animate, DottedLine]
-    STYLES = _all
+    Thin = b'\x00'
+    Thick = b'\x01'
+    DotThick = b'\x06'
+    DotThin = b'\x07'
+
+    _all = [SolidLine, ThickLine, ShadeBelow, ShadeBelow, Trace, Animate, DottedLine, Thin, Thick, DotThick, DotThin]
+    STYLES = _all[:7]
 
 
 class GraphColor(Enum):
@@ -81,10 +90,10 @@ class GraphColor(Enum):
     COLORS = _all[1:]
 
 
-class LineStyle(Enum):
+class GlobalStyle(Enum):
     Thick = b'\x00'
-    Thin = b'\x01'
-    DotThick = b'\x02'
+    DotThick = b'\x01'
+    Thin = b'\x02'
     DotThin = b'\x03'
 
     _all = [Thick, Thin, DotThick, DotThin]
@@ -110,13 +119,23 @@ class EquationFlags(Flags):
     LinkTransferClear = {7: 0}
 
 
-class TIPlottedEquationRaw(TIEntryRaw):
+class TIGraphedEquationRaw(TIEntryRaw):
     __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", \
                 "flags", "__style", "__color", "data"
 
 
-class TIPlottedEquation(TIEquation):
-    _raw_class = TIPlottedEquationRaw
+class TIGraphedEquation(TIEquation):
+    _raw_class = TIGraphedEquationRaw
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        self.flags = EquationFlags()
+        self.style = b'\x00'
+        self.color = b'\x00'
 
     @Section(1, EquationFlags)
     def flags(self) -> EquationFlags:
@@ -157,26 +176,53 @@ class TIPlottedEquation(TIEquation):
         data_length = int.from_bytes(data.read(2), 'little')
         self.raw.data = int.to_bytes(data_length, 2, 'little') + data.read(data_length)
 
+    def load_dict(self, dct: dict):
+        self.style = getattr(GraphStyle, dct["style"])
+        self.color = getattr(GraphColor, dct["color"])
+
+        self.load_equation(TIEquation(dct["expr"]))
+
+        flags = {"selected": False, "wasUsedForGraph": False, "linkTransfer": False} | dct["flags"]
+        self.flags = EquationFlags()
+
+        self.flags |= EquationFlags.Selected if flags["selected"] else EquationFlags.Deselected
+        self.flags |= EquationFlags.UsedForGraph if flags["wasUsedForGraph"] else EquationFlags.UnusedForGraph
+        self.flags |= EquationFlags.LinkTransferSet if flags["linkTransfer"] else EquationFlags.LinkTransferClear
+
+    def dict(self) -> dict:
+        return {"style": GraphStyle.get_name(self.style),
+                "color": GraphColor.get_name(self.color),
+                "expr": self.string(),
+                "flags": {"selected": EquationFlags.Selected in self.flags,
+                          "wasUsedForGraph": EquationFlags.UsedForGraph in self.flags,
+                          "linkTransfer": EquationFlags.LinkTransferSet in self.flags}
+                }
+
     def load_equation(self, equation: TIEquation):
         self.raw.data = equation.data
 
     def equation(self) -> TIEquation:
         return TIEquation(self.bytes()[:-self.data_length - 1] + self.bytes()[-self.data_length:])
 
+    def load_string(self, string: str, *, model: TIModel = None):
+        equation = TIEquation()
+        equation.load_string(string, model=model)
+        self.load_equation(equation)
+
 
 def color_data(gdb: 'TIMonoGDB') -> bytes:
     data = io.BytesIO(gdb.data[gdb.offset + gdb.num_styles:])
     for i in range(gdb.num_equations):
-        TIPlottedEquation().load_data_section(data)
+        TIGraphedEquation().load_data_section(data)
 
     return data.read()
 
 
-def PlottedEquation(index: int):
+def IndexedEquation(index: int):
     index -= 1
 
-    class IndexedEquation(Converter):
-        _T = TIPlottedEquation
+    class IndexedEquationConverter(Converter):
+        _T = TIGraphedEquation
 
         @classmethod
         def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
@@ -192,7 +238,7 @@ def PlottedEquation(index: int):
                 data += equations[i].style
                 i += instance.num_equations // instance.num_styles
 
-            data += b''.join(equation.bytes() for equation in equations)
+            data += b''.join(equation.raw.flags + equation.raw.data for equation in equations)
 
             if color_data(instance):
                 for i in range(instance.num_styles):
@@ -201,7 +247,7 @@ def PlottedEquation(index: int):
 
             return instance.raw.data[:instance.offset] + data
 
-    return IndexedEquation
+    return IndexedEquationConverter
 
 
 class TIMonoGDB(TIEntry):
@@ -325,13 +371,13 @@ class TIMonoGDB(TIEntry):
         return 61 + TIReal.data.width * self.num_parameters
 
     @property
-    def equations(self) -> tuple[TIPlottedEquation, ...]:
+    def equations(self) -> tuple[TIGraphedEquation, ...]:
         """
         The GDB's stored graph equations
         """
 
         data = io.BytesIO(self.data[self.offset:])
-        equations = tuple(TIPlottedEquation() for _ in range(self.num_equations))
+        equations = tuple(TIGraphedEquation() for _ in range(self.num_equations))
 
         for i in range(self.num_styles):
             style = data.read(1)
@@ -352,16 +398,58 @@ class TIMonoGDB(TIEntry):
 
         return equations
 
-    @property
-    def styles(self) -> tuple[int, ...]:
-        """
-        The GDB's stored graph styles
-        """
-
-        return *map(lambda b: bytes([b]), self.data[self.offset:][:self.num_styles]),
-
     def load_dict(self, dct: dict):
-        raise NotImplementedError
+        self.raw.data = bytearray(61)
+        self.raw.data[3] = {'Function': 0x10,
+                            'Parametric': 0x40,
+                            'Polar': 0x20,
+                            'Sequence': 0x80}.get(dct.get("graphMode", "Function"), 0x00)
+
+        for setting in dct.get("formatSettings", []):
+            self.mode_flags |= getattr(GraphMode, setting)
+
+        ext_settings = dct.get("extSettings", {})
+        if "showExpr" in ext_settings:
+            self.extended_mode_flags |= GraphMode.ExprOn if ext_settings["showExpr"] else GraphMode.ExprOff
+
+        match ext_settings.get("seqMode", ""):
+            case "SEQ(n)": self.extended_mode_flags |= GraphMode.SEQ_n
+            case "SEQ(n+1)": self.extended_mode_flags |= GraphMode.SEQ_np1
+            case "SEQ(n+2)": self.extended_mode_flags |= GraphMode.SEQ_np2
+
+        for var, value in dct.get("globalWindowSettings", {}).items():
+            if not hasattr(self, var):
+                warn(f"Unrecognized window setting ({var}).",
+                     UserWarning)
+            else:
+                setattr(self, var, TIReal(value))
+
+        data = dct.get("specificData", {})
+        for var, value in data.get("settings", {}).items():
+            if not hasattr(self, var):
+                warn(f"Unrecognized window setting ({var}).",
+                     UserWarning)
+            else:
+                setattr(self, var, TIReal(value))
+
+        for name, equation in data.get("equations", {}).items():
+            if hasattr(self, name):
+                plotted = TIGraphedEquation(name=name)
+                plotted.load_dict(equation)
+                setattr(self, name, plotted)
+
+            else:
+                warn(f"Unrecognized equation ({name}).",
+                     UserWarning)
+
+        if "global84CSettings" in dct or "colors" in data:
+            self.__class__ = TIGDB
+
+        self.coerce()
+        self._load_dict(dct)
+
+    def _load_dict(self, dct: dict):
+        pass
 
     def dict(self) -> dict:
         raise NotImplementedError
@@ -409,8 +497,8 @@ class TIGDB(TIMonoGDB):
         The color of the axes
         """
 
-    @View(data, LineStyle)[-3:-2]
-    def line_style(self) -> bytes:
+    @View(data, GlobalStyle)[-3:-2]
+    def global_style(self) -> bytes:
         """
         The line style for all plotted equations
         """
@@ -428,6 +516,27 @@ class TIGDB(TIMonoGDB):
 
         Only DetectAsymptotesOn/Off is stored here
         """
+
+    def _load_dict(self, dct: dict):
+        self.color_magic = "84C"
+
+        if colors := dct.get("global84CSettings", {}).get("colors", {}):
+            if "grid" in colors:
+                self.grid_color = getattr(GraphColor, colors["grid"])
+
+            if "axes" in colors:
+                self.axes_color = getattr(GraphColor, colors["axes"])
+
+            if "border" in colors:
+                self.border_color = BorderColor.COLORS[colors["border"] - 1]
+
+        if other := dct.get("global84CSettings", {}).get("other", {}):
+            if "globalStyle" in other:
+                self.global_style = getattr(GlobalStyle, other["globalStyle"])
+
+            if "detectAsymptotes" in other:
+                self.color_mode_flags |= \
+                    GraphMode.DetectAsymptotesOn if other["detectAsymptotes"] else GraphMode.DetectAsymptotesOff
 
     def coerce(self):
         match self.mode_id:
@@ -470,65 +579,69 @@ class TIMonoFuncGDB(TIMonoGDB):
 
         return value
 
-    @View(data, PlottedEquation(1))
-    def Y1(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(1))
+    def Y1(self) -> TIGraphedEquation:
         """
         Y1: The first equation in function mode
         """
 
-    @View(data, PlottedEquation(2))
-    def Y2(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(2))
+    def Y2(self) -> TIGraphedEquation:
         """
         Y2: The second equation in function mode
         """
 
-    @View(data, PlottedEquation(3))
-    def Y3(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(3))
+    def Y3(self) -> TIGraphedEquation:
         """
         Y3: The third equation in function mode
         """
 
-    @View(data, PlottedEquation(4))
-    def Y4(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(4))
+    def Y4(self) -> TIGraphedEquation:
         """
         Y4: The fourth equation in function mode
         """
 
-    @View(data, PlottedEquation(5))
-    def Y5(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(5))
+    def Y5(self) -> TIGraphedEquation:
         """
         Y5: The fifth equation in function mode
         """
 
-    @View(data, PlottedEquation(6))
-    def Y6(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(6))
+    def Y6(self) -> TIGraphedEquation:
         """
         Y6: The sixth equation in function mode
         """
 
-    @View(data, PlottedEquation(7))
-    def Y7(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(7))
+    def Y7(self) -> TIGraphedEquation:
         """
         Y7: The seventh equation in function mode
         """
 
-    @View(data, PlottedEquation(8))
-    def Y8(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(8))
+    def Y8(self) -> TIGraphedEquation:
         """
         Y8: The eight equation in function mode
         """
 
-    @View(data, PlottedEquation(9))
-    def Y9(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(9))
+    def Y9(self) -> TIGraphedEquation:
         """
         Y9: The ninth equation in function mode
         """
 
-    @View(data, PlottedEquation(10))
-    def Y0(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(10))
+    def Y0(self) -> TIGraphedEquation:
         """
         Y0: The tenth equation in function mode
         """
+
+    def _load_dict(self, dct: dict):
+        for cls in self.__class__.__bases__:
+            super(cls, self)._load_dict(dct)
 
 
 class TIFuncGDB(TIGDB, TIMonoFuncGDB):
@@ -582,77 +695,87 @@ class TIMonoParamGDB(TIMonoGDB):
         Tstep: the time increment
         """
 
-    @View(data, PlottedEquation(1))
-    def X1T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(1))
+    def X1T(self) -> TIGraphedEquation:
         """
         X1T: The first X-component in parametric mode
         """
 
-    @View(data, PlottedEquation(2))
-    def Y1T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(2))
+    def Y1T(self) -> TIGraphedEquation:
         """
         Y1T: The first Y-component in parametric mode
         """
 
-    @View(data, PlottedEquation(3))
-    def X2T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(3))
+    def X2T(self) -> TIGraphedEquation:
         """
         X2T: The second X-component in parametric mode
         """
 
-    @View(data, PlottedEquation(4))
-    def Y2T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(4))
+    def Y2T(self) -> TIGraphedEquation:
         """
         Y2T: The second Y-component in parametric mode
         """
 
-    @View(data, PlottedEquation(5))
-    def X3T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(5))
+    def X3T(self) -> TIGraphedEquation:
         """
         X3T: The third X-component in parametric mode
         """
 
-    @View(data, PlottedEquation(6))
-    def Y3T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(6))
+    def Y3T(self) -> TIGraphedEquation:
         """
         Y3T: The third Y-component in parametric mode
         """
 
-    @View(data, PlottedEquation(7))
-    def X4T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(7))
+    def X4T(self) -> TIGraphedEquation:
         """
         X4T: The fourth X-component in parametric mode
         """
 
-    @View(data, PlottedEquation(8))
-    def Y4T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(8))
+    def Y4T(self) -> TIGraphedEquation:
         """
         Y4T: The fourth Y-component in parametric mode
         """
 
-    @View(data, PlottedEquation(9))
-    def X5T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(9))
+    def X5T(self) -> TIGraphedEquation:
         """
         X5T: The fifth X-component in parametric mode
         """
 
-    @View(data, PlottedEquation(10))
-    def Y5T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(10))
+    def Y5T(self) -> TIGraphedEquation:
         """
         Y5T: The fifth Y-component in parametric mode
         """
 
-    @View(data, PlottedEquation(11))
-    def X6T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(11))
+    def X6T(self) -> TIGraphedEquation:
         """
         X6T: The sixth X-component in parametric mode
         """
 
-    @View(data, PlottedEquation(12))
-    def Y6T(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(12))
+    def Y6T(self) -> TIGraphedEquation:
         """
         Y6T: The sixth Y-component in parametric mode
         """
+
+    def _load_dict(self, dct: dict):
+        for i in range(self.num_styles):
+            if (x_style := getattr(self, f"X{i}T").style) != (y_style := getattr(self, f"Y{i}T").style):
+                warn(f"X and Y component styles do not agree (X{i}T: {x_style}, Y{i}T: {y_style}).",
+                     UserWarning)
+
+            if (x_color := getattr(self, f"X{i}T").color) != (y_color := getattr(self, f"Y{i}T").color):
+                warn(f"X and Y component colors do not agree (X{i}T: {x_color}, Y{i}T: {y_color}).",
+                     UserWarning)
 
 
 class TIParamGDB(TIGDB, TIMonoParamGDB):
@@ -706,38 +829,38 @@ class TIMonoPolarGDB(TIMonoGDB):
         Thetastep: the angle increment
         """
 
-    @View(data, PlottedEquation(1))
-    def r1(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(1))
+    def r1(self) -> TIGraphedEquation:
         """
         r1: The first equation in polar mode
         """
 
-    @View(data, PlottedEquation(2))
-    def r2(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(2))
+    def r2(self) -> TIGraphedEquation:
         """
         r1: The second equation in polar mode
         """
 
-    @View(data, PlottedEquation(3))
-    def r3(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(3))
+    def r3(self) -> TIGraphedEquation:
         """
         r3: The third equation in polar mode
         """
 
-    @View(data, PlottedEquation(4))
-    def r4(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(4))
+    def r4(self) -> TIGraphedEquation:
         """
         rr: The fourth equation in polar mode
         """
 
-    @View(data, PlottedEquation(5))
-    def r5(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(5))
+    def r5(self) -> TIGraphedEquation:
         """
         r5: The fifth equation in polar mode
         """
 
-    @View(data, PlottedEquation(6))
-    def r6(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(6))
+    def r6(self) -> TIGraphedEquation:
         """
         r6: The sixth equation in polar mode
         """
@@ -777,7 +900,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
 
     @View(data, GraphMode)[5:6]
-    def sequence_flags(self) -> GraphMode:
+    def sequence_flags(self) -> SeqMode:
         """
         The flags for the sequence mode settings
         """
@@ -811,13 +934,13 @@ class TIMonoSeqGDB(TIMonoGDB):
         return value
 
     @View(data, TIReal)[79:88]
-    def unMin0(self) -> TIReal:
+    def unMin(self) -> TIReal:
         """
         u(nMin): the initial value of u at nMin
         """
 
     @View(data, TIReal)[88:97]
-    def vnMin0(self) -> TIReal:
+    def vnMin(self) -> TIReal:
         """
         v(nMin): the initial value of v at nMin
         """
@@ -837,19 +960,19 @@ class TIMonoSeqGDB(TIMonoGDB):
         return value
 
     @View(data, TIReal)[106:115]
-    def unMin1(self) -> TIReal:
+    def unMinp1(self) -> TIReal:
         """
         u(nMin + 1): the initial value of u at nMin + 1
         """
 
     @View(data, TIReal)[115:124]
-    def vnMin1(self) -> TIReal:
+    def vnMinp1(self) -> TIReal:
         """
         v(nMin + 1): the initial value of v at nMin + 1
         """
 
     @View(data, TIReal)[124:133]
-    def wnMin0(self) -> TIReal:
+    def wnMin(self) -> TIReal:
         """
         w(nMin): the initial value of w at nMin
         """
@@ -869,25 +992,25 @@ class TIMonoSeqGDB(TIMonoGDB):
         return value
 
     @View(data, TIReal)[142:151]
-    def wnMin1(self) -> TIReal:
+    def wnMinp1(self) -> TIReal:
         """
         w(nMin + 1): the initial value of w at nMin + 1
         """
 
-    @View(data, PlottedEquation(1))
-    def u(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(1))
+    def u(self) -> TIGraphedEquation:
         """
         u: The first equation in sequence mode
         """
 
-    @View(data, PlottedEquation(2))
-    def v(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(2))
+    def v(self) -> TIGraphedEquation:
         """
         v: The second equation in sequence mode
         """
 
-    @View(data, PlottedEquation(3))
-    def w(self) -> TIPlottedEquation:
+    @View(data, IndexedEquation(3))
+    def w(self) -> TIGraphedEquation:
         """
         w: The third equation in sequence mode
         """
@@ -913,4 +1036,4 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
 
 __all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "TIPlottedEquation", "GraphMode", "GraphStyle", "GraphColor", "LineStyle"]
+           "TIGraphedEquation", "GraphMode", "GraphStyle", "GraphColor", "GlobalStyle"]

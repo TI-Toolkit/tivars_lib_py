@@ -24,7 +24,13 @@
 	"properties": {
 		"graphMode": {
 			"type": "string",
-			"enum": ["Function", "Parametric", "Polar", "Sequence"]
+			"enum": [
+				"Function",
+				"Parametric",
+				"Polar",
+				"Sequence"
+			],
+			"default": "Function"
 		},
 		"formatSettings": {
 			"type": "array",
@@ -48,7 +54,8 @@
 					"LabelOn",
 					"LabelOff"
 				]
-			}
+			},
+			"default": []
 		},
 		"seqSettings": {
 			"type": "object",
@@ -64,7 +71,9 @@
 					],
 					"default": "Time"
 				}
-			}
+			},
+			"additionalProperties": false,
+			"default": {}
 		},
 		"extSettings": {
 			"type": "object",
@@ -75,9 +84,16 @@
 				},
 				"seqMode": {
 					"type": "string",
-					"enum": ["SEQ_n", "SEQ_n+1", "SEQ_n+2"]
+					"enum": [
+						"SEQ(n)",
+						"SEQ(n+1)",
+						"SEQ(n+2)"
+					],
+					"default": "SEQ(n)"
 				}
-			}
+			},
+			"additionalProperties": false,
+			"default": {}
 		},
 		"globalWindowSettings": {
 			"type": "object",
@@ -86,118 +102,109 @@
 					"type": [
 						"string",
 						"number"
-					]
+					],
+					"default": -10
 				},
 				"Xmax": {
 					"type": [
 						"string",
 						"number"
-					]
+					],
+					"default": 10
 				},
 				"Xscl": {
 					"type": [
 						"string",
 						"number"
-					]
+					],
+					"default": 1
 				},
 				"Ymin": {
 					"type": [
 						"string",
 						"number"
-					]
+					],
+					"default": -10
 				},
 				"Ymax": {
 					"type": [
 						"string",
 						"number"
-					]
+					],
+					"default": 10
 				},
 				"Yscl": {
 					"type": [
 						"string",
 						"number"
-					]
+					],
+					"default": 1
 				}
 			},
-			"required": [
-				"Xmin",
-				"Xmax",
-				"Xscl",
-				"Ymin",
-				"Ymax",
-				"Yscl"
-			]
+			"additionalProperties": false,
+			"default": {}
 		},
 		"specificData": {
 			"type": "object",
 			"properties": {
 				"settings": {
-					"type": "object"
-				},
-				"styles": {
-					"type": "array",
-					"items": {
-						"type": "string",
-						"enum": [
-							"SolidLine",
-							"ThickLine",
-							"ShadeAbove",
-							"ShadeBelow",
-							"Trace",
-							"Animate",
-							"DottedLine"
-						]
-					}
-				},
-				"functions": {
-					"type": "array",
-					"items": {
-						"anyOf": [
-							{
-								"type": "object",
-								"properties": {
-									"flags": {
-										"type": "object",
-										"properties": {
-											"selected": {
-												"type": "boolean",
-												"default": "true"
-											},
-											"wasUsedForGraph": {
-												"type": "boolean",
-												"default": "false"
-											},
-											"linkTransfer": {
-												"type": "boolean",
-												"default": "false"
-											}
-										}
-									},
-									"expr": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"expr"
-								]
-							},
-							{
-								"type": "null"
-							}
+					"type": "object",
+					"additionalProperties": {
+						"type": [
+							"string",
+							"number"
 						]
 					},
-					"colors": {
-						"type": "array",
-						"items": {
-							"type": "string",
-							"$ref": "#/definitions/colors"
+					"default": {}
+				},
+				"equations": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"style": {
+								"type": "string",
+								"enum": [
+									"SolidLine",
+									"ThickLine",
+									"ShadeAbove",
+									"ShadeBelow",
+									"Trace",
+									"Animate",
+									"DottedLine"
+								]
+							},
+							"color": {
+								"type": "string",
+								"$ref": "#/definitions/colors"
+							},
+							"flags": {
+								"type": "object",
+								"properties": {
+									"selected": {
+										"type": "boolean",
+										"default": "true"
+									},
+									"wasUsedForGraph": {
+										"type": "boolean",
+										"default": "false"
+									},
+									"linkTransfer": {
+										"type": "boolean",
+										"default": "false"
+									}
+								},
+								"default": {}
+							},
+							"expr": {
+								"type": "string",
+								"default": ""
+							}
 						}
-					}
+					},
+					"default": {}
 				}
-			},
-			"required": [
-				"functions"
-			]
+			}
 		},
 		"global84CSettings": {
 			"type": "object",
@@ -217,15 +224,22 @@
 						},
 						"border": {
 							"type": "integer",
-							"enum": [1, 2, 3, 4],
+							"enum": [
+								1,
+								2,
+								3,
+								4
+							],
 							"default": 1
 						}
-					}
+					},
+					"additionalProperties": false,
+					"default": {}
 				},
 				"other": {
 					"type": "object",
 					"properties": {
-						"lineStyle": {
+						"globalStyle": {
 							"type": "string",
 							"enum": [
 								"Thick",
@@ -239,13 +253,12 @@
 							"type": "boolean",
 							"default": true
 						}
-					}
+					},
+					"additionalProperties": false,
+					"default": {}
 				}
-			}
+			},
+			"default": {}
 		}
-	},
-	"required": [
-		"graphMode",
-		"specificData"
-	]
+	}
 }

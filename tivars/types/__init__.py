@@ -62,7 +62,7 @@ __all__ = ["TIEntry",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
            "TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "GraphMode", "GraphStyle", "GraphColor", "LineStyle",
+           "GraphMode", "GraphStyle", "GraphColor", "GlobalStyle",
            "TIComplex", "TIComplexList",
            "TIWindowSettings", "TIRecallWindow", "TITableSettings"
            ]

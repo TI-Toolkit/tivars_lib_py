@@ -1,4 +1,5 @@
 import decimal
+import json
 import unittest
 
 from tivars.types import *
@@ -8,7 +9,7 @@ from tivars import TIHeader, TIVar
 class VarTests(unittest.TestCase):
     def test_all_attributes(self):
         test_var = TIVar()
-        test_var.open("tests/data/Program.8xp")
+        test_var.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.header.magic, "**TI83F*")
         self.assertEqual(test_var.header.extra, b'\x1A\x0A')
@@ -25,7 +26,7 @@ class VarTests(unittest.TestCase):
 
     def test_all_byte_sections(self):
         test_var = TIVar()
-        test_var.open("tests/data/Program.8xp")
+        test_var.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.header.raw.magic, b'**TI83F*')
         self.assertEqual(test_var.header.raw.extra, b'\x1A\x0A')
@@ -58,33 +59,33 @@ class VarTests(unittest.TestCase):
 
     def test_multiple_entries(self):
         clibs = TIVar()
-        clibs.open("tests/data/clibs.8xg")
+        clibs.open("tests/data/var/clibs.8xg")
 
         self.assertEqual(len(clibs.entries), 9)
         self.assertTrue(all(entry.type_id == b'\x15' for entry in clibs.entries))
 
         second = TIEntry()
-        with open("tests/data/clibs.8xg", 'rb') as file:
+        with open("tests/data/var/clibs.8xg", 'rb') as file:
             second.load_from_file(file, offset=1)
 
         self.assertEqual(second, clibs.entries[1])
 
     def test_save_to_file(self):
         test_var = TIVar()
-        test_var.open("tests/data/Program.8xp")
+        test_var.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.extension, "8xp")
-        test_var.save("tests/data/Program_new.8xp")
+        test_var.save("tests/data/var/Program_new.8xp")
 
-        with open("tests/data/Program.8xp", 'rb') as orig:
-            with open("tests/data/Program_new.8xp", 'rb') as new:
+        with open("tests/data/var/Program.8xp", 'rb') as orig:
+            with open("tests/data/var/Program_new.8xp", 'rb') as new:
                 self.assertEqual(new.read(), orig.read())
 
     def test_truthiness(self):
         test_var = TIVar()
         self.assertEqual(bool(test_var), False)
 
-        test_var.open("tests/data/clibs.8xg")
+        test_var.open("tests/data/var/clibs.8xg")
         self.assertEqual(bool(test_var), True)
 
         test_var.clear()
@@ -96,13 +97,13 @@ class EntryTests(unittest.TestCase):
         test_program = TIProgram()
         test_header = TIHeader()
 
-        test_program.open("tests/data/Program.8xp")
-        test_header.open("tests/data/Program.8xp")
+        test_program.open("tests/data/var/Program.8xp")
+        test_header.open("tests/data/var/Program.8xp")
 
-        test_program.save("tests/data/Program_new.8xp", header=test_header)
+        test_program.save("tests/data/var/Program_new.8xp", header=test_header)
 
-        with open("tests/data/Program.8xp", 'rb') as orig:
-            with open("tests/data/Program_new.8xp", 'rb') as new:
+        with open("tests/data/var/Program.8xp", 'rb') as orig:
+            with open("tests/data/var/Program_new.8xp", 'rb') as new:
                 self.assertEqual(new.read(), orig.read())
 
     def test_form_vars(self):
@@ -110,7 +111,7 @@ class EntryTests(unittest.TestCase):
         test_header = TIHeader()
         test_var = TIVar()
 
-        with open("tests/data/Program.8xp", 'rb') as file:
+        with open("tests/data/var/Program.8xp", 'rb') as file:
             test_program.load_from_file(file)
             file.seek(0)
 
@@ -124,7 +125,7 @@ class EntryTests(unittest.TestCase):
         test_program = TIEntry()
         self.assertEqual(bool(test_program), False)
 
-        test_program.open("tests/data/Program.8xp")
+        test_program.open("tests/data/var/Program.8xp")
         self.assertEqual(bool(test_program), True)
 
         test_program.clear()
@@ -134,17 +135,17 @@ class EntryTests(unittest.TestCase):
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
         test_var = TIVar()
-        test_var.open("tests/data/Program.8xp")
+        test_var.open("tests/data/var/Program.8xp")
 
         test_program = TIProgram()
-        test_program.open("tests/data/Program.8xp")
+        test_program.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_program, test_var.entries[0])
 
         del test_program
         test_program = TIProgram()
 
-        with open("tests/data/Program.8xp", 'rb') as file:
+        with open("tests/data/var/Program.8xp", 'rb') as file:
             test_program.load_from_file(file)
 
             file.seek(55)
@@ -162,14 +163,14 @@ class TokenizationTests(unittest.TestCase):
         # Version is wrong(?)
         test_program.version = b'\x04'
 
-        with open("tests/data/Program.8xp", 'rb') as file:
+        with open("tests/data/var/Program.8xp", 'rb') as file:
             file.seek(55)
             self.assertEqual(test_program.bytes(), file.read()[:-2])
 
     def test_all_tokens(self):
         test_program = TIProgram()
 
-        with open("tests/data/ALLTOKS.8Xp", 'rb') as file:
+        with open("tests/data/var/ALLTOKS.8Xp", 'rb') as file:
             test_program.load_from_file(file)
             file.seek(55)
 
@@ -180,7 +181,7 @@ class TokenizationTests(unittest.TestCase):
 class NumericTests(unittest.TestCase):
     def test_real_number(self):
         test_real = TIReal()
-        test_real.open("tests/data/Real.8xn")
+        test_real.open("tests/data/var/Real.8xn")
 
         self.assertEqual(test_real.sign, -1)
         self.assertEqual(test_real.exponent, 129)
@@ -195,13 +196,13 @@ class NumericTests(unittest.TestCase):
         test_real.load_string(string := "-42.1337")
         self.assertEqual(test_real.string(), string)
 
-        with open("tests/data/Real.8xn", 'rb') as file:
+        with open("tests/data/var/Real.8xn", 'rb') as file:
             file.seek(55)
             self.assertEqual(test_real.bytes(), file.read()[:-2])
 
     def test_complex_number(self):
         test_complex = TIComplex()
-        test_complex.open("tests/data/Complex.8xc")
+        test_complex.open("tests/data/var/Complex.8xc")
 
         self.assertEqual(test_complex.real.sign, -1)
         self.assertEqual(test_complex.real.exponent, 128)
@@ -221,13 +222,13 @@ class NumericTests(unittest.TestCase):
         test_complex.load_string(string := "-5 + 2[i]")
         self.assertEqual(test_complex.string(), string)
 
-        with open("tests/data/Complex.8xc", 'rb') as file:
+        with open("tests/data/var/Complex.8xc", 'rb') as file:
             file.seek(55)
             self.assertEqual(test_complex.bytes(), file.read()[:-2])
 
     def test_real_list(self):
         test_real_list = TIRealList()
-        test_real_list.open("tests/data/RealList.8xl")
+        test_real_list.open("tests/data/var/RealList.8xl")
 
         test_list = [TIReal("-1.0"), TIReal("2.0"), TIReal("999")]
 
@@ -237,7 +238,7 @@ class NumericTests(unittest.TestCase):
 
     def test_complex_list(self):
         test_comp_list = TIComplexList()
-        test_comp_list.open("tests/data/ComplexList.8xl")
+        test_comp_list.open("tests/data/var/ComplexList.8xl")
 
         test_list = [TIComplex(1 + 1j), TIComplex("-3 + 2i"), TIComplex(4 + 0j)]
 
@@ -247,7 +248,7 @@ class NumericTests(unittest.TestCase):
 
     def test_matrix(self):
         test_matrix = TIMatrix()
-        test_matrix.open("tests/data/Matrix_3x3_standard.8xm")
+        test_matrix.open("tests/data/var/Matrix_3x3_standard.8xm")
 
         test_array = [[TIReal(0.5), TIReal(-1.0), TIReal("2.6457513110646")],
                       [TIReal("2.7386127875258"), TIReal("0.5"), TIReal("3.1415926535898")],
@@ -265,7 +266,7 @@ class NumericTests(unittest.TestCase):
 class SettingsTests(unittest.TestCase):
     def test_window(self):
         test_window = TIWindowSettings()
-        test_window.open("tests/data/Window.8xw")
+        test_window.open("tests/data/var/Window.8xw")
 
         zero, one, undef = TIReal(0), TIReal(1), TIReal(1, flags={1: 1, 2: 1, 3: 1})
         tau, pi_twenty_fourths = TIReal("6.283185307"), TIReal("0.13089969389957")
@@ -299,7 +300,7 @@ class SettingsTests(unittest.TestCase):
 
     def test_recall(self):
         test_recall = TIRecallWindow()
-        test_recall.open("tests/data/RecallWindow.8xz")
+        test_recall.open("tests/data/var/RecallWindow.8xz")
 
         zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1", flags={1: 1, 2: 1, 3: 1})
         tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
@@ -333,7 +334,7 @@ class SettingsTests(unittest.TestCase):
 
     def test_table(self):
         test_table = TITableSettings()
-        test_table.open("tests/data/TableRange.8xt")
+        test_table.open("tests/data/var/TableRange.8xt")
 
         self.assertEqual(test_table.TblMin, TIReal(0.0))
         self.assertEqual(test_table.DeltaTbl, TIReal("1"))
@@ -342,7 +343,7 @@ class SettingsTests(unittest.TestCase):
 class GDBTests(unittest.TestCase):
     def test_func_gdb(self):
         test_gdb = TIMonoGDB()
-        test_gdb.open("tests/data/GraphDataBase.8xd")
+        test_gdb.open("tests/data/var/GraphDataBase.8xd")
 
         self.assertEqual(type(test_gdb), TIFuncGDB)
         self.assertEqual(test_gdb.Xmax, eleven_pi_over_four := TIReal("8.639379797"))
@@ -363,4 +364,14 @@ class GDBTests(unittest.TestCase):
         self.assertIn(GraphMode.AxesOn, test_gdb.mode_flags)
         self.assertIn(GraphMode.ExprOn, test_gdb.extended_mode_flags)
         self.assertIn(GraphMode.DetectAsymptotesOff, test_gdb.color_mode_flags)
+
+    def test_json(self):
+        test_gdb = TIParamGDB()
+
+        with open("tests/data/json/param.default.json") as file:
+            param = json.load(file)
+
+        test_gdb.load_dict(param)
+        test_gdb
+
 

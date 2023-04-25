@@ -1,11 +1,9 @@
-from collections.abc import Iterator
 from functools import total_ordering
+from math import ceil
+from typing import Mapping
 from warnings import warn
 
 from .data import *
-
-
-Bitsets = dict[int, int]
 
 
 class Enum(Converter):
@@ -25,28 +23,23 @@ class Enum(Converter):
 
         return value
 
+    @classmethod
+    def get_name(cls, value: _T) -> str:
+        return next(filter(lambda x: x == value, cls._all), None)
+
 
 @total_ordering
-class Flags(Converter):
+class Flags(Converter, dict, Mapping[int, int]):
     _T = 'Flags'
 
-    def __init__(self, bits):
-        try:
-            bits = f"{bits:b}"[::-1]
+    def __init__(self, bitsets: 'Flags' = None, *, width: int = 8):
+        if bitsets is None:
+            bitsets = {bit: 0 for bit in range(width)}
 
-        except TypeError:
-            pass
+        else:
+            bitsets = {bit: 0 for bit in range(ceil((max(bitsets.keys()) + 1) / 8) * 8)} | bitsets
 
-        except ValueError:
-            bits = bits[::-1]
-
-        self._bits = [int(bit) for bit in bits]
-
-        if len(self._bits) % 8:
-            self._bits += [0] * (8 - len(self._bits) % 8)
-
-    def __eq__(self, other) -> bool:
-        return int(self) == int(other)
+        super().__init__({bit: value % 2 for bit, value in bitsets.items()})
 
     def __gt__(self, other) -> bool:
         return int(self) > int(other)
@@ -54,34 +47,17 @@ class Flags(Converter):
     def __int__(self) -> int:
         return int(str(self), 2)
 
-    def __iter__(self) -> Iterator[int]:
-        return iter(self._bits)
-
-    def __len__(self) -> int:
-        return len(self._bits)
-
     def __str__(self) -> str:
-        return ''.join([str(bit) for bit in self._bits[::-1]])
+        return ''.join([str(bit) for bit in self.values()][::-1])
 
-    def __getitem__(self, item):
-        return self._bits[item]
-
-    def __contains__(self, bitsets: Bitsets) -> bool:
+    def __contains__(self, bitsets: 'Flags') -> bool:
         return all(self[bit] == int(bool(bitsets[bit])) for bit in bitsets)
 
     has = __contains__
 
-    def __or__(self, bitsets: Bitsets) -> 'Flags':
-        new = Flags(self._bits)
-
-        for bit, value in bitsets.items():
-            new._bits[bit] = int(bool(value)) if value >= 0 else 1 - new._bits[bit]
-
-        return new
-
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
-        return cls(int.from_bytes(data, 'little'))
+        return cls({bit: int(value) for bit, value in enumerate(f"{int.from_bytes(data, 'little'):b}"[::-1])})
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:

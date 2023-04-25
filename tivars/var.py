@@ -652,4 +652,5 @@ class TIVar:
             file.write(self.bytes())
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVar"]
+__all__ = ["TIHeader", "TIEntry", "TIVar",
+           "TIHeaderRaw", "TIEntryRaw"]

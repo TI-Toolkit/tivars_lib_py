@@ -60,14 +60,12 @@ def read_string(string: str) -> (int, int, bool):
 
 
 class FloatFlags(Flags):
-    UNDEFINED = {1: 1}
-    DEFINED = {1: 0}
-    COMPLEX_COMPONENT = {1: 0, 2: 1, 3: 1}
-    MODIFIED = {6: 1}
-    POSITIVE = {7: 0}
-    NEGATIVE = {7: 1}
-
-    NEGATE = {7: -1}
+    Undefined = {1: 1}
+    Defined = {1: 0}
+    ComplexComponent = {1: 0, 2: 1, 3: 1}
+    Modified = {6: 1}
+    Positive = {7: 0}
+    Negative = {7: 1}
 
 
 class TIReal(TIEntry):
@@ -110,7 +108,12 @@ class TIReal(TIEntry):
 
     def __neg__(self) -> 'TIReal':
         negated = copy.copy(self)
-        negated.flags |= FloatFlags.NEGATE
+        if FloatFlags.Positive in self.flags:
+            negated.flags |= FloatFlags.Negative
+
+        else:
+            negated.flags |= FloatFlags.Negative
+
         return negated
 
     @Section(9)
@@ -157,18 +160,15 @@ class TIReal(TIEntry):
 
     @property
     def is_complex_component(self) -> bool:
-        return FloatFlags.COMPLEX_COMPONENT in self.flags
+        return FloatFlags.ComplexComponent in self.flags
 
     @property
     def is_undefined(self) -> bool:
-        return FloatFlags.UNDEFINED in self.flags
+        return FloatFlags.Undefined in self.flags
 
     @property
     def sign(self) -> int:
-        return -1 if FloatFlags.NEGATIVE in self.flags else 1
-
-    def make_complex_component(self):
-        self.flags |= FloatFlags.COMPLEX_COMPONENT
+        return -1 if FloatFlags.Negative in self.flags else 1
 
     def load_decimal(self, decimal: dec.Decimal):
         self.load_string(str(decimal))
@@ -194,10 +194,18 @@ class TIReal(TIEntry):
         return int(self.decimal())
 
     def load_string(self, string: str):
-        self.mantissa, self.exponent, neg = read_string(string)
+        if not string:
+            self.mantissa, self.exponent = 0, 0x80
+            self.flags |= FloatFlags.Undefined
 
-        if neg:
-            self.flags |= FloatFlags.NEGATE
+        else:
+            self.mantissa, self.exponent, neg = read_string(string)
+
+            if neg:
+                self.flags |= FloatFlags.Negative
+
+            else:
+                self.flags |= FloatFlags.Positive
 
     def string(self) -> str:
         string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
@@ -235,11 +243,11 @@ class TIComplex(TIEntry):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if data:
-            if FloatFlags.COMPLEX_COMPONENT not in self.real_flags:
+            if FloatFlags.ComplexComponent not in self.real_flags:
                 warn("Bits 2 and 3 of the real component flags should be set in a complex entry.",
                      BytesWarning)
 
-            if FloatFlags.COMPLEX_COMPONENT not in self.imag_flags:
+            if FloatFlags.ComplexComponent not in self.imag_flags:
                 warn("Bits 2 and 3 of the imaginary component flags should be set in a complex entry.",
                      BytesWarning)
 
@@ -320,8 +328,8 @@ class TIComplex(TIEntry):
         return self.real, self.imag
 
     def set_flags(self):
-        self.real_flags |= FloatFlags.COMPLEX_COMPONENT
-        self.imag_flags |= FloatFlags.COMPLEX_COMPONENT
+        self.real_flags |= FloatFlags.ComplexComponent
+        self.imag_flags |= FloatFlags.ComplexComponent
 
     def load_complex(self, comp: complex):
         real, imag = TIReal(), TIReal()
