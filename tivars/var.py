@@ -630,5 +630,21 @@ class TIVar:
             file.write(self.bytes())
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVar",
+class SizedEntry(TIEntry):
+    @Section()
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the length of the remaining data as its first two bytes
+        """
+
+    @View(data, Integer)[0:2]
+    def length(self) -> int:
+        """
+        The length of the data section following this entry
+        """
+
+
+__all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry",
            "TIHeaderRaw", "TIEntryRaw"]

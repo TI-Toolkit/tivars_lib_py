@@ -8,10 +8,10 @@ from tivars.models import *
 from tivars.tokenizer import encode, decode
 from tivars.tokenizer.tokens import *
 from ..data import *
-from ..var import TIEntry
+from ..var import SizedEntry
 
 
-class TokenizedVar(TIEntry):
+class TokenizedVar(SizedEntry):
     versions = [
         b'\x00', b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
         b'\x0A', b'\x0B', b'\x0C',
@@ -41,20 +41,6 @@ class TokenizedVar(TIEntry):
         b'\xEF\x07', b'\xEF\x08', b'\xEF\x09', b'\xEF\x0A', b'\xEF\x0B', b'\xEF\x0C', b'\xEF\x0D',
         b'\xEF\x0E', b'\xEF\x0F', b'\xEF\x10'
     ]
-
-    @Section()
-    def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the tokens and their total size
-        """
-
-    @View(data, Integer)[0:2]
-    def length(self) -> int:
-        """
-        The total size of the tokens
-        """
 
     def derive_version(self) -> bytes:
         def has_bytes_in(prefix: bytes, start: int, end: int):
