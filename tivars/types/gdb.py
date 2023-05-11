@@ -723,7 +723,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         return super().dict() | {
             "specificData": {
                 "settings": {
-                    "Xres": float(self.Xres)
+                    "Xres": int(self.Xres)
                 },
                 "equations": {
                     equation.name: equation.dict() for equation in self.equations
