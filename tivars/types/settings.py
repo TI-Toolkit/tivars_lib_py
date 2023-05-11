@@ -1,3 +1,5 @@
+import json
+
 from typing import ByteString
 from warnings import warn
 
@@ -28,6 +30,23 @@ class SettingsVar(TIEntry):
             warn(f"The entry has unexpected leading bytes "
                  f"(expected {self.leading_bytes}, got {self.data[0:len(self.leading_bytes)]}).",
                  BytesWarning)
+
+    def load_dict(self, dct: dict):
+        for var, value in dct:
+            if not hasattr(self, var):
+                warn(f"Unrecognized window setting ({var}).",
+                     UserWarning)
+            else:
+                setattr(self, var, TIReal(value))
+
+    def dict(self) -> dict:
+        raise NotImplementedError
+
+    def load_string(self, string: str):
+        self.load_dict(json.loads(string))
+
+    def string(self) -> str:
+        return json.dumps(self.dict())
 
 
 class TIWindowSettings(SettingsVar):
@@ -239,6 +258,33 @@ class TIWindowSettings(SettingsVar):
         w(nMin + 1): the initial value of w at nMin + 1
         """
 
+    def dict(self) -> dict:
+        return {
+            "Xmin": float(self.Xmin),
+            "Xmax": float(self.Xmax),
+            "Xscl": float(self.Xscl),
+            "Ymin": float(self.Ymin),
+            "Ymax": float(self.Ymax),
+            "Yscl": float(self.Yscl),
+            "Thetamin": float(self.Thetamin),
+            "Thetamax": float(self.Thetamax),
+            "Thetastep": float(self.Thetastep),
+            "Tmin": float(self.Tmin),
+            "Tmax": float(self.Tmax),
+            "Tstep": float(self.Tstep),
+            "PlotStart": int(self.PlotStart),
+            "nMax": int(self.nMax),
+            "unMin0": float(self.unMin0),
+            "vnMin0": float(self.vnMin0),
+            "nMin": int(self.nMin),
+            "unMin1": float(self.unMin1),
+            "vnMin1": float(self.vnMin1),
+            "wnMin0": float(self.wnMin0),
+            "PlotStep": int(self.PlotStep),
+            "Xres": int(self.Xres),
+            "wnMin1": float(self.wnMin1)
+        }
+
 
 class TIRecallWindow(SettingsVar):
     extensions = {
@@ -449,6 +495,33 @@ class TIRecallWindow(SettingsVar):
         w(nMin + 1): the initial value of w at nMin + 1
         """
 
+    def dict(self) -> dict:
+        return {
+            "Xmin": float(self.Xmin),
+            "Xmax": float(self.Xmax),
+            "Xscl": float(self.Xscl),
+            "Ymin": float(self.Ymin),
+            "Ymax": float(self.Ymax),
+            "Yscl": float(self.Yscl),
+            "Thetamin": float(self.Thetamin),
+            "Thetamax": float(self.Thetamax),
+            "Thetastep": float(self.Thetastep),
+            "Tmin": float(self.Tmin),
+            "Tmax": float(self.Tmax),
+            "Tstep": float(self.Tstep),
+            "PlotStart": int(self.PlotStart),
+            "nMax": int(self.nMax),
+            "unMin0": float(self.unMin0),
+            "vnMin0": float(self.vnMin0),
+            "nMin": int(self.nMin),
+            "unMin1": float(self.unMin1),
+            "vnMin1": float(self.vnMin1),
+            "wnMin0": float(self.wnMin0),
+            "PlotStep": int(self.PlotStep),
+            "Xres": int(self.Xres),
+            "wnMin1": float(self.wnMin1)
+        }
+
 
 class TITableSettings(SettingsVar):
     extensions = {
@@ -508,6 +581,12 @@ class TITableSettings(SettingsVar):
                  UserWarning)
 
         return value
+
+    def dict(self) -> dict:
+        return {
+            "TblMin": int(self.TblMin),
+            "DeltaTbl": int(self.DeltaTbl)
+        }
 
 
 __all__ = ["TIWindowSettings", "TIRecallWindow", "TITableSettings"]
