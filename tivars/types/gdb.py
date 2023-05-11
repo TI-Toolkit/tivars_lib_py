@@ -282,6 +282,8 @@ class TIMonoGDB(TIEntry):
     num_parameters = 0
     num_styles = 0
 
+    equation_names = []
+
     def __iter__(self) -> Iterator:
         return iter(self.dict().items())
 
@@ -387,7 +389,7 @@ class TIMonoGDB(TIEntry):
         """
 
         data = io.BytesIO(self.data[self.offset:])
-        equations = tuple(TIGraphedEquation() for _ in range(self.num_equations))
+        equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
         for i in range(self.num_styles):
             style = data.read(1)
@@ -447,7 +449,7 @@ class TIMonoGDB(TIEntry):
                 setattr(self, var, TIReal(value))
 
         for name, equation in data.get("equations", {}).items():
-            if hasattr(self, name):
+            if name in self.equation_names:
                 plotted = TIGraphedEquation(name=name)
                 plotted.load_dict(equation)
                 setattr(self, name, plotted)
@@ -626,6 +628,8 @@ class TIMonoFuncGDB(TIMonoGDB):
     num_parameters = 1
     num_styles = 10
 
+    equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -722,9 +726,7 @@ class TIMonoFuncGDB(TIMonoGDB):
                     "Xres": float(self.Xres)
                 },
                 "equations": {
-                    name: equation.dict() for name, equation in zip(["Y1", "Y2", "Y3", "Y4", "Y5",
-                                                                     "Y6", "Y7", "Y8", "Y9", "Y0"],
-                                                                    self.equations)
+                    equation.name: equation.dict() for equation in self.equations
                 }
             }
         }
@@ -772,6 +774,8 @@ class TIMonoParamGDB(TIMonoGDB):
     num_equations = 12
     num_parameters = 3
     num_styles = 6
+
+    equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
 
     @Section()
     def data(self) -> bytearray:
@@ -897,9 +901,7 @@ class TIMonoParamGDB(TIMonoGDB):
                     "Tstep": float(self.Tstep),
                 },
                 "equations": {
-                    name: equation.dict() for name, equation in zip(["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T",
-                                                                     "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"],
-                                                                    self.equations)
+                    equation.name: equation.dict() for equation in self.equations
                 }
             }
         }
@@ -947,6 +949,8 @@ class TIMonoPolarGDB(TIMonoGDB):
     num_equations = 6
     num_parameters = 3
     num_styles = 6
+
+    equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
 
     @Section()
     def data(self) -> bytearray:
@@ -1026,8 +1030,7 @@ class TIMonoPolarGDB(TIMonoGDB):
                     "Thetastep": float(self.Thetastep),
                 },
                 "equations": {
-                    name: equation.dict() for name, equation in zip(["r1", "r2", "r3", "r4", "r5", "r6"],
-                                                                    self.equations)
+                    equation.name: equation.dict() for equation in self.equations
                 }
             }
         }
@@ -1075,6 +1078,8 @@ class TIMonoSeqGDB(TIMonoGDB):
     num_equations = 3
     num_parameters = 10
     num_styles = 3
+
+    equation_names = ["u", "v", "w"]
 
     @Section()
     def data(self) -> bytearray:
@@ -1253,8 +1258,7 @@ class TIMonoSeqGDB(TIMonoGDB):
                     "wnMinp1": float(self.wnMinp1)
                 },
                 "equations": {
-                    name: equation.dict() for name, equation in zip(["u", "v", "w"],
-                                                                    self.equations)
+                    equation.name: equation.dict() for equation in self.equations
                 }
             }
         }

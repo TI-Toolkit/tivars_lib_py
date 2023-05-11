@@ -355,7 +355,7 @@ class GDBTests(unittest.TestCase):
         self.assertEqual(test_gdb.Ymin, TIReal(-4.0))
         self.assertEqual(test_gdb.Yscl, TIReal(1))
 
-        self.assertEqual(test_gdb.Y1.equation(), TIEquation("sin(X"))
+        self.assertEqual(test_gdb.Y1.equation(), TIEquation("sin(X", name="Y1"))
         self.assertEqual(test_gdb.Y1.style, GraphStyle.ThickLine)
         self.assertEqual(test_gdb.Y1.color, GraphColor.Blue)
         self.assertEqual(test_gdb.grid_color, GraphColor.MedGray)
@@ -379,7 +379,7 @@ class GDBTests(unittest.TestCase):
         self.assertEqual(test_gdb.Tmax, tau)
         self.assertEqual(test_gdb.Tstep, pi_twenty_fourths)
 
-        self.assertEqual(test_gdb.X2T.equation(), TIEquation())
+        self.assertEqual(test_gdb.X2T.equation(), TIEquation(name="X2T"))
         self.assertEqual(test_gdb.X2T.style, GraphStyle.ThickLine)
         self.assertEqual(test_gdb.X2T.color, GraphColor.Red)
         self.assertEqual(test_gdb.axes_color, GraphColor.Black)
