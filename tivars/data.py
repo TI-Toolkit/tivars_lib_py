@@ -158,11 +158,13 @@ class View(Section):
     @property
     def width(self) -> int | None:
         if self._target.width is None:
-            if (self._indices.step or 1) > 0 and (self._indices.stop is None or self._indices.stop < 0):
-                return None
+            if (self._indices.step or 1) > 0:
+                if (self._indices.start or 0) >= 0 and (self._indices.stop is None or self._indices.stop < 0):
+                    return None
 
-            if self._indices.start is None or self._indices.start < 0:
-                return None
+            else:
+                if (self._indices.stop or 0) >= 0 and (self._indices.start is None or self._indices.start < 0):
+                    return None
 
             return max(ceil(((self._indices.stop or 0) - (self._indices.start or 0)) // (self._indices.step or 1)), 0)
 
