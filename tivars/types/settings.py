@@ -134,7 +134,7 @@ class TIWindowSettings(SettingsVar):
         """
 
     @View(data, TIReal)[111:120]
-    def PlotStart(self, value: TIReal) -> TIReal:
+    def PlotStart(self, value) -> TIReal:
         """
         PlotStart: the initial value of n for sequential plots
 
@@ -148,7 +148,7 @@ class TIWindowSettings(SettingsVar):
         return value
 
     @View(data, TIReal)[120:129]
-    def nMax(self, value: TIReal) -> TIReal:
+    def nMax(self, value) -> TIReal:
         """
         nMax: the final value of n for sequential equations and plots
 
@@ -174,7 +174,7 @@ class TIWindowSettings(SettingsVar):
         """
 
     @View(data, TIReal)[147:156]
-    def nMin(self, value: TIReal) -> TIReal:
+    def nMin(self, value) -> TIReal:
         """
         nMin: the initial value of n for sequential equations
 
@@ -206,7 +206,7 @@ class TIWindowSettings(SettingsVar):
         """
 
     @View(data, TIReal)[183:192]
-    def PlotStep(self, value: TIReal) -> TIReal:
+    def PlotStep(self, value) -> TIReal:
         """
         PlotStep: the n increment for sequential plots
 
@@ -220,7 +220,7 @@ class TIWindowSettings(SettingsVar):
         return value
 
     @View(data, TIReal)[192:201]
-    def Xres(self, value: TIReal) -> TIReal:
+    def Xres(self, value) -> TIReal:
         """
         Xres: the pixel separation of points in a function plot
 
@@ -344,7 +344,7 @@ class TIRecallWindow(SettingsVar):
         """
 
     @View(data, TIReal)[110:119]
-    def PlotStart(self, value: TIReal) -> TIReal:
+    def PlotStart(self, value) -> TIReal:
         """
         PlotStart: the initial value of n for sequential plots
 
@@ -358,7 +358,7 @@ class TIRecallWindow(SettingsVar):
         return value
 
     @View(data, TIReal)[119:128]
-    def nMax(self, value: TIReal) -> TIReal:
+    def nMax(self, value) -> TIReal:
         """
         nMax: the final value of n for sequential equations and plots
 
@@ -384,7 +384,7 @@ class TIRecallWindow(SettingsVar):
         """
 
     @View(data, TIReal)[146:155]
-    def nMin(self, value: TIReal) -> TIReal:
+    def nMin(self, value) -> TIReal:
         """
         nMin: the initial value of n for sequential equations
 
@@ -416,7 +416,7 @@ class TIRecallWindow(SettingsVar):
         """
 
     @View(data, TIReal)[182:191]
-    def PlotStep(self, value: TIReal) -> TIReal:
+    def PlotStep(self, value) -> TIReal:
         """
         PlotStep: the n increment for sequential plots
 

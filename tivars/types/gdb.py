@@ -1110,7 +1110,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         return value
 
     @View(data, TIReal)[70:79]
-    def nMax(self, value: TIReal) -> TIReal:
+    def nMax(self, value) -> TIReal:
         """
         nMax: the final value of n
 
@@ -1136,7 +1136,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
 
     @View(data, TIReal)[97:106]
-    def nMin(self, value: TIReal) -> TIReal:
+    def nMin(self, value) -> TIReal:
         """
         nMin: the initial value of n for sequential equations
 
@@ -1168,7 +1168,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
 
     @View(data, TIReal)[133:142]
-    def PlotStep(self, value: TIReal) -> TIReal:
+    def PlotStep(self, value) -> TIReal:
         """
         PlotStep: the n increment for sequential plots
 

@@ -158,7 +158,7 @@ class TIReal(TIEntry):
         if isinstance(instance, TIComplex):
             instance.set_flags()
 
-        return super(TIReal, TIReal).set(value, instance)
+        return super(TIReal, cls).set(value, instance)
 
     @property
     def is_complex_component(self) -> bool:
