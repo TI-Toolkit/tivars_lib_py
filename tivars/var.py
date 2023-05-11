@@ -1,4 +1,3 @@
-import copy
 import inspect
 import io
 
@@ -30,19 +29,8 @@ class TIHeader:
         return self.bytes()
 
     def __copy__(self) -> 'TIHeader':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        new.__dict__.update(self.__dict__)
-        return new
-
-    def __deepcopy__(self, memo) -> 'TIHeader':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        memo[id(self)] = new
-
-        for k, v in self.__dict__.items():
-            setattr(new, k, copy.deepcopy(v, memo))
-
+        new = TIHeader()
+        new.load_bytes(self.bytes())
         return new
 
     def __eq__(self, other: 'TIHeader') -> bool:
@@ -215,19 +203,8 @@ class TIEntry(Converter):
         return self.bytes()
 
     def __copy__(self) -> 'TIEntry':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        new.__dict__.update(self.__dict__)
-        return new
-
-    def __deepcopy__(self, memo) -> 'TIEntry':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        memo[id(self)] = new
-
-        for k, v in self.__dict__.items():
-            setattr(new, k, copy.deepcopy(v, memo))
-
+        new = self.__class__()
+        new.load_bytes(self.bytes())
         return new
 
     def __eq__(self, other: 'TIEntry') -> bool:
@@ -524,19 +501,8 @@ class TIVar:
         return self.bytes()
 
     def __copy__(self) -> 'TIVar':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        new.__dict__.update(self.__dict__)
-        return new
-
-    def __deepcopy__(self, memo) -> 'TIVar':
-        cls = self.__class__
-        new = cls.__new__(cls)
-        memo[id(self)] = new
-
-        for k, v in self.__dict__.items():
-            setattr(new, k, copy.deepcopy(v, memo))
-
+        new = TIVar()
+        new.load_bytes(self.bytes())
         return new
 
     def __eq__(self, other: 'TIVar'):
