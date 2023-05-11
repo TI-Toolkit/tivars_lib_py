@@ -25,7 +25,7 @@ class Enum(Converter):
 
     @classmethod
     def get_name(cls, value: _T) -> str:
-        return next(filter(lambda x: x == value, cls._all), None)
+        return next(filter(lambda attr: not attr.startswith("_") and getattr(cls, attr) == value, dir(cls)), None)
 
 
 @total_ordering

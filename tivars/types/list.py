@@ -11,6 +11,8 @@ from .numeric import TIReal, TIComplex
 
 
 class ListVar(TIEntry):
+    min_data_length = 2
+
     item_type = TIEntry
 
     @Section(8, String)

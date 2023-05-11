@@ -58,12 +58,7 @@ class GraphStyle(Enum):
     Animate = b'\x05'
     DottedLine = b'\x06'
 
-    Thin = b'\x00'
-    Thick = b'\x01'
-    DotThick = b'\x06'
-    DotThin = b'\x07'
-
-    _all = [SolidLine, ThickLine, ShadeBelow, ShadeBelow, Trace, Animate, DottedLine, Thin, Thick, DotThick, DotThin]
+    _all = [SolidLine, ThickLine, ShadeAbove, ShadeBelow, Trace, Animate, DottedLine]
     STYLES = _all[:7]
 
 
@@ -190,13 +185,19 @@ class TIGraphedEquation(TIEquation):
         self.flags |= EquationFlags.LinkTransferSet if flags["linkTransfer"] else EquationFlags.LinkTransferClear
 
     def dict(self) -> dict:
-        return {"style": GraphStyle.get_name(self.style),
-                "color": GraphColor.get_name(self.color),
-                "expr": self.string(),
-                "flags": {"selected": EquationFlags.Selected in self.flags,
-                          "wasUsedForGraph": EquationFlags.UsedForGraph in self.flags,
-                          "linkTransfer": EquationFlags.LinkTransferSet in self.flags}
-                }
+        dct = {"style": GraphStyle.get_name(self.style)}
+
+        if self.color != GraphColor.Mono:
+            dct["color"] = GraphColor.get_name(self.color)
+
+        return dct | {
+            "flags": {
+                "selected": EquationFlags.Selected in self.flags,
+                "wasUsedForGraph": EquationFlags.UsedForGraph in self.flags,
+                "linkTransfer": EquationFlags.LinkTransferSet in self.flags
+            },
+            "expr": self.string()
+        }
 
     def load_equation(self, equation: TIEquation):
         self.raw.data = equation.data
@@ -233,19 +234,20 @@ def IndexedEquation(index: int):
             equations = list(instance.equations)
             equations[index] = value
 
-            data = b''
-            for i in range(instance.num_styles):
+            data = instance.raw.data[:instance.offset]
+            for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                 data += equations[i].style
-                i += instance.num_equations // instance.num_styles
 
             data += b''.join(equation.raw.flags + equation.raw.data for equation in equations)
 
-            if color_data(instance):
-                for i in range(instance.num_styles):
+            if color := color_data(instance):
+                data += b'84C'
+                for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                     data += equations[i].color
-                    i += instance.num_equations // instance.num_styles
 
-            return instance.raw.data[:instance.offset] + data
+                data += color[-5:]
+
+            return data
 
     return IndexedEquationConverter
 
@@ -270,6 +272,8 @@ class TIMonoGDB(TIEntry):
 
     _type_id = b'\x08'
     mode_byte = 0x00
+
+    min_data_length = 61
 
     num_equations = 0
     num_parameters = 0
@@ -368,7 +372,7 @@ class TIMonoGDB(TIEntry):
 
     @property
     def offset(self) -> int:
-        return 61 + TIReal.data.width * self.num_parameters
+        return TIMonoGDB.min_data_length + TIReal.data.width * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -399,23 +403,27 @@ class TIMonoGDB(TIEntry):
         return equations
 
     def load_dict(self, dct: dict):
-        self.raw.data = bytearray(61)
+        self.clear()
         self.raw.data[3] = {'Function': 0x10,
                             'Parametric': 0x40,
                             'Polar': 0x20,
-                            'Sequence': 0x80}.get(dct.get("graphMode", "Function"), 0x00)
+                            'Sequence': 0x80}.get(mode := dct.get("graphMode", "Function"), 0x00)
 
         for setting in dct.get("formatSettings", []):
-            self.mode_flags |= getattr(GraphMode, setting)
+            try:
+                self.mode_flags |= getattr(GraphMode, setting)
+            except AttributeError:
+                warn(f"Unrecognized format setting ({setting}).",
+                     UserWarning)
 
         ext_settings = dct.get("extSettings", {})
         if "showExpr" in ext_settings:
             self.extended_mode_flags |= GraphMode.ExprOn if ext_settings["showExpr"] else GraphMode.ExprOff
 
-        match ext_settings.get("seqMode", ""):
-            case "SEQ(n)": self.extended_mode_flags |= GraphMode.SEQ_n
-            case "SEQ(n+1)": self.extended_mode_flags |= GraphMode.SEQ_np1
-            case "SEQ(n+2)": self.extended_mode_flags |= GraphMode.SEQ_np2
+        if self.raw.data[3] != 0x80:
+            if "seqMode" in ext_settings or "seqSettings" in dct:
+                warn(f"Sequence settings have been provided, but this GDB is for {mode.lower()} graphs.",
+                     UserWarning)
 
         for var, value in dct.get("globalWindowSettings", {}).items():
             if not hasattr(self, var):
@@ -442,7 +450,7 @@ class TIMonoGDB(TIEntry):
                 warn(f"Unrecognized equation ({name}).",
                      UserWarning)
 
-        if "global84CSettings" in dct or "colors" in data:
+        if "global84CSettings" in dct:
             self.__class__ = TIGDB
 
         self.coerce()
@@ -452,7 +460,29 @@ class TIMonoGDB(TIEntry):
         pass
 
     def dict(self) -> dict:
-        raise NotImplementedError
+        return {
+            "graphMode": self.mode,
+            "formatSettings": [
+                "Dot" if GraphMode.Dot in self.mode_flags else "Connected",
+                "Simul" if GraphMode.Simul in self.mode_flags else "Sequential",
+                "GridOn" if GraphMode.GridOn in self.mode_flags else "GridOff",
+                "PolarGC" if GraphMode.PolarGC in self.mode_flags else "RectGC",
+                "CoordOff" if GraphMode.CoordOff in self.mode_flags else "CoordOn",
+                "AxesOff" if GraphMode.AxesOff in self.mode_flags else "AxesOn",
+                "LabelOn" if GraphMode.LabelOn in self.mode_flags else "LabelOff"
+            ],
+            "extSettings": {
+                "showExpr": GraphMode.ExprOn in self.extended_mode_flags
+            },
+            "globalWindowSettings": {
+                "Xmin": float(self.Xmin),
+                "Xmax": float(self.Xmax),
+                "Xscl": float(self.Xscl),
+                "Ymin": float(self.Ymin),
+                "Ymax": float(self.Ymax),
+                "Yscl": float(self.Yscl)
+            }
+        }
 
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
@@ -463,6 +493,7 @@ class TIMonoGDB(TIEntry):
     def coerce(self):
         if color_data(self):
             self.__class__ = TIGDB
+            self.set_length()
             self.coerce()
         else:
             match self.mode_id:
@@ -475,8 +506,21 @@ class TIMonoGDB(TIEntry):
                     warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                          BytesWarning)
 
+            self.set_length()
+
 
 class TIGDB(TIMonoGDB):
+    min_data_length = 66
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        self.axes_color = GraphColor.Black
+        self.grid_color = GraphColor.MedGray
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -538,6 +582,21 @@ class TIGDB(TIMonoGDB):
                 self.color_mode_flags |= \
                     GraphMode.DetectAsymptotesOn if other["detectAsymptotes"] else GraphMode.DetectAsymptotesOff
 
+    def dict(self) -> dict:
+        return {
+            "global84CSettings": {
+                "colors": {
+                    "grid": GraphColor.get_name(self.grid_color),
+                    "axes": GraphColor.get_name(self.axes_color),
+                    "border": self.border_color[0]
+                },
+                "other": {
+                    "globalStyle": GlobalStyle.get_name(self.global_style),
+                    "detectAsymptotes": GraphMode.DetectAsymptotesOn in self.color_mode_flags
+                }
+            }
+        }
+
     def coerce(self):
         match self.mode_id:
             case 0x10: self.__class__ = TIFuncGDB
@@ -549,9 +608,13 @@ class TIGDB(TIMonoGDB):
                 warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                      BytesWarning)
 
+        self.set_length()
+
 
 class TIMonoFuncGDB(TIMonoGDB):
     mode_byte = 0x10
+
+    min_data_length = 110
 
     num_equations = 10
     num_parameters = 1
@@ -639,12 +702,31 @@ class TIMonoFuncGDB(TIMonoGDB):
         Y0: The tenth equation in function mode
         """
 
-    def _load_dict(self, dct: dict):
-        for cls in self.__class__.__bases__:
-            super(cls, self)._load_dict(dct)
+    def load_dict(self, dct: dict = None):
+        if dct is None:
+            with open("json/func.default.json") as file:
+                dct = json.load(file)
+
+        super().load_dict(dct)
+
+    def dict(self) -> dict:
+        return super().dict() | {
+            "specificData": {
+                "settings": {
+                    "Xres": float(self.Xres)
+                },
+                "equations": {
+                    name: equation.dict() for name, equation in zip(["Y1", "Y2", "Y3", "Y4", "Y5",
+                                                                     "Y6", "Y7", "Y8", "Y9", "Y0"],
+                                                                    self.equations)
+                }
+            }
+        }
 
 
 class TIFuncGDB(TIGDB, TIMonoFuncGDB):
+    min_data_length = 128
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -661,9 +743,18 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
         Always set to 84C
         """
 
+    def _load_dict(self, dct: dict):
+        super(TIGDB, self)._load_dict(dct)
+        super(TIFuncGDB, self)._load_dict(dct)
+
+    def dict(self) -> dict:
+        return super(TIGDB, self).dict() | super(TIFuncGDB, self).dict()
+
 
 class TIMonoParamGDB(TIMonoGDB):
     mode_byte = 0x40
+
+    min_data_length = 130
 
     num_equations = 12
     num_parameters = 3
@@ -767,8 +858,15 @@ class TIMonoParamGDB(TIMonoGDB):
         Y6T: The sixth Y-component in parametric mode
         """
 
+    def load_dict(self, dct: dict = None):
+        if dct is None:
+            with open("json/param.default.json") as file:
+                dct = json.load(file)
+
+        super().load_dict(dct)
+
     def _load_dict(self, dct: dict):
-        for i in range(self.num_styles):
+        for i in range(1, self.num_styles + 1):
             if (x_style := getattr(self, f"X{i}T").style) != (y_style := getattr(self, f"Y{i}T").style):
                 warn(f"X and Y component styles do not agree (X{i}T: {x_style}, Y{i}T: {y_style}).",
                      UserWarning)
@@ -777,8 +875,26 @@ class TIMonoParamGDB(TIMonoGDB):
                 warn(f"X and Y component colors do not agree (X{i}T: {x_color}, Y{i}T: {y_color}).",
                      UserWarning)
 
+    def dict(self) -> dict:
+        return super().dict() | {
+            "specificData": {
+                "settings": {
+                    "Tmin": float(self.Tmin),
+                    "Tmax": float(self.Tmax),
+                    "Tstep": float(self.Tstep),
+                },
+                "equations": {
+                    name: equation.dict() for name, equation in zip(["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T",
+                                                                     "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"],
+                                                                    self.equations)
+                }
+            }
+        }
+
 
 class TIParamGDB(TIGDB, TIMonoParamGDB):
+    min_data_length = 144
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -795,9 +911,18 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
         Always set to 84C
         """
 
+    def _load_dict(self, dct: dict):
+        super(TIGDB, self)._load_dict(dct)
+        super(TIParamGDB, self)._load_dict(dct)
+
+    def dict(self) -> dict:
+        return super(TIGDB, self).dict() | super(TIParamGDB, self).dict()
+
 
 class TIMonoPolarGDB(TIMonoGDB):
     mode_byte = 0x20
+
+    min_data_length = 112
 
     num_equations = 6
     num_parameters = 3
@@ -865,8 +990,32 @@ class TIMonoPolarGDB(TIMonoGDB):
         r6: The sixth equation in polar mode
         """
 
+    def load_dict(self, dct: dict = None):
+        if dct is None:
+            with open("json/polar.default.json") as file:
+                dct = json.load(file)
+
+        super().load_dict(dct)
+
+    def dict(self) -> dict:
+        return super().dict() | {
+            "specificData": {
+                "settings": {
+                    "Thetamin": float(self.Thetamin),
+                    "Thetamax": float(self.Thetamax),
+                    "Thetastep": float(self.Thetastep),
+                },
+                "equations": {
+                    name: equation.dict() for name, equation in zip(["r1", "r2", "r3", "r4", "r5", "r6"],
+                                                                    self.equations)
+                }
+            }
+        }
+
 
 class TIPolarGDB(TIGDB, TIMonoPolarGDB):
+    min_data_length = 126
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -883,9 +1032,18 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
         Always set to 84C
         """
 
+    def _load_dict(self, dct: dict):
+        super(TIGDB, self)._load_dict(dct)
+        super(TIPolarGDB, self)._load_dict(dct)
+
+    def dict(self) -> dict:
+        return super(TIGDB, self).dict() | super(TIPolarGDB, self).dict()
+
 
 class TIMonoSeqGDB(TIMonoGDB):
     mode_byte = 0x80
+
+    min_data_length = 163
 
     num_equations = 3
     num_parameters = 10
@@ -1015,8 +1173,69 @@ class TIMonoSeqGDB(TIMonoGDB):
         w: The third equation in sequence mode
         """
 
+    def load_dict(self, dct: dict = None):
+        if dct is None:
+            with open("json/seq.default.json") as file:
+                dct = json.load(file)
+
+        super().load_dict(dct)
+
+    def _load_dict(self, dct: dict):
+        ext_settings = dct.get("extSettings", {})
+        if "seqMode" in ext_settings:
+            match ext_settings["seqMode"]:
+                case "SEQ(n)": self.extended_mode_flags |= GraphMode.SEQ_n
+                case "SEQ(n+1)": self.extended_mode_flags |= GraphMode.SEQ_np1
+                case "SEQ(n+2)": self.extended_mode_flags |= GraphMode.SEQ_np2
+
+        if "seqSettings" in dct:
+            try:
+                self.sequence_flags |= getattr(SeqMode, dct["seqMode"])
+            except AttributeError:
+                warn(f"Unrecognized sequence mode ({dct['seqMode']}).",
+                     UserWarning)
+
+    def dict(self) -> dict:
+        dct = super().dict()
+
+        match self.extended_mode_flags:
+            case _SEQ_n if GraphMode.SEQ_n in self.extended_mode_flags: dct["extSettings"]["seqMode"] = "SEQ(n)"
+            case _SEQ_np1 if GraphMode.SEQ_np1 in self.extended_mode_flags: dct["extSettings"]["seqMode"] = "SEQ(n+1)"
+            case _SEQ_np2 if GraphMode.SEQ_np2 in self.extended_mode_flags: dct["extSettings"]["seqMode"] = "SEQ(n+2)"
+
+        match self.sequence_flags:
+            case _Time if SeqMode.Time in self.sequence_flags: dct["seqSettings"] = {"mode": "Time"}
+            case _Web if SeqMode.Web in self.sequence_flags: dct["seqSettings"] = {"mode": "Web"}
+            case _VertWeb if SeqMode.VertWeb in self.sequence_flags: dct["seqSettings"] = {"mode": "VertWeb"}
+            case _uv if SeqMode.uv in self.sequence_flags: dct["seqSettings"] = {"mode": "uv"}
+            case _vw if SeqMode.vw in self.sequence_flags: dct["seqSettings"] = {"mode": "vw"}
+            case _uw if SeqMode.uw in self.sequence_flags: dct["seqSettings"] = {"mode": "uw"}
+
+        return dct | {
+            "specificData": {
+                "settings": {
+                    "nMin": int(self.nMin),
+                    "nMax": int(self.nMax),
+                    "PlotStart": int(self.PlotStart),
+                    "PlotStep": int(self.PlotStep),
+                    "unMin": float(self.unMin),
+                    "unMinp1": float(self.unMinp1),
+                    "vnMin": float(self.vnMinp1),
+                    "vnMinp1": float(self.vnMinp1),
+                    "wnMin": float(self.wnMin),
+                    "wnMinp1": float(self.wnMinp1)
+                },
+                "equations": {
+                    name: equation.dict() for name, equation in zip(["u", "v", "w"],
+                                                                    self.equations)
+                }
+            }
+        }
+
 
 class TISeqGDB(TIGDB, TIMonoSeqGDB):
+    min_data_length = 174
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -1032,6 +1251,13 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
 
         Always set to 84C
         """
+
+    def _load_dict(self, dct: dict):
+        super(TIGDB, self)._load_dict(dct)
+        super(TISeqGDB, self)._load_dict(dct)
+
+    def dict(self) -> dict:
+        return super(TIGDB, self).dict() | super(TISeqGDB, self).dict()
 
 
 __all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",

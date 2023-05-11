@@ -174,6 +174,7 @@ class TIEntry(Converter):
 
     base_meta_length = 11
     flash_meta_length = 13
+    min_data_length = 0
 
     _type_id = None
     _raw_class = TIEntryRaw
@@ -199,12 +200,11 @@ class TIEntry(Converter):
                 warn(f"{type(self)} vars are not compatible with flashless chips.",
                      UserWarning)
 
+        self.clear()
         if data:
-            self.data = bytearray(data)
-        else:
-            self.clear()
-            if init is not None:
-                self.load(init)
+            self.data[:len(data)] = bytearray(data)
+        elif init is not None:
+            self.load(init)
 
     def __bool__(self) -> bool:
         return not self.is_empty
@@ -337,16 +337,23 @@ class TIEntry(Converter):
             raise TypeError(f"This entry does not support archiving.")
 
     def clear(self):
-        self.raw.data = bytearray(type(self).data.width or 0)
+        self.raw.data = bytearray(0)
+        self.set_length()
 
     def coerce(self):
         if self._type_id is None:
             try:
                 self.__class__ = TIEntry.type_ids[self.raw.type_id]
+                self.set_length()
                 self.coerce()
 
             except KeyError:
                 raise TypeError(f"type id 0x{self.raw.type_id.hex()} not recognized")
+
+    def set_length(self, length: int = None):
+        length = length or self.min_data_length
+        if length > self.data_length:
+            self.raw.data.extend(bytearray(length - self.data_length))
 
     def unarchive(self):
         if self.flash_bytes:

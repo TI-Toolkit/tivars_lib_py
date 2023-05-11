@@ -88,6 +88,8 @@ class TIReal(TIEntry):
         TI_82AEP: "8xn"
     }
 
+    min_data_length = 9
+
     _type_id = b'\x00'
 
     def __init__(self, init=None, *,
@@ -116,7 +118,7 @@ class TIReal(TIEntry):
 
         return negated
 
-    @Section(9)
+    @Section(min_data_length)
     def data(self) -> bytearray:
         """
         The data section of the entry
@@ -234,6 +236,8 @@ class TIComplex(TIEntry):
         TI_82AEP: "8xc"
     }
 
+    min_data_length = 18
+
     _type_id = b'\x0C'
 
     def __init__(self, init=None, *,
@@ -254,7 +258,7 @@ class TIComplex(TIEntry):
     def __complex__(self):
         return self.complex()
 
-    @Section(18)
+    @Section(min_data_length)
     def data(self) -> bytearray:
         """
         The data section of the entry

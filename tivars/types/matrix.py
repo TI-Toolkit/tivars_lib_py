@@ -27,6 +27,8 @@ class TIMatrix(TIEntry):
         TI_82AEP: "8xm"
     }
 
+    min_data_length = 2
+
     _type_id = b'\x02'
 
     @Section()

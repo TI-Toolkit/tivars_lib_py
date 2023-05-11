@@ -58,34 +58,34 @@ class TokenizedVar(TIEntry):
         def has_bytes_in(prefix: bytes, start: int, end: int):
             return any(prefix + int.to_bytes(byte, 1, 'little') in self.raw.data for byte in range(start, end + 1))
 
-        version = 0x0
+        version = 0x00
         match self.raw.data:
             case _TI_84PCE if has_bytes_in(b'\xEF', 0x9E, 0xA6):
-                version = 0xC
+                version = 0x0C
 
             case _TI_84PCE if has_bytes_in(b'\xEF', 0x73, 0x98):
-                version = 0xB
+                version = 0x0B
 
             case _TI_84PCSE if has_bytes_in(b'\xEF', 0x41, 0x6C):
-                version = 0xA
+                version = 0x0A
 
             case _TI_84P if has_bytes_in(b'\xEF', 0x17, 0x3D):
-                version = 0x6
+                version = 0x06
 
             case _TI_84P if has_bytes_in(b'\xEF', 0x13, 0x16):
-                version = 0x5
+                version = 0x05
 
             case _TI_84P if has_bytes_in(b'\xEF', 0x00, 0x12):
-                version = 0x4
+                version = 0x04
 
             case _TI_83P if has_bytes_in(b'\xBB', 0xDB, 0xF5):
-                version = 0x3
+                version = 0x03
 
             case _TI_83P if has_bytes_in(b'\xBB', 0xCF, 0xDA):
-                version = 0x2
+                version = 0x02
 
             case _TI_83P if has_bytes_in(b'\xBB', 0x68, 0xCE):
-                version = 0x1
+                version = 0x01
 
         if any(token in self.raw.data for token in self.clock_tokens):
             version += 0x20

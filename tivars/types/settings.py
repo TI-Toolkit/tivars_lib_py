@@ -8,6 +8,8 @@ from .numeric import TIReal
 
 
 class SettingsVar(TIEntry):
+    min_data_length = 2
+
     leading_bytes = b'\x00\x00'
 
     def __init__(self, init=None, *,
@@ -46,10 +48,12 @@ class TIWindowSettings(SettingsVar):
         TI_82AEP: "8xw"
     }
 
+    min_data_length = 210
+
     _type_id = b'\x0F'
     leading_bytes = b'\xD0\x00\x00'
 
-    @Section(210)
+    @Section(min_data_length)
     def data(self) -> bytearray:
         """
         The data section of the entry
@@ -254,10 +258,12 @@ class TIRecallWindow(SettingsVar):
         TI_82AEP: "8xz"
     }
 
+    min_data_length = 209
+
     _type_id = b'\x10'
     leading_bytes = b'\xCF\x00'
 
-    @Section(209)
+    @Section(min_data_length)
     def data(self) -> bytearray:
         """
         The data section of the entry
@@ -462,10 +468,12 @@ class TITableSettings(SettingsVar):
         TI_82AEP: "8xt"
     }
 
+    min_data_length = 20
+
     _type_id = b'\x11'
     leading_bytes = b'\x12\x00'
 
-    @Section(20)
+    @Section(min_data_length)
     def data(self) -> bytearray:
         """
         The data section of the entry
