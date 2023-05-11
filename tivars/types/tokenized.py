@@ -19,6 +19,8 @@ class TokenizedVar(TIEntry):
         b'\x2A', b'\x2B', b'\x2C'
     ]
 
+    min_data_length = 2
+
     tokens = {
         TI_82: (TI82_TOKENS, TI82_BYTES),
         TI_83: (TI83_TOKENS, TI83_BYTES),
