@@ -749,6 +749,13 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
         Always set to 84C
         """
 
+    def mono(self) -> TIMonoFuncGDB:
+        """
+        Returns a copy of this GDB with all color data removed
+        """
+
+        return TIMonoFuncGDB(self.bytes()[:-18])
+
     def _load_dict(self, dct: dict):
         super(TIGDB, self)._load_dict(dct)
         super(TIFuncGDB, self)._load_dict(dct)
@@ -917,6 +924,13 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
         Always set to 84C
         """
 
+    def mono(self) -> TIMonoParamGDB:
+        """
+        Returns a copy of this GDB with all color data removed
+        """
+
+        return TIMonoParamGDB(self.bytes()[:-14])
+
     def _load_dict(self, dct: dict):
         super(TIGDB, self)._load_dict(dct)
         super(TIParamGDB, self)._load_dict(dct)
@@ -1037,6 +1051,13 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
 
         Always set to 84C
         """
+
+    def mono(self) -> TIMonoPolarGDB:
+        """
+        Returns a copy of this GDB with all color data removed
+        """
+
+        return TIMonoPolarGDB(self.bytes()[:-14])
 
     def _load_dict(self, dct: dict):
         super(TIGDB, self)._load_dict(dct)
@@ -1257,6 +1278,13 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
 
         Always set to 84C
         """
+
+    def mono(self) -> TIMonoSeqGDB:
+        """
+        Returns a copy of this GDB with all color data removed
+        """
+
+        return TIMonoSeqGDB(self.bytes()[:-11])
 
     def _load_dict(self, dct: dict):
         super(TIGDB, self)._load_dict(dct)
