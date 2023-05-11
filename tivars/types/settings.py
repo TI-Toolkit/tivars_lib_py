@@ -9,7 +9,7 @@ from ..var import TIEntry
 from .numeric import TIReal
 
 
-class SettingsVar(TIEntry):
+class SettingsEntry(TIEntry):
     min_data_length = 2
 
     leading_bytes = b'\x00\x00'
@@ -49,7 +49,7 @@ class SettingsVar(TIEntry):
         return json.dumps(self.dict())
 
 
-class TIWindowSettings(SettingsVar):
+class TIWindowSettings(SettingsEntry):
     extensions = {
         None: "8xw",
         TI_82: "82w",
@@ -286,7 +286,7 @@ class TIWindowSettings(SettingsVar):
         }
 
 
-class TIRecallWindow(SettingsVar):
+class TIRecallWindow(SettingsEntry):
     extensions = {
         None: "8xz",
         TI_82: "82z",
@@ -523,7 +523,7 @@ class TIRecallWindow(SettingsVar):
         }
 
 
-class TITableSettings(SettingsVar):
+class TITableSettings(SettingsEntry):
     extensions = {
         None: "8xt",
         TI_82: "82t",

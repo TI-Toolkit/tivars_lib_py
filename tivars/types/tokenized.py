@@ -11,7 +11,7 @@ from ..data import *
 from ..var import SizedEntry
 
 
-class TokenizedVar(SizedEntry):
+class TokenizedEntry(SizedEntry):
     versions = [
         b'\x00', b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
         b'\x0A', b'\x0B', b'\x0C',
@@ -101,7 +101,7 @@ class TokenizedVar(SizedEntry):
         return decode(self.data, byte_map)
 
 
-class TIEquation(TokenizedVar):
+class TIEquation(TokenizedEntry):
     extensions = {
         None: "8xy",
         TI_82: "82y",
@@ -122,7 +122,7 @@ class TIEquation(TokenizedVar):
     _type_id = b'\x03'
 
 
-class TIString(TokenizedVar):
+class TIString(TokenizedEntry):
     extensions = {
         None: "8xs",
         TI_82: "82s",
@@ -149,7 +149,7 @@ class TIString(TokenizedVar):
         return f"\"{super().string()}\""
 
 
-class TIProgram(TokenizedVar):
+class TIProgram(TokenizedEntry):
     extensions = {
         None: "8xp",
         TI_82: "82p",

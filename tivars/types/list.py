@@ -10,7 +10,7 @@ from ..var import TIEntry
 from .numeric import TIReal, TIComplex
 
 
-class ListVar(TIEntry):
+class ListEntry(TIEntry):
     _E = TIEntry
 
     min_data_length = 2
@@ -111,7 +111,7 @@ class ListVar(TIEntry):
         return format(self, "")
 
 
-class TIRealList(ListVar):
+class TIRealList(ListEntry):
     _E = TIReal
 
     extensions = {
@@ -134,7 +134,7 @@ class TIRealList(ListVar):
     _type_id = b'\x01'
 
 
-class TIComplexList(ListVar):
+class TIComplexList(ListEntry):
     _E = TIComplex
 
     extensions = {
