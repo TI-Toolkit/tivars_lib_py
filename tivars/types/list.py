@@ -15,6 +15,11 @@ class ListVar(TIEntry):
 
     min_data_length = 2
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "t": return f"{{{','.join(format(entry, 't') for entry in self.list())}}}"
+            case _: return f"[{', '.join(format(entry, format_spec) for entry in self.list())}]"
+
     def __iter__(self) -> Iterator[_E]:
         return iter(self.list())
 
@@ -95,7 +100,7 @@ class ListVar(TIEntry):
     def load_string(self, string: str):
         lst = []
 
-        for string in ''.join(string.strip("[]").split()).split(","):
+        for string in ''.join(string.strip("[]{}").split()).split(","):
             entry = self._E()
             entry.load_string(string)
             lst.append(entry)
@@ -103,7 +108,7 @@ class ListVar(TIEntry):
         self.load_list(lst)
 
     def string(self) -> str:
-        return f"[{', '.join(str(entry) for entry in self.list())}]"
+        return format(self, "")
 
 
 class TIRealList(ListVar):

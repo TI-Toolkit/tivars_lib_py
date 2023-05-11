@@ -31,6 +31,17 @@ class TIMatrix(TIEntry):
 
     _type_id = b'\x02'
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "t":
+                return "[" + \
+                    ''.join(f"[{','.join(format(entry, 't') for entry in row)}]" for row in self.matrix()) \
+                    + "]"
+            case _:
+                return "[" + \
+                    ', '.join(f"[{', '.join(format(entry, format_spec) for entry in row)}]" for row in self.matrix()) \
+                    + "]"
+
     def __iter__(self) -> Iterator[TIReal]:
         for row in self.matrix():
             for entry in row:
@@ -121,7 +132,7 @@ class TIMatrix(TIEntry):
         self.load_matrix(matrix)
 
     def string(self) -> str:
-        return "[" + ', '.join(f"[{', '.join(str(entry) for entry in row)}]" for row in self.matrix()) + "]"
+        return format(self, "")
 
 
 __all__ = ["TIMatrix"]

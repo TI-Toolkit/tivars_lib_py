@@ -27,8 +27,19 @@ class BCD(Converter):
         return int.to_bytes(int(str(value), 16), 7, 'big')
 
 
+def replacer(string: str, replacements: dict[str, str]) -> str:
+    for substring, replacement in replacements.items():
+        string = string.replace(substring, replacement)
+
+    return string
+
+
+def squash(string: str) -> str:
+    return ''.join(string.split())
+
+
 def read_string(string: str) -> (int, int, bool):
-    string = ''.join(string.split()).lower().replace("~", "-").replace("|e", "e")
+    string = replacer(squash(string).lower(), {"~": "-", "|e": "e"})
 
     if "e" not in string:
         string += "e0"
@@ -102,11 +113,17 @@ class TIReal(TIEntry):
         if flags is not None:
             self.flags |= flags
 
-    def __int__(self) -> int:
-        return self.int()
-
     def __float__(self) -> float:
         return self.float()
+
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "": return self.string()
+            case "t": return self.string().replace("-", "~")
+            case _: return format(self.decimal(), format_spec)
+
+    def __int__(self) -> int:
+        return self.int()
 
     def __neg__(self) -> 'TIReal':
         negated = copy.copy(self)
@@ -258,6 +275,12 @@ class TIComplex(TIEntry):
     def __complex__(self):
         return self.complex()
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "": return self.string()
+            case "t": return squash(replacer(self.string(), {"i": "[i]", "-": "~", "~ ": "- "}))
+            case _: return format(self.complex(), format_spec)
+
     @Section(min_data_length)
     def data(self) -> bytearray:
         """
@@ -348,7 +371,7 @@ class TIComplex(TIEntry):
         return self.real.float() + 1j * self.imag.float()
 
     def load_string(self, string: str):
-        string = ''.join(string.split()).replace("-", "+-").replace("[i]", "i")
+        string = replacer(squash(string), {"-": "+-", "[i]": "i", "j": "i"})
 
         parts = string.split("+")
         if not parts[0]:
@@ -368,9 +391,9 @@ class TIComplex(TIEntry):
     def string(self) -> str:
         match str(self.real), str(self.imag):
             case "0", "0": return "0"
-            case "0", _: return f"{self.imag}[i]"
+            case "0", _: return f"{self.imag}i".replace(" 1i", " i")
             case _, "0": return f"{self.real}"
-            case _, _: return f"{self.real} + {self.imag}[i]".replace("+ -", "- ")
+            case _, _: return replacer(f"{self.real} + {self.imag}i", {"+ -": "- ", " 1i": " i"})
 
 
 __all__ = ["TIReal", "TIComplex", "BCD", "FloatFlags"]

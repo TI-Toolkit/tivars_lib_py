@@ -187,6 +187,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_real.is_complex_component, False)
 
         self.assertEqual(str(test_real), "-42.1337")
+        self.assertEqual(f"{test_real:.1f}", "-42.1")
         self.assertEqual(test_real.decimal(), decimal.Decimal("-42.1337"))
 
         test_real.clear()
@@ -209,14 +210,16 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_complex.imag.exponent, 128)
         self.assertEqual(test_complex.imag.mantissa, 20000000000000)
 
-        self.assertEqual(str(test_complex), "-5 + 2[i]")
+        self.assertEqual(str(test_complex), "-5 + 2i")
+        self.assertEqual(f"{test_complex:.2f}", "-5.00+2.00j")
+        self.assertEqual(f"{test_complex:t}", "~5+2[i]")
 
         test_components = TIComplex(name="C")
         test_components.real, test_components.imag = test_complex.real, test_complex.imag
         self.assertEqual(test_complex.bytes(), test_components.bytes())
 
         test_complex.clear()
-        test_complex.load_string(string := "-5 + 2[i]")
+        test_complex.load_string(string := "-5 + 2i")
         self.assertEqual(test_complex.string(), string)
 
         with open("tests/data/var/Complex.8xc", 'rb') as file:
@@ -233,6 +236,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_real_list.list(), test_list)
         self.assertEqual(list(iter(test_real_list)), test_list)
         self.assertEqual(str(test_real_list), "[-1, 2, 999]")
+        self.assertEqual(f"{test_real_list:t}", "{~1,2,999}")
 
     def test_complex_list(self):
         test_comp_list = TIComplexList()
@@ -243,7 +247,8 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
         self.assertEqual(list(iter(test_comp_list)), test_list)
-        self.assertEqual(str(test_comp_list), "[1 + 1[i], -3 + 2[i], 4]")
+        self.assertEqual(str(test_comp_list), "[1 + i, -3 + 2i, 4]")
+        self.assertEqual(f"{test_comp_list:t}", "{1+[i],~3+2[i],4}")
 
     def test_matrix(self):
         test_matrix = TIMatrix()
@@ -261,6 +266,9 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(str(test_matrix), "[[0.5, -1, 2.6457513110646],"
                                            " [2.7386127875258, 0.5, 3.1415926535898],"
                                            " [1, 99999999, 0]]")
+        self.assertEqual(f"{test_matrix:t}", "[[0.5,~1,2.6457513110646]"
+                                             "[2.7386127875258,0.5,3.1415926535898]"
+                                             "[1,99999999,0]]")
 
 
 class SettingsTests(unittest.TestCase):
