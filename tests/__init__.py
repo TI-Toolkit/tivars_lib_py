@@ -231,6 +231,7 @@ class NumericTests(unittest.TestCase):
 
         self.assertEqual(test_real_list.length, 3)
         self.assertEqual(test_real_list.list(), test_list)
+        self.assertEqual(list(iter(test_real_list)), test_list)
         self.assertEqual(str(test_real_list), "[-1, 2, 999]")
 
     def test_complex_list(self):
@@ -241,6 +242,7 @@ class NumericTests(unittest.TestCase):
 
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
+        self.assertEqual(list(iter(test_comp_list)), test_list)
         self.assertEqual(str(test_comp_list), "[1 + 1[i], -3 + 2[i], 4]")
 
     def test_matrix(self):
@@ -254,6 +256,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_matrix.height, 3)
         self.assertEqual(test_matrix.width, 3)
         self.assertEqual(test_matrix.matrix(), test_array)
+        self.assertEqual(list(iter(test_matrix)), [entry for row in test_array for entry in row])
 
         self.assertEqual(str(test_matrix), "[[0.5, -1, 2.6457513110646],"
                                            " [2.7386127875258, 0.5, 3.1415926535898],"
@@ -387,3 +390,4 @@ class GDBTests(unittest.TestCase):
         self.assertIn(GraphMode.DetectAsymptotesOn, test_gdb.color_mode_flags)
 
         self.assertEqual(test_gdb.dict(), param)
+        self.assertEqual(dict(test_gdb), param)

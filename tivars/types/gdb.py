@@ -1,7 +1,7 @@
 import io
 import json
 
-from typing import ByteString
+from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -131,6 +131,9 @@ class TIGraphedEquation(TIEquation):
         self.flags = EquationFlags()
         self.style = b'\x00'
         self.color = b'\x00'
+
+    def __iter__(self) -> Iterator:
+        return iter(self.dict().items())
 
     @Section(1, EquationFlags)
     def flags(self) -> EquationFlags:
@@ -278,6 +281,9 @@ class TIMonoGDB(TIEntry):
     num_equations = 0
     num_parameters = 0
     num_styles = 0
+
+    def __iter__(self) -> Iterator:
+        return iter(self.dict().items())
 
     @Section()
     def data(self) -> bytearray:

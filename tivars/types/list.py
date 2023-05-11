@@ -1,7 +1,7 @@
 import io
 import re
 
-from typing import ByteString
+from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -11,9 +11,12 @@ from .numeric import TIReal, TIComplex
 
 
 class ListVar(TIEntry):
+    _E = TIEntry
+
     min_data_length = 2
 
-    item_type = TIEntry
+    def __iter__(self) -> Iterator[_E]:
+        return iter(self.list())
 
     @Section(8, String)
     def name(self, value) -> str:
@@ -60,26 +63,26 @@ class ListVar(TIEntry):
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.data_length // self.item_type.data.width != self.length:
+        if self.data_length // self._E.data.width != self.length:
             warn(f"The list has an unexpected length "
-                 f"(expected {self.data_length // self.item_type.data.width}, got {self.length}).",
+                 f"(expected {self.data_length // self._E.data.width}, got {self.length}).",
                  BytesWarning)
 
     def load_data_section(self, data: io.BytesIO):
         data_length = int.from_bytes(data.read(2), 'little')
         self.raw.data = bytearray(int.to_bytes(data_length, 2, 'little') + data.read(data_length))
 
-    def load_list(self, lst: list[item_type]):
+    def load_list(self, lst: list[_E]):
         self.clear()
         self.data += int.to_bytes(len(lst), 2, 'little')
 
         for entry in lst:
             self.data += entry.data
 
-    def list(self) -> list[item_type]:
+    def list(self) -> list[_E]:
         lst = []
         for i in range(self.length):
-            entry = self.item_type()
+            entry = self._E()
 
             entry.meta_length = self.meta_length
             entry.archived = self.archived
@@ -93,7 +96,7 @@ class ListVar(TIEntry):
         lst = []
 
         for string in ''.join(string.strip("[]").split()).split(","):
-            entry = self.item_type()
+            entry = self._E()
             entry.load_string(string)
             lst.append(entry)
 
@@ -104,7 +107,7 @@ class ListVar(TIEntry):
 
 
 class TIRealList(ListVar):
-    item_type = TIReal
+    _E = TIReal
 
     extensions = {
         None: "8xl",
@@ -127,7 +130,7 @@ class TIRealList(ListVar):
 
 
 class TIComplexList(ListVar):
-    item_type = TIComplex
+    _E = TIComplex
 
     extensions = {
         None: "8xl",

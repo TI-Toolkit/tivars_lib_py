@@ -1,6 +1,6 @@
 import io
 
-from typing import ByteString
+from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -30,6 +30,11 @@ class TIMatrix(TIEntry):
     min_data_length = 2
 
     _type_id = b'\x02'
+
+    def __iter__(self) -> Iterator[TIReal]:
+        for row in self.matrix():
+            for entry in row:
+                yield entry
 
     @Section()
     def data(self) -> bytearray:

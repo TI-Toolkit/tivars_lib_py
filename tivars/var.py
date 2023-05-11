@@ -2,7 +2,7 @@ import copy
 import inspect
 import io
 
-from typing import BinaryIO, ByteString
+from typing import BinaryIO, ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -165,6 +165,8 @@ class TIEntryRaw(Raw):
 
 
 class TIEntry(Converter):
+    _T = 'TIEntry'
+
     flash_only = False
 
     extensions = {None: "8xg"}
@@ -234,6 +236,9 @@ class TIEntry(Converter):
 
         except AttributeError:
             return False
+
+    def __iter__(self) -> Iterator:
+        raise NotImplementedError
 
     def __len__(self) -> int:
         return 2 + self.meta_length + 2 + self.data_length
