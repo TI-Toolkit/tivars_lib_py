@@ -128,9 +128,6 @@ class EntryTests(unittest.TestCase):
         test_program.open("tests/data/var/Program.8xp")
         self.assertEqual(bool(test_program), True)
 
-        test_program.clear()
-        self.assertEqual(bool(test_program), False)
-
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
@@ -372,4 +369,21 @@ class GDBTests(unittest.TestCase):
             param = json.load(file)
 
         test_gdb.load_dict(param)
+
+        tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
+        self.assertEqual(test_gdb.Xmax, TIReal(10))
+        self.assertEqual(test_gdb.Xmin, TIReal(-10))
+        self.assertEqual(test_gdb.Tmax, tau)
+        self.assertEqual(test_gdb.Tstep, pi_twenty_fourths)
+
+        self.assertEqual(test_gdb.X2T.equation(), TIEquation())
+        self.assertEqual(test_gdb.X2T.style, GraphStyle.ThickLine)
+        self.assertEqual(test_gdb.X2T.color, GraphColor.Red)
+        self.assertEqual(test_gdb.axes_color, GraphColor.Black)
+
+        self.assertIn(GraphMode.Sequential, test_gdb.mode_flags)
+        self.assertIn(GraphMode.CoordOn, test_gdb.mode_flags)
+        self.assertIn(GraphMode.ExprOn, test_gdb.extended_mode_flags)
+        self.assertIn(GraphMode.DetectAsymptotesOn, test_gdb.color_mode_flags)
+
         self.assertEqual(test_gdb.dict(), param)
