@@ -1,8 +1,3 @@
-import io
-
-from typing import ByteString, Iterator
-from warnings import warn
-
 from tivars.models import *
 from ..data import *
 from ..var import SizedEntry
