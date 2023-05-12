@@ -107,13 +107,22 @@ Many entry types also support additional export formats (e.g. `TIReal.decimal()`
 
 Vars are comprised of individual _sections_ which represent different forms of data, split across the header and entries. The var itself also contains the total entry length and checksum sections, but these are read-only to prevent file corruption.
 
-You can read and write to individual sections of an entry or header as their "canonical" type.
+You can read and write to individual sections of an entry or header as their "canonical" type:
 
 ```python
 my_header.comment = "This is my (even cooler) comment!"
 my_program.archived = True
 
 assert my_program.type_id == b'\x05'
+```
+
+Data sections can be other entry types:
+
+```python
+my_gdb = TIGDB()
+my_gdb.Xmin = TIReal(0)
+
+assert my_gdb.Xmax == TIReal(10)
 ```
 
 ### Models
