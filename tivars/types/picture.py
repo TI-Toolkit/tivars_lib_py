@@ -43,12 +43,21 @@ class RGBPalette(Converter):
                White, LtGray, MedGray, Gray, DarkGray]
 
     @classmethod
+    def nearest(cls, r: int, g: int, b: int):
+        nearest = min(cls.palette, key=lambda x: (x[0] - r) ** 2 + (x[1] - g) ** 2 + (x[2] - b) ** 2)
+        if nearest != (r, g, b):
+            warn(f"The pixel {(r, g, b)} is not contained in the palette; using {nearest} as an approximation.",
+                 UserWarning)
+
+        return nearest
+
+    @classmethod
     def get(cls, data: bytes, instance) -> _T:
         return cls.palette[data[0] >> 4], cls.palette[data[0] & 15]
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes((cls.palette.index(value[0]) << 4) + cls.palette.index(value[1]), 1, 'little')
+        return int.to_bytes((cls.nearest(*value[0]) << 4) + cls.nearest(*value[1]), 1, 'little')
 
 
 class RGB565(Converter):
