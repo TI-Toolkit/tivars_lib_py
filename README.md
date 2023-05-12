@@ -116,7 +116,7 @@ my_program.archived = True
 assert my_program.type_id == b'\x05'
 ```
 
-Data sections can be other entry types:
+Data sections can also be other entry types:
 
 ```python
 my_gdb = TIGDB()
@@ -124,6 +124,8 @@ my_gdb.Xmin = TIReal(0)
 
 assert my_gdb.Xmax == TIReal(10)
 ```
+
+Each section is annotated with the expected type.
 
 ### Models
 
