@@ -65,7 +65,14 @@ class RGB565(Converter):
             int.to_bytes((value[0] // 8 << 3) | (value[1] // 4 >> 3), 1, 'little')
 
 
-class TIMonoPicture(SizedEntry):
+class PictureEntry(SizedEntry):
+    width = 0
+    height = 0
+
+    pil_mode = "RGB"
+
+
+class TIMonoPicture(PictureEntry):
     extensions = {
         None: "8xi",
         TI_82: "",
@@ -83,6 +90,9 @@ class TIMonoPicture(SizedEntry):
         TI_82AEP: ""
     }
 
+    width = 96
+    height = 63
+
     pil_mode = "L"
 
     def load_bw_array(self, arr: list[list[int]]):
@@ -98,7 +108,7 @@ class TIMonoPicture(SizedEntry):
             self.coerce()
 
 
-class TIPicture(SizedEntry):
+class TIPicture(PictureEntry):
     flash_only = True
 
     extensions = {
@@ -118,7 +128,8 @@ class TIPicture(SizedEntry):
         TI_82AEP: "8ci"
     }
 
-    pil_mode = "RGB"
+    width = 266
+    height = 165
 
     def load_rgb_array(self, arr: list[list[RGB]]):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
@@ -132,7 +143,7 @@ class TIPicture(SizedEntry):
             self.__class__ = TIImage
 
 
-class TIImage(SizedEntry):
+class TIImage(PictureEntry):
     flash_only = True
 
     extensions = {
@@ -152,7 +163,8 @@ class TIImage(SizedEntry):
         TI_82AEP: "8ca"
     }
 
-    pil_mode = "RGB"
+    width = 133
+    height = 83
 
     @Section()
     def data(self) -> bytearray:
