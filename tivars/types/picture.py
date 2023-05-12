@@ -1,3 +1,4 @@
+from typing import Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -99,12 +100,17 @@ class TIMonoPicture(PictureEntry):
 
     pil_mode = "L"
 
+    def __iter__(self) -> Iterator[int]:
+        for byte in self.data[2:]:
+            for bit in L1.get(byte, self):
+                yield bit
+
     def load_bw_array(self, arr: list[list[int]]):
         self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
     def bw_array(self) -> list[list[int]]:
-        return [[bw for col in range(96) for bw in L1.get(self.data[96 * row + col + 2], self)]
-                for row in range(63)]
+        return [[bw for col in range(self.width) for bw in L1.get(self.data[self.width * row + col + 2], self)]
+                for row in range(self.height)]
 
     def coerce(self):
         match self.length:
@@ -142,12 +148,18 @@ class TIPicture(PictureEntry):
 
     pil_mode = "RGB"
 
+    def __iter__(self) -> Iterator[RGB]:
+        for byte in self.data[2:]:
+            for rgb in RGBPalette.get(byte, self):
+                yield rgb
+
     def load_rgb_array(self, arr: list[list[RGB]]):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
 
     def rgb_array(self) -> list[list[RGB]]:
-        return [[rgb for col in range(133) for rgb in RGBPalette.get(self.data[133 * row + col + 2], self)]
-                for row in range(165)]
+        return [[rgb for col in range(self.width // 2)
+                 for rgb in RGBPalette.get(self.data[self.width // 2 * row + col + 2], self)]
+                for row in range(self.height)]
 
     def coerce(self):
         match self.length:
@@ -201,12 +213,18 @@ class TIImage(PictureEntry):
         Always set to 0x81
         """
 
+    def __iter__(self) -> Iterator[RGB]:
+        for row in range(self.height - 1, -1, -1):
+            for col in range(self.width):
+                yield RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
+
     def load_rgb_array(self, arr: list[list[RGB]]):
         self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr for entry in row)
 
     def rgb_array(self) -> list[list[RGB]]:
-        return [[RGB565.get(self.data[268 * row + 2 * col + 3:][:2], self) for col in range(133)]
-                for row in range(82, -1, -1)]
+        return [[RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
+                 for col in range(self.width)]
+                for row in range(self.height - 1, -1, -1)]
 
     def coerce(self):
         match self.length:
