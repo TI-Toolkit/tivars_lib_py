@@ -94,7 +94,7 @@ class VarTests(unittest.TestCase):
 
 class EntryTests(unittest.TestCase):
     def test_save_to_file(self):
-        test_program = TIProgram()
+        test_program = TIEntry()
         test_header = TIHeader()
 
         test_program.open("tests/data/var/Program.8xp")
@@ -399,3 +399,14 @@ class GDBTests(unittest.TestCase):
 
         self.assertEqual(test_gdb.dict(), param)
         self.assertEqual(dict(test_gdb), param)
+
+
+class PictureTests(unittest.TestCase):
+    def test_picture(self):
+        test_picture = TIPicture()
+
+        with open("tests/data/var/Image1.8ca", 'rb') as file:
+            test_picture.load_from_file(file)
+            file.seek(0)
+
+            self.assertEqual(test_picture.bytes(), file.read()[55:-2])
