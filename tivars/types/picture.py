@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -57,15 +57,15 @@ class RGB565(Converter):
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
         return (
-            (data[1] >> 3) * 255 // 31,
-            (((data[1] & 7) << 3) | (data[0] >> 5)) * 255 // 63,
-            (data[0] & 31) * 255 // 31
+            (data[1] >> 3) << 3,
+            (((data[1] & 7) << 3) | (data[0] >> 5)) << 2,
+            (data[0] & 31) << 3
         )
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes(((value[1] // 4 & 7) << 5) + value[2] // 8, 1, 'little') + \
-            int.to_bytes((value[0] // 8 << 3) | (value[1] // 4 >> 3), 1, 'little')
+        return int.to_bytes(((value[1] >> 2 & 7) << 5) | value[2] >> 3, 1, 'little') + \
+            int.to_bytes(value[0] | (value[1] >> 5), 1, 'little')
 
 
 class PictureEntry(SizedEntry):
@@ -73,6 +73,14 @@ class PictureEntry(SizedEntry):
     height = 0
 
     pil_mode = None
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        self.length = self.min_data_length
 
 
 class TIMonoPicture(PictureEntry):
@@ -197,6 +205,19 @@ class TIImage(PictureEntry):
 
     pil_mode = "RGB"
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        self.image_magic = b'\x81'
+
+    def __iter__(self) -> Iterator[RGB]:
+        for row in range(self.height - 1, -1, -1):
+            for col in range(self.width):
+                yield RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -213,18 +234,13 @@ class TIImage(PictureEntry):
         Always set to 0x81
         """
 
-    def __iter__(self) -> Iterator[RGB]:
-        for row in range(self.height - 1, -1, -1):
-            for col in range(self.width):
-                yield RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
-
     def load_rgb_array(self, arr: list[list[RGB]]):
-        self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr for entry in row)
+        self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr[::-1] for entry in row + [(0, 0, 0)])
 
     def rgb_array(self) -> list[list[RGB]]:
         return [[RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
                  for col in range(self.width)]
-                for row in range(self.height - 1, -1, -1)]
+                for row in range(self.height)][::-1]
 
     def coerce(self):
         match self.length:
