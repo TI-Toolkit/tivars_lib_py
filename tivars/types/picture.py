@@ -1,3 +1,5 @@
+from warnings import warn
+
 from tivars.models import *
 from ..data import *
 from ..var import SizedEntry
@@ -69,7 +71,7 @@ class PictureEntry(SizedEntry):
     width = 0
     height = 0
 
-    pil_mode = "RGB"
+    pil_mode = None
 
 
 class TIMonoPicture(PictureEntry):
@@ -90,6 +92,8 @@ class TIMonoPicture(PictureEntry):
         TI_82AEP: ""
     }
 
+    min_data_length = 756
+
     width = 96
     height = 63
 
@@ -103,9 +107,12 @@ class TIMonoPicture(PictureEntry):
                 for row in range(63)]
 
     def coerce(self):
-        if self.length != 1008:
-            self.__class__ = TIPicture
-            self.coerce()
+        match self.length:
+            case self.min_data_length: pass
+            case TIPicture.min_data_length: self.__class__ = TIPicture
+            case TIImage.min_data_length: self.__class__ = TIImage
+            case _: warn(f"Picture has unexpected length ({self.length}).",
+                         BytesWarning)
 
 
 class TIPicture(PictureEntry):
@@ -128,8 +135,12 @@ class TIPicture(PictureEntry):
         TI_82AEP: "8ci"
     }
 
+    min_data_length = 21945
+
     width = 266
     height = 165
+
+    pil_mode = "RGB"
 
     def load_rgb_array(self, arr: list[list[RGB]]):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
@@ -139,8 +150,12 @@ class TIPicture(PictureEntry):
                 for row in range(165)]
 
     def coerce(self):
-        if self.length != 21945:
-            self.__class__ = TIImage
+        match self.length:
+            case self.min_data_length: pass
+            case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
+            case TIImage.min_data_length: self.__class__ = TIImage
+            case _: warn(f"Picture has unexpected length ({self.length}).",
+                         BytesWarning)
 
 
 class TIImage(PictureEntry):
@@ -163,8 +178,12 @@ class TIImage(PictureEntry):
         TI_82AEP: "8ca"
     }
 
+    min_data_length = 22245
+
     width = 133
     height = 83
+
+    pil_mode = "RGB"
 
     @Section()
     def data(self) -> bytearray:
@@ -188,6 +207,14 @@ class TIImage(PictureEntry):
     def rgb_array(self) -> list[list[RGB]]:
         return [[RGB565.get(self.data[268 * row + 2 * col + 3:][:2], self) for col in range(133)]
                 for row in range(82, -1, -1)]
+
+    def coerce(self):
+        match self.length:
+            case self.min_data_length: pass
+            case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
+            case TIPicture.min_data_length: self.__class__ = TIPicture
+            case _: warn(f"Picture has unexpected length ({self.length}).",
+                         BytesWarning)
 
 
 __all__ = ["TIMonoPicture", "TIPicture", "TIImage",
