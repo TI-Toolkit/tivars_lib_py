@@ -88,6 +88,8 @@ class TIMonoPicture(SizedEntry):
         TI_82AEP: ""
     }
 
+    pil_mode = "L"
+
     def load_bw_array(self, arr: list[list[int]]):
         self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
@@ -121,6 +123,8 @@ class TIPicture(SizedEntry):
         TI_82AEP: "8ci"
     }
 
+    pil_mode = "RGB"
+
     def load_rgb_array(self, arr: list[list[RGB]]):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
 
@@ -152,6 +156,8 @@ class TIImage(SizedEntry):
         TI_83PCEEP: "8ca",
         TI_82AEP: "8ca"
     }
+
+    pil_mode = "RGB"
 
     @Section()
     def data(self) -> bytearray:

@@ -402,11 +402,13 @@ class GDBTests(unittest.TestCase):
 
 
 class PictureTests(unittest.TestCase):
-    def test_picture(self):
-        test_picture = TIPicture()
+    def test_image(self):
+        test_image = TIPicture()
 
         with open("tests/data/var/Image1.8ca", 'rb') as file:
-            test_picture.load_from_file(file)
+            test_image.load_from_file(file)
             file.seek(0)
 
-            self.assertEqual(test_picture.bytes(), file.read()[55:-2])
+            self.assertEqual(test_image.bytes(), file.read()[55:-2])
+
+            self.assertEqual(test_image.image_magic, b'\x81')
