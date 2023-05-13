@@ -1,7 +1,7 @@
 import inspect
 import io
 
-from typing import BinaryIO, ByteString, Iterator, Self
+from typing import BinaryIO, ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -281,11 +281,11 @@ class TIEntry(Converter):
         """
 
     @classmethod
-    def get(cls, data: bytes, instance) -> Self:
+    def get(cls, data: bytes, instance) -> 'TIEntry':
         return cls(data=data)
 
     @classmethod
-    def set(cls, value: Self, instance) -> bytes:
+    def set(cls, value: 'TIEntry', instance) -> bytes:
         return value.data
 
     @property
