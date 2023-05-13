@@ -66,15 +66,15 @@ class RGB565(Converter):
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
         return (
-            (data[1] >> 3) << 3,
-            (((data[1] & 7) << 3) | (data[0] >> 5)) << 2,
-            (data[0] & 31) << 3
+            (data[1] >> 3) * 255 // 31,
+            (((data[1] & 7) << 3) | (data[0] >> 5)) * 255 // 63,
+            (data[0] & 31) * 255 // 31
         )
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
         return int.to_bytes(((value[1] >> 2 & 7) << 5) | value[2] >> 3, 1, 'little') + \
-            int.to_bytes(value[0] | (value[1] >> 5), 1, 'little')
+            int.to_bytes((value[0] & ~7) | (value[1] >> 5), 1, 'little')
 
 
 class PictureEntry(SizedEntry):
