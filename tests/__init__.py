@@ -403,7 +403,7 @@ class GDBTests(unittest.TestCase):
 
 class PictureTests(unittest.TestCase):
     def test_mono_picture(self):
-        test_picture = TIMonoPicture()
+        test_picture = TIPicture()
 
         with open("tests/data/var/BartSimpson.8xi", 'rb') as file:
             test_picture.load_from_file(file)
