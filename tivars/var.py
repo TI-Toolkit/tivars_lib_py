@@ -5,6 +5,7 @@ from typing import BinaryIO, ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
+from tivars.tokenizer import TokenizedString
 from .data import *
 
 
@@ -249,7 +250,7 @@ class TIEntry(Converter):
         Used the interpret the contents of the data section of the entry
         """
 
-    @Section(8, String)
+    @Section(8, TokenizedString)
     def name(self) -> str:
         """
         The name of the entry

@@ -80,6 +80,14 @@ class TokenizedEntry(SizedEntry):
 
         return int.to_bytes(version, 1, 'little')
 
+    def decode(self, data: bytearray, *, model: TIModel = None) -> str:
+        byte_map = self.tokens[model or TI_84PCEPY][1]
+        return decode(data, byte_map)
+
+    def encode(self, string: str, *, model: TIModel = None) -> bytearray:
+        token_map = self.tokens[model or TI_84PCEPY][0]
+        return encode(string, token_map)
+
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
@@ -92,13 +100,11 @@ class TokenizedEntry(SizedEntry):
         self.raw.data = bytearray(int.to_bytes(data_length, 2, 'little') + data.read(data_length))
 
     def load_string(self, string: str, *, model: TIModel = None):
-        token_map = self.tokens[model or TI_84PCEPY][0]
-        self.raw.data = encode(string, token_map)
+        self.raw.data = self.encode(string, model=model)
         self.raw.version = self.derive_version()
 
     def string(self) -> str:
-        byte_map = self.tokens[TI_84PCEPY][1]
-        return decode(self.data, byte_map)
+        return self.decode(self.data)
 
 
 class TIEquation(TokenizedEntry):
