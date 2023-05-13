@@ -18,7 +18,7 @@ TIEntry.register(TIEquation)
 TIEntry.register(TIString)
 TIEntry.register(TIProgram)
 TIEntry.register(TIProtectedProgram)
-TIEntry.register(TIMonoPicture)
+TIEntry.register(TIPicture)
 TIEntry.register(TIMonoGDB)
 
 
