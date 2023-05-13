@@ -1,7 +1,7 @@
 import inspect
 import io
 
-from typing import BinaryIO, ByteString, Iterator
+from typing import BinaryIO, ByteString, Iterator, Self
 from warnings import warn
 
 from tivars.models import *
@@ -281,11 +281,11 @@ class TIEntry(Converter):
         """
 
     @classmethod
-    def get(cls, data: bytes, instance) -> 'TIEntry':
-        return cls(for_flash=bool(instance.flash_bytes), archived=instance.archived, data=data)
+    def get(cls, data: bytes, instance) -> Self:
+        return cls(data=data)
 
     @classmethod
-    def set(cls, value: 'TIEntry', instance) -> bytes:
+    def set(cls, value: Self, instance) -> bytes:
         return value.data
 
     @property
@@ -316,7 +316,7 @@ class TIEntry(Converter):
         if self.flash_bytes:
             self.archived = True
         else:
-            raise TypeError(f"This entry does not support archiving.")
+            raise TypeError("entry does not support archiving.")
 
     def clear(self):
         self.raw.data = bytearray(0)
@@ -341,7 +341,7 @@ class TIEntry(Converter):
         if self.flash_bytes:
             self.archived = False
         else:
-            raise TypeError(f"This entry does not support archiving.")
+            raise TypeError("entry does not support archiving.")
 
     def load(self, data):
         for name in dir(self):
