@@ -402,6 +402,19 @@ class GDBTests(unittest.TestCase):
 
 
 class PictureTests(unittest.TestCase):
+    def test_mono_picture(self):
+        test_picture = TIMonoPicture()
+
+        with open("tests/data/var/BartSimpson.8xi", 'rb') as file:
+            test_picture.load_from_file(file)
+            file.seek(0)
+
+            self.assertEqual(test_picture.bytes(), file.read()[55:-2])
+
+        test_from_array = TIMonoPicture()
+        test_from_array.load_bw_array(test_picture.bw_array())
+        self.assertEqual(test_from_array.bw_array(), test_picture.bw_array())
+
     def test_image(self):
         test_image = TIPicture()
 
@@ -411,7 +424,8 @@ class PictureTests(unittest.TestCase):
 
             self.assertEqual(test_image.bytes(), file.read()[55:-2])
 
-            self.assertEqual(test_image.image_magic, b'\x81')
+        self.assertEqual(test_image.name, "<")
+        self.assertEqual(test_image.image_magic, b'\x81')
 
         test_from_array = TIImage()
         test_from_array.load_rgb_array(test_image.rgb_array())

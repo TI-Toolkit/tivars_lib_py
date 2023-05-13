@@ -1,7 +1,7 @@
 import numpy as np
 
 from PIL import Image
-from tivars import TIImage
+from tivars import *
 
 
 # Load an image into PIL

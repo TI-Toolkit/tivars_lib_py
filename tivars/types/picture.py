@@ -13,11 +13,11 @@ class L1(Converter):
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
-        return tuple(255 * int(bit) for bit in f"{data[0]:08b}")
+        return tuple(255 * (1 - int(bit)) for bit in f"{data[0]:08b}")
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes(int("".join("1" if bit else "0" for bit in value), 2), 1, 'little')
+        return int.to_bytes(int("".join("0" if bit else "1" for bit in value), 2), 1, 'little')
 
 
 class RGBPalette(Converter):
@@ -115,6 +115,10 @@ class TIMonoPicture(PictureEntry):
     width = 96
     height = 63
 
+    data_width = width // 8
+    data_height = height
+    data_offset = 2
+
     pil_mode = "L"
 
     def __iter__(self) -> Iterator[int]:
@@ -126,8 +130,9 @@ class TIMonoPicture(PictureEntry):
         self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
     def bw_array(self) -> list[list[int]]:
-        return [[bw for col in range(self.width) for bw in L1.get(self.data[self.width * row + col + 2], self)]
-                for row in range(self.height)]
+        return [[bw for col in range(self.data_width)
+                 for bw in L1.get(self.data[self.data_width * row + col + self.data_offset:][:1], self)]
+                for row in range(self.data_height)]
 
     def coerce(self):
         match self.length:
@@ -163,6 +168,10 @@ class TIPicture(PictureEntry):
     width = 266
     height = 165
 
+    data_width = width // 2
+    data_height = height
+    data_offset = 2
+
     pil_mode = "RGB"
 
     def __iter__(self) -> Iterator[RGB]:
@@ -174,9 +183,9 @@ class TIPicture(PictureEntry):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
 
     def rgb_array(self) -> list[list[RGB]]:
-        return [[rgb for col in range(self.width // 2)
-                 for rgb in RGBPalette.get(self.data[self.width // 2 * row + col + 2], self)]
-                for row in range(self.height)]
+        return [[rgb for col in range(self.data_width)
+                 for rgb in RGBPalette.get(self.data[self.data_width * row + col + self.data_offset:][:1], self)]
+                for row in range(self.data_height)]
 
     def coerce(self):
         match self.length:
@@ -212,6 +221,10 @@ class TIImage(PictureEntry):
     width = 133
     height = 83
 
+    data_width = 2 * width + 2
+    data_height = height
+    data_offset = 3
+
     pil_mode = "RGB"
 
     def __init__(self, init=None, *,
@@ -223,9 +236,9 @@ class TIImage(PictureEntry):
         self.image_magic = b'\x81'
 
     def __iter__(self) -> Iterator[RGB]:
-        for row in range(self.height - 1, -1, -1):
-            for col in range(self.width):
-                yield RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
+        for row in range(self.data_height - 1, -1, -1):
+            for col in range(0, self.data_width - 2, 2):
+                yield RGB565.get(self.data[self.data_width * row + col + self.data_offset:][:2], self)
 
     @Section()
     def data(self) -> bytearray:
@@ -247,9 +260,9 @@ class TIImage(PictureEntry):
         self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr[::-1] for entry in row + [(0, 0, 0)])
 
     def rgb_array(self) -> list[list[RGB]]:
-        return [[RGB565.get(self.data[(2 * self.width + 2) * row + 2 * col + 3:][:2], self)
-                 for col in range(self.width)]
-                for row in range(self.height)][::-1]
+        return [[RGB565.get(self.data[self.data_width * row + col + 3:][:2], self)
+                 for col in range(0, self.data_width - 2, 2)]
+                for row in range(self.data_height)][::-1]
 
     def coerce(self):
         match self.length:
