@@ -81,7 +81,12 @@ class PictureEntry(SizedEntry):
     width = 0
     height = 0
 
+    data_width = width
+    data_height = height
+    data_offset = 2
+
     pil_mode = None
+    pixel_type = None
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
@@ -90,6 +95,15 @@ class PictureEntry(SizedEntry):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.length = self.min_data_length
+
+    def __iter__(self) -> Iterator[pixel_type]:
+        raise NotImplementedError
+
+    def load_array(self, arr: list[list[pixel_type]]):
+        raise NotImplementedError
+
+    def array(self) -> list[list[pixel_type]]:
+        raise NotImplementedError
 
 
 class TIMonoPicture(PictureEntry):
@@ -120,16 +134,17 @@ class TIMonoPicture(PictureEntry):
     data_offset = 2
 
     pil_mode = "L"
+    pixel_type = int
 
-    def __iter__(self) -> Iterator[int]:
-        for byte in self.data[2:]:
+    def __iter__(self) -> Iterator[pixel_type]:
+        for byte in self.data[self.data_offset:]:
             for bit in L1.get(byte, self):
                 yield bit
 
-    def load_bw_array(self, arr: list[list[int]]):
+    def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
-    def bw_array(self) -> list[list[int]]:
+    def array(self) -> list[list[pixel_type]]:
         return [[bw for col in range(self.data_width)
                  for bw in L1.get(self.data[self.data_width * row + col + self.data_offset:][:1], self)]
                 for row in range(self.data_height)]
@@ -173,16 +188,17 @@ class TIPicture(PictureEntry):
     data_offset = 2
 
     pil_mode = "RGB"
+    pixel_type = RGB
 
-    def __iter__(self) -> Iterator[RGB]:
-        for byte in self.data[2:]:
+    def __iter__(self) -> Iterator[pixel_type]:
+        for byte in self.data[self.data_offset:]:
             for rgb in RGBPalette.get(byte, self):
                 yield rgb
 
-    def load_rgb_array(self, arr: list[list[RGB]]):
+    def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
 
-    def rgb_array(self) -> list[list[RGB]]:
+    def array(self) -> list[list[pixel_type]]:
         return [[rgb for col in range(self.data_width)
                  for rgb in RGBPalette.get(self.data[self.data_width * row + col + self.data_offset:][:1], self)]
                 for row in range(self.data_height)]
@@ -226,6 +242,7 @@ class TIImage(PictureEntry):
     data_offset = 3
 
     pil_mode = "RGB"
+    pixel_type = RGB
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
@@ -235,7 +252,7 @@ class TIImage(PictureEntry):
 
         self.image_magic = b'\x81'
 
-    def __iter__(self) -> Iterator[RGB]:
+    def __iter__(self) -> Iterator[pixel_type]:
         for row in range(self.data_height - 1, -1, -1):
             for col in range(0, self.data_width - 2, 2):
                 yield RGB565.get(self.data[self.data_width * row + col + self.data_offset:][:2], self)
@@ -256,10 +273,10 @@ class TIImage(PictureEntry):
         Always set to 0x81
         """
 
-    def load_rgb_array(self, arr: list[list[RGB]]):
+    def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr[::-1] for entry in row + [(0, 0, 0)])
 
-    def rgb_array(self) -> list[list[RGB]]:
+    def array(self) -> list[list[pixel_type]]:
         return [[RGB565.get(self.data[self.data_width * row + col + 3:][:2], self)
                  for col in range(0, self.data_width - 2, 2)]
                 for row in range(self.data_height)][::-1]

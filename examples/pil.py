@@ -8,7 +8,7 @@ from tivars import *
 ti_img = TIImage()
 ti_img.open("../tests/data/var/Image1.8ca")
 
-arr = np.asarray(ti_img.rgb_array(), dtype=np.uint8)
+arr = np.asarray(ti_img.array(), dtype=np.uint8)
 img = Image.fromarray(arr, mode=ti_img.pil_mode)
 img.show()
 

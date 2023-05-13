@@ -412,8 +412,8 @@ class PictureTests(unittest.TestCase):
             self.assertEqual(test_picture.bytes(), file.read()[55:-2])
 
         test_from_array = TIMonoPicture()
-        test_from_array.load_bw_array(test_picture.bw_array())
-        self.assertEqual(test_from_array.bw_array(), test_picture.bw_array())
+        test_from_array.load_array(test_picture.array())
+        self.assertEqual(test_from_array.array(), test_picture.array())
 
     def test_image(self):
         test_image = TIPicture()
@@ -428,5 +428,5 @@ class PictureTests(unittest.TestCase):
         self.assertEqual(test_image.image_magic, b'\x81')
 
         test_from_array = TIImage()
-        test_from_array.load_rgb_array(test_image.rgb_array())
-        self.assertEqual(test_from_array.rgb_array(), test_image.rgb_array())
+        test_from_array.load_array(test_image.array())
+        self.assertEqual(test_from_array.array(), test_image.array())
