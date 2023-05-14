@@ -195,7 +195,10 @@ class TIEntry(Converter):
         if data:
             self.data[:len(data)] = bytearray(data)
         elif init is not None:
-            self.load(init)
+            try:
+                self.load(init.bytes())
+            except AttributeError:
+                self.load(init)
 
     def __bool__(self) -> bool:
         return not self.is_empty
@@ -282,11 +285,11 @@ class TIEntry(Converter):
         """
 
     @classmethod
-    def get(cls, data: bytes, instance) -> 'TIEntry':
+    def get(cls, data: bytes, instance) -> _T:
         return cls(data=data)
 
     @classmethod
-    def set(cls, value: 'TIEntry', instance) -> bytes:
+    def set(cls, value: _T, instance) -> bytes:
         return value.data
 
     @property
