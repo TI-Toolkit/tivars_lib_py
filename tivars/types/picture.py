@@ -136,6 +136,8 @@ class TIMonoPicture(PictureEntry):
     pil_mode = "L"
     pixel_type = int
 
+    _type_id = b'\x07'
+
     def __iter__(self) -> Iterator[pixel_type]:
         for byte in self.data[self.data_offset:]:
             for bit in L1.get(byte, self):
@@ -243,6 +245,8 @@ class TIImage(PictureEntry):
 
     pil_mode = "RGB"
     pixel_type = RGB
+
+    _type_id = b'\x1A'
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
