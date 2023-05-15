@@ -1,11 +1,8 @@
 from ..flags import *
 
 
-Bitsets = dict[int, int]
-
-
 class TIModel:
-    def __init__(self, name: str, flags: Bitsets, magic: str, product_id: bytes):
+    def __init__(self, name: str, flags: Flags, magic: str, product_id: bytes):
         self.name = name
         self.flags = TIFeature(flags, width=9)
         self.magic = magic
