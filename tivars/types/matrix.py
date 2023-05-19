@@ -84,9 +84,9 @@ class TIMatrix(TIEntry):
                  BytesWarning)
 
     def load_data_section(self, data: io.BytesIO):
-        width, height = int.from_bytes(data.read(1), 'little'), int.from_bytes(data.read(1), 'little')
-        self.raw.data = bytearray(int.to_bytes(width, 2, 'little') + int.to_bytes(height, 2, 'little')
-                                  + data.read(width * height))
+        width = int.from_bytes(width_byte := data.read(1), 'little')
+        height = int.from_bytes(height_byte := data.read(1), 'little')
+        self.raw.data = bytearray(width_byte + height_byte + data.read(width * height))
 
     def load_matrix(self, matrix: list[list[TIReal]]):
         if len({len(row) for row in matrix}) != 1:

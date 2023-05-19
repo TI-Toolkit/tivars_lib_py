@@ -74,8 +74,8 @@ class ListEntry(TIEntry):
                  BytesWarning)
 
     def load_data_section(self, data: io.BytesIO):
-        data_length = int.from_bytes(data.read(2), 'little')
-        self.raw.data = bytearray(int.to_bytes(data_length, 2, 'little') + data.read(data_length))
+        data_length = int.from_bytes(length_bytes := data.read(2), 'little')
+        self.raw.data = bytearray(length_bytes + data.read(data_length))
 
     def load_list(self, lst: list[_E]):
         self.clear()
