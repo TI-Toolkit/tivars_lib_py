@@ -198,9 +198,6 @@ class Loader:
     def __init__(self, func):
         self._func = func
 
-    def __call__(self, *args, **kwargs):
-        pass
-
     def __class_getitem__(cls, item: tuple[type, ...]) -> type:
         return type("Loader", (Loader,), {"types": item})
 
