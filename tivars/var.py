@@ -304,7 +304,7 @@ class TIEntry(Dock, Converter):
 
     @property
     def meta(self) -> bytes:
-        return self.bytes()[2:self.meta_length + 2]
+        return self.raw.data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:
