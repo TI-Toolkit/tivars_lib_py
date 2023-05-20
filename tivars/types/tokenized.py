@@ -84,7 +84,7 @@ class TokenizedEntry(SizedEntry):
         byte_map = self.tokens[model or TI_84PCEPY][1]
         return decode(data, byte_map)
 
-    def encode(self, string: str, *, model: TIModel = None) -> bytearray:
+    def encode(self, string: str, *, model: TIModel = None) -> bytes:
         token_map = self.tokens[model or TI_84PCEPY][0]
         return encode(string, token_map)
 

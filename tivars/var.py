@@ -298,7 +298,7 @@ class TIEntry(Converter):
 
     @property
     def is_empty(self) -> bool:
-        return len(self.raw.data) == 0
+        return self.data_length == 0
 
     @property
     def meta(self) -> bytes:
@@ -325,16 +325,6 @@ class TIEntry(Converter):
     def clear(self):
         self.raw.data = bytearray(0)
         self.set_length()
-
-    def coerce(self):
-        if self._type_id is None:
-            try:
-                self.__class__ = TIEntry.type_ids[self.raw.type_id]
-                self.set_length()
-                self.coerce()
-
-            except KeyError:
-                raise TypeError(f"type id 0x{self.raw.type_id.hex()} not recognized")
 
     def set_length(self, length: int = None):
         length = length or self.min_data_length
@@ -430,7 +420,7 @@ class TIEntry(Converter):
             self.coerce()
 
         except TypeError:
-            warn(f"Type id 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
+            warn(f"Type ID 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
                  BytesWarning)
 
     def bytes(self) -> bytes:
@@ -482,6 +472,16 @@ class TIEntry(Converter):
 
     def string(self) -> str:
         raise NotImplementedError
+
+    def coerce(self):
+        if self._type_id is None:
+            try:
+                self.__class__ = TIEntry.type_ids[self.raw.type_id]
+                self.set_length()
+                self.coerce()
+
+            except KeyError:
+                raise TypeError(f"type ID 0x{self.raw.type_id.hex()} not recognized")
 
 
 class TIVar:
