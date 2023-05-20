@@ -78,11 +78,7 @@ class ListEntry(TIEntry):
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
     def load_list(self, lst: list[_E]):
-        self.clear()
-        self.data += int.to_bytes(len(lst), 2, 'little')
-
-        for entry in lst:
-            self.data += entry.data
+        self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.data for entry in lst))
 
     def list(self) -> list[_E]:
         lst = []
