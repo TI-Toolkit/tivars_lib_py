@@ -189,7 +189,7 @@ class Dock:
                 loader(self, data)
                 return
 
-        raise TypeError("could not find valid loader")
+        raise TypeError(f"could not find valid loader for type {type(data)}")
 
 
 class Loader:
