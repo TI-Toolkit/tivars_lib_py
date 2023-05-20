@@ -155,7 +155,7 @@ class TIEntryRaw(Raw):
         return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
 
 
-class TIEntry(Converter):
+class TIEntry(Dock, Converter):
     _T = 'TIEntry'
 
     flash_only = False
@@ -339,14 +339,6 @@ class TIEntry(Converter):
             self.archived = False
         else:
             raise TypeError("entry does not support archiving.")
-
-    def load(self, data):
-        for loader_types, loader in self.loaders.items():
-            if any(isinstance(data, loader_type) for loader_type in loader_types):
-                loader(self, data)
-                return
-
-        raise ValueError("could not find valid loader")
 
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):

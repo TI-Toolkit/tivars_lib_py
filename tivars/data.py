@@ -180,6 +180,18 @@ class Raw:
         return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__ if not attr.startswith("__"))
 
 
+class Dock:
+    loaders = {}
+
+    def load(self, data):
+        for loader_types, loader in self.loaders.items():
+            if any(isinstance(data, loader_type) for loader_type in loader_types):
+                loader(self, data)
+                return
+
+        raise TypeError("could not find valid loader")
+
+
 class Loader:
     types = ()
 
@@ -197,5 +209,5 @@ class Loader:
         setattr(owner, name, self._func)
 
 
-__all__ = ["Section", "View", "Raw", "Loader",
+__all__ = ["Section", "View", "Raw", "Dock", "Loader",
            "Converter", "Bytes", "Boolean", "Integer", "String"]
