@@ -88,7 +88,7 @@ class TIMatrix(TIEntry):
         height = int.from_bytes(height_byte := data.read(1), 'little')
         self.raw.data = bytearray(width_byte + height_byte + data.read(width * height))
 
-    @Loader[list, ]
+    @Loader[list]
     def load_matrix(self, matrix: list[list[TIReal]]):
         if len({len(row) for row in matrix}) != 1:
             raise IndexError("matrix has uneven rows")
@@ -113,7 +113,7 @@ class TIMatrix(TIEntry):
 
         return matrix
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str):
         matrix = []
 

@@ -174,7 +174,7 @@ class TIGraphedEquation(TIEquation):
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
-    @Loader[dict, ]
+    @Loader[dict]
     def load_dict(self, dct: dict):
         self.style = getattr(GraphStyle, dct["style"])
         self.color = getattr(GraphColor, dct["color"])
@@ -203,14 +203,14 @@ class TIGraphedEquation(TIEquation):
             "expr": self.string()
         }
 
-    @Loader[TIEquation, ]
+    @Loader[TIEquation]
     def load_equation(self, equation: TIEquation):
         self.raw.data = equation.data
 
     def equation(self) -> TIEquation:
         return TIEquation(self.bytes()[:-self.data_length - 1] + self.bytes()[-self.data_length:])
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
         equation = TIEquation()
         equation.load_string(string, model=model)
@@ -413,7 +413,7 @@ class TIMonoGDB(TIEntry):
 
         return equations
 
-    @Loader[dict, ]
+    @Loader[dict]
     def load_dict(self, dct: dict):
         self.clear()
         self.raw.data[3] = {'Function': 0x10,
@@ -496,7 +496,7 @@ class TIMonoGDB(TIEntry):
             }
         }
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
 

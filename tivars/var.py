@@ -425,7 +425,7 @@ class TIEntry(Dock, Converter):
     def load_data_section(self, data: BytesIO):
         self.raw.data = bytearray(data.read(type(self).data.width))
 
-    @Loader[BinaryIO, ]
+    @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         # Load header
         header = TIHeader()
@@ -440,7 +440,7 @@ class TIEntry(Dock, Converter):
         self.load_bytes(file.read(self.next_entry_length(file)))
         file.seek(2, 1)
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str):
         raise NotImplementedError
 

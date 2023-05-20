@@ -201,8 +201,12 @@ class Loader:
     def __call__(self, *args, **kwargs):
         pass
 
-    def __class_getitem__(cls, item: tuple[type, ...]) -> type:
-        return type("Loader", (Loader,), {"types": item})
+    def __class_getitem__(cls, item: tuple[type, ...] | type) -> type:
+        try:
+            return type("Loader", (Loader,), {"types": tuple(item)})
+
+        except TypeError:
+            return type("Loader", (Loader,), {"types": (item,)})
 
     def __set_name__(self, owner, name: str):
         owner.loaders = owner.loaders | {self.types: self._func}

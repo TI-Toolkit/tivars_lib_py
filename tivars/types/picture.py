@@ -144,7 +144,7 @@ class TIMonoPicture(PictureEntry):
             for bit in L1.get(byte, self):
                 yield bit
 
-    @Loader[list, ]
+    @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
@@ -199,7 +199,7 @@ class TIPicture(PictureEntry):
             for rgb in RGBPalette.get(byte, self):
                 yield rgb
 
-    @Loader[list, ]
+    @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
 
@@ -280,7 +280,7 @@ class TIImage(PictureEntry):
         Always set to 0x81
         """
 
-    @Loader[list, ]
+    @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr[::-1] for entry in row + [(0, 0, 0)])
 

@@ -100,7 +100,7 @@ class TokenizedEntry(SizedEntry):
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
         self.raw.data[2:] = self.encode(string, model=model)
         self.length = len(self.raw.data[2:])
@@ -151,7 +151,7 @@ class TIString(TokenizedEntry):
 
     _type_id = b'\x04'
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
         super().load_string(string.strip("\"'"))
 

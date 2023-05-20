@@ -78,7 +78,7 @@ class ListEntry(TIEntry):
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
-    @Loader[list, ]
+    @Loader[list]
     def load_list(self, lst: list[_E]):
         self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.data for entry in lst))
 
@@ -95,7 +95,7 @@ class ListEntry(TIEntry):
 
         return lst
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str):
         lst = []
 

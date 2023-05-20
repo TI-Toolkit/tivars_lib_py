@@ -33,7 +33,7 @@ class SettingsEntry(TIEntry):
                  f"(expected {self.leading_bytes}, got {self.data[:len(self.leading_bytes)]}).",
                  BytesWarning)
 
-    @Loader[dict, ]
+    @Loader[dict]
     def load_dict(self, dct: dict):
         for var, value in dct:
             if not hasattr(self, var):
@@ -45,7 +45,7 @@ class SettingsEntry(TIEntry):
     def dict(self) -> dict:
         raise NotImplementedError
 
-    @Loader[str, ]
+    @Loader[str]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
 
