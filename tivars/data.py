@@ -14,15 +14,23 @@ class Converter:
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        raise NotImplementedError
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        raise NotImplementedError
+
+
+class Bytes(Converter):
+    _T = bytes
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
         return data
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
         return value
-
-
-class Bytes(Converter):
-    _T = bytes
 
 
 class Boolean(Converter):
