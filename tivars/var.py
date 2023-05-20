@@ -188,7 +188,7 @@ class TIEntry(Converter):
                      UserWarning)
 
             if self.flash_only:
-                warn(f"{type(self)} vars are not compatible with flashless chips.",
+                warn(f"{type(self)} entries are not compatible with flashless chips.",
                      UserWarning)
 
         self.clear()
@@ -312,9 +312,9 @@ class TIEntry(Converter):
 
         return 2 + meta_length + 2 + data_length
 
-    @staticmethod
-    def register(var_type: type['TIEntry']):
-        TIEntry.type_ids[var_type._type_id] = var_type
+    @classmethod
+    def register(cls, var_type: type['TIEntry']):
+        cls.type_ids[var_type._type_id] = var_type
 
     def archive(self):
         if self.flash_bytes:
@@ -476,7 +476,7 @@ class TIEntry(Converter):
     def coerce(self):
         if self._type_id is None:
             try:
-                self.__class__ = TIEntry.type_ids[self.raw.type_id]
+                self.__class__ = self.type_ids[self.raw.type_id]
                 self.set_length()
                 self.coerce()
 
