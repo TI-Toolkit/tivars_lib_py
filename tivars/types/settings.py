@@ -12,7 +12,7 @@ from .numeric import TIReal, IntegerTIReal
 class SettingsEntry(TIEntry):
     min_data_length = 2
 
-    leading_bytes = b'\x00\x00'
+    leading_bytes = b''
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
@@ -26,9 +26,9 @@ class SettingsEntry(TIEntry):
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.data[0:len(self.leading_bytes)] != self.leading_bytes:
+        if self.data[:len(self.leading_bytes)] != self.leading_bytes:
             warn(f"The entry has unexpected leading bytes "
-                 f"(expected {self.leading_bytes}, got {self.data[0:len(self.leading_bytes)]}).",
+                 f"(expected {self.leading_bytes}, got {self.data[:len(self.leading_bytes)]}).",
                  BytesWarning)
 
     def load_dict(self, dct: dict):
