@@ -219,6 +219,10 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_complex.bytes(), test_components.bytes())
 
         test_complex.clear()
+        test_complex.load_complex(7)
+        self.assertEqual(test_complex.complex(), 7 + 0j)
+
+        test_complex.clear()
         test_complex.load_string(string := "-5 + 2i")
         self.assertEqual(test_complex.string(), string)
 

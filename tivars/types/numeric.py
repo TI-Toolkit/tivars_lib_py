@@ -377,9 +377,10 @@ class TIComplex(TIEntry):
         self.real_flags |= FloatFlags.ComplexComponent
         self.imag_flags |= FloatFlags.ComplexComponent
 
-    @Loader[complex]
+    @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         real, imag = TIReal(), TIReal()
+        comp = complex(comp)
 
         real.load_float(comp.real)
         imag.load_float(comp.imag)
