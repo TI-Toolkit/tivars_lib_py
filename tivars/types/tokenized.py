@@ -100,11 +100,12 @@ class TokenizedEntry(SizedEntry):
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
     def load_string(self, string: str, *, model: TIModel = None):
-        self.raw.data = self.encode(string, model=model)
+        self.raw.data[2:] = self.encode(string, model=model)
+        self.length = len(self.raw.data[2:])
         self.raw.version = self.derive_version()
 
     def string(self) -> str:
-        return self.decode(self.data)
+        return self.decode(self.data[2:])
 
 
 class TIEquation(TokenizedEntry):

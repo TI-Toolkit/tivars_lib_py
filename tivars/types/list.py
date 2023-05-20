@@ -68,9 +68,9 @@ class ListEntry(TIEntry):
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.data_length // self._E.data.width != self.length:
+        if self.data_length // self._E.min_data_length != self.length:
             warn(f"The list has an unexpected length "
-                 f"(expected {self.data_length // self._E.data.width}, got {self.length}).",
+                 f"(expected {self.data_length // self._E.min_data_length}, got {self.length}).",
                  BytesWarning)
 
     def load_data_section(self, data: io.BytesIO):

@@ -649,6 +649,13 @@ class SizedEntry(TIEntry):
         The length of the data section following this entry
         """
 
+    def load_bytes(self, data: ByteString):
+        super().load_bytes(data)
+
+        if self.length != len(self.data[2:]):
+            warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data[2:])}).",
+                 BytesWarning)
+
 
 __all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry",
            "TIHeaderRaw", "TIEntryRaw"]

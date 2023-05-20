@@ -78,9 +78,9 @@ class TIMatrix(TIEntry):
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.data_length // TIReal.data.width != self.size:
+        if self.data_length // TIReal.min_data_length != self.size:
             warn(f"The matrix has an unexpected size "
-                 f"(expected {self.data_length // TIReal.data.width}, got {self.size}).",
+                 f"(expected {self.data_length // TIReal.min_data_length}, got {self.size}).",
                  BytesWarning)
 
     def load_data_section(self, data: io.BytesIO):

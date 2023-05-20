@@ -46,7 +46,7 @@ class Integer(Converter):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes(value, ceil(value.bit_length() / 8), 'little')
+        return int.to_bytes(value, 2, 'little')
 
 
 class String(Converter):
@@ -143,12 +143,7 @@ class View(Section):
         value = self._set(value, instance)
 
         if self.width is not None:
-            if len(value) > self.width:
-                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self.width]}.",
-                     BytesWarning)
-                value = value[:self.width]
-
-            value = value.rjust(self.width, b'\x00')
+            value = value[:self.width].rjust(self.width, b'\x00')
 
         getattr(instance.raw, self._target.name)[self._indices] = value
 
