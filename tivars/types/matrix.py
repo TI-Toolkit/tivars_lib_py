@@ -117,7 +117,7 @@ class TIMatrix(TIEntry):
     def load_string(self, string: str):
         matrix = []
 
-        for string in ''.join(string.split())[1:-1].split("],["):
+        for string in ''.join(string.split())[1:-1].replace("],[", "][").split("]["):
             row = []
             for item in string.replace("[", "").replace("]", "").split(","):
                 entry = TIReal()
