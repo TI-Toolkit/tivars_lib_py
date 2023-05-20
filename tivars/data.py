@@ -180,4 +180,22 @@ class Raw:
         return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__ if not attr.startswith("__"))
 
 
-__all__ = ["Section", "View", "Raw", "Converter", "Bytes", "Boolean", "Integer", "String"]
+class Loader:
+    types = ()
+
+    def __init__(self, func):
+        self._func = func
+
+    def __call__(self, *args, **kwargs):
+        pass
+
+    def __class_getitem__(cls, item: tuple[type, ...]) -> type:
+        return type("Loader", (Loader,), {"types": item})
+
+    def __set_name__(self, owner, name: str):
+        owner.loaders = owner.loaders | {self.types: self._func}
+        setattr(owner, name, self._func)
+
+
+__all__ = ["Section", "View", "Raw", "Loader",
+           "Converter", "Bytes", "Boolean", "Integer", "String"]

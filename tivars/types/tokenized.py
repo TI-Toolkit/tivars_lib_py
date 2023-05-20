@@ -1,6 +1,6 @@
-import io
 import re
 
+from io import BytesIO
 from typing import ByteString
 from warnings import warn
 
@@ -88,17 +88,19 @@ class TokenizedEntry(SizedEntry):
         token_map = self.tokens[model or TI_84PCEPY][0]
         return encode(string, token_map)
 
-    def load_bytes(self, data: ByteString):
+    @Loader[ByteString, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self.raw.version != (version := self.derive_version()):
             warn(f"The version is incorrect (expected {version}, got {self.raw.version}).",
                  BytesWarning)
 
-    def load_data_section(self, data: io.BytesIO):
+    def load_data_section(self, data: BytesIO):
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
+    @Loader[str, ]
     def load_string(self, string: str, *, model: TIModel = None):
         self.raw.data[2:] = self.encode(string, model=model)
         self.length = len(self.raw.data[2:])
@@ -149,6 +151,7 @@ class TIString(TokenizedEntry):
 
     _type_id = b'\x04'
 
+    @Loader[str, ]
     def load_string(self, string: str, *, model: TIModel = None):
         super().load_string(string.strip("\"'"))
 

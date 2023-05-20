@@ -1,6 +1,6 @@
-import io
 import re
 
+from io import BytesIO
 from typing import ByteString, Iterator
 from warnings import warn
 
@@ -65,7 +65,8 @@ class ListEntry(TIEntry):
 
         return value
 
-    def load_bytes(self, data: ByteString):
+    @Loader[ByteString, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self.data_length // self._E.min_data_length != self.length:
@@ -73,10 +74,11 @@ class ListEntry(TIEntry):
                  f"(expected {self.data_length // self._E.min_data_length}, got {self.length}).",
                  BytesWarning)
 
-    def load_data_section(self, data: io.BytesIO):
+    def load_data_section(self, data: BytesIO):
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
         self.raw.data = bytearray(length_bytes + data.read(data_length))
 
+    @Loader[list, ]
     def load_list(self, lst: list[_E]):
         self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.data for entry in lst))
 
@@ -93,6 +95,7 @@ class ListEntry(TIEntry):
 
         return lst
 
+    @Loader[str, ]
     def load_string(self, string: str):
         lst = []
 

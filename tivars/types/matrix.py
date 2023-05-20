@@ -1,5 +1,4 @@
-import io
-
+from io import BytesIO
 from typing import ByteString, Iterator
 from warnings import warn
 
@@ -75,7 +74,8 @@ class TIMatrix(TIEntry):
     def size(self) -> int:
         return self.width * self.height
 
-    def load_bytes(self, data: ByteString):
+    @Loader[ByteString, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self.data_length // TIReal.min_data_length != self.size:
@@ -83,11 +83,12 @@ class TIMatrix(TIEntry):
                  f"(expected {self.data_length // TIReal.min_data_length}, got {self.size}).",
                  BytesWarning)
 
-    def load_data_section(self, data: io.BytesIO):
+    def load_data_section(self, data: BytesIO):
         width = int.from_bytes(width_byte := data.read(1), 'little')
         height = int.from_bytes(height_byte := data.read(1), 'little')
         self.raw.data = bytearray(width_byte + height_byte + data.read(width * height))
 
+    @Loader[list, ]
     def load_matrix(self, matrix: list[list[TIReal]]):
         if len({len(row) for row in matrix}) != 1:
             raise IndexError("matrix has uneven rows")
@@ -112,6 +113,7 @@ class TIMatrix(TIEntry):
 
         return matrix
 
+    @Loader[str, ]
     def load_string(self, string: str):
         matrix = []
 

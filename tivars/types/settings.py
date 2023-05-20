@@ -1,5 +1,6 @@
 import json
 
+from io import BytesIO
 from typing import ByteString
 from warnings import warn
 
@@ -23,7 +24,8 @@ class SettingsEntry(TIEntry):
 
         self.raw.data[:len(self.leading_bytes)] = self.leading_bytes
 
-    def load_bytes(self, data: ByteString):
+    @Loader[ByteString, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self.data[:len(self.leading_bytes)] != self.leading_bytes:
@@ -31,6 +33,7 @@ class SettingsEntry(TIEntry):
                  f"(expected {self.leading_bytes}, got {self.data[:len(self.leading_bytes)]}).",
                  BytesWarning)
 
+    @Loader[dict, ]
     def load_dict(self, dct: dict):
         for var, value in dct:
             if not hasattr(self, var):
@@ -42,6 +45,7 @@ class SettingsEntry(TIEntry):
     def dict(self) -> dict:
         raise NotImplementedError
 
+    @Loader[str, ]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
 

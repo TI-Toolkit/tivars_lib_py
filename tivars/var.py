@@ -1,6 +1,4 @@
-import inspect
-import io
-
+from io import BytesIO
 from typing import BinaryIO, ByteString, Iterator
 from warnings import warn
 
@@ -85,9 +83,6 @@ class TIHeader:
         The comment attached to the var
         """
 
-    def bytes(self) -> bytes:
-        return self.raw.bytes()
-
     def derive_model(self) -> TIModel:
         match self.magic:
             case TI_82.magic:
@@ -114,8 +109,12 @@ class TIHeader:
 
         return model
 
-    def load_bytes(self, data: bytes):
-        data = io.BytesIO(data)
+    def load_bytes(self, data: bytes | BytesIO):
+        try:
+            data = BytesIO(data.read())
+
+        except AttributeError:
+            data = BytesIO(data)
 
         # Read magic
         self.raw.magic = data.read(8)
@@ -128,6 +127,9 @@ class TIHeader:
 
         # Read comment
         self.raw.comment = data.read(42)
+
+    def bytes(self) -> bytes:
+        return self.raw.bytes()
 
     def load_from_file(self, file: BinaryIO):
         self.load_bytes(file.read(len(self)))
@@ -160,6 +162,7 @@ class TIEntry(Converter):
 
     extensions = {None: "8xg"}
     type_ids = {}
+    loaders = {}
 
     versions = []
 
@@ -338,19 +341,20 @@ class TIEntry(Converter):
             raise TypeError("entry does not support archiving.")
 
     def load(self, data):
-        for name in dir(self):
-            if name.startswith("load_"):
-                loader = getattr(self, name)
-                arg_type = [t for n, t in inspect.get_annotations(loader).items() if n not in ("self", "return")][0]
-
-                if isinstance(data, arg_type):
-                    loader(data)
-                    return
+        for loader_types, loader in self.loaders.items():
+            if any(isinstance(data, loader_type) for loader_type in loader_types):
+                loader(self, data)
+                return
 
         raise ValueError("could not find valid loader")
 
-    def load_bytes(self, data: ByteString):
-        data = io.BytesIO(data)
+    @Loader[ByteString, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
+        try:
+            data = BytesIO(data.read())
+
+        except AttributeError:
+            data = BytesIO(data)
 
         # Read meta length
         self.raw.meta_length = data.read(2)
@@ -426,9 +430,10 @@ class TIEntry(Converter):
     def bytes(self) -> bytes:
         return self.raw.bytes()
 
-    def load_data_section(self, data: io.BytesIO):
+    def load_data_section(self, data: BytesIO):
         self.raw.data = bytearray(data.read(type(self).data.width))
 
+    @Loader[BinaryIO, ]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         # Load header
         header = TIHeader()
@@ -442,6 +447,13 @@ class TIEntry(Converter):
 
         self.load_bytes(file.read(self.next_entry_length(file)))
         file.seek(2, 1)
+
+    @Loader[str, ]
+    def load_string(self, string: str):
+        raise NotImplementedError
+
+    def string(self) -> str:
+        raise NotImplementedError
 
     def open(self, filename: str):
         if self._type_id is not None and \
@@ -466,12 +478,6 @@ class TIEntry(Converter):
         var = TIVar(header=header, name=name or self.name, model=model)
         var.add_entry(self)
         return var
-
-    def load_string(self, string: str):
-        raise NotImplementedError
-
-    def string(self) -> str:
-        raise NotImplementedError
 
     def coerce(self):
         if self._type_id is None:
@@ -579,8 +585,12 @@ class TIVar:
     def clear(self):
         self.entries.clear()
 
-    def load_bytes(self, data: ByteString):
-        data = io.BytesIO(data)
+    def load_bytes(self, data: bytes | BytesIO):
+        try:
+            data = BytesIO(data.read())
+
+        except AttributeError:
+            data = BytesIO(data)
 
         # Read header
         self.header.load_bytes(data.read(53))

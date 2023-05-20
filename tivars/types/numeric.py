@@ -189,6 +189,7 @@ class TIReal(TIEntry):
     def sign(self) -> int:
         return -1 if FloatFlags.Negative in self.flags else 1
 
+    @Loader[dec.Decimal, ]
     def load_decimal(self, decimal: dec.Decimal):
         self.load_string(str(decimal))
 
@@ -200,6 +201,7 @@ class TIReal(TIEntry):
 
         return decimal
 
+    @Loader[float, int]
     def load_float(self, decimal: float):
         self.load_decimal(dec.Decimal(decimal))
 
@@ -212,6 +214,7 @@ class TIReal(TIEntry):
     def int(self) -> int:
         return int(self.decimal())
 
+    @Loader[str, ]
     def load_string(self, string: str):
         if not string:
             self.mantissa, self.exponent = 0, 0x80
@@ -374,6 +377,7 @@ class TIComplex(TIEntry):
         self.real_flags |= FloatFlags.ComplexComponent
         self.imag_flags |= FloatFlags.ComplexComponent
 
+    @Loader[complex, ]
     def load_complex(self, comp: complex):
         real, imag = TIReal(), TIReal()
 
@@ -386,6 +390,7 @@ class TIComplex(TIEntry):
     def complex(self):
         return self.real.float() + 1j * self.imag.float()
 
+    @Loader[str, ]
     def load_string(self, string: str):
         string = replacer(squash(string), {"-": "+-", "[i]": "i", "j": "i"})
 
