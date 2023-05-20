@@ -14,7 +14,7 @@ class TIHeaderRaw(Raw):
 class TIHeader:
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
-                 comment: str = "Created with tivars_lib_py v0.3"):
+                 comment: str = "Created with tivars_lib_py v0.6"):
         self.raw = TIHeaderRaw()
 
         model = model or TI_82AEP
@@ -162,7 +162,6 @@ class TIEntry(Dock, Converter):
 
     extensions = {None: "8xg"}
     type_ids = {}
-    loaders = {}
 
     versions = []
 
