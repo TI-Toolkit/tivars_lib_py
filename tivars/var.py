@@ -196,7 +196,7 @@ class TIEntry(Converter):
             self.data[:len(data)] = bytearray(data)
         elif init is not None:
             try:
-                self.load(init.bytes())
+                self.load_bytes(init.bytes())
             except AttributeError:
                 self.load(init)
 
