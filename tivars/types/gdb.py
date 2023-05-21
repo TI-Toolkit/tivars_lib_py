@@ -7,7 +7,7 @@ from warnings import warn
 from tivars.models import *
 from ..flags import *
 from ..data import *
-from ..var import TIEntry, TIEntryRaw
+from ..var import TIEntry
 from .numeric import TIReal, IntegerTIReal
 from .tokenized import TIEquation
 
@@ -114,13 +114,10 @@ class EquationFlags(Flags):
     LinkTransferClear = {7: 0}
 
 
-class TIGraphedEquationRaw(TIEntryRaw):
-    __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", \
-                "flags", "__style", "__color", "data"
-
-
 class TIGraphedEquation(TIEquation):
-    _raw_class = TIGraphedEquationRaw
+    class Raw(TIEntry.Raw):
+        __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", \
+            "flags", "__style", "__color", "data"
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",

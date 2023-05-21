@@ -7,15 +7,14 @@ from tivars.tokenizer import TokenizedString
 from .data import *
 
 
-class TIHeaderRaw(Raw):
-    __slots__ = "magic", "extra", "product_id", "comment"
-
-
 class TIHeader:
+    class Raw(Raw):
+        __slots__ = "magic", "extra", "product_id", "comment"
+
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
                  comment: str = "Created with tivars_lib_py v0.6"):
-        self.raw = TIHeaderRaw()
+        self.raw = self.Raw()
 
         model = model or TI_82AEP
 
@@ -139,22 +138,6 @@ class TIHeader:
             self.load_bytes(file.read())
 
 
-class TIEntryRaw(Raw):
-    __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", "data"
-
-    @property
-    def data_length(self) -> bytes:
-        return int.to_bytes(len(self.data), 2, 'little')
-
-    @property
-    def flash_bytes(self) -> bytes:
-        return (self.version + self.archived)[:int.from_bytes(self.meta_length, 'little') - TIEntry.base_meta_length]
-
-    @property
-    def meta(self) -> bytes:
-        return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
-
-
 class TIEntry(Dock, Converter):
     _T = 'TIEntry'
 
@@ -170,13 +153,28 @@ class TIEntry(Dock, Converter):
     min_data_length = 0
 
     _type_id = None
-    _raw_class = TIEntryRaw
+
+    class Raw(Raw):
+        __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", "data"
+
+        @property
+        def data_length(self) -> bytes:
+            return int.to_bytes(len(self.data), 2, 'little')
+
+        @property
+        def flash_bytes(self) -> bytes:
+            return (self.version + self.archived)[
+                   :int.from_bytes(self.meta_length, 'little') - TIEntry.base_meta_length]
+
+        @property
+        def meta(self) -> bytes:
+            return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        self.raw = self._raw_class()
+        self.raw = self.Raw()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
         self.type_id = self._type_id if self._type_id else b'\xFF'
@@ -658,5 +656,4 @@ class SizedEntry(TIEntry):
                  BytesWarning)
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry",
-           "TIHeaderRaw", "TIEntryRaw"]
+__all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry"]
