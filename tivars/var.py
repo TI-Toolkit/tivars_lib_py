@@ -8,8 +8,11 @@ from .data import *
 
 
 class TIHeader:
-    class Raw(Raw):
+    class Raw:
         __slots__ = "magic", "extra", "product_id", "comment"
+
+        def bytes(self) -> bytes:
+            return self.magic + self.extra + self.product_id + self.comment
 
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
@@ -154,8 +157,13 @@ class TIEntry(Dock, Converter):
 
     _type_id = None
 
-    class Raw(Raw):
-        __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", "data"
+    class Raw:
+        __slots__ = "meta_length", "type_id", "name", "version", "archived", "data"
+
+        def bytes(self) -> bytes:
+            return self.meta_length + self.data_length + \
+                self.type_id + self.name + self.version + self.archived + \
+                self.data_length + self.data
 
         @property
         def data_length(self) -> bytes:

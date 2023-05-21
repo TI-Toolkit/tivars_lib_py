@@ -175,11 +175,6 @@ class View(Section):
             return len(range(*self._indices.indices(self._target.width)))
 
 
-class Raw:
-    def bytes(self) -> bytes:
-        return b''.join(getattr(self, attr.lstrip("_")) for attr in self.__slots__ if not attr.startswith("__"))
-
-
 class Dock:
     loaders = {}
 
@@ -213,5 +208,5 @@ class Loader:
         setattr(owner, name, self._func)
 
 
-__all__ = ["Section", "View", "Raw", "Dock", "Loader",
+__all__ = ["Section", "View", "Dock", "Loader",
            "Converter", "Bytes", "Boolean", "Integer", "String"]

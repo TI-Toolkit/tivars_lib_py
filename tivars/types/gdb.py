@@ -116,8 +116,12 @@ class EquationFlags(Flags):
 
 class TIGraphedEquation(TIEquation):
     class Raw(TIEntry.Raw):
-        __slots__ = "meta_length", "_data_length", "type_id", "name", "version", "archived", "_data_length", \
-            "flags", "__style", "__color", "data"
+        __slots__ = "meta_length", "type_id", "name", "version", "archived", "flags", "style", "color", "data"
+
+        def bytes(self) -> bytes:
+            return self.meta_length + self.data_length + \
+                self.type_id + self.name + self.version + self.archived + \
+                self.data_length + self.flags + self.data
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
