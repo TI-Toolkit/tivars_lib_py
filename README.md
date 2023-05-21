@@ -48,6 +48,7 @@ Vars can be loaded from files or raw bytes:
 ```python
 my_var.open("HELLO.8xp")
 
+# Note binary mode!
 with open("HELLO.8xp", 'rb') as file:
     my_var.load_var_file(file)
     
@@ -55,7 +56,7 @@ with open("HELLO.8xp", 'rb') as file:
     my_var.load_bytes(file.read())
 ```
 
-Entries can be loaded from files, raw bytes, or strings representing their data. When loading from a file, you may specify which entry to load if there are multiple:
+Entries can be loaded from files or raw bytes. When loading from a file, you may specify which entry to load if there are multiple:
 
 ```python
 # Raises an error if the var has multiple entries; use load_from_file instead
@@ -67,11 +68,16 @@ with open("HELLO.8xp", 'rb') as file:
     
     file.seek(0)
     my_program.load_bytes(file.read())
+```
 
+Most entry types also support loading from other natural data types. Any data can be passed to the constructor directly and be delegated to the correct loader:
+
+```python
+my_program = TIProgram("Disp \"HELLO WORLD!\"")
 my_program.load_string("Disp \"HELLO WORLD!\"")
 
-# Create a new instance directly from a string
-my_program = TIProgram("Disp \"HELLO WORLD!\"")
+my_real = TIReal(1.23)
+my_real.load_float(1.23)
 ```
 
 Base `TIEntry` objects, as well other parent types like `TIGDB`, will be automatically coerced to the correct type:
@@ -101,7 +107,21 @@ with open("HELLO.8xp", 'wb+') as file:
     file.write(my_program.export(header=my_header).bytes())
 ```
 
-Many entry types also support additional export formats (e.g. `TIReal.decimal()` and `TIComplexList.list()`).
+Any input data type can also be exported to:
+
+```python
+assert my_program.string() == "Disp \"HELLO WORLD!\""
+
+assert my_real.float() == 1.23
+```
+
+Data types corresponding to built-in Python types can be obtained from the built-in constructors:
+
+```python
+assert str(my_program) == "Disp \"HELLO WORLD!\""
+
+assert float(my_real) == 1.23
+```
 
 ### Data Sections
 
