@@ -129,6 +129,38 @@ class TIGraphedEquation(TIEquation):
         self.style = b'\x00'
         self.color = b'\x00'
 
+    def __class_getitem__(cls, index: int):
+        index -= 1
+
+        class IndexedEquationConverter(Converter):
+            _T = TIGraphedEquation
+
+            @classmethod
+            def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
+                return instance.equations[index]
+
+            @classmethod
+            def set(cls, value: _T, instance: 'TIMonoGDB') -> bytes:
+                equations = list(instance.equations)
+                equations[index] = value
+
+                data = instance.raw.data[:instance.offset]
+                for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
+                    data += equations[i].style
+
+                data += b''.join(equation.raw.flags + equation.raw.data for equation in equations)
+
+                if color := color_data(instance):
+                    data += b'84C'
+                    for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
+                        data += equations[i].color
+
+                    data += color[-5:]
+
+                return data
+
+        return IndexedEquationConverter
+
     def __iter__(self) -> Iterator:
         return iter(self.dict().items())
 
@@ -220,39 +252,6 @@ def color_data(gdb: 'TIMonoGDB') -> bytes:
         TIGraphedEquation().load_data_section(data)
 
     return data.read()
-
-
-def IndexedEquation(index: int):
-    index -= 1
-
-    class IndexedEquationConverter(Converter):
-        _T = TIGraphedEquation
-
-        @classmethod
-        def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
-            return instance.equations[index]
-
-        @classmethod
-        def set(cls, value: _T, instance: 'TIMonoGDB') -> bytes:
-            equations = list(instance.equations)
-            equations[index] = value
-
-            data = instance.raw.data[:instance.offset]
-            for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
-                data += equations[i].style
-
-            data += b''.join(equation.raw.flags + equation.raw.data for equation in equations)
-
-            if color := color_data(instance):
-                data += b'84C'
-                for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
-                    data += equations[i].color
-
-                data += color[-5:]
-
-            return data
-
-    return IndexedEquationConverter
 
 
 class TIMonoGDB(TIEntry):
@@ -654,61 +653,61 @@ class TIMonoFuncGDB(TIMonoGDB):
 
         return value
 
-    @View(data, IndexedEquation(1))
+    @View(data, TIGraphedEquation[1])
     def Y1(self) -> TIGraphedEquation:
         """
         Y1: The first equation in function mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, TIGraphedEquation[2])
     def Y2(self) -> TIGraphedEquation:
         """
         Y2: The second equation in function mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, TIGraphedEquation[3])
     def Y3(self) -> TIGraphedEquation:
         """
         Y3: The third equation in function mode
         """
 
-    @View(data, IndexedEquation(4))
+    @View(data, TIGraphedEquation[4])
     def Y4(self) -> TIGraphedEquation:
         """
         Y4: The fourth equation in function mode
         """
 
-    @View(data, IndexedEquation(5))
+    @View(data, TIGraphedEquation[5])
     def Y5(self) -> TIGraphedEquation:
         """
         Y5: The fifth equation in function mode
         """
 
-    @View(data, IndexedEquation(6))
+    @View(data, TIGraphedEquation[6])
     def Y6(self) -> TIGraphedEquation:
         """
         Y6: The sixth equation in function mode
         """
 
-    @View(data, IndexedEquation(7))
+    @View(data, TIGraphedEquation[7])
     def Y7(self) -> TIGraphedEquation:
         """
         Y7: The seventh equation in function mode
         """
 
-    @View(data, IndexedEquation(8))
+    @View(data, TIGraphedEquation[8])
     def Y8(self) -> TIGraphedEquation:
         """
         Y8: The eight equation in function mode
         """
 
-    @View(data, IndexedEquation(9))
+    @View(data, TIGraphedEquation[9])
     def Y9(self) -> TIGraphedEquation:
         """
         Y9: The ninth equation in function mode
         """
 
-    @View(data, IndexedEquation(10))
+    @View(data, TIGraphedEquation[10])
     def Y0(self) -> TIGraphedEquation:
         """
         Y0: The tenth equation in function mode
@@ -805,73 +804,73 @@ class TIMonoParamGDB(TIMonoGDB):
         Tstep: the time increment
         """
 
-    @View(data, IndexedEquation(1))
+    @View(data, TIGraphedEquation[1])
     def X1T(self) -> TIGraphedEquation:
         """
         X1T: The first X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, TIGraphedEquation[2])
     def Y1T(self) -> TIGraphedEquation:
         """
         Y1T: The first Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, TIGraphedEquation[3])
     def X2T(self) -> TIGraphedEquation:
         """
         X2T: The second X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(4))
+    @View(data, TIGraphedEquation[4])
     def Y2T(self) -> TIGraphedEquation:
         """
         Y2T: The second Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(5))
+    @View(data, TIGraphedEquation[5])
     def X3T(self) -> TIGraphedEquation:
         """
         X3T: The third X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(6))
+    @View(data, TIGraphedEquation[6])
     def Y3T(self) -> TIGraphedEquation:
         """
         Y3T: The third Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(7))
+    @View(data, TIGraphedEquation[7])
     def X4T(self) -> TIGraphedEquation:
         """
         X4T: The fourth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(8))
+    @View(data, TIGraphedEquation[8])
     def Y4T(self) -> TIGraphedEquation:
         """
         Y4T: The fourth Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(9))
+    @View(data, TIGraphedEquation[9])
     def X5T(self) -> TIGraphedEquation:
         """
         X5T: The fifth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(10))
+    @View(data, TIGraphedEquation[10])
     def Y5T(self) -> TIGraphedEquation:
         """
         Y5T: The fifth Y-component in parametric mode
         """
 
-    @View(data, IndexedEquation(11))
+    @View(data, TIGraphedEquation[11])
     def X6T(self) -> TIGraphedEquation:
         """
         X6T: The sixth X-component in parametric mode
         """
 
-    @View(data, IndexedEquation(12))
+    @View(data, TIGraphedEquation[12])
     def Y6T(self) -> TIGraphedEquation:
         """
         Y6T: The sixth Y-component in parametric mode
@@ -980,37 +979,37 @@ class TIMonoPolarGDB(TIMonoGDB):
         Thetastep: the angle increment
         """
 
-    @View(data, IndexedEquation(1))
+    @View(data, TIGraphedEquation[1])
     def r1(self) -> TIGraphedEquation:
         """
         r1: The first equation in polar mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, TIGraphedEquation[2])
     def r2(self) -> TIGraphedEquation:
         """
         r1: The second equation in polar mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, TIGraphedEquation[3])
     def r3(self) -> TIGraphedEquation:
         """
         r3: The third equation in polar mode
         """
 
-    @View(data, IndexedEquation(4))
+    @View(data, TIGraphedEquation[4])
     def r4(self) -> TIGraphedEquation:
         """
         rr: The fourth equation in polar mode
         """
 
-    @View(data, IndexedEquation(5))
+    @View(data, TIGraphedEquation[5])
     def r5(self) -> TIGraphedEquation:
         """
         r5: The fifth equation in polar mode
         """
 
-    @View(data, IndexedEquation(6))
+    @View(data, TIGraphedEquation[6])
     def r6(self) -> TIGraphedEquation:
         """
         r6: The sixth equation in polar mode
@@ -1165,19 +1164,19 @@ class TIMonoSeqGDB(TIMonoGDB):
         w(nMin + 1): the initial value of w at nMin + 1
         """
 
-    @View(data, IndexedEquation(1))
+    @View(data, TIGraphedEquation[1])
     def u(self) -> TIGraphedEquation:
         """
         u: The first equation in sequence mode
         """
 
-    @View(data, IndexedEquation(2))
+    @View(data, TIGraphedEquation[2])
     def v(self) -> TIGraphedEquation:
         """
         v: The second equation in sequence mode
         """
 
-    @View(data, IndexedEquation(3))
+    @View(data, TIGraphedEquation[3])
     def w(self) -> TIGraphedEquation:
         """
         w: The third equation in sequence mode
