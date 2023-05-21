@@ -8,7 +8,7 @@ from tivars.models import *
 from ..flags import *
 from ..data import *
 from ..var import TIEntry
-from .numeric import TIReal, IntegerTIReal
+from .numeric import TIReal
 from .tokenized import TIEquation
 
 
@@ -643,7 +643,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
-    @View(data, IntegerTIReal)[61:70]
+    @View(data, TIReal)[61:70]
     def Xres(self, value: TIReal) -> TIReal:
         """
         Xres: the pixel separation of points in a function plot
@@ -651,8 +651,8 @@ class TIMonoFuncGDB(TIMonoGDB):
         Must be an integer between 1 and 8
         """
 
-        if 1 <= int(value) <= 8:
-            warn(f"Expected a value between 1 and 8, got {float(value)}.",
+        if int(value) != float(value) or not 1 <= int(value) <= 8:
+            warn(f"Expected an integer between 1 and 8, got {float(value)}.",
                  UserWarning)
 
         return value
@@ -1100,7 +1100,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         The flags for the sequence mode settings
         """
 
-    @View(data, IntegerTIReal)[61:70]
+    @View(data, TIReal)[61:70]
     def PlotStart(self, value) -> TIReal:
         """
         PlotStart: the initial value of n for sequential plots
@@ -1108,13 +1108,25 @@ class TIMonoSeqGDB(TIMonoGDB):
         Must be an integer
         """
 
-    @View(data, IntegerTIReal)[70:79]
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[70:79]
     def nMax(self, value) -> TIReal:
         """
         nMax: the final value of n
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[79:88]
     def unMin(self) -> TIReal:
@@ -1128,13 +1140,19 @@ class TIMonoSeqGDB(TIMonoGDB):
         v(nMin): the initial value of v at nMin
         """
 
-    @View(data, IntegerTIReal)[97:106]
+    @View(data, TIReal)[97:106]
     def nMin(self, value) -> TIReal:
         """
         nMin: the initial value of n for sequential equations
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[106:115]
     def unMinp1(self) -> TIReal:
@@ -1154,13 +1172,19 @@ class TIMonoSeqGDB(TIMonoGDB):
         w(nMin): the initial value of w at nMin
         """
 
-    @View(data, IntegerTIReal)[133:142]
+    @View(data, TIReal)[133:142]
     def PlotStep(self, value) -> TIReal:
         """
         PlotStep: the n increment for sequential plots
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[142:151]
     def wnMinp1(self) -> TIReal:

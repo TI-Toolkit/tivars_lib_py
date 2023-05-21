@@ -238,22 +238,6 @@ class TIReal(TIEntry):
             return string
 
 
-class IntegerTIReal(TIReal):
-    _T = TIReal
-
-    @classmethod
-    def get(cls, data: bytes, instance) -> _T:
-        return TIReal(super(TIReal, cls).get(data, instance))
-
-    @classmethod
-    def set(cls, value: _T, instance) -> bytes:
-        if int(value) != float(value):
-            warn(f"Expected an integer, got {float(value)}.",
-                 UserWarning)
-
-        return super(TIReal, cls).set(value, instance)
-
-
 class TIComplex(TIEntry):
     extensions = {
         None: "8xc",
@@ -418,4 +402,4 @@ class TIComplex(TIEntry):
             case _, _: return replacer(f"{self.real} + {self.imag}i", {"+ -": "- ", " 1i": " i"})
 
 
-__all__ = ["TIReal", "TIComplex", "BCD", "IntegerTIReal", "FloatFlags"]
+__all__ = ["TIReal", "TIComplex", "BCD", "FloatFlags"]

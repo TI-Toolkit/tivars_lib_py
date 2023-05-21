@@ -7,7 +7,7 @@ from warnings import warn
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
-from .numeric import TIReal, IntegerTIReal
+from .numeric import TIReal
 
 
 class SettingsEntry(TIEntry):
@@ -156,7 +156,7 @@ class TIWindowSettings(SettingsEntry):
         Tstep: the time increment for parametric plots
         """
 
-    @View(data, IntegerTIReal)[111:120]
+    @View(data, TIReal)[111:120]
     def PlotStart(self, value) -> TIReal:
         """
         PlotStart: the initial value of n for sequential plots
@@ -164,13 +164,25 @@ class TIWindowSettings(SettingsEntry):
         Must be an integer
         """
 
-    @View(data, IntegerTIReal)[120:129]
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[120:129]
     def nMax(self, value) -> TIReal:
         """
         nMax: the final value of n for sequential equations and plots
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[129:138]
     def unMin0(self) -> TIReal:
@@ -184,13 +196,19 @@ class TIWindowSettings(SettingsEntry):
         v(nMin): the initial value of v at nMin
         """
 
-    @View(data, IntegerTIReal)[147:156]
+    @View(data, TIReal)[147:156]
     def nMin(self, value) -> TIReal:
         """
         nMin: the initial value of n for sequential equations
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[156:165]
     def unMin1(self) -> TIReal:
@@ -210,7 +228,7 @@ class TIWindowSettings(SettingsEntry):
         w(nMin): the initial value of w at nMin
         """
 
-    @View(data, IntegerTIReal)[183:192]
+    @View(data, TIReal)[183:192]
     def PlotStep(self, value) -> TIReal:
         """
         PlotStep: the n increment for sequential plots
@@ -218,7 +236,13 @@ class TIWindowSettings(SettingsEntry):
         Must be an integer
         """
 
-    @View(data, IntegerTIReal)[192:201]
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[192:201]
     def Xres(self, value) -> TIReal:
         """
         Xres: the pixel separation of points in a function plot
@@ -226,8 +250,8 @@ class TIWindowSettings(SettingsEntry):
         Must be an integer between 1 and 8
         """
 
-        if 1 <= int(value) <= 8:
-            warn(f"Expected a value between 1 and 8, got {float(value)}.",
+        if int(value) != float(value) or not 1 <= int(value) <= 8:
+            warn(f"Expected an integer between 1 and 8, got {float(value)}.",
                  UserWarning)
 
         return value
@@ -369,7 +393,7 @@ class TIRecallWindow(SettingsEntry):
         Tstep: the time increment for parametric plots
         """
 
-    @View(data, IntegerTIReal)[110:119]
+    @View(data, TIReal)[110:119]
     def PlotStart(self, value) -> TIReal:
         """
         PlotStart: the initial value of n for sequential plots
@@ -377,13 +401,25 @@ class TIRecallWindow(SettingsEntry):
         Must be an integer
         """
 
-    @View(data, IntegerTIReal)[119:128]
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[119:128]
     def nMax(self, value) -> TIReal:
         """
         nMax: the final value of n for sequential equations and plots
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[128:137]
     def unMin0(self) -> TIReal:
@@ -397,13 +433,19 @@ class TIRecallWindow(SettingsEntry):
         v(nMin): the initial value of v at nMin
         """
 
-    @View(data, IntegerTIReal)[146:155]
+    @View(data, TIReal)[146:155]
     def nMin(self, value) -> TIReal:
         """
         nMin: the initial value of n for sequential equations
 
         Must be an integer
         """
+
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
 
     @View(data, TIReal)[155:164]
     def unMin1(self) -> TIReal:
@@ -423,7 +465,7 @@ class TIRecallWindow(SettingsEntry):
         w(nMin): the initial value of w at nMin
         """
 
-    @View(data, IntegerTIReal)[182:191]
+    @View(data, TIReal)[182:191]
     def PlotStep(self, value) -> TIReal:
         """
         PlotStep: the n increment for sequential plots
@@ -431,7 +473,13 @@ class TIRecallWindow(SettingsEntry):
         Must be an integer
         """
 
-    @View(data, IntegerTIReal)[191:200]
+        if int(value) != float(value):
+            warn(f"Expected an integer, got {float(value)}.",
+                 UserWarning)
+
+        return value
+
+    @View(data, TIReal)[191:200]
     def Xres(self, value) -> TIReal:
         """
         Xres: the pixel separation of points in a function plot
@@ -439,8 +487,8 @@ class TIRecallWindow(SettingsEntry):
         Must be an integer between 1 and 8
         """
 
-        if 1 <= int(value) <= 8:
-            warn(f"Expected a value between 1 and 8, got {float(value)}.",
+        if int(value) != float(value) or not 1 <= int(value) <= 8:
+            warn(f"Expected an integer between 1 and 8, got {float(value)}.",
                  UserWarning)
 
         return value
