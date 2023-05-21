@@ -32,7 +32,7 @@ class Enum(Converter):
 class Flags(Converter, dict, Mapping[int, int]):
     _T = 'Flags'
 
-    def __init__(self, bitsets: 'Flags' = None, *, width: int = 8):
+    def __init__(self, bitsets: Mapping[int, int] | 'Flags' = None, *, width: int = 8):
         if bitsets is None:
             bitsets = {bit: 0 for bit in range(width)}
 
@@ -50,7 +50,7 @@ class Flags(Converter, dict, Mapping[int, int]):
     def __str__(self) -> str:
         return ''.join([str(bit) for bit in self.values()][::-1])
 
-    def __contains__(self, bitsets: 'Flags') -> bool:
+    def __contains__(self, bitsets: Mapping[int, int] | 'Flags') -> bool:
         return all(self[bit] == int(bool(bitsets[bit])) for bit in bitsets)
 
     has = __contains__
