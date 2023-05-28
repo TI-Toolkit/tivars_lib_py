@@ -265,6 +265,8 @@ class TIEntry(Dock, Converter):
     def name(self) -> str:
         """
         The name of the entry
+
+        Interpretation as text depends on the entry type; see individual types for details
         """
 
     @Section(1, Bytes)
