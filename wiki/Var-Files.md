@@ -79,7 +79,7 @@ Every var file has two parts: a _header_ and a number of _entries_, where an ent
     </thead>
     <tbody>
         <tr>
-            <td></td>
+            <td>Meta Length</td>
             <td>Meta Length</td>
             <td>0</td>
             <td>2</td>
@@ -147,7 +147,7 @@ Every var file has two parts: a _header_ and a number of _entries_, where an ent
             <td></td>
         </tr>
         <tr>
-            <td></td>
+            <td>Data Length</td>
             <td>Data Length</td>
             <td>0</td>
             <td>2</td>
