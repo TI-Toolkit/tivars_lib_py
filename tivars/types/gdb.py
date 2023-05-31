@@ -304,30 +304,13 @@ class TIMonoGDB(TIEntry):
         Two less than the length of the GDB
         """
 
-    @property
+    @View(data, Integer)[3:4]
     def mode_id(self) -> int:
         """
         The mode ID for the GDB
 
         One of 0x10, 0x20, 0x40, or 0x80
         """
-        return self.data[3]
-
-    @property
-    def mode(self) -> str:
-        """
-        The mode for the GDB
-
-        One of Function, Parametric, Polar, or Sequence
-        """
-        match self.mode_id:
-            case 0x10: return 'Function'
-            case 0x40: return 'Parametric'
-            case 0x20: return 'Polar'
-            case 0x80: return 'Sequence'
-
-            case _: warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
-                         BytesWarning)
 
     @View(data, GraphMode)[4:5]
     def mode_flags(self) -> GraphMode:
@@ -382,6 +365,27 @@ class TIMonoGDB(TIEntry):
         """
 
     @property
+    def mode(self) -> str:
+        """
+        The mode for the GDB
+
+        One of Function, Parametric, Polar, or Sequence
+        """
+        match self.mode_id:
+            case TIMonoFuncGDB.mode_byte:
+                return 'Function'
+            case TIMonoParamGDB.mode_byte:
+                return 'Parametric'
+            case TIMonoPolarGDB.mode_byte:
+                return 'Polar'
+            case TIMonoSeqGDB.mode_byte:
+                return 'Sequence'
+
+            case _:
+                warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
+                     BytesWarning)
+
+    @property
     def offset(self) -> int:
         return TIMonoGDB.min_data_length + TIReal.data.width * self.num_parameters
 
@@ -416,10 +420,12 @@ class TIMonoGDB(TIEntry):
     @Loader[dict]
     def load_dict(self, dct: dict):
         self.clear()
-        self.raw.data[3] = {'Function': 0x10,
-                            'Parametric': 0x40,
-                            'Polar': 0x20,
-                            'Sequence': 0x80}.get(mode := dct.get("graphMode", "Function"), 0x00)
+        self.raw.data[3] = {
+            'Function': 0x10,
+            'Parametric': 0x40,
+            'Polar': 0x20,
+            'Sequence': 0x80
+        }.get(mode := dct.get("graphMode", "Function"), 0x00)
 
         for setting in dct.get("formatSettings", []):
             try:
@@ -510,10 +516,14 @@ class TIMonoGDB(TIEntry):
             self.coerce()
         else:
             match self.mode_id:
-                case 0x10: self.__class__ = TIMonoFuncGDB
-                case 0x40: self.__class__ = TIMonoParamGDB
-                case 0x20: self.__class__ = TIMonoPolarGDB
-                case 0x80: self.__class__ = TIMonoSeqGDB
+                case TIMonoFuncGDB.mode_byte:
+                    self.__class__ = TIMonoFuncGDB
+                case TIMonoParamGDB.mode_byte:
+                    self.__class__ = TIMonoParamGDB
+                case TIMonoPolarGDB.mode_byte:
+                    self.__class__ = TIMonoPolarGDB
+                case TIMonoSeqGDB.mode_byte:
+                    self.__class__ = TIMonoSeqGDB
 
                 case _:
                     warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
@@ -612,10 +622,14 @@ class TIGDB(TIMonoGDB):
 
     def coerce(self):
         match self.mode_id:
-            case 0x10: self.__class__ = TIFuncGDB
-            case 0x40: self.__class__ = TIParamGDB
-            case 0x20: self.__class__ = TIPolarGDB
-            case 0x80: self.__class__ = TISeqGDB
+            case TIFuncGDB.mode_byte:
+                self.__class__ = TIFuncGDB
+            case TIParamGDB.mode_byte:
+                self.__class__ = TIParamGDB
+            case TIPolarGDB.mode_byte:
+                self.__class__ = TIPolarGDB
+            case TISeqGDB.mode_byte:
+                self.__class__ = TISeqGDB
 
             case _:
                 warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
@@ -641,6 +655,14 @@ class TIMonoFuncGDB(TIMonoGDB):
         The data section of the entry
 
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, Integer)[3:4]
+    def mode_id(self) -> int:
+        """
+        The mode ID for the GDB
+
+        Always 0x10
         """
 
     @View(data, TIReal)[61:70]
@@ -788,6 +810,14 @@ class TIMonoParamGDB(TIMonoGDB):
         The data section of the entry
 
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        """
+
+    @View(data, Integer)[3:4]
+    def mode_id(self) -> int:
+        """
+        The mode ID for the GDB
+
+        Always 0x40
         """
 
     @View(data, TIReal)[61:70]
@@ -965,6 +995,14 @@ class TIMonoPolarGDB(TIMonoGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
+    @View(data, Integer)[3:4]
+    def mode_id(self) -> int:
+        """
+        The mode ID for the GDB
+
+        Always 0x20
+        """
+
     @View(data, TIReal)[61:70]
     def Thetamin(self) -> TIReal:
         """
@@ -1094,6 +1132,14 @@ class TIMonoSeqGDB(TIMonoGDB):
         Contains the mode settings, graphscreen settings, graph styles, and graph equations
         """
 
+    @View(data, Integer)[3:4]
+    def mode_id(self) -> int:
+        """
+        The mode ID for the GDB
+
+        Always 0x80
+        """
+
     @View(data, GraphMode)[5:6]
     def sequence_flags(self) -> SeqMode:
         """
@@ -1221,9 +1267,12 @@ class TIMonoSeqGDB(TIMonoGDB):
         ext_settings = dct.get("extSettings", {})
         if "seqMode" in ext_settings:
             match ext_settings["seqMode"]:
-                case "SEQ(n)": self.extended_mode_flags |= GraphMode.SEQ_n
-                case "SEQ(n+1)": self.extended_mode_flags |= GraphMode.SEQ_np1
-                case "SEQ(n+2)": self.extended_mode_flags |= GraphMode.SEQ_np2
+                case "SEQ(n)":
+                    self.extended_mode_flags |= GraphMode.SEQ_n
+                case "SEQ(n+1)":
+                    self.extended_mode_flags |= GraphMode.SEQ_np1
+                case "SEQ(n+2)":
+                    self.extended_mode_flags |= GraphMode.SEQ_np2
 
         if "seqSettings" in dct:
             try:
@@ -1236,17 +1285,26 @@ class TIMonoSeqGDB(TIMonoGDB):
         dct = super().dict()
 
         match self.extended_mode_flags:
-            case _SEQ_n if GraphMode.SEQ_n in self.extended_mode_flags: dct["extSettings"]["seqMode"] = "SEQ(n)"
-            case _SEQ_np1 if GraphMode.SEQ_np1 in self.extended_mode_flags: dct["extSettings"]["seqMode"] = "SEQ(n+1)"
-            case _SEQ_np2 if GraphMode.SEQ_np2 in self.extended_mode_flags: dct["extSettings"]["seqMode"] = "SEQ(n+2)"
+            case _SEQ_n if GraphMode.SEQ_n in self.extended_mode_flags:
+                dct["extSettings"]["seqMode"] = "SEQ(n)"
+            case _SEQ_np1 if GraphMode.SEQ_np1 in self.extended_mode_flags:
+                dct["extSettings"]["seqMode"] = "SEQ(n+1)"
+            case _SEQ_np2 if GraphMode.SEQ_np2 in self.extended_mode_flags:
+                dct["extSettings"]["seqMode"] = "SEQ(n+2)"
 
         match self.sequence_flags:
-            case _Time if SeqMode.Time in self.sequence_flags: dct["seqSettings"] = {"mode": "Time"}
-            case _Web if SeqMode.Web in self.sequence_flags: dct["seqSettings"] = {"mode": "Web"}
-            case _VertWeb if SeqMode.VertWeb in self.sequence_flags: dct["seqSettings"] = {"mode": "VertWeb"}
-            case _uv if SeqMode.uv in self.sequence_flags: dct["seqSettings"] = {"mode": "uv"}
-            case _vw if SeqMode.vw in self.sequence_flags: dct["seqSettings"] = {"mode": "vw"}
-            case _uw if SeqMode.uw in self.sequence_flags: dct["seqSettings"] = {"mode": "uw"}
+            case _Time if SeqMode.Time in self.sequence_flags:
+                dct["seqSettings"] = {"mode": "Time"}
+            case _Web if SeqMode.Web in self.sequence_flags:
+                dct["seqSettings"] = {"mode": "Web"}
+            case _VertWeb if SeqMode.VertWeb in self.sequence_flags:
+                dct["seqSettings"] = {"mode": "VertWeb"}
+            case _uv if SeqMode.uv in self.sequence_flags:
+                dct["seqSettings"] = {"mode": "uv"}
+            case _vw if SeqMode.vw in self.sequence_flags:
+                dct["seqSettings"] = {"mode": "vw"}
+            case _uw if SeqMode.uw in self.sequence_flags:
+                dct["seqSettings"] = {"mode": "uw"}
 
         return dct | {
             "specificData": {

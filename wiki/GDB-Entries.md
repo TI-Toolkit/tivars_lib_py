@@ -55,7 +55,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=9>Data</td>
+            <td rowspan=10>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -63,6 +63,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>One of 0x10, 0x20, 0x40, or 0x80
                 </ul>
             </td>
         </tr>
@@ -174,7 +186,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=14>Data</td>
+            <td rowspan=15>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -182,6 +194,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>One of 0x10, 0x20, 0x40, or 0x80
                 </ul>
             </td>
         </tr>
@@ -349,7 +373,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=20>Data</td>
+            <td rowspan=21>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -357,6 +381,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x10
                 </ul>
             </td>
         </tr>
@@ -590,7 +626,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=26>Data</td>
+            <td rowspan=27>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -598,6 +634,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x10
                 </ul>
             </td>
         </tr>
@@ -899,7 +947,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=24>Data</td>
+            <td rowspan=25>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -907,6 +955,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x40
                 </ul>
             </td>
         </tr>
@@ -1183,7 +1243,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=30>Data</td>
+            <td rowspan=31>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -1191,6 +1251,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x40
                 </ul>
             </td>
         </tr>
@@ -1535,7 +1607,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=18>Data</td>
+            <td rowspan=19>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -1543,6 +1615,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x20
                 </ul>
             </td>
         </tr>
@@ -1753,7 +1837,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=24>Data</td>
+            <td rowspan=25>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -1761,6 +1845,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x20
                 </ul>
             </td>
         </tr>
@@ -2039,7 +2135,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=23>Data</td>
+            <td rowspan=24>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -2047,6 +2143,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x80
                 </ul>
             </td>
         </tr>
@@ -2316,7 +2424,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=29>Data</td>
+            <td rowspan=30>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -2324,6 +2432,18 @@
             <td>Two less than the length of the GDB</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Mode Id</td>
+            <td>3</td>
+            <td>1</td>
+            <td><code>Integer</code></td>
+            <td>The mode ID for the GDB</td>
+            <td>
+                <ul>
+                    <li>Always 0x80
                 </ul>
             </td>
         </tr>
