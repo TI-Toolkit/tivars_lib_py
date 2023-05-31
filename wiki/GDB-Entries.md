@@ -95,7 +95,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -106,7 +106,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -117,7 +117,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -128,7 +128,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -139,7 +139,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -150,7 +150,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -214,7 +214,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -225,7 +225,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -236,7 +236,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -247,7 +247,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -258,7 +258,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -269,7 +269,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -389,7 +389,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -400,7 +400,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -411,7 +411,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -422,7 +422,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -433,7 +433,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -444,7 +444,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -630,7 +630,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -641,7 +641,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -652,7 +652,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -663,7 +663,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -674,7 +674,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -685,7 +685,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -939,7 +939,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -950,7 +950,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -961,7 +961,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -972,7 +972,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -983,7 +983,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -994,7 +994,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -1223,7 +1223,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1234,7 +1234,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1245,7 +1245,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -1256,7 +1256,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1267,7 +1267,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1278,7 +1278,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -1575,7 +1575,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1586,7 +1586,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1597,7 +1597,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -1608,7 +1608,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1619,7 +1619,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1630,7 +1630,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -1793,7 +1793,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1804,7 +1804,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1815,7 +1815,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -1826,7 +1826,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1837,7 +1837,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -1848,7 +1848,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -2090,7 +2090,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2101,7 +2101,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2112,7 +2112,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -2123,7 +2123,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2134,7 +2134,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2145,7 +2145,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>
@@ -2367,7 +2367,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2378,7 +2378,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2389,7 +2389,7 @@
             <td>25</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the horizontal axis</td>
+            <td>The separation between ticks on the horizontal axis</td>
             <td>
                 <ul>
                 </ul>
@@ -2400,7 +2400,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2411,7 +2411,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The largest or topmost vertical coordinate on the graphscreen</td>
             <td>
                 <ul>
                 </ul>
@@ -2422,7 +2422,7 @@
             <td>52</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>the separation between ticks on the vertical axis</td>
+            <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
                 </ul>

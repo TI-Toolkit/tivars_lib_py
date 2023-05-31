@@ -348,37 +348,37 @@ class TIMonoGDB(TIEntry):
     @View(data, TIReal)[7:16]
     def Xmin(self) -> TIReal:
         """
-        Xmin: the smallest or leftmost horizontal coordinate on the graphscreen
+        Xmin: The smallest or leftmost horizontal coordinate on the graphscreen
         """
 
     @View(data, TIReal)[16:25]
     def Xmax(self) -> TIReal:
         """
-        Xmax: the largest or rightmost horizontal coordinate on the graphscreen
+        Xmax: The largest or rightmost horizontal coordinate on the graphscreen
         """
 
     @View(data, TIReal)[25:34]
     def Xscl(self) -> TIReal:
         """
-        Xscl: the separation between ticks on the horizontal axis
+        Xscl: The separation between ticks on the horizontal axis
         """
 
     @View(data, TIReal)[34:43]
     def Ymin(self) -> TIReal:
         """
-        Ymin: the smallest or bottommost vertical coordinate on the graphscreen
+        Ymin: The smallest or bottommost vertical coordinate on the graphscreen
         """
 
     @View(data, TIReal)[43:52]
     def Ymax(self) -> TIReal:
         """
-        Ymax: the largest or topmost vertical coordinate on the graphscreen
+        Ymax: The largest or topmost vertical coordinate on the graphscreen
         """
 
     @View(data, TIReal)[52:61]
     def Yscl(self) -> TIReal:
         """
-        Yscl: the separation between ticks on the vertical axis
+        Yscl: The separation between ticks on the vertical axis
         """
 
     @property
