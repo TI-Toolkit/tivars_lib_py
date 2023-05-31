@@ -968,19 +968,19 @@ class TIMonoPolarGDB(TIMonoGDB):
     @View(data, TIReal)[61:70]
     def Thetamin(self) -> TIReal:
         """
-        Θmin: The initial angle
+        θmin: The initial angle
         """
 
     @View(data, TIReal)[70:79]
     def Thetamax(self) -> TIReal:
         """
-        Θmax: The final angle
+        θmax: The final angle
         """
 
     @View(data, TIReal)[79:88]
     def Thetastep(self) -> TIReal:
         """
-        Θstep: The angle increment
+        θstep: The angle increment
         """
 
     @View(data, TIGraphedEquation[1])

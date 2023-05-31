@@ -1637,7 +1637,7 @@
             </td>
         </tr>
         <tr>
-            <td>Θmin</td>
+            <td>θmin</td>
             <td>61</td>
             <td>9</td>
             <td><code>TIReal</code></td>
@@ -1648,7 +1648,7 @@
             </td>
         </tr>
         <tr>
-            <td>Θmax</td>
+            <td>θmax</td>
             <td>70</td>
             <td>9</td>
             <td><code>TIReal</code></td>
@@ -1659,7 +1659,7 @@
             </td>
         </tr>
         <tr>
-            <td>Θstep</td>
+            <td>θstep</td>
             <td>79</td>
             <td>9</td>
             <td><code>TIReal</code></td>
@@ -1855,7 +1855,7 @@
             </td>
         </tr>
         <tr>
-            <td>Θmin</td>
+            <td>θmin</td>
             <td>61</td>
             <td>9</td>
             <td><code>TIReal</code></td>
@@ -1866,7 +1866,7 @@
             </td>
         </tr>
         <tr>
-            <td>Θmax</td>
+            <td>θmax</td>
             <td>70</td>
             <td>9</td>
             <td><code>TIReal</code></td>
@@ -1877,7 +1877,7 @@
             </td>
         </tr>
         <tr>
-            <td>Θstep</td>
+            <td>θstep</td>
             <td>79</td>
             <td>9</td>
             <td><code>TIReal</code></td>
