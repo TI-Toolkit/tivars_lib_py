@@ -348,13 +348,13 @@ class TIMonoGDB(TIEntry):
     @View(data, TIReal)[7:16]
     def Xmin(self) -> TIReal:
         """
-        Xmin: The smallest or leftmost horizontal coordinate on the graphscreen
+        Xmin: The leftmost graphscreen coordinate
         """
 
     @View(data, TIReal)[16:25]
     def Xmax(self) -> TIReal:
         """
-        Xmax: The largest or rightmost horizontal coordinate on the graphscreen
+        Xmax: The rightmost graphscreen coordinate
         """
 
     @View(data, TIReal)[25:34]
@@ -366,13 +366,13 @@ class TIMonoGDB(TIEntry):
     @View(data, TIReal)[34:43]
     def Ymin(self) -> TIReal:
         """
-        Ymin: The smallest or bottommost vertical coordinate on the graphscreen
+        Ymin: The bottommost graphscreen coordinate
         """
 
     @View(data, TIReal)[43:52]
     def Ymax(self) -> TIReal:
         """
-        Ymax: The largest or topmost vertical coordinate on the graphscreen
+        Ymax: The topmost graphscreen coordinate
         """
 
     @View(data, TIReal)[52:61]
@@ -660,61 +660,61 @@ class TIMonoFuncGDB(TIMonoGDB):
     @View(data, TIGraphedEquation[1])
     def Y1(self) -> TIGraphedEquation:
         """
-        Y1: The first equation in function mode
+        Y1: The 1st equation in function mode
         """
 
     @View(data, TIGraphedEquation[2])
     def Y2(self) -> TIGraphedEquation:
         """
-        Y2: The second equation in function mode
+        Y2: The 2nd equation in function mode
         """
 
     @View(data, TIGraphedEquation[3])
     def Y3(self) -> TIGraphedEquation:
         """
-        Y3: The third equation in function mode
+        Y3: The 3rd equation in function mode
         """
 
     @View(data, TIGraphedEquation[4])
     def Y4(self) -> TIGraphedEquation:
         """
-        Y4: The fourth equation in function mode
+        Y4: The 4th equation in function mode
         """
 
     @View(data, TIGraphedEquation[5])
     def Y5(self) -> TIGraphedEquation:
         """
-        Y5: The fifth equation in function mode
+        Y5: The 5th equation in function mode
         """
 
     @View(data, TIGraphedEquation[6])
     def Y6(self) -> TIGraphedEquation:
         """
-        Y6: The sixth equation in function mode
+        Y6: The 6th equation in function mode
         """
 
     @View(data, TIGraphedEquation[7])
     def Y7(self) -> TIGraphedEquation:
         """
-        Y7: The seventh equation in function mode
+        Y7: The 7th equation in function mode
         """
 
     @View(data, TIGraphedEquation[8])
     def Y8(self) -> TIGraphedEquation:
         """
-        Y8: The eight equation in function mode
+        Y8: The 8th equation in function mode
         """
 
     @View(data, TIGraphedEquation[9])
     def Y9(self) -> TIGraphedEquation:
         """
-        Y9: The ninth equation in function mode
+        Y9: The 9th equation in function mode
         """
 
     @View(data, TIGraphedEquation[10])
     def Y0(self) -> TIGraphedEquation:
         """
-        Y0: The tenth equation in function mode
+        Y0: The 10th equation in function mode
         """
 
     def load_dict(self, dct: dict = None):
@@ -811,73 +811,73 @@ class TIMonoParamGDB(TIMonoGDB):
     @View(data, TIGraphedEquation[1])
     def X1T(self) -> TIGraphedEquation:
         """
-        X1T: The first X-component in parametric mode
+        X1T: The 1st X-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[2])
     def Y1T(self) -> TIGraphedEquation:
         """
-        Y1T: The first Y-component in parametric mode
+        Y1T: The 1st Y-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[3])
     def X2T(self) -> TIGraphedEquation:
         """
-        X2T: The second X-component in parametric mode
+        X2T: The 2nd X-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[4])
     def Y2T(self) -> TIGraphedEquation:
         """
-        Y2T: The second Y-component in parametric mode
+        Y2T: The 2nd Y-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[5])
     def X3T(self) -> TIGraphedEquation:
         """
-        X3T: The third X-component in parametric mode
+        X3T: The 3rd X-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[6])
     def Y3T(self) -> TIGraphedEquation:
         """
-        Y3T: The third Y-component in parametric mode
+        Y3T: The 3rd Y-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[7])
     def X4T(self) -> TIGraphedEquation:
         """
-        X4T: The fourth X-component in parametric mode
+        X4T: The 4th X-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[8])
     def Y4T(self) -> TIGraphedEquation:
         """
-        Y4T: The fourth Y-component in parametric mode
+        Y4T: The 4th Y-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[9])
     def X5T(self) -> TIGraphedEquation:
         """
-        X5T: The fifth X-component in parametric mode
+        X5T: The 5th X-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[10])
     def Y5T(self) -> TIGraphedEquation:
         """
-        Y5T: The fifth Y-component in parametric mode
+        Y5T: The 5th Y-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[11])
     def X6T(self) -> TIGraphedEquation:
         """
-        X6T: The sixth X-component in parametric mode
+        X6T: The 6th X-component in parametric mode
         """
 
     @View(data, TIGraphedEquation[12])
     def Y6T(self) -> TIGraphedEquation:
         """
-        Y6T: The sixth Y-component in parametric mode
+        Y6T: The 6th Y-component in parametric mode
         """
 
     def load_dict(self, dct: dict = None):
@@ -986,37 +986,37 @@ class TIMonoPolarGDB(TIMonoGDB):
     @View(data, TIGraphedEquation[1])
     def r1(self) -> TIGraphedEquation:
         """
-        r1: The first equation in polar mode
+        r1: The 1st equation in polar mode
         """
 
     @View(data, TIGraphedEquation[2])
     def r2(self) -> TIGraphedEquation:
         """
-        r1: The second equation in polar mode
+        r1: The 2nd equation in polar mode
         """
 
     @View(data, TIGraphedEquation[3])
     def r3(self) -> TIGraphedEquation:
         """
-        r3: The third equation in polar mode
+        r3: The 3rd equation in polar mode
         """
 
     @View(data, TIGraphedEquation[4])
     def r4(self) -> TIGraphedEquation:
         """
-        r4: The fourth equation in polar mode
+        r4: The 4th equation in polar mode
         """
 
     @View(data, TIGraphedEquation[5])
     def r5(self) -> TIGraphedEquation:
         """
-        r5: The fifth equation in polar mode
+        r5: The 5th equation in polar mode
         """
 
     @View(data, TIGraphedEquation[6])
     def r6(self) -> TIGraphedEquation:
         """
-        r6: The sixth equation in polar mode
+        r6: The 6th equation in polar mode
         """
 
     def load_dict(self, dct: dict = None):
@@ -1195,19 +1195,19 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIGraphedEquation[1])
     def u(self) -> TIGraphedEquation:
         """
-        u: The first equation in sequence mode
+        u: The 1st equation in sequence mode
         """
 
     @View(data, TIGraphedEquation[2])
     def v(self) -> TIGraphedEquation:
         """
-        v: The second equation in sequence mode
+        v: The 2nd equation in sequence mode
         """
 
     @View(data, TIGraphedEquation[3])
     def w(self) -> TIGraphedEquation:
         """
-        w: The third equation in sequence mode
+        w: The 3rd equation in sequence mode
         """
 
     def load_dict(self, dct: dict = None):

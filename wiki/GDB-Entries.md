@@ -95,7 +95,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -106,7 +106,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -128,7 +128,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -139,7 +139,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -214,7 +214,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -225,7 +225,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -247,7 +247,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -258,7 +258,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -389,7 +389,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -400,7 +400,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -422,7 +422,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -433,7 +433,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -467,7 +467,7 @@
             <td>70</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first equation in function mode</td>
+            <td>The 1st equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -478,7 +478,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second equation in function mode</td>
+            <td>The 2nd equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -489,7 +489,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third equation in function mode</td>
+            <td>The 3rd equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -500,7 +500,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth equation in function mode</td>
+            <td>The 4th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -511,7 +511,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth equation in function mode</td>
+            <td>The 5th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -522,7 +522,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth equation in function mode</td>
+            <td>The 6th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -533,7 +533,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The seventh equation in function mode</td>
+            <td>The 7th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -544,7 +544,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The eight equation in function mode</td>
+            <td>The 8th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -555,7 +555,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The ninth equation in function mode</td>
+            <td>The 9th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -566,7 +566,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The tenth equation in function mode</td>
+            <td>The 10th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -630,7 +630,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -641,7 +641,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -663,7 +663,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -674,7 +674,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -708,7 +708,7 @@
             <td>70</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first equation in function mode</td>
+            <td>The 1st equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -719,7 +719,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second equation in function mode</td>
+            <td>The 2nd equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -730,7 +730,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third equation in function mode</td>
+            <td>The 3rd equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -741,7 +741,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth equation in function mode</td>
+            <td>The 4th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -752,7 +752,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth equation in function mode</td>
+            <td>The 5th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -763,7 +763,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth equation in function mode</td>
+            <td>The 6th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -774,7 +774,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The seventh equation in function mode</td>
+            <td>The 7th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -785,7 +785,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The eight equation in function mode</td>
+            <td>The 8th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -796,7 +796,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The ninth equation in function mode</td>
+            <td>The 9th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -807,7 +807,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The tenth equation in function mode</td>
+            <td>The 10th equation in function mode</td>
             <td>
                 <ul>
                 </ul>
@@ -939,7 +939,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -950,7 +950,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -972,7 +972,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -983,7 +983,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1038,7 +1038,7 @@
             <td>88</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first X-component in parametric mode</td>
+            <td>The 1st X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1049,7 +1049,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first Y-component in parametric mode</td>
+            <td>The 1st Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1060,7 +1060,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second X-component in parametric mode</td>
+            <td>The 2nd X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1071,7 +1071,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second Y-component in parametric mode</td>
+            <td>The 2nd Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1082,7 +1082,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third X-component in parametric mode</td>
+            <td>The 3rd X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1093,7 +1093,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third Y-component in parametric mode</td>
+            <td>The 3rd Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1104,7 +1104,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth X-component in parametric mode</td>
+            <td>The 4th X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1115,7 +1115,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth Y-component in parametric mode</td>
+            <td>The 4th Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1126,7 +1126,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth X-component in parametric mode</td>
+            <td>The 5th X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1137,7 +1137,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth Y-component in parametric mode</td>
+            <td>The 5th Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1148,7 +1148,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth X-component in parametric mode</td>
+            <td>The 6th X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1159,7 +1159,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth Y-component in parametric mode</td>
+            <td>The 6th Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1223,7 +1223,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1234,7 +1234,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1256,7 +1256,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1267,7 +1267,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1322,7 +1322,7 @@
             <td>88</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first X-component in parametric mode</td>
+            <td>The 1st X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1333,7 +1333,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first Y-component in parametric mode</td>
+            <td>The 1st Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1344,7 +1344,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second X-component in parametric mode</td>
+            <td>The 2nd X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1355,7 +1355,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second Y-component in parametric mode</td>
+            <td>The 2nd Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1366,7 +1366,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third X-component in parametric mode</td>
+            <td>The 3rd X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1377,7 +1377,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third Y-component in parametric mode</td>
+            <td>The 3rd Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1388,7 +1388,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth X-component in parametric mode</td>
+            <td>The 4th X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1399,7 +1399,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth Y-component in parametric mode</td>
+            <td>The 4th Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1410,7 +1410,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth X-component in parametric mode</td>
+            <td>The 5th X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1421,7 +1421,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth Y-component in parametric mode</td>
+            <td>The 5th Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1432,7 +1432,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth X-component in parametric mode</td>
+            <td>The 6th X-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1443,7 +1443,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth Y-component in parametric mode</td>
+            <td>The 6th Y-component in parametric mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1575,7 +1575,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1586,7 +1586,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1608,7 +1608,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1619,7 +1619,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1674,7 +1674,7 @@
             <td>88</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first equation in polar mode</td>
+            <td>The 1st equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1685,7 +1685,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second equation in polar mode</td>
+            <td>The 2nd equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1696,7 +1696,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third equation in polar mode</td>
+            <td>The 3rd equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1707,7 +1707,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth equation in polar mode</td>
+            <td>The 4th equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1718,7 +1718,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth equation in polar mode</td>
+            <td>The 5th equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1729,7 +1729,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth equation in polar mode</td>
+            <td>The 6th equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1793,7 +1793,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1804,7 +1804,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1826,7 +1826,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1837,7 +1837,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -1892,7 +1892,7 @@
             <td>88</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first equation in polar mode</td>
+            <td>The 1st equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1903,7 +1903,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second equation in polar mode</td>
+            <td>The 2nd equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1914,7 +1914,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third equation in polar mode</td>
+            <td>The 3rd equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1925,7 +1925,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fourth equation in polar mode</td>
+            <td>The 4th equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1936,7 +1936,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The fifth equation in polar mode</td>
+            <td>The 5th equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -1947,7 +1947,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The sixth equation in polar mode</td>
+            <td>The 6th equation in polar mode</td>
             <td>
                 <ul>
                 </ul>
@@ -2090,7 +2090,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2101,7 +2101,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2123,7 +2123,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2134,7 +2134,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2270,7 +2270,7 @@
             <td>151</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first equation in sequence mode</td>
+            <td>The 1st equation in sequence mode</td>
             <td>
                 <ul>
                 </ul>
@@ -2281,7 +2281,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second equation in sequence mode</td>
+            <td>The 2nd equation in sequence mode</td>
             <td>
                 <ul>
                 </ul>
@@ -2292,7 +2292,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third equation in sequence mode</td>
+            <td>The 3rd equation in sequence mode</td>
             <td>
                 <ul>
                 </ul>
@@ -2367,7 +2367,7 @@
             <td>7</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or leftmost horizontal coordinate on the graphscreen</td>
+            <td>The leftmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2378,7 +2378,7 @@
             <td>16</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or rightmost horizontal coordinate on the graphscreen</td>
+            <td>The rightmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2400,7 +2400,7 @@
             <td>34</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The smallest or bottommost vertical coordinate on the graphscreen</td>
+            <td>The bottommost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2411,7 +2411,7 @@
             <td>43</td>
             <td>9</td>
             <td><code>TIReal</code></td>
-            <td>The largest or topmost vertical coordinate on the graphscreen</td>
+            <td>The topmost graphscreen coordinate</td>
             <td>
                 <ul>
                 </ul>
@@ -2547,7 +2547,7 @@
             <td>151</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The first equation in sequence mode</td>
+            <td>The 1st equation in sequence mode</td>
             <td>
                 <ul>
                 </ul>
@@ -2558,7 +2558,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The second equation in sequence mode</td>
+            <td>The 2nd equation in sequence mode</td>
             <td>
                 <ul>
                 </ul>
@@ -2569,7 +2569,7 @@
             <td>...</td>
             <td>...</td>
             <td><code>TIGraphedEquation</code></td>
-            <td>The third equation in sequence mode</td>
+            <td>The 3rd equation in sequence mode</td>
             <td>
                 <ul>
                 </ul>
