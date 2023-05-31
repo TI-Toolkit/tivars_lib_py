@@ -646,7 +646,7 @@ class TIMonoFuncGDB(TIMonoGDB):
     @View(data, TIReal)[61:70]
     def Xres(self, value: TIReal) -> TIReal:
         """
-        Xres: the pixel separation of points in a function plot
+        Xres: The pixel separation of points in a function plot
 
         Must be an integer between 1 and 8
         """
@@ -793,19 +793,19 @@ class TIMonoParamGDB(TIMonoGDB):
     @View(data, TIReal)[61:70]
     def Tmin(self) -> TIReal:
         """
-        Tmin: the initial time
+        Tmin: The initial time
         """
 
     @View(data, TIReal)[70:79]
     def Tmax(self) -> TIReal:
         """
-        Tmax: the final time
+        Tmax: The final time
         """
 
     @View(data, TIReal)[79:88]
     def Tstep(self) -> TIReal:
         """
-        Tstep: the time increment
+        Tstep: The time increment
         """
 
     @View(data, TIGraphedEquation[1])
@@ -968,19 +968,19 @@ class TIMonoPolarGDB(TIMonoGDB):
     @View(data, TIReal)[61:70]
     def Thetamin(self) -> TIReal:
         """
-        Thetamin: the initial angle
+        Θmin: The initial angle
         """
 
     @View(data, TIReal)[70:79]
     def Thetamax(self) -> TIReal:
         """
-        Thetamax: the final angle
+        Θmax: The final angle
         """
 
     @View(data, TIReal)[79:88]
     def Thetastep(self) -> TIReal:
         """
-        Thetastep: the angle increment
+        Θstep: The angle increment
         """
 
     @View(data, TIGraphedEquation[1])
@@ -1004,7 +1004,7 @@ class TIMonoPolarGDB(TIMonoGDB):
     @View(data, TIGraphedEquation[4])
     def r4(self) -> TIGraphedEquation:
         """
-        rr: The fourth equation in polar mode
+        r4: The fourth equation in polar mode
         """
 
     @View(data, TIGraphedEquation[5])
@@ -1103,7 +1103,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[61:70]
     def PlotStart(self, value) -> TIReal:
         """
-        PlotStart: the initial value of n for sequential plots
+        PlotStart: The initial value of n for sequential plots
 
         Must be an integer
         """
@@ -1117,7 +1117,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[70:79]
     def nMax(self, value) -> TIReal:
         """
-        nMax: the final value of n
+        nMax: The final value of n
 
         Must be an integer
         """
@@ -1131,13 +1131,13 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[79:88]
     def unMin(self) -> TIReal:
         """
-        u(nMin): the initial value of u at nMin
+        u(nMin): The initial value of u at nMin
         """
 
     @View(data, TIReal)[88:97]
     def vnMin(self) -> TIReal:
         """
-        v(nMin): the initial value of v at nMin
+        v(nMin): The initial value of v at nMin
         """
 
     @View(data, TIReal)[97:106]
@@ -1157,25 +1157,25 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[106:115]
     def unMinp1(self) -> TIReal:
         """
-        u(nMin + 1): the initial value of u at nMin + 1
+        u(nMin + 1): The initial value of u at nMin + 1
         """
 
     @View(data, TIReal)[115:124]
     def vnMinp1(self) -> TIReal:
         """
-        v(nMin + 1): the initial value of v at nMin + 1
+        v(nMin + 1): The initial value of v at nMin + 1
         """
 
     @View(data, TIReal)[124:133]
     def wnMin(self) -> TIReal:
         """
-        w(nMin): the initial value of w at nMin
+        w(nMin): The initial value of w at nMin
         """
 
     @View(data, TIReal)[133:142]
     def PlotStep(self, value) -> TIReal:
         """
-        PlotStep: the n increment for sequential plots
+        PlotStep: The n increment for sequential plots
 
         Must be an integer
         """
@@ -1189,7 +1189,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[142:151]
     def wnMinp1(self) -> TIReal:
         """
-        w(nMin + 1): the initial value of w at nMin + 1
+        w(nMin + 1): The initial value of w at nMin + 1
         """
 
     @View(data, TIGraphedEquation[1])
