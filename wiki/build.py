@@ -13,17 +13,19 @@ class Section:
         self.name = " ".join(word[0].upper() + word[1:] for word in name.split("_"))
         self.subsections = []
 
-        method = getattr(cls, name)
+        doc = getattr(cls, name).__doc__ or ""
         try:
-            self.description = method.__doc__.split("\n")[1].strip()
+            self.description = doc.split("\n")[1].strip()
             self.notes = f"\n{20 * ' '}".join("<li>" + note.strip() if note.strip() else ""
-                                              for note in method.__doc__.split("\n")[2:-1])
+                                              for note in doc.split("\n")[2:-1])
 
         except IndexError:
-            self.description, self.notes = method.__doc__.strip(), ""
+            self.description, self.notes = doc.strip(), ""
 
         if len(self.description.split(": ")) == 2:
             self.name, self.description = self.description.split(": ")
+
+        texts[cls.__name__] = cls.__doc__ or ""
 
         if isinstance(deco := nodes[name].decorator_list[-1], ast.Call):
             if deco.func.id == "Section":
@@ -49,7 +51,12 @@ class Section:
 
             else:
                 self.order = deco.args[1].slice.value - 2 ** 15
-                self.offset = getattr(cls(), "offset") if deco.args[1].slice.value == 1 else "..."
+
+                if deco.args[1].slice.value == 1:
+                    self.offset = getattr(cls(), "offset") + getattr(cls(), "num_styles")
+                else:
+                    self.offset = "..."
+
                 self.length = "..."
                 self.type = deco.args[1].value.id
                 self.parent = deco.args[0].id
@@ -70,6 +77,8 @@ class Section:
 
 
 classes = {}
+enums = {}
+texts = {}
 pages = {}
 
 
@@ -95,10 +104,16 @@ def add_classes(path):
     module = vars(import_module(".".join(path.split("/")[:-1])))[loc]
 
     for child in ast.iter_child_nodes(node):
-        if isinstance(child, ast.ClassDef) and (child.name.startswith("TI") or child.name.endswith("Entry")):
-            name = child.name
+        if not isinstance(child, ast.ClassDef):
+            continue
 
+        name = child.name
+        if name.startswith("TI") or name.endswith("Entry"):
             classes[name] = (vars(module)[name], {attr.name: attr for attr in child.body if is_section(attr)})
+            pages[loc] = pages.get(loc, []) + [name]
+
+        elif name.endswith("Flags"):
+            enums[name] = vars(module)[name]
             pages[loc] = pages.get(loc, []) + [name]
 
 
@@ -132,12 +147,41 @@ for class_name, sections in classes.items():
             sections[section.parent].subsections.append(section)
 
 
+# Split up GDBs
+for class_name in pages["gdb"]:
+    match class_name:
+        case "TIMonoFuncGDB" | "TIFuncGDB":
+            pages["GDBs/Function"] = pages.get("GDBs/Function", []) + [class_name]
+
+        case "TIMonoParamGDB" | "ParamGDB":
+            pages["GDBs/Parametric"] = pages.get("GDBs/Parametric", []) + [class_name]
+
+        case "TIMonoPolarGDB" | "PolarGDB":
+            pages["GDBs/Polar"] = pages.get("GDBs/Polar", []) + [class_name]
+
+        case "TIMonoSeqGDB" | "SeqGDB":
+            pages["GDBs/Sequential"] = pages.get("GDBs/Sequential", []) + [class_name]
+
+        case _:
+            pages["GDB"] = pages.get("GDB", []) + [class_name]
+
+del pages["gdb"]
+
+
 # Write pages
 for page in pages:
     if page == "var":
         continue
 
-    page_name = page.capitalize() + "-Entries.md" if page != "gdb" else "GDB-Entries.md"
+    if page.startswith("GDBs"):
+        page_name = page + ".md"
+
+    elif page == "GDB":
+        page_name = "GDB-Components.md"
+
+    else:
+        page_name = page.capitalize() + "-Entries.md"
+
     content = ""
 
     for class_name in pages[page]:
@@ -145,35 +189,36 @@ for page in pages:
         if class_name.endswith("Entry"):
             continue
 
-        content += f"### {class_name}\n" + table_header
+        if class_name in classes:
+            content += f"### {class_name}\n" + texts.get(class_name, "") + table_header
 
-        for section in classes[class_name].values():
-            # Subsections are handled by their parent
-            if section.parent:
-                continue
+            for section in classes[class_name].values():
+                # Subsections are handled by their parent
+                if section.parent:
+                    continue
 
-            # TIGraphedEquations are weird
-            if class_name == "TIGraphedEquation" and section.name in ("Style", "Color"):
-                continue
+                # TIGraphedEquations are weird
+                if class_name == "TIGraphedEquation" and section.name in ("Style", "Color"):
+                    continue
 
-            # Name logic changes a lot
-            if section.name == "Name":
-                content += name_row.format(section=section, subsection=section)
-
-            else:
-                if not section.subsections:
-                    section.subsections = [section]
+                # Name logic changes a lot
+                if section.name == "Name":
+                    content += name_row.format(section=section, subsection=section)
 
                 else:
-                    section.subsections.sort()
+                    if not section.subsections:
+                        section.subsections = [section]
 
-                content += top_row.format(section=section, subsection=section.subsections[0])
+                    else:
+                        section.subsections.sort()
 
-                for subsection in section.subsections[1:]:
-                    if subsection:
-                        content += later_row.format(section=section, subsection=subsection)
+                    content += top_row.format(section=section, subsection=section.subsections[0])
 
-        content += table_footer
+                    for subsection in section.subsections[1:]:
+                        if subsection:
+                            content += later_row.format(section=section, subsection=subsection)
+
+            content += table_footer
 
     with open("wiki/" + page_name, "w+", encoding="utf-8") as file:
         file.write(content)
