@@ -102,10 +102,6 @@ def add_classes(path):
             pages[loc] = pages.get(loc, []) + [name]
 
 
-def make_notes(notes):
-    return "\n".join("<li>" + note.strip() for note in notes)
-
-
 # Grab all the classes
 add_classes("tivars/var.py")
 for filename in next(os.walk("tivars/types"), (None, None, []))[2]:
