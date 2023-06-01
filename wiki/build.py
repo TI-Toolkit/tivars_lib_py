@@ -151,16 +151,16 @@ for class_name, sections in classes.items():
 for class_name in pages["gdb"]:
     match class_name:
         case "TIMonoFuncGDB" | "TIFuncGDB":
-            pages["GDBs/Function"] = pages.get("GDBs/Function", []) + [class_name]
+            pages["Function-GDBs"] = pages.get("Function-GDBs", []) + [class_name]
 
-        case "TIMonoParamGDB" | "ParamGDB":
-            pages["GDBs/Parametric"] = pages.get("GDBs/Parametric", []) + [class_name]
+        case "TIMonoParamGDB" | "TIParamGDB":
+            pages["Parametric-GDBs"] = pages.get("Parametric-GDBs", []) + [class_name]
 
-        case "TIMonoPolarGDB" | "PolarGDB":
-            pages["GDBs/Polar"] = pages.get("GDBs/Polar", []) + [class_name]
+        case "TIMonoPolarGDB" | "TIPolarGDB":
+            pages["Polar-GDBs"] = pages.get("Polar-GDBs", []) + [class_name]
 
-        case "TIMonoSeqGDB" | "SeqGDB":
-            pages["GDBs/Sequential"] = pages.get("GDBs/Sequential", []) + [class_name]
+        case "TIMonoSeqGDB" | "TISeqGDB":
+            pages["Sequential-GDBs"] = pages.get("Sequential-GDBs", []) + [class_name]
 
         case _:
             pages["GDB"] = pages.get("GDB", []) + [class_name]
@@ -173,7 +173,7 @@ for page in pages:
     if page == "var":
         continue
 
-    if page.startswith("GDBs"):
+    if page.endswith("GDBs"):
         page_name = page + ".md"
 
     elif page == "GDB":

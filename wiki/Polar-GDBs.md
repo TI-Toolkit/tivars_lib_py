@@ -1,4 +1,4 @@
-### TIGraphedEquation
+### TIMonoPolarGDB
 <table>
     <thead>
         <tr>
@@ -13,49 +13,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=1>Flags</td>
-            <td>Flags</td>
-            <td>0</td>
-            <td>1</td>
-            <td><code>EquationFlags</code></td>
-            <td>The flags for the equation</td>
-            <td>
-                <ul>
-                    <li>Whether the equation is selected, used for graphing, or is participating in a link transfer
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <td rowspan=1>Data</td>
-            <td>Length</td>
-            <td>0</td>
-            <td>2</td>
-            <td><code>Integer</code></td>
-            <td>The total size of the tokens</td>
-            <td>
-                <ul>
-                </ul>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-### TIMonoGDB
-<table>
-    <thead>
-        <tr>
-            <th>Section</th>
-            <th>Subsection</th>
-            <th>Section Offset</th>
-            <th>Length</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Notes</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan=10>Data</td>
+            <td rowspan=19>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -74,7 +32,7 @@
             <td>The mode ID for the GDB</td>
             <td>
                 <ul>
-                    <li>One of 0x10, 0x20, 0x40, or 0x80
+                    <li>Always 0x20
                 </ul>
             </td>
         </tr>
@@ -168,10 +126,109 @@
                 </ul>
             </td>
         </tr>
+        <tr>
+            <td>θmin</td>
+            <td>61</td>
+            <td>9</td>
+            <td><code>TIReal</code></td>
+            <td>The initial angle</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>θmax</td>
+            <td>70</td>
+            <td>9</td>
+            <td><code>TIReal</code></td>
+            <td>The final angle</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>θstep</td>
+            <td>79</td>
+            <td>9</td>
+            <td><code>TIReal</code></td>
+            <td>The angle increment</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r1</td>
+            <td>94</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 1st equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r1</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 2nd equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r3</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 3rd equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r4</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 4th equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r5</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 5th equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r6</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 6th equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
     </tbody>
 </table>
 
-### TIGDB
+### TIPolarGDB
 <table>
     <thead>
         <tr>
@@ -186,7 +243,7 @@
     </thead>
     <tbody>
         <tr>
-            <td rowspan=15>Data</td>
+            <td rowspan=25>Data</td>
             <td>Length</td>
             <td>0</td>
             <td>2</td>
@@ -205,7 +262,7 @@
             <td>The mode ID for the GDB</td>
             <td>
                 <ul>
-                    <li>One of 0x10, 0x20, 0x40, or 0x80
+                    <li>Always 0x20
                 </ul>
             </td>
         </tr>
@@ -296,6 +353,117 @@
             <td>The separation between ticks on the vertical axis</td>
             <td>
                 <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>θmin</td>
+            <td>61</td>
+            <td>9</td>
+            <td><code>TIReal</code></td>
+            <td>The initial angle</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>θmax</td>
+            <td>70</td>
+            <td>9</td>
+            <td><code>TIReal</code></td>
+            <td>The final angle</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>θstep</td>
+            <td>79</td>
+            <td>9</td>
+            <td><code>TIReal</code></td>
+            <td>The angle increment</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r1</td>
+            <td>94</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 1st equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r1</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 2nd equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r3</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 3rd equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r4</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 4th equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r5</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 5th equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>r6</td>
+            <td>...</td>
+            <td>...</td>
+            <td><code>TIGraphedEquation</code></td>
+            <td>The 6th equation in polar mode</td>
+            <td>
+                <ul>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>Color Magic</td>
+            <td>-14</td>
+            <td>3</td>
+            <td><code>String</code></td>
+            <td>Magic to identify the GDB as color-oriented</td>
+            <td>
+                <ul>
+                    <li>Always set to 84C
                 </ul>
             </td>
         </tr>
