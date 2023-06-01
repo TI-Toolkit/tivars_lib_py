@@ -106,7 +106,8 @@ class TIMatrix(TIEntry):
                 entry.meta_length = self.meta_length
                 entry.archived = self.archived
 
-                entry.data = self.data[entry.data_length * (self.width * i + j) + 2:][:entry.data_length]
+                index = self.width * i + j
+                entry.data = self.data[entry.data_length * index + self.min_data_length:][:entry.data_length]
                 row.append(entry)
 
             matrix.append(row.copy())
