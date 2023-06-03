@@ -205,11 +205,18 @@ class TIReal(TIEntry):
     def load_float(self, decimal: float):
         self.load_decimal(dec.Decimal(decimal))
 
+    def json_number(self) -> float | str:
+        if len(str(number := self.float())) <= 6:
+            return number
+
+        else:
+            return str(number)
+
     def float(self) -> float:
         return float(self.decimal())
 
     def load_int(self, decimal: int):
-        self.load_decimal(dec.Decimal(decimal))
+        self.load_float(decimal)
 
     def int(self) -> int:
         return int(self.decimal())

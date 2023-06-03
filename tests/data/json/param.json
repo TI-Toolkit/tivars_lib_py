@@ -23,8 +23,8 @@
 	"specificData": {
 		"settings": {
 			"Tmin": 0.0,
-			"Tmax": 6.283185307,
-			"Tstep": 0.13089969389957
+			"Tmax": "6.283185307",
+			"Tstep": "0.13089969389957"
 		},
 		"equations": {
 			"X1T": {

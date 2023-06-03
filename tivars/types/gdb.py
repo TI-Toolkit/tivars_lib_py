@@ -494,12 +494,12 @@ class TIMonoGDB(TIEntry):
                 "showExpr": GraphMode.ExprOn in self.extended_mode_flags
             },
             "globalWindowSettings": {
-                "Xmin": float(self.Xmin),
-                "Xmax": float(self.Xmax),
-                "Xscl": float(self.Xscl),
-                "Ymin": float(self.Ymin),
-                "Ymax": float(self.Ymax),
-                "Yscl": float(self.Yscl)
+                "Xmin": self.Xmin.json_number(),
+                "Xmax": self.Xmax.json_number(),
+                "Xscl": self.Xscl.json_number(),
+                "Ymin": self.Ymin.json_number(),
+                "Ymax": self.Ymax.json_number(),
+                "Yscl": self.Yscl.json_number()
             }
         }
 
@@ -934,9 +934,9 @@ class TIMonoParamGDB(TIMonoGDB):
         return super().dict() | {
             "specificData": {
                 "settings": {
-                    "Tmin": float(self.Tmin),
-                    "Tmax": float(self.Tmax),
-                    "Tstep": float(self.Tstep),
+                    "Tmin": self.Tmin.json_number(),
+                    "Tmax": self.Tmax.json_number(),
+                    "Tstep": self.Tstep.json_number(),
                 },
                 "equations": {
                     equation.name: equation.dict() for equation in self.equations
@@ -1072,9 +1072,9 @@ class TIMonoPolarGDB(TIMonoGDB):
         return super().dict() | {
             "specificData": {
                 "settings": {
-                    "Thetamin": float(self.Thetamin),
-                    "Thetamax": float(self.Thetamax),
-                    "Thetastep": float(self.Thetastep),
+                    "Thetamin": self.Thetamin.json_number(),
+                    "Thetamax": self.Thetamax.json_number(),
+                    "Thetastep": self.Thetastep.json_number(),
                 },
                 "equations": {
                     equation.name: equation.dict() for equation in self.equations
@@ -1318,12 +1318,12 @@ class TIMonoSeqGDB(TIMonoGDB):
                     "nMax": int(self.nMax),
                     "PlotStart": int(self.PlotStart),
                     "PlotStep": int(self.PlotStep),
-                    "unMin": float(self.unMin),
-                    "unMinp1": float(self.unMinp1),
-                    "vnMin": float(self.vnMinp1),
-                    "vnMinp1": float(self.vnMinp1),
-                    "wnMin": float(self.wnMin),
-                    "wnMinp1": float(self.wnMinp1)
+                    "unMin": self.unMin.json_number(),
+                    "unMinp1": self.unMinp1.json_number(),
+                    "vnMin": self.vnMinp1.json_number(),
+                    "vnMinp1": self.vnMinp1.json_number(),
+                    "wnMin": self.wnMin.json_number(),
+                    "wnMinp1": self.wnMinp1.json_number()
                 },
                 "equations": {
                     equation.name: equation.dict() for equation in self.equations
