@@ -740,6 +740,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         Y0: The 10th equation in function mode
         """
 
+    @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
             with open("json/func.default.json") as file:
@@ -911,6 +912,7 @@ class TIMonoParamGDB(TIMonoGDB):
         Y6T: The 6th Y-component in parametric mode
         """
 
+    @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
             with open("json/param.default.json") as file:
@@ -1058,6 +1060,7 @@ class TIMonoPolarGDB(TIMonoGDB):
         r6: The 6th equation in polar mode
         """
 
+    @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
             with open("json/polar.default.json") as file:
@@ -1257,6 +1260,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         w: The 3rd equation in sequence mode
         """
 
+    @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
             with open("json/seq.default.json") as file:
