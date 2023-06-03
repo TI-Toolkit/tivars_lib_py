@@ -5,6 +5,7 @@ from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
+from tivars.tokenizer import TokenizedString
 from ..data import *
 from ..var import TIEntry
 from .numeric import TIReal, TIComplex
@@ -23,18 +24,18 @@ class ListEntry(TIEntry):
     def __iter__(self) -> Iterator[_E]:
         return iter(self.list())
 
-    @Section(8, String)
+    @Section(8, TokenizedString)
     def name(self, value) -> str:
         """
         The name of the entry
 
         Must be 1 to 5 characters in length
-        Can include any characters A-Z, 0-9, or Θ
+        Can include any characters A-Z, 0-9, or θ
         Cannot start with a digit
         """
 
         varname = value[:5].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
+        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
         varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():

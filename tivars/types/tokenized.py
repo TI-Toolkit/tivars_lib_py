@@ -5,8 +5,7 @@ from typing import ByteString
 from warnings import warn
 
 from tivars.models import *
-from tivars.tokenizer import encode, decode
-from tivars.tokenizer.tokens import *
+from tivars.tokenizer import *
 from ..data import *
 from ..var import SizedEntry
 
@@ -179,18 +178,18 @@ class TIProgram(TokenizedEntry):
 
     _type_id = b'\x05'
 
-    @Section(8, String)
+    @Section(8, TokenizedString)
     def name(self, value) -> str:
         """
         The name of the entry
 
         Must be 1 to 8 characters in length
-        Can include any characters A-Z, 0-9, or Θ
+        Can include any characters A-Z, 0-9, or θ
         Cannot start with a digit
         """
 
         varname = value[:8].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "[", varname)
+        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
         varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
