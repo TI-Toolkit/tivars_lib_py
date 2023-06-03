@@ -23,8 +23,8 @@ class GraphMode(Flags):
     GridDot = {2: 1, 7: 0}
     PolarGC = {3: 1}
     RectGC = {3: 0}
-    CoordOff = {4: 0}
-    CoordOn = {4: 1}
+    CoordOn = {4: 0}
+    CoordOff = {4: 1}
     AxesOff = {5: 1}
     AxesOn = {5: 0}
     LabelOn = {6: 1}
