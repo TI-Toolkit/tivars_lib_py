@@ -36,8 +36,8 @@ class GraphMode(Flags):
     SEQ_np1 = {1: 1, 2: 0}
     SEQ_np2 = {1: 0, 2: 1}
 
-    DetectAsymptotesOn = {0: 1}
-    DetectAsymptotesOff = {0: 0}
+    DetectAsymptotesOff = {0: 1}
+    DetectAsymptotesOn = {0: 0}
 
 
 class SeqMode(Flags):
@@ -85,7 +85,7 @@ class GraphColor(Enum):
     COLORS = _all[1:]
 
 
-class GlobalStyle(Enum):
+class GlobalLineStyle(Enum):
     Thick = b'\x00'
     DotThick = b'\x01'
     Thin = b'\x02'
@@ -129,7 +129,7 @@ class TIGraphedEquation(TIEquation):
                  data: ByteString = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.flags = EquationFlags()
+        self.flags = EquationFlags({0: 1, 1: 1})
         self.style = b'\x00'
         self.color = b'\x00'
 
@@ -215,7 +215,7 @@ class TIGraphedEquation(TIEquation):
         self.load_equation(TIEquation(dct["expr"]))
 
         flags = {"selected": False, "wasUsedForGraph": False, "linkTransfer": False} | dct["flags"]
-        self.flags = EquationFlags()
+        self.flags = EquationFlags({1: 1, 0: 1})
 
         self.flags |= EquationFlags.Selected if flags["selected"] else EquationFlags.Deselected
         self.flags |= EquationFlags.UsedForGraph if flags["wasUsedForGraph"] else EquationFlags.UnusedForGraph
@@ -565,8 +565,8 @@ class TIGDB(TIMonoGDB):
         The color of the axes
         """
 
-    @View(data, GlobalStyle)[-3:-2]
-    def global_style(self) -> bytes:
+    @View(data, GlobalLineStyle)[-3:-2]
+    def global_line_style(self) -> bytes:
         """
         The line style for all plotted equations
         """
@@ -599,8 +599,8 @@ class TIGDB(TIMonoGDB):
                 self.border_color = BorderColor.COLORS[colors["border"] - 1]
 
         if other := dct.get("global84CSettings", {}).get("other", {}):
-            if "globalStyle" in other:
-                self.global_style = getattr(GlobalStyle, other["globalStyle"])
+            if "globalLineStyle" in other:
+                self.global_line_style = getattr(GlobalLineStyle, other["globalLineStyle"])
 
             if "detectAsymptotes" in other:
                 self.color_mode_flags |= \
@@ -615,7 +615,7 @@ class TIGDB(TIMonoGDB):
                     "border": self.border_color[0]
                 },
                 "other": {
-                    "globalStyle": GlobalStyle.get_name(self.global_style),
+                    "globalLineStyle": GlobalLineStyle.get_name(self.global_line_style),
                     "detectAsymptotes": GraphMode.DetectAsymptotesOn in self.color_mode_flags
                 }
             }
@@ -1368,4 +1368,4 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
 
 __all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "TIGraphedEquation", "GraphMode", "GraphStyle", "GraphColor", "GlobalStyle"]
+           "TIGraphedEquation", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle"]

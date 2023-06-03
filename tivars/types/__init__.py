@@ -64,7 +64,7 @@ __all__ = ["TIEntry",
            "TIPicture", "TIMonoPicture",
            "TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "GraphMode", "GraphStyle", "GraphColor", "GlobalStyle",
+           "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle",
            "TIComplex", "TIComplexList",
            "TIWindowSettings", "TIRecallWindow", "TITableSettings",
            "TIImage"

@@ -375,7 +375,7 @@ class GDBTests(unittest.TestCase):
         self.assertIn(GraphMode.Connected, test_gdb.mode_flags)
         self.assertIn(GraphMode.AxesOn, test_gdb.mode_flags)
         self.assertIn(GraphMode.ExprOn, test_gdb.extended_mode_flags)
-        self.assertIn(GraphMode.DetectAsymptotesOff, test_gdb.color_mode_flags)
+        self.assertIn(GraphMode.DetectAsymptotesOn, test_gdb.color_mode_flags)
 
     def test_json(self):
         test_gdb = TIParamGDB()

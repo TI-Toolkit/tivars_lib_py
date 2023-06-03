@@ -325,7 +325,7 @@
             <td>Global Style</td>
             <td>-3</td>
             <td>1</td>
-            <td><code>GlobalStyle</code></td>
+            <td><code>GlobalLineStyle</code></td>
             <td>The line style for all plotted equations</td>
             <td>
                 <ul>
