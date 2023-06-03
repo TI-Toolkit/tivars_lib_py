@@ -43,7 +43,7 @@ class RGBPalette(Converter):
                White, LtGray, MedGray, Gray, DarkGray]
 
     @classmethod
-    def nearest(cls, r: int, g: int, b: int):
+    def nearest(cls, r: int, g: int, b: int) -> RGB:
         nearest = min(cls.palette, key=lambda x: (x[0] - r) ** 2 + (x[1] - g) ** 2 + (x[2] - b) ** 2)
         if nearest != (r, g, b):
             warn(f"The pixel {(r, g, b)} is not contained in the palette; using {nearest} as an approximation.",
@@ -57,7 +57,8 @@ class RGBPalette(Converter):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes((cls.nearest(*value[0]) << 4) + cls.nearest(*value[1]), 1, 'little')
+        return int.to_bytes((cls.palette.index(cls.nearest(*value[0])) << 4) +
+                            cls.palette.index(cls.nearest(*value[1])), 1, 'little')
 
 
 class RGB565(Converter):
@@ -125,7 +126,7 @@ class TIMonoPicture(PictureEntry):
         TI_82AEP: ""
     }
 
-    min_data_length = 756
+    min_data_length = 758
 
     width = 96
     height = 63
@@ -154,7 +155,7 @@ class TIMonoPicture(PictureEntry):
                 for row in range(self.data_height)]
 
     def coerce(self):
-        match self.length:
+        match self.length + 2:
             case self.min_data_length: pass
             case TIPicture.min_data_length: self.__class__ = TIPicture
             case TIImage.min_data_length: self.__class__ = TIImage
@@ -182,7 +183,7 @@ class TIPicture(PictureEntry):
         TI_82AEP: "8ci"
     }
 
-    min_data_length = 21945
+    min_data_length = 21947
 
     width = 266
     height = 165
@@ -209,7 +210,7 @@ class TIPicture(PictureEntry):
                 for row in range(self.data_height)]
 
     def coerce(self):
-        match self.length:
+        match self.length + 2:
             case self.min_data_length: pass
             case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
             case TIImage.min_data_length: self.__class__ = TIImage
@@ -237,7 +238,7 @@ class TIImage(PictureEntry):
         TI_82AEP: "8ca"
     }
 
-    min_data_length = 22245
+    min_data_length = 22247
 
     width = 133
     height = 83
@@ -290,7 +291,7 @@ class TIImage(PictureEntry):
                 for row in range(self.data_height)][::-1]
 
     def coerce(self):
-        match self.length:
+        match self.length + 2:
             case self.min_data_length: pass
             case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
             case TIPicture.min_data_length: self.__class__ = TIPicture

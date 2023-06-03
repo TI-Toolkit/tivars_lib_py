@@ -423,6 +423,21 @@ class PictureTests(unittest.TestCase):
         test_from_array.load_array(test_picture.array())
         self.assertEqual(test_from_array.array(), test_picture.array())
 
+    def test_picture(self):
+        test_picture = TIPicture()
+
+        with open("tests/data/var/Pic1.8ci", 'rb') as file:
+            test_picture.load_from_file(file)
+            file.seek(0)
+
+            self.assertEqual(test_picture.bytes(), file.read()[55:-2])
+
+        self.assertEqual(test_picture.name, "Pic1")
+
+        test_from_array = TIPicture()
+        test_from_array.load_array(test_picture.array())
+        self.assertEqual(test_from_array.array(), test_picture.array())
+
     def test_image(self):
         test_image = TIPicture()
 
