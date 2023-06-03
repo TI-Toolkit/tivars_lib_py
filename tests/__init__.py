@@ -404,6 +404,8 @@ class GDBTests(unittest.TestCase):
         self.assertEqual(test_gdb.dict(), param)
         self.assertEqual(dict(test_gdb), param)
 
+        self.assertEqual(test_gdb.length, 142)
+
 
 class PictureTests(unittest.TestCase):
     def test_mono_picture(self):

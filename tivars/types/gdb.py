@@ -473,6 +473,7 @@ class TIMonoGDB(TIEntry):
 
         self.coerce()
         self._load_dict(dct)
+        self.length = self.data_length - 2
 
     def _load_dict(self, dct: dict):
         pass
