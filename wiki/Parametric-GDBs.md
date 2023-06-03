@@ -622,7 +622,7 @@
             </td>
         </tr>
         <tr>
-            <td>Global Style</td>
+            <td>Global Line Style</td>
             <td>-3</td>
             <td>1</td>
             <td><code>GlobalLineStyle</code></td>
