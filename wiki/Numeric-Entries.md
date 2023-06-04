@@ -22,7 +22,7 @@
             <td>
                 <ul>
                     <li>If bit 1 is set, the number is undefined
-                    <li>If bits 2 and 3 are set and bit 1 is clear, the number if half of a complex number
+                    <li>If bits 2 and 3 are set and bit 1 is clear, the number is half of a complex number
                     <li>If bit 6 is set, something happened
                     <li>If bit 7 is set, the number is negative
                 </ul>

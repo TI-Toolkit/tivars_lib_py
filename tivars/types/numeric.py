@@ -149,7 +149,7 @@ class TIReal(TIEntry):
         Flags for the real number
 
         If bit 1 is set, the number is undefined
-        If bits 2 and 3 are set and bit 1 is clear, the number if half of a complex number
+        If bits 2 and 3 are set and bit 1 is clear, the number is half of a complex number
         If bit 6 is set, something happened
         If bit 7 is set, the number is negative
         """
