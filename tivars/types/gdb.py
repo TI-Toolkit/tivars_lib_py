@@ -281,6 +281,7 @@ class TIMonoGDB(TIEntry):
     mode_byte = 0x00
 
     min_data_length = 61
+    has_color = False
 
     num_equations = 0
     num_parameters = 0
@@ -536,6 +537,7 @@ class TIMonoGDB(TIEntry):
 
 class TIGDB(TIMonoGDB):
     min_data_length = 66
+    has_color = True
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",

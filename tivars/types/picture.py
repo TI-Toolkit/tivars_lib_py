@@ -89,6 +89,7 @@ class PictureEntry(SizedEntry):
 
     pil_mode = None
     pixel_type = None
+    has_color = True
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
@@ -138,6 +139,7 @@ class TIMonoPicture(PictureEntry):
 
     pil_mode = "L"
     pixel_type = int
+    has_color = False
 
     _type_id = b'\x07'
 

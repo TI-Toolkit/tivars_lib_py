@@ -222,6 +222,8 @@ class TIProgram(TokenizedEntry):
         TI_82AEP: "8xp"
     }
 
+    is_protected = False
+
     _type_id = b'\x05'
 
     def __init__(self, init=None, *,
@@ -250,17 +252,11 @@ class TIProgram(TokenizedEntry):
 
         return varname
 
-    @property
-    def is_protected(self) -> bool:
-        return False
-
 
 class TIProtectedProgram(TIProgram):
-    _type_id = b'\x06'
+    is_protected = True
 
-    @property
-    def is_protected(self) -> bool:
-        return True
+    _type_id = b'\x06'
 
 
 __all__ = ["TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]
