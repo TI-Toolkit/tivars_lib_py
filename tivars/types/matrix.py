@@ -38,14 +38,15 @@ class TIMatrix(TIEntry):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
+            case "":
+                inner_sep, outer_sep = ", ", ", "
             case "t":
-                return "[" + \
-                    ''.join(f"[{','.join(format(entry, 't') for entry in row)}]" for row in self.matrix()) \
-                    + "]"
+                inner_sep, outer_sep = ",", ""
             case _:
-                return "[" + \
-                    ', '.join(f"[{', '.join(format(entry, format_spec) for entry in row)}]" for row in self.matrix()) \
-                    + "]"
+                return super().__format__(format_spec)
+
+        return "[" + outer_sep.join(f"[{inner_sep.join(format(entry, format_spec)for entry in row)}]"
+                                    for row in self.matrix()) + "]"
 
     def __iter__(self) -> Iterator[TIReal]:
         for row in self.matrix():

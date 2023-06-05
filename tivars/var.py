@@ -226,6 +226,9 @@ class TIEntry(Dock, Converter):
         except AttributeError:
             return False
 
+    def __format__(self, format_spec: str) -> str:
+        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
+
     def __iter__(self) -> Iterator:
         raise NotImplementedError
 

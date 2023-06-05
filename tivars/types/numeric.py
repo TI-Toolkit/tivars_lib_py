@@ -118,9 +118,16 @@ class TIReal(TIEntry):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
-            case "": return self.string()
-            case "t": return self.string().replace("-", "~")
-            case _: return format(self.decimal(), format_spec)
+            case "":
+                return self.string()
+            case "t":
+                return self.string().replace("-", "~")
+            case _:
+                try:
+                    return format(self.decimal(), format_spec)
+
+                except (TypeError, ValueError):
+                    return super().__format__(format_spec)
 
     def __int__(self) -> int:
         return self.int()
@@ -287,9 +294,16 @@ class TIComplex(TIEntry):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
-            case "": return self.string()
-            case "t": return squash(replacer(self.string(), {"i": "[i]", "-": "~", "~ ": "- "}))
-            case _: return format(self.complex(), format_spec)
+            case "":
+                return self.string()
+            case "t":
+                return squash(replacer(self.string(), {"i": "[i]", "-": "~", "~ ": "- "}))
+            case _:
+                try:
+                    return format(self.complex(), format_spec)
+
+                except (TypeError, ValueError):
+                    return super().__format__(format_spec)
 
     @Section(min_data_length)
     def data(self) -> bytearray:
