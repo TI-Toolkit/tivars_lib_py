@@ -71,6 +71,28 @@
     </thead>
     <tbody>
         <tr>
+            <td><a href=Var-Files#TIEntry>Meta</a></td>
+            <td>Name</td>
+            <td>0</td>
+            <td>8</td>
+            <td><code>ImageName</code></td>
+            <td>The name of the entry</td>
+            <td>
+                <ul>
+                    <li>Must be one of the image names: Image1 - Image0
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+        </tr>
+        <tr>
             <td rowspan=2>Data</td>
             <td>Length</td>
             <td>0</td>

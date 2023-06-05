@@ -37,6 +37,28 @@
                 </ul>
             </td>
         </tr>
+        <tr>
+            <td><a href=Var-Files#TIEntry>Meta</a></td>
+            <td>Name</td>
+            <td>0</td>
+            <td>8</td>
+            <td><code>EquationName</code></td>
+            <td>The name of the entry</td>
+            <td>
+                <ul>
+                    <li>Must be one of the equation names: Y1 - Y0, X1T - X6T, Y1T - Y6T, r1 - r6, u, v, or w
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+        </tr>
     </tbody>
 </table>
 

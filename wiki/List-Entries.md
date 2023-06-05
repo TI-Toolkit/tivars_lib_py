@@ -17,13 +17,13 @@
             <td>Name</td>
             <td>0</td>
             <td>8</td>
-            <td><code>TokenizedString</code></td>
+            <td><code>ListName</code></td>
             <td>The name of the entry</td>
             <td>
                 <ul>
                     <li>Must be 1 to 5 characters in length
                     <li>Can include any characters A-Z, 0-9, or θ
-                    <li>Cannot start with a digit
+                    <li>Cannot start with a digit; use L1 - L6 instead
                 </ul>
             </td>
         </tr>
@@ -71,13 +71,13 @@
             <td>Name</td>
             <td>0</td>
             <td>8</td>
-            <td><code>TokenizedString</code></td>
+            <td><code>ListName</code></td>
             <td>The name of the entry</td>
             <td>
                 <ul>
                     <li>Must be 1 to 5 characters in length
                     <li>Can include any characters A-Z, 0-9, or θ
-                    <li>Cannot start with a digit
+                    <li>Cannot start with a digit; use L1 - L6 instead
                 </ul>
             </td>
         </tr>

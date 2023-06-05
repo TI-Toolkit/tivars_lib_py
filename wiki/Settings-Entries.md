@@ -13,6 +13,28 @@
     </thead>
     <tbody>
         <tr>
+            <td><a href=Var-Files#TIEntry>Meta</a></td>
+            <td>Name</td>
+            <td>0</td>
+            <td>8</td>
+            <td><code>String</code></td>
+            <td>The name of the entry</td>
+            <td>
+                <ul>
+                    <li>Always equal to Window
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+        </tr>
+        <tr>
             <td rowspan=23>Data</td>
             <td>Xmin</td>
             <td>3</td>
@@ -289,6 +311,28 @@
     </thead>
     <tbody>
         <tr>
+            <td><a href=Var-Files#TIEntry>Meta</a></td>
+            <td>Name</td>
+            <td>0</td>
+            <td>8</td>
+            <td><code>String</code></td>
+            <td>The name of the entry</td>
+            <td>
+                <ul>
+                    <li>Always equal to RclWindw
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+        </tr>
+        <tr>
             <td rowspan=23>Data</td>
             <td>Xmin</td>
             <td>2</td>
@@ -564,6 +608,28 @@
         </tr>
     </thead>
     <tbody>
+        <tr>
+            <td><a href=Var-Files#TIEntry>Meta</a></td>
+            <td>Name</td>
+            <td>0</td>
+            <td>8</td>
+            <td><code>String</code></td>
+            <td>The name of the entry</td>
+            <td>
+                <ul>
+                    <li>Always equal to TblSet
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+        </tr>
         <tr>
             <td rowspan=2>Data</td>
             <td>TblMin</td>
