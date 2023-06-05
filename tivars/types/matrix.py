@@ -30,6 +30,12 @@ class TIMatrix(TIEntry):
 
     _type_id = b'\x02'
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "[A]",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     def __format__(self, format_spec: str) -> str:
         match format_spec:
             case "t":

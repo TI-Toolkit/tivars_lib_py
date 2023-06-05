@@ -16,10 +16,9 @@ class SettingsEntry(TIEntry):
     leading_bytes = b''
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "Window",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.raw.data[:len(self.leading_bytes)] = self.leading_bytes
@@ -75,6 +74,14 @@ class TIWindowSettings(SettingsEntry):
 
     _type_id = b'\x0F'
     leading_bytes = b'\xD0\x00\x00'
+
+    @Section(8, String)
+    def name(self) -> str:
+        """
+        The name of the entry
+
+        Always equal to Window
+        """
 
     @Section(min_data_length)
     def data(self) -> bytearray:
@@ -313,6 +320,20 @@ class TIRecallWindow(SettingsEntry):
     _type_id = b'\x10'
     leading_bytes = b'\xCF\x00'
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "RclWindw",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+    @Section(8, String)
+    def name(self) -> str:
+        """
+        The name of the entry
+
+        Always equal to RclWindw
+        """
+
     @Section(min_data_length)
     def data(self) -> bytearray:
         """
@@ -549,6 +570,20 @@ class TITableSettings(SettingsEntry):
 
     _type_id = b'\x11'
     leading_bytes = b'\x12\x00'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "TblSet",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+    @Section(8, String)
+    def name(self) -> str:
+        """
+        The name of the entry
+
+        Always equal to TblSet
+        """
 
     @Section(min_data_length)
     def data(self) -> bytearray:

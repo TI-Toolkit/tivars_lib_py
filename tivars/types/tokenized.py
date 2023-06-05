@@ -109,6 +109,32 @@ class TokenizedEntry(SizedEntry):
         return self.decode(self.data[2:])
 
 
+class EquationName(TokenizedString):
+    _T = str
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        varname = super().get(data, instance)
+
+        if varname.startswith("|"):
+            return varname[1:]
+
+        else:
+            return varname.upper().strip("{}")
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        varname = value[:8].lower()
+
+        if varname.startswith("|") or varname in ("u", "v", "w"):
+            varname = "|" + varname[-1]
+
+        elif varname[0] != "{" and varname[-1] != "}":
+            varname = "{" + varname + "}"
+
+        return super().set(varname, instance)
+
+
 class TIEquation(TokenizedEntry):
     extensions = {
         None: "8xy",
@@ -128,6 +154,20 @@ class TIEquation(TokenizedEntry):
     }
 
     _type_id = b'\x03'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "Y1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+    @Section(8, EquationName)
+    def name(self) -> str:
+        """
+        The name of the entry
+
+        Must be one of the equation names: Y1 - Y0, X1T - X6T, Y1T - Y6T, r1 - r6, u, v, or w
+        """
 
 
 class TIString(TokenizedEntry):
@@ -149,6 +189,12 @@ class TIString(TokenizedEntry):
     }
 
     _type_id = b'\x04'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "Str1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
@@ -178,6 +224,12 @@ class TIProgram(TokenizedEntry):
 
     _type_id = b'\x05'
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section(8, TokenizedString)
     def name(self, value) -> str:
         """
@@ -190,7 +242,7 @@ class TIProgram(TokenizedEntry):
 
         varname = value[:8].upper()
         varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
-        varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
+        varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
             warn(f"Var has invalid name: {varname}.",

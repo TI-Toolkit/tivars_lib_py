@@ -180,6 +180,7 @@ class NumericTests(unittest.TestCase):
         test_real = TIReal()
         test_real.open("tests/data/var/Real.8xn")
 
+        self.assertEqual(test_real.name, "A")
         self.assertEqual(test_real.sign, -1)
         self.assertEqual(test_real.exponent, 129)
         self.assertEqual(test_real.mantissa, 42133700000000)
@@ -236,6 +237,7 @@ class NumericTests(unittest.TestCase):
 
         test_list = [TIReal("-1.0"), TIReal("2.0"), TIReal("999")]
 
+        self.assertEqual(test_real_list.name, "Z")
         self.assertEqual(test_real_list.length, 3)
         self.assertEqual(test_real_list.list(), test_list)
         self.assertEqual(list(iter(test_real_list)), test_list)
@@ -262,6 +264,7 @@ class NumericTests(unittest.TestCase):
                       [TIReal("2.7386127875258"), TIReal("0.5"), TIReal("3.1415926535898")],
                       [TIReal("1"), TIReal(99999999), TIReal(0)]]
 
+        self.assertEqual(test_matrix.name, "[A]")
         self.assertEqual(test_matrix.height, 3)
         self.assertEqual(test_matrix.width, 3)
         self.assertEqual(test_matrix.matrix(), test_array)
@@ -283,6 +286,7 @@ class SettingsTests(unittest.TestCase):
         zero, one, undef = TIReal(0), TIReal(1), TIReal(1, flags={1: 1, 2: 1, 3: 1})
         tau, pi_twenty_fourths = TIReal("6.283185307"), TIReal("0.13089969389957")
 
+        self.assertEqual(test_window.name, "Window")
         self.assertEqual(test_window.PlotStart, one)
         self.assertEqual(test_window.PlotStep, one)
 
@@ -317,6 +321,7 @@ class SettingsTests(unittest.TestCase):
         zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1", flags={1: 1, 2: 1, 3: 1})
         tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
 
+        self.assertEqual(test_recall.name, "RclWindw")
         self.assertEqual(test_recall.PlotStart, one)
         self.assertEqual(test_recall.PlotStep, one)
 
@@ -348,6 +353,7 @@ class SettingsTests(unittest.TestCase):
         test_table = TITableSettings()
         test_table.open("tests/data/var/TableRange.8xt")
 
+        self.assertEqual(test_table.name, "TblSet")
         self.assertEqual(test_table.TblMin, TIReal(0.0))
         self.assertEqual(test_table.DeltaTbl, TIReal("1"))
 
@@ -358,6 +364,8 @@ class GDBTests(unittest.TestCase):
         test_gdb.open("tests/data/var/GraphDataBase.8xd")
 
         self.assertEqual(type(test_gdb), TIFuncGDB)
+        self.assertEqual(test_gdb.name, "GDB1")
+
         self.assertEqual(test_gdb.Xmax, eleven_pi_over_four := TIReal("8.639379797"))
         self.assertEqual(test_gdb.Xmin, -eleven_pi_over_four)
         self.assertEqual(test_gdb.Xres, TIReal(2))
@@ -447,6 +455,7 @@ class PictureTests(unittest.TestCase):
 
             self.assertEqual(test_image.bytes(), file.read()[55:-2])
 
+        self.assertEqual(test_image.name, "Image1")
         self.assertEqual(test_image.image_magic, b'\x81')
 
         test_from_array = TIImage()

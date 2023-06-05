@@ -104,7 +104,7 @@ class TIReal(TIEntry):
     _type_id = b'\x00'
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None,
                  flags: dict[int, int] = None):
@@ -268,7 +268,7 @@ class TIComplex(TIEntry):
     _type_id = b'\x0C'
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)

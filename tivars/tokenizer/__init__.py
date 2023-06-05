@@ -70,11 +70,11 @@ class TokenizedString(String):
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
-        return decode(data.ljust(8, b'\x00'), TI83_BYTES)
+        return decode(data.ljust(8, b'\x00'), CE_BYTES)
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return encode(value, TI83_TOKENS).rstrip(b'\x00')
+        return encode(value, CE_TOKENS).rstrip(b'\x00')
 
 
 __all__ = ["decode", "encode", "load_tokens_xml", "TokenizedString",

@@ -5,6 +5,7 @@ from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
+from tivars.tokenizer import decode, encode
 from ..flags import *
 from ..data import *
 from ..var import TIEntry
@@ -124,7 +125,7 @@ class TIGraphedEquation(TIEquation):
                 self.data_length + self.flags + self.data
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "Y1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)

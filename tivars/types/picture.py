@@ -2,6 +2,7 @@ from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
+from tivars.tokenizer import TokenizedString
 from ..data import *
 from ..var import SizedEntry
 
@@ -90,7 +91,7 @@ class PictureEntry(SizedEntry):
     pixel_type = None
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "Pic1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
@@ -218,6 +219,19 @@ class TIPicture(PictureEntry):
                          BytesWarning)
 
 
+# Workaround until the token sheets are updated
+class ImageName(TokenizedString):
+    _T = str
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        return f"Image{data[1] + 1}"
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        return b"\x3C" + int.to_bytes(int(value[-1], 16) - 1, 1, 'little')
+
+
 class TIImage(PictureEntry):
     flash_only = True
 
@@ -265,6 +279,14 @@ class TIImage(PictureEntry):
             for col in range(0, self.data_width - 2, 2):
                 yield RGB565.get(self.data[self.data_width * row + col + self.data_offset:][:2], self)
 
+    @Section(8, ImageName)
+    def name(self) -> str:
+        """
+        The name of the entry
+
+        Must be one of the image names: Image1 - Image0
+        """
+
     @Section()
     def data(self) -> bytearray:
         """
@@ -295,7 +317,7 @@ class TIImage(PictureEntry):
             case self.min_data_length: pass
             case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
             case TIPicture.min_data_length: self.__class__ = TIPicture
-            case _: warn(f"Picture has unexpected length ({self.length}).",
+            case _: warn(f"Image has unexpected length ({self.length}).",
                          BytesWarning)
 
 

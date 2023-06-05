@@ -11,10 +11,49 @@ from ..var import TIEntry
 from .numeric import TIReal, TIComplex
 
 
+class ListName(TokenizedString):
+    _T = str
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        if data[0] == 0x5D:
+            if data[1] < 6:
+                return super().get(data, instance)
+
+            elif data[1] == 0x40:
+                return "IDList"
+
+            data = data[1:]
+
+        return super().get(data, instance)
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        varname = value[:7].upper()
+        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
+        varname = re.sub(r"]", "|L", varname)
+        varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
+
+        if "IDList" in varname:
+            return b']@'
+
+        elif varname.startswith("|L"):
+            return super().set(varname[-5:], instance)
+
+        else:
+            return super().set(varname[:2], instance)
+
+
 class ListEntry(TIEntry):
     _E = TIEntry
 
     min_data_length = 2
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "L1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
@@ -24,25 +63,15 @@ class ListEntry(TIEntry):
     def __iter__(self) -> Iterator[_E]:
         return iter(self.list())
 
-    @Section(8, TokenizedString)
-    def name(self, value) -> str:
+    @Section(8, ListName)
+    def name(self) -> str:
         """
         The name of the entry
 
         Must be 1 to 5 characters in length
         Can include any characters A-Z, 0-9, or θ
-        Cannot start with a digit
+        Cannot start with a digit; use L1 - L6 instead
         """
-
-        varname = value[:5].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
-        varname = re.sub(r"[^[a-zA-Z0-9]", "", varname)
-
-        if not varname or varname[0].isnumeric():
-            warn(f"Var has invalid name: {varname}.",
-                 BytesWarning)
-
-        return varname
 
     @Section()
     def data(self) -> bytearray:
