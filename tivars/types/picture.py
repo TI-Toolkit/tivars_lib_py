@@ -148,6 +148,14 @@ class TIMonoPicture(PictureEntry):
             for bit in L1.get(byte, self):
                 yield bit
 
+    @Section(min_data_length)
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the length of the remaining data as its first two bytes
+        """
+
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
         self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
@@ -202,6 +210,14 @@ class TIPicture(PictureEntry):
         for byte in self.data[self.data_offset:]:
             for rgb in RGBPalette.get(byte, self):
                 yield rgb
+
+    @Section(min_data_length)
+    def data(self) -> bytearray:
+        """
+        The data section of the entry
+
+        Contains the length of the remaining data as its first two bytes
+        """
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
@@ -289,7 +305,7 @@ class TIImage(PictureEntry):
         Must be one of the image names: Image1 - Image0
         """
 
-    @Section()
+    @Section(min_data_length)
     def data(self) -> bytearray:
         """
         The data section of the entry
