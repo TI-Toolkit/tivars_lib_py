@@ -43,7 +43,7 @@ class TokenizedEntry(SizedEntry):
 
     def derive_version(self) -> bytes:
         def has_bytes_in(prefix: bytes, start: int, end: int):
-            return any(prefix + int.to_bytes(byte, 1, 'little') in self.raw.data for byte in range(start, end + 1))
+            return any(prefix + bytes([byte]) in self.raw.data for byte in range(start, end + 1))
 
         version = 0x00
         match self.raw.data:
@@ -77,7 +77,7 @@ class TokenizedEntry(SizedEntry):
         if any(token in self.raw.data for token in self.clock_tokens):
             version += 0x20
 
-        return int.to_bytes(version, 1, 'little')
+        return bytes([version])
 
     def decode(self, data: bytearray, *, model: TIModel = None) -> str:
         byte_map = self.tokens[model or TI_84PCEPY][1]

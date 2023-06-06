@@ -18,7 +18,7 @@ class L1(Converter):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes(int("".join("0" if bit else "1" for bit in value), 2), 1, 'little')
+        return bytes([int("".join("0" if bit else "1" for bit in value), 2)])
 
 
 class RGBPalette(Converter):
@@ -58,8 +58,7 @@ class RGBPalette(Converter):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes((cls.palette.index(cls.nearest(*value[0])) << 4) +
-                            cls.palette.index(cls.nearest(*value[1])), 1, 'little')
+        return bytes([(cls.palette.index(cls.nearest(*value[0])) << 4) + cls.palette.index(cls.nearest(*value[1]))])
 
 
 class RGB565(Converter):
@@ -75,8 +74,7 @@ class RGB565(Converter):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return int.to_bytes(((value[1] >> 2 & 7) << 5) | value[2] >> 3, 1, 'little') + \
-            int.to_bytes((value[0] & ~7) | (value[1] >> 5), 1, 'little')
+        return bytes([((value[1] >> 2 & 7) << 5) | value[2] >> 3]) + bytes([(value[0] & ~7) | (value[1] >> 5)])
 
 
 class PictureEntry(SizedEntry):
@@ -247,7 +245,7 @@ class ImageName(TokenizedString):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
-        return b"\x3C" + int.to_bytes(int(value[-1], 16) - 1, 1, 'little')
+        return b"\x3C" + bytes([int(value[-1], 16) - 1])
 
 
 class TIImage(PictureEntry):

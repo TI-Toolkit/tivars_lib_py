@@ -100,7 +100,7 @@ class TIMatrix(TIEntry):
         if len({len(row) for row in matrix}) != 1:
             raise IndexError("matrix has uneven rows")
 
-        self.load_bytes(int.to_bytes(len(matrix[0]), 1, 'little') + int.to_bytes(len(matrix), 1, 'little') +
+        self.load_bytes(bytes([len(matrix[0])]) + bytes([len(matrix)]) +
                         b''.join(entry.data for row in matrix for entry in row))
 
     def matrix(self) -> list[list[TIReal]]:
