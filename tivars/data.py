@@ -38,7 +38,7 @@ class Boolean(Converter):
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
-        return data == b'\x80'
+        return data != b'\x00'
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
