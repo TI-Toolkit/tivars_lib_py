@@ -433,7 +433,7 @@ class TIEntry(Dock, Converter):
         return self.raw.bytes()
 
     def load_data_section(self, data: BytesIO):
-        self.raw.data = bytearray(data.read(type(self).data.width))
+        self.raw.data = bytearray(data.read(type(self).data.length))
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):

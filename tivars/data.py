@@ -70,10 +70,10 @@ class String(Converter):
 
 
 class Section:
-    def __init__(self, width: int = None, converter: type[Converter] = None):
+    def __init__(self, length: int = None, converter: type[Converter] = None):
         self._converter = converter or Bytes
         self._get, self._set = self._converter.get, self._converter.set
-        self._width = width
+        self._length = length
 
     def __copy__(self) -> 'Section':
         cls = self.__class__
@@ -103,13 +103,13 @@ class Section:
     def __set__(self, instance, value: _T):
         value = self._set(value, instance)
 
-        if self._width is not None:
-            if len(value) > self._width:
-                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self._width]}.",
+        if self._length is not None:
+            if len(value) > self._length:
+                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self._length]}.",
                      BytesWarning)
-                value = value[:self._width]
+                value = value[:self._length]
 
-            value = value.ljust(self._width, b'\x00')
+            value = value.ljust(self._length, b'\x00')
 
         setattr(instance.raw, self._name, value)
 
@@ -130,8 +130,8 @@ class Section:
         return self._name
 
     @property
-    def width(self) -> int | None:
-        return self._width
+    def length(self) -> int | None:
+        return self._length
 
 
 class View(Section):
@@ -150,8 +150,8 @@ class View(Section):
     def __set__(self, instance, value: _T):
         value = self._set(value, instance)
 
-        if self.width is not None:
-            value = value[:self.width].rjust(self.width, b'\x00')
+        if self.length is not None:
+            value = value[:self.length].rjust(self.length, b'\x00')
 
         getattr(instance.raw, self._target.name)[self._indices] = value
 
@@ -159,8 +159,8 @@ class View(Section):
         return self.__class__(self._target, self._converter, indices)
 
     @property
-    def width(self) -> int | None:
-        if self._target.width is None:
+    def length(self) -> int | None:
+        if self._target.length is None:
             if (self._indices.step or 1) > 0:
                 if (self._indices.start or 0) >= 0 and (self._indices.stop is None or self._indices.stop < 0):
                     return None
@@ -172,7 +172,7 @@ class View(Section):
             return max(ceil(((self._indices.stop or 0) - (self._indices.start or 0)) // (self._indices.step or 1)), 0)
 
         else:
-            return len(range(*self._indices.indices(self._target.width)))
+            return len(range(*self._indices.indices(self._target.length)))
 
 
 class Dock:

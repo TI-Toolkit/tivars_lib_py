@@ -389,7 +389,7 @@ class TIMonoGDB(TIEntry):
 
     @property
     def offset(self) -> int:
-        return TIMonoGDB.min_data_length + TIReal.data.width * self.num_parameters
+        return TIMonoGDB.min_data_length + TIReal.min_data_length * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
