@@ -28,8 +28,6 @@ my_program = TIProgram(name="HELLO")
 If you're not sure of an entry's type, instantiate a base `TIEntry`:
 
 ```python
-from tivars.var import *
-
 my_entry = TIEntry()
 ```
 
