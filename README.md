@@ -28,12 +28,16 @@ my_program = TIProgram(name="HELLO")
 If you're not sure of an entry's type, instantiate a base `TIEntry`:
 
 ```python
+from tivars.var import *
+
 my_entry = TIEntry()
 ```
 
 If you want to create an entire var or just a header, use `TIVar` or `TIHeader` instead:
 
 ```python
+from tivars.var import *
+
 my_var = TIVar()
 my_var_for84pce = TIVar(model=TI_84PCE)
 
