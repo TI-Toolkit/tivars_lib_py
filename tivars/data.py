@@ -77,7 +77,7 @@ class Boolean(Converter):
     """
     Converter for data sections best interpreted as boolean flags
 
-    Expects the data section to be width one
+    The data section is expected to have length one.
     """
 
     _T = bool
@@ -111,7 +111,7 @@ class Integer(Converter):
     """
     Converter for data sections best interpreted as integers
 
-    Integers are always little-endian, unsigned, and at most two bytes
+    Integers are always little-endian, unsigned, and at most two bytes.
     """
 
     _T = int
@@ -147,7 +147,7 @@ class String(Converter):
     """
     Converter for data sections best interpreted as strings
 
-    Strings are encoded in utf-8
+    Strings are encoded in utf-8.
     """
 
     _T = str
@@ -181,25 +181,23 @@ class Section:
     """
     Data section class which handles conversion between bytes and appropriate data types
 
-    A data section is given by its length and type converter
-    Their primary function is to permit the user to read and write data sections as their natural data types
+    A data section is given by its length and type converter.
+    Their primary function is to permit the user to read and write data sections as their natural data types.
 
-    A priori, a data section does not correspond to any one part of a var file
-    Individual sections are instead stitched together to yield a var file's contents
+    A priori, a data section does not correspond to any one part of a var file.
+    Individual sections are instead stitched together to yield a var file's contents.
 
-    Distinct data sections are entirely independent, which is useful for sections which may vary in length
-    To construct sections which point to a portion of another section, see the `View` class
+    Distinct data sections are entirely independent, which is useful for sections which may vary in length.
+    To construct sections which point to a portion of another section, see the `View` class.
 
     Data sections can be declared by decorating methods:
     ```py
     @Section(length, Converter)
     def data_section(self) -> _T:
-        \"\"\"
-        Docstring
-        \"\"\"
+        ...
     ```
 
-    An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`
+    An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
     def __init__(self, length: int = None, converter: type[Converter] = None):
@@ -277,22 +275,20 @@ class View(Section):
     """
     Data view class which handles conversion between portions of data sections and appropriate data types
 
-    A data view is given by its target data section, type converter, and indices within the target
-    Indices must be contiguous and forward-facing
+    A data view is given by its target data section, type converter, and indices within the target.
+    Indices must be contiguous and forward-facing.
 
-    Data views are effectively pointers to the data sections they view, converting data in and out as specified
-    Note that data views cannot target other data views; this is done for implementation simplicity
+    Data views are effectively pointers to the data sections they view, converting data in and out as specified.
+    Note that data views cannot target other data views; this is done for implementation simplicity.
 
     Data views can be declared by decorating methods:
     ```py
     @View(section, Converter)
     def data_view(self) -> _T:
-        \"\"\"
-        Docstring
-        \"\"\"
+        ...
     ```
 
-    An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`
+    An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
     def __init__(self, target: Section, converter: type[Converter] = None, indices: slice = slice(None)):
