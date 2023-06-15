@@ -7,16 +7,38 @@ from .data import *
 
 
 class Enum(Converter):
+    """
+    Base class for enum types
+
+    This implementation is used over Python's builtin solutions to permit interface with the `Converter` system.
+    """
+
     _T = bytes
 
     _all = []
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `bytes`, returning the first byte
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The first byte of `data`
+        """
+
         return bytes(data[0:1])
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts `bytes` -> `bytes`, enforcing that the input is a recognized enum value
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The byte in `value`, unchanged
+        """
+
         if value not in cls._all:
             warn(f"{value} is not recognized.",
                  BytesWarning)
@@ -25,14 +47,34 @@ class Enum(Converter):
 
     @classmethod
     def get_name(cls, value: _T) -> str:
+        """
+        Finds the first name in this enum with a given value
+
+        :param value: The value to find
+        :return: A name in this enum
+        """
+
         return next(filter(lambda attr: not attr.startswith("_") and getattr(cls, attr) == value, dir(cls)), None)
 
 
 @total_ordering
 class Flags(Converter, dict, Mapping[int, int]):
+    """
+    Base class for flag types
+
+    Flags are bitfields in a byte that are set or cleared using dict update notation.
+    """
+
     _T = 'Flags'
 
     def __init__(self, bitsets: Mapping[int, int] | 'Flags' = None, *, width: int = 8):
+        """
+        Create an empty `Flags` instance with a given initial state and width
+
+        :param bitsets: The initial state of these flags
+        :param width: The number of bitfields used for these flags (defaults to `8`)
+        """
+
         if bitsets is None:
             bitsets = {bit: 0 for bit in range(width)}
 
@@ -57,10 +99,26 @@ class Flags(Converter, dict, Mapping[int, int]):
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `Flags`, splitting the byte into the corresponding bitfields
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: A `Flags` instance with bitfields given by `data`
+        """
+
         return cls({bit: int(value) for bit, value in enumerate(f"{int.from_bytes(data, 'little'):b}"[::-1])})
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts `Flags` -> `bytes`, packing the bitfields into the appropriate number of bytes
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The byte string composed of the bitfields in these flags
+        """
+
         return int.to_bytes(int(value), len(value) // 8, 'little')
 
 
