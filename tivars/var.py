@@ -261,7 +261,7 @@ class TIEntry(Dock, Converter):
         """
         The type ID of the entry
 
-        Used the interpret the contents of the data section of the entry
+        Used to interpret the contents of the data section of the entry
         """
 
     @Section(8, TokenizedString)
