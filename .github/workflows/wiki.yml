@@ -19,9 +19,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - name: Run build script
-        run: |
-          python wiki/build.py
+#     - name: Run build script
+#       run: |
+#         python wiki/build.py
 
   publish:
     runs-on: ubuntu-latest
