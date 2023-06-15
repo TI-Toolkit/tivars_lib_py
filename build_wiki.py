@@ -4,7 +4,7 @@ import os
 from functools import total_ordering
 from importlib import import_module
 
-from template import *
+from wiki.template import *
 
 
 @total_ordering
