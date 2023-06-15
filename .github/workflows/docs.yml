@@ -14,16 +14,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout lib with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
-      - run: git submodule update --init --recursive
-      - run: pip install pdoc
-      - run: pdoc tivars --math -o docs/
-
-      - uses: actions/upload-pages-artifact@v1
+      - name: Run pdoc
+        run: |
+          pip install pdoc
+          pdoc tivars --math -o docs/
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
           path: docs/
 
