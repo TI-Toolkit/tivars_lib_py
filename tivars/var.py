@@ -662,7 +662,7 @@ class TIEntry(Dock, Converter):
         Export this entry to a `TIVar` with a specified name, header, and target model
 
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param name: The name of the var (defaults to 'UNNAMED', may not be valid for all types)
+        :param name: The name of the var (defaults to `'UNNAMED'`; may not be valid for all types)
         :param model: A `TIModel` to target (defaults to `None`)
         """
 
@@ -699,7 +699,7 @@ class TIVar:
         Creates an empty var with a specified name, header, and targeted model
 
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param name: The name of the var (defaults to `'UNNAMED'`, may not be valid for all types)
+        :param name: The name of the var (defaults to `'UNNAMED'`)
         :param model: A `TIModel` to target (defaults to `None`)
         """
 
