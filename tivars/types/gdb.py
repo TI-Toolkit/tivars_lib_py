@@ -1371,4 +1371,4 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
 
 __all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "TIGraphedEquation", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle"]
+           "TIGraphedEquation", "EquationFlags", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle"]
