@@ -1,10 +1,13 @@
 import ast
 import os
+import sys
 
 from functools import total_ordering
 from importlib import import_module
 
 from template import *
+
+sys.path.extend("")
 
 
 @total_ordering
