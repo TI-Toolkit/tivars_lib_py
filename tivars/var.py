@@ -8,7 +8,17 @@ from .data import *
 
 
 class TIHeader:
+    """
+    Parser for var file headers
+
+    All var files require a header which includes a number of magic bytes, data lengths, and a customizable comment.
+    """
+
     class Raw:
+        """
+        Raw bytes container for `TIHeader`
+        """
+
         __slots__ = "magic", "extra", "product_id", "comment"
 
         def bytes(self) -> bytes:
@@ -16,7 +26,17 @@ class TIHeader:
 
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
-                 comment: str = "Created with tivars_lib_py v0.6"):
+                 comment: str = "Created with tivars_lib_py v0.7"):
+        """
+        Create an empty `TIHeader` which targets a specified model
+
+        :param model: A `TImodel` to target (defaults to `TI_82AEP`)
+        :param magic: File magic at the start of the header (default to the model's magic)
+        :param extra: Extra export bytes for the header (defaults to `b'\x1a\x0a'`)
+        :param product_id: The targeted model's product ID (defaults to `b'\x00'`)
+        :param comment: A comment to include in the header (defaults to a simple lib message)
+        """
+
         self.raw = self.Raw()
 
         model = model or TI_82AEP
@@ -56,9 +76,6 @@ class TIHeader:
     def magic(self) -> str:
         """
         The file magic for the var
-
-        Used to identify if the file is intended for the TI-82, TI-83, or TI-83+ and onward
-        Can be one of **TI82**, **TI83**, or **TI83F*
         """
 
     @Section(2)
@@ -66,8 +83,8 @@ class TIHeader:
         """
         Extra export bytes for the var
 
-        Exact meaning and interpretation of these bytes is not yet determined
-        These bytes are set by different export tools and can often be "incorrect" without causing issues
+        The exact meaning and interpretation of these bytes is not yet determined.
+        These bytes are set by different export tools and can often be "incorrect" without causing issues.
         """
 
     @Section(1)
@@ -75,8 +92,8 @@ class TIHeader:
         """
         The product ID for the var
 
-        Used to identify the model the var was created on, though has no actual functional ramifications
-        Does not constitute a 1-to-1 mapping to distinct models
+        While used to identify the model the var was created on, it has no actual functional ramifications.
+        Furthermore, it does not constitute a 1-to-1 mapping to distinct models.
         """
 
     @Section(42, String)
@@ -86,6 +103,15 @@ class TIHeader:
         """
 
     def derive_model(self) -> TIModel:
+        """
+        Determine which model this header most likely represents
+
+        The header contains no reference to a model to target, which permits sharing across models where possible.
+        This method attempts to derive a model from the header's file magic and product ID.
+
+        :return: A model that this header can target
+        """
+
         match self.magic:
             case TI_82.magic:
                 model = TI_82
@@ -112,6 +138,12 @@ class TIHeader:
         return model
 
     def load_bytes(self, data: bytes | BytesIO):
+        """
+        Loads a byte string or bytestream into the header
+
+        :param data: The source bytes
+        """
+
         try:
             data = BytesIO(data.read())
 
@@ -131,17 +163,39 @@ class TIHeader:
         self.raw.comment = data.read(42)
 
     def bytes(self) -> bytes:
+        """
+        :return: The byte string corresponding to this header
+        """
+
         return self.raw.bytes()
 
     def load_from_file(self, file: BinaryIO):
+        """
+        Loads this header from a file given a file pointer
+
+        :param file: A binary file to read from
+        """
+
         self.load_bytes(file.read(len(self)))
 
     def open(self, filename: str):
+        """
+        Loads this header from a file given a filename
+
+        :param filename: A filename to open
+        """
+
         with open(filename, 'rb') as file:
             self.load_bytes(file.read())
 
 
 class TIEntry(Dock, Converter):
+    """
+    Base class for all var entries
+
+    A var file is made of one or more entries, each of which contain the data of the familiar var types.
+    """
+
     _T = 'TIEntry'
 
     flash_only = False
@@ -158,6 +212,10 @@ class TIEntry(Dock, Converter):
     _type_id = None
 
     class Raw:
+        """
+        Raw bytes container for `TIEntry`
+        """
+
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "data"
 
         def bytes(self) -> bytes:
@@ -243,15 +301,13 @@ class TIEntry(Dock, Converter):
         """
         The length of the meta section of the entry
 
-        Can be 13 (contains flash) or 11 (lacks flash)
+        The possible meta lengths are 11 (without flash) or 13 (with flash).
         """
 
     @property
     def data_length(self) -> int:
         """
         The length of the data section of the entry
-
-        Can be zero
         """
 
         return len(self.data)
@@ -261,7 +317,8 @@ class TIEntry(Dock, Converter):
         """
         The type ID of the entry
 
-        Used to interpret the contents of the data section of the entry
+        The type determines how the contents of the data section of the entry are interpreted.
+        Real subtypes have the same type ID.
         """
 
     @Section(8, TokenizedString)
@@ -269,7 +326,7 @@ class TIEntry(Dock, Converter):
         """
         The name of the entry
 
-        Interpretation as text depends on the entry type; see individual types for details
+        Interpretation as text depends on the entry type; see individual types for details.
         """
 
     @Section(1, Bytes)
@@ -277,16 +334,15 @@ class TIEntry(Dock, Converter):
         """
         The version number of the entry
 
-        Is not present for vars without flash bytes
+        Only flash files support this entry, and it thus not present if `meta_length` <= 11.
         """
 
     @Section(1, Boolean)
     def archived(self) -> bool:
         """
         Whether the entry is archived
-        A value of 0x80 is truthy; all others are falsy
 
-        Is not present for vars without flash bytes
+        Only flash files support this entry, and it thus not present if `meta_length` <= 11.
         """
 
     @Section()
@@ -294,15 +350,31 @@ class TIEntry(Dock, Converter):
         """
         The data section of the entry
 
-        See individual entry types for how this data is interpreted
+        See individual entry types for how this data is interpreted.
         """
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `TIEntry`
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: A `TIEntry` instance with data equal to `data`
+        """
+
         return cls(data=data)
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts `TIEntry` -> `bytes`
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The data of `value`
+        """
+
         return value.data
 
     @property
@@ -319,6 +391,13 @@ class TIEntry(Dock, Converter):
 
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:
+        """
+        Helper function to determine the length of the next entry in a bytestream
+
+        :param stream: A bytestream
+        :return: The length of the next entry in the bytestream
+        """
+
         meta_length = int.from_bytes(stream.read(2), 'little')
         data_length = int.from_bytes(stream.read(2), 'little')
         stream.seek(-4, 1)
@@ -327,24 +406,48 @@ class TIEntry(Dock, Converter):
 
     @classmethod
     def register(cls, var_type: type['TIEntry']):
+        """
+        Registers a subtype with this class for coercion
+
+        :param var_type: The `TIEntry` subtype to register
+        """
+
         cls.type_ids[var_type._type_id] = var_type
 
     def archive(self):
+        """
+        Archives this entry (if supported)
+        """
+
         if self.flash_bytes:
             self.archived = True
         else:
             raise TypeError("entry does not support archiving.")
 
     def clear(self):
+        """
+        Clears this entry's data
+        """
+
         self.raw.data = bytearray(0)
         self.set_length()
 
     def set_length(self, length: int = None):
+        """
+        Sets the length of this entry's data to a specified value if it exceeds the current length
+
+        :param length: The length to extend to
+        """
+
         length = length or self.min_data_length
         if length > self.data_length:
             self.raw.data.extend(bytearray(length - self.data_length))
 
     def unarchive(self):
+        """
+        Unarchives this entry (if supported)
+        """
+
         if self.flash_bytes:
             self.archived = False
         else:
@@ -352,6 +455,12 @@ class TIEntry(Dock, Converter):
 
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
+        """
+        Loads a byte string or bytestream into this entry
+
+        :param data: The source bytes
+        """
+
         try:
             data = BytesIO(data.read())
 
@@ -430,13 +539,30 @@ class TIEntry(Dock, Converter):
                  BytesWarning)
 
     def bytes(self) -> bytes:
+        """
+        :return: The byte string corresponding to this entry
+        """
+
         return self.raw.bytes()
 
     def load_data_section(self, data: BytesIO):
+        """
+        Loads the data of this entry from a bytestream
+
+        :param data: The source bytes
+        """
+
         self.raw.data = bytearray(data.read(type(self).data.length))
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
+        """
+        Loads this entry from a file given a file pointer and offset
+
+        :param file: A binary file to read from
+        :param offset: The offset of the entry to read
+        """
+
         # Load header
         header = TIHeader()
         header.load_from_file(file)
@@ -452,12 +578,28 @@ class TIEntry(Dock, Converter):
 
     @Loader[str]
     def load_string(self, string: str):
+        """
+        Loads this entry from a string representation
+
+        :param string: The string to load
+        """
+
         raise NotImplementedError
 
     def string(self) -> str:
+        """
+        :return: A string representation of this entry
+        """
+
         raise NotImplementedError
 
     def open(self, filename: str):
+        """
+        Loads this header from a file given a filename
+
+        :param filename: A filename to open
+        """
+
         if self._type_id is not None and \
                 not any(filename.endswith(extension) for extension in self.extensions.values()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {type(self)}; "
@@ -474,14 +616,36 @@ class TIEntry(Dock, Converter):
                      UserWarning)
 
     def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
+        """
+        Save this entry as a var file given a filename and optional header and targeted model
+
+        :param filename: A filename to save to (defaults to the var's name and extension)
+        :param header: A `TIHeader` to attach (defaults to an empty header)
+        :param model: A `TIModel` to target (defaults to `None`)
+        """
+
         self.export(header=header, model=model).save(filename)
 
     def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
+        """
+        Export this entry to a `TIVar` with a specified name, header, and target model
+
+        :param header: A `TIHeader` to attach (defaults to an empty header)
+        :param name: The name of the var (defaults to 'UNNAMED', may not be valid for all types)
+        :param model: A `TIModel` to target (defaults to `None`)
+        """
+
         var = TIVar(header=header, name=name or self.name, model=model)
         var.add_entry(self)
         return var
 
     def coerce(self):
+        """
+        Coerces this entry to a subtype if possible using the entry's type ID
+
+        Valid types must be registered using `TIEntry.register` to be considered for coercion.
+        """
+
         if self._type_id is None:
             try:
                 self.__class__ = self.type_ids[self.raw.type_id]
@@ -493,8 +657,20 @@ class TIEntry(Dock, Converter):
 
 
 class TIVar:
+    """
+    Container for var files
+
+    A var file is composed of a header and any number of entries.
+    """
+
     def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
-        super().__init__()
+        """
+        Creates an empty var with a specified name, header, and targeted model
+
+        :param header: A `TIHeader` to attach (defaults to an empty header)
+        :param name: The name of the var (defaults to 'UNNAMED', may not be valid for all types)
+        :param model: A `TIModel` to target (defaults to `None`)
+        """
 
         self.header = header or TIHeader(magic=model.magic if model is not None else None)
         self.entries = []
@@ -533,7 +709,7 @@ class TIVar:
         """
         The total length of the var entries
 
-        Should be 57 less than the total var size
+        This should always be 57 less than the total var size.
         """
 
         return sum(len(entry) for entry in self.entries)
@@ -543,7 +719,7 @@ class TIVar:
         """
         The checksum for the var
 
-        This is equal to the lower 2 bytes of the sum of all bytes in the entries
+        This is equal to the lower 2 bytes of the sum of all bytes in the entries.
         """
 
         return int.to_bytes(sum(sum(entry.bytes()) for entry in self.entries) & 0xFFFF, 2, 'little')
@@ -574,6 +750,12 @@ class TIVar:
         return self.model
 
     def add_entry(self, entry: TIEntry = None):
+        """
+        Adds an entry to this var
+
+        :param entry: A `TIEntry` to add
+        """
+
         entry = entry or TIEntry()
 
         if not self.is_empty:
@@ -585,9 +767,19 @@ class TIVar:
         self.entries.append(entry)
 
     def clear(self):
+        """
+        Removes all entries from this var
+        """
+
         self.entries.clear()
 
     def load_bytes(self, data: bytes | BytesIO):
+        """
+        Loads a byte string or bytestream into this var
+
+        :param data: The source bytes
+        """
+
         try:
             data = BytesIO(data.read())
 
@@ -625,6 +817,10 @@ class TIVar:
                  BytesWarning)
 
     def bytes(self):
+        """
+        :return: The byte string corresponding to this var
+        """
+
         dump = self.header.bytes()
         dump += int.to_bytes(self.entry_length, 2, 'little')
 
@@ -635,13 +831,31 @@ class TIVar:
         return dump
 
     def load_var_file(self, file: BinaryIO):
+        """
+        Loads this var from a file given a file pointer
+
+        :param file: A binary file to read from
+        """
+
         self.load_bytes(file.read())
 
     def open(self, filename: str):
+        """
+        Loads this var from a file given a filename
+
+        :param filename: A filename to open
+        """
+
         with open(filename, 'rb') as file:
             self.load_bytes(file.read())
 
     def save(self, filename: str = None):
+        """
+        Save this var given a filename
+
+        :param filename: A filename to save to (defaults to the var's name and extension)
+        """
+
         with open(filename or f"{self.name}.{self.extension}", 'wb+') as file:
             file.write(self.bytes())
 
@@ -652,13 +866,13 @@ class SizedEntry(TIEntry):
         """
         The data section of the entry
 
-        Contains the length of the remaining data as its first two bytes
+        The first two bytes are the remaining length of the data section.
         """
 
     @View(data, Integer)[0:2]
     def length(self) -> int:
         """
-        The length of the data section following this entry
+        The length of the data section following this portion
         """
 
     def load_bytes(self, data: ByteString):
