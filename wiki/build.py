@@ -97,7 +97,7 @@ def is_section(attr) -> bool:
 
 
 def add_classes(path):
-    with open(os.path.abspath(path), 'r') as file:
+    with open(path, 'r') as file:
         node = ast.parse(file.read())
 
     loc = path.split("/")[-1][:-3]
