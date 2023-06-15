@@ -22,6 +22,10 @@ class TIHeader:
         __slots__ = "magic", "extra", "product_id", "comment"
 
         def bytes(self) -> bytes:
+            """
+            :return: The bytes contained in this header
+            """
+
             return self.magic + self.extra + self.product_id + self.comment
 
     def __init__(self, model: TIModel = None, *,
@@ -32,8 +36,8 @@ class TIHeader:
 
         :param model: A `TImodel` to target (defaults to `TI_82AEP`)
         :param magic: File magic at the start of the header (default to the model's magic)
-        :param extra: Extra export bytes for the header (defaults to `b'\x1a\x0a'`)
-        :param product_id: The targeted model's product ID (defaults to `b'\x00'`)
+        :param extra: Extra export bytes for the header (defaults to `0x1a0a`)
+        :param product_id: The targeted model's product ID (defaults to `0x00`)
         :param comment: A comment to include in the header (defaults to a simple lib message)
         """
 
@@ -218,28 +222,55 @@ class TIEntry(Dock, Converter):
 
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "data"
 
-        def bytes(self) -> bytes:
-            return self.meta_length + self.data_length + \
-                self.type_id + self.name + self.version + self.archived + \
-                self.data_length + self.data
-
         @property
         def data_length(self) -> bytes:
+            """
+            :return: The length of this entry's data portion
+            """
+
             return int.to_bytes(len(self.data), 2, 'little')
 
         @property
         def flash_bytes(self) -> bytes:
+            """
+            :return: The flash bytes of this entry if they exist
+            """
+
             return (self.version + self.archived)[
                    :int.from_bytes(self.meta_length, 'little') - TIEntry.base_meta_length]
 
         @property
         def meta(self) -> bytes:
+            """
+            :return: The meta section of this entry
+            """
+
             return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
+
+        def bytes(self) -> bytes:
+            """
+            :return: The bytes contained in this entry
+            """
+
+            return self.meta_length + self.data_length + \
+                self.type_id + self.name + self.version + self.archived + \
+                self.data_length + self.data
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `TIEntry` with specified meta and data values
+
+        :param init: Data to initialize this entry's data (defaults to `None`)
+        :param for_flash: Whether this entry supports flag chips (default to `True`)
+        :param name: The name of this entry (defaults to `'UNNAMED'`; may not be valid for all types)
+        :param version: This version's entry (defaults to `None`; not supported if `for_flash == False`)
+        :param archived: Whether this entry is archived (defaults to `False`; not supported if `for_flash == False`)
+        :param data: This entry's data (defaults to empty)
+        """
+
         self.raw = self.Raw()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
@@ -660,7 +691,7 @@ class TIVar:
     """
     Container for var files
 
-    A var file is composed of a header and any number of entries.
+    A var file is composed of a header and any number of entries (though most have only one).
     """
 
     def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
@@ -668,7 +699,7 @@ class TIVar:
         Creates an empty var with a specified name, header, and targeted model
 
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param name: The name of the var (defaults to 'UNNAMED', may not be valid for all types)
+        :param name: The name of the var (defaults to `'UNNAMED'`, may not be valid for all types)
         :param model: A `TIModel` to target (defaults to `None`)
         """
 
