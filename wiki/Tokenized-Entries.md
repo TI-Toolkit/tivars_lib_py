@@ -40,7 +40,7 @@
             <td>0</td>
             <td>2</td>
             <td><code>Integer</code></td>
-            <td>The length of the data section following this entry</td>
+            <td>The length of the data section following this portion</td>
             <td>
                 <ul>
                 </ul>
@@ -69,7 +69,7 @@
             <td>0</td>
             <td>2</td>
             <td><code>Integer</code></td>
-            <td>The length of the data section following this entry</td>
+            <td>The length of the data section following this portion</td>
             <td>
                 <ul>
                 </ul>
@@ -122,7 +122,7 @@
             <td>0</td>
             <td>2</td>
             <td><code>Integer</code></td>
-            <td>The length of the data section following this entry</td>
+            <td>The length of the data section following this portion</td>
             <td>
                 <ul>
                 </ul>
@@ -175,7 +175,7 @@
             <td>0</td>
             <td>2</td>
             <td><code>Integer</code></td>
-            <td>The length of the data section following this entry</td>
+            <td>The length of the data section following this portion</td>
             <td>
                 <ul>
                 </ul>
