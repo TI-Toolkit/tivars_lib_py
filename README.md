@@ -6,9 +6,31 @@ Much of the functionality of this package has been ported over from [tivars_lib_
 
 ## Installation
 
-Clone this repository into your next project and import the package via `import tivars`. You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`.
+The current pre-release version is `v0.6.0`. Official releases are coming soon. All versions require Python 3.10+ to run.
 
-Official releases are coming soon. All versions require Python 3.10+ to run.
+### As a Package
+
+Clone this repository or [download a release](https://github.com/TI-Toolkit/tivars_lib_py/tags) and extract the `tivars` directory to include it in your next project. You can also install the package directly with `pip`:
+
+```
+pip install git+https://github.com/TI-Toolkit/tivars_lib_py.git 
+```
+
+### As a Submodule
+
+Add this repository to your next project as a git submodule, then include the following in any file which imports `tivars`:
+
+```py
+import sys
+
+sys.path.insert(1, 'tivars_lib_py/')
+```
+
+Check out [this tool](https://github.com/TI-Toolkit/token_translation_extractor) for an example.
+
+### Unit Testing
+
+You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`.
 
 ## How to Use
 
