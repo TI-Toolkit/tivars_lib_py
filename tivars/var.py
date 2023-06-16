@@ -30,7 +30,7 @@ class TIHeader:
 
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
-                 comment: str = "Created with tivars_lib_py v0.7"):
+                 comment: str = "Created with tivars_lib_py v0.6.1"):
         """
         Create an empty `TIHeader` which targets a specified model
 
