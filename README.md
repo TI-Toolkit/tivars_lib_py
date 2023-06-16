@@ -18,7 +18,15 @@ pip install git+https://github.com/TI-Toolkit/tivars_lib_py.git
 
 ### As a Submodule
 
-Add this repository to your next project as a git submodule, then include the following in any file which imports `tivars`:
+Include this repository in your next project as a git submodule by writing the following in `.gitmodules`:
+
+```
+[submodule "tivars_lib_py"]
+	path = tivars_lib_py
+	url = https://github.com/TI-Toolkit/tivars_lib_py.git
+```
+
+Then, add the following to any file which imports `tivars`:
 
 ```py
 import sys
