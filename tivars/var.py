@@ -17,6 +17,12 @@ class TIHeader:
     class Raw:
         """
         Raw bytes container for `TIHeader`
+
+        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
+        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
+
+        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
+        Additional methods can also be included, but should be callable from the outer class.
         """
 
         __slots__ = "magic", "extra", "product_id", "comment"
@@ -218,6 +224,14 @@ class TIEntry(Dock, Converter):
     class Raw:
         """
         Raw bytes container for `TIEntry`
+
+        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
+        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
+
+        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
+        Additional methods can also be included, but should be callable from the outer class.
+
+        Most entry types do not require a new `Raw` class since only the entry's data changes between types.
         """
 
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "data"
