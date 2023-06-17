@@ -238,7 +238,7 @@ class TIReal(TIEntry):
     @Loader[float, int]
     def load_float(self, decimal: float):
         """
-        Loads a `float` into this real number
+        Loads a `float` into this real number, upcasting as necessary
 
         :param decimal: The float to load
         """
@@ -264,22 +264,6 @@ class TIReal(TIEntry):
         """
 
         return float(self.decimal())
-
-    def load_int(self, decimal: int):
-        """
-        Loads an `int` into this real number
-
-        :param decimal: The int to load
-        """
-
-        self.load_float(decimal)
-
-    def int(self) -> int:
-        """
-        :return: The `int` corresponding to this real number (rounded down)
-        """
-
-        return int(self.decimal())
 
     @Loader[str]
     def load_string(self, string: str):
@@ -464,7 +448,7 @@ class TIComplex(TIEntry):
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         """
-        Loads this complex number from a `complex`
+        Loads this complex number from a `complex`, upcasting as necessary
 
         :param comp: The complex number to load
         """
