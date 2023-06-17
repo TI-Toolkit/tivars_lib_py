@@ -80,6 +80,16 @@ class FloatFlags(Flags):
 
 
 class TIReal(TIEntry):
+    """
+    Parser for real numeric types
+
+    A standard `TIReal` is a signed floating point number with 8 exponent bits and 14 decimal mantissa digits.
+    Two `TIReal` entries are used to form a single `TIComplex` complex number.
+
+    The `TIReal` type also handles exact types found on the TI-83PCE and other newer models.
+    The format for these types varies and is handled by a subtype value contained in the `flags` byte.
+    """
+
     _T = 'TIReal'
 
     extensions = {
@@ -108,6 +118,18 @@ class TIReal(TIEntry):
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None,
                  flags: dict[int, int] = None):
+        """
+        Creates an empty `TIReal` with specified meta and data values
+
+        :param init: Data to initialize this real number's data (defaults to `None`)
+        :param for_flash: Whether this real number supports flag chips (default to `True`)
+        :param name: The name of this real number (defaults to `'A'`)
+        :param version: This real number's version (defaults to `None`)
+        :param archived: Whether this real number is archived (defaults to `False`)
+        :param data: This real number's data (defaults to empty)
+        :param flags: This real number's flags (defaults to no bits set)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if flags is not None:
@@ -145,20 +167,15 @@ class TIReal(TIEntry):
     @Section(min_data_length)
     def data(self) -> bytearray:
         """
-        The data section of the entry
+        The data section of the real number
 
-        Contains flags, a mantissa, and an exponent
+        Contains flags, a mantissa, and an exponent.
         """
 
     @View(data, FloatFlags)[0:1]
     def flags(self) -> FloatFlags:
         """
         Flags for the real number
-
-        If bit 1 is set, the number is undefined
-        If bits 2 and 3 are set and bit 1 is clear, the number is half of a complex number
-        If bit 6 is set, something happened
-        If bit 7 is set, the number is negative
         """
 
     @View(data, Integer)[1:2]
@@ -166,7 +183,7 @@ class TIReal(TIEntry):
         """
         The exponent of the real number
 
-        The exponent has a bias of 0x80
+        The exponent has a bias of 0x80.
         """
 
     @View(data, BCD)[2:9]
@@ -174,7 +191,7 @@ class TIReal(TIEntry):
         """
         The mantissa of the real number
 
-        The mantissa is 14 digits stored in BCD format, two digits per byte
+        The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
     @classmethod
@@ -198,9 +215,19 @@ class TIReal(TIEntry):
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
+        """
+        Loads a `dec.Decimal` into this real number
+
+        :param decimal: The decimal to load
+        """
+
         self.load_string(str(decimal))
 
     def decimal(self) -> dec.Decimal:
+        """
+        :return: A `dec.Decimal` object corresponding to this real number
+        """
+
         with dec.localcontext() as ctx:
             ctx.prec = 14
             decimal = dec.Decimal(self.sign * self.mantissa)
@@ -210,9 +237,21 @@ class TIReal(TIEntry):
 
     @Loader[float, int]
     def load_float(self, decimal: float):
+        """
+        Loads a `float` into this real number
+
+        :param decimal: The float to load
+        """
+
         self.load_decimal(dec.Decimal(decimal))
 
     def json_number(self) -> float | str:
+        """
+        Encoder for JSON implementations with potentially low precision
+
+        :return: A `float` or `str` depending on whether this real number can be contained in a single-precision float
+        """
+
         if len(str(number := self.float())) <= 6:
             return number
 
@@ -220,16 +259,36 @@ class TIReal(TIEntry):
             return str(number)
 
     def float(self) -> float:
+        """
+        :return: The `float` corresponding to this real number
+        """
+
         return float(self.decimal())
 
     def load_int(self, decimal: int):
+        """
+        Loads an `int` into this real number
+
+        :param decimal: The int to load
+        """
+
         self.load_float(decimal)
 
     def int(self) -> int:
+        """
+        :return: The `int` corresponding to this real number (rounded down)
+        """
+
         return int(self.decimal())
 
     @Loader[str]
     def load_string(self, string: str):
+        """
+        Loads this real number from a string representation
+
+        :param string: The string to load
+        """
+
         if not string:
             self.mantissa, self.exponent = 0, 0x80
             self.flags |= FloatFlags.Undefined
@@ -244,6 +303,10 @@ class TIReal(TIEntry):
                 self.flags |= FloatFlags.Positive
 
     def string(self) -> str:
+        """
+        :return: A string representation of this real
+        """
+
         string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
 
         if string.startswith("0e"):
@@ -253,6 +316,13 @@ class TIReal(TIEntry):
 
 
 class TIComplex(TIEntry):
+    """
+    Parser for the complex numeric type
+
+    A `TIComplex` is a pair of signed floating point numbers with 8 exponent bits and 14 decimal mantissa digits each.
+    The pair corresponds to the real and imaginary parts of the number and share a common flag byte.
+    """
+
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -278,6 +348,17 @@ class TIComplex(TIEntry):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
+        """
+        Creates an empty `TIComplex` with specified meta and data values
+
+        :param init: Data to initialize this complex number's data (defaults to `None`)
+        :param for_flash: Whether this complex number supports flag chips (default to `True`)
+        :param name: The name of this complex number (defaults to `'A'`)
+        :param version: This complex number's version (defaults to `None`)
+        :param archived: Whether this complex number is archived (defaults to `False`)
+        :param data: This complex number's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if data:
@@ -329,34 +410,28 @@ class TIComplex(TIEntry):
     def real_flags(self) -> FloatFlags:
         """
         Flags for the real part of the complex number
-
-        Bits 2 and 3 are set
-        If bit 6 is set, something happened
-        If bit 7 is set, the part is negative
         """
 
     @View(data, Integer)[1:2]
     def real_exponent(self) -> int:
         """
         The exponent of the real part of the complex number
-        The exponent has a bias of 0x80
+
+        The exponent has a bias of 0x80.
         """
 
     @View(data, BCD)[2:9]
     def real_mantissa(self) -> int:
         """
         The mantissa of the real part of the complex number
-        The mantissa is 14 digits stored in BCD format, two digits per byte
+
+        The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
     @View(data, FloatFlags)[9:10]
     def imag_flags(self) -> FloatFlags:
         """
         Flags for the imaginary part of the complex number
-
-        Bits 2 and 3 are set
-        If bit 6 is set, something happened
-        If bit 7 is set, the part is negative
         """
 
     @View(data, Integer)[10:11]
@@ -364,7 +439,7 @@ class TIComplex(TIEntry):
         """
         The exponent of the imaginary part of the complex number
 
-        The exponent has a bias of 0x80
+        The exponent has a bias of 0x80.
         """
 
     @View(data, BCD)[11:18]
@@ -372,10 +447,14 @@ class TIComplex(TIEntry):
         """
         The mantissa of the imaginary part of the complex number
 
-        The mantissa is 14 digits stored in BCD format, two digits per byte
+        The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
     def components(self) -> (TIReal, TIReal):
+        """
+        :return: The components of this complex number as a pair of `TIReal` values
+        """
+
         return self.real, self.imag
 
     def set_flags(self):
@@ -384,6 +463,12 @@ class TIComplex(TIEntry):
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
+        """
+        Loads this complex number from a `complex`
+
+        :param comp: The complex number to load
+        """
+
         real, imag = TIReal(), TIReal()
         comp = complex(comp)
 
@@ -394,10 +479,19 @@ class TIComplex(TIEntry):
         self.set_flags()
 
     def complex(self):
+        """
+        :return: The `complex` corresponding to this complex number
+        """
         return self.real.float() + 1j * self.imag.float()
 
     @Loader[str]
     def load_string(self, string: str):
+        """
+        Loads this complex number from a string representation
+
+        :param string: The string to load
+        """
+
         string = replacer(squash(string), {"-": "+-", "[i]": "i", "j": "i"})
 
         parts = string.split("+")
@@ -416,6 +510,10 @@ class TIComplex(TIEntry):
         self.set_flags()
 
     def string(self) -> str:
+        """
+        :return: A string representation of this complex number
+        """
+
         match str(self.real), str(self.imag):
             case "0", "0": return "0"
             case "0", _: return f"{self.imag}i".replace(" 1i", " i")
