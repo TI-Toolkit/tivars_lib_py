@@ -71,8 +71,7 @@ class ListEntry(TIEntry):
     """
     Base class for all list entries
 
-    A list entry contains its elements in a contiguous block of data following two bytes specifying its length.
-    Lists can hold `TIReal` or `TIComplex` elements (the former able to be any exact subtype).
+    A list entry is a one-dimensional array of `TIReal` or `TIComplex` elements.
     """
 
     _E = TIEntry
@@ -123,7 +122,7 @@ class ListEntry(TIEntry):
         """
         The data section of the entry
 
-        The data begins with the length of the list and is followed by sequential element data sections.
+        The length of the list takes two bytes and is followed by sequential element data sections.
         """
 
     @View(data, Integer)[0:2]
@@ -160,6 +159,7 @@ class ListEntry(TIEntry):
 
         :param lst: The list to load
         """
+
         self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.data for entry in lst))
 
     def list(self) -> list[_E]:
