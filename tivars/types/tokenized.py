@@ -11,6 +11,12 @@ from ..var import SizedEntry
 
 
 class TokenizedEntry(SizedEntry):
+    """
+    Base class for all tokenized entries
+
+    A tokenized entry is a `SizedEntry` whose data comprises a stream of tokens.
+    """
+
     versions = [
         b'\x00', b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
         b'\x0A', b'\x0B', b'\x0C',
@@ -34,14 +40,30 @@ class TokenizedEntry(SizedEntry):
         TI_83PCEEP: (CE_TOKENS, CE_BYTES),
         TI_82AEP: (CE_TOKENS, CE_BYTES)
     }
+    """
+    Token mappings used for each model
+    """
 
     clock_tokens = [
         b'\xEF\x00', b'\xEF\x01', b'\xEF\x02', b'\xEF\x03', b'\xEF\x04',
         b'\xEF\x07', b'\xEF\x08', b'\xEF\x09', b'\xEF\x0A', b'\xEF\x0B', b'\xEF\x0C', b'\xEF\x0D',
         b'\xEF\x0E', b'\xEF\x0F', b'\xEF\x10'
     ]
+    """
+    Tokens which interface with the RTC
+    
+    These tokens influence the entry's version, though detecting the presence of the RTC has no current application.
+    """
 
     def derive_version(self) -> bytes:
+        """
+        Determines the version for this entry
+
+        The version increments with the presence of tokens which indicate non-backwards compatible functionality.
+
+        :return: This entry's version
+        """
+
         def has_bytes_in(prefix: bytes, start: int, end: int):
             return any(prefix + bytes([byte]) in self.raw.data for byte in range(start, end + 1))
 
@@ -80,10 +102,26 @@ class TokenizedEntry(SizedEntry):
         return bytes([version])
 
     def decode(self, data: bytearray, *, model: TIModel = None) -> str:
+        """
+        Decodes a byte stream into a string of tokens given a model
+
+        :param data: The bytes to decode
+        :param model: The targeted model
+        :return: A string of token representations
+        """
+
         byte_map = self.tokens[model or TI_84PCEPY][1]
         return decode(data, byte_map)
 
     def encode(self, string: str, *, model: TIModel = None) -> bytes:
+        """
+        Encodes a string of tokens into a byte stream given a model
+
+        :param string: The tokens to encode
+        :param model: The targeted model
+        :return: A stream of token bytes
+        """
+
         token_map = self.tokens[model or TI_84PCEPY][0]
         return encode(string, token_map)
 
@@ -110,10 +148,24 @@ class TokenizedEntry(SizedEntry):
 
 
 class EquationName(TokenizedString):
+    """
+    Converter for the name section of equations
+
+    Equation names can be any of `Y1` - `Y0`, `X1T` - `X6T`, `Y1T` - `Y6T`, `r1` - `r6`, `u`, `v`, or `w`.
+    """
+
     _T = str
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `str` as done by the memory viewer
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The equation name contained in `data`
+        """
+
         varname = super().get(data, instance)
 
         if varname.startswith("|"):
@@ -124,6 +176,14 @@ class EquationName(TokenizedString):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts `str` -> `bytes` to match appearance in the memory viewer
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The name encoding of `value`
+        """
+
         varname = value[:8].lower()
 
         if varname.startswith("|") or varname in ("u", "v", "w"):
@@ -159,6 +219,17 @@ class TIEquation(TokenizedEntry):
                  for_flash: bool = True, name: str = "Y1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `TIEquation` with specified meta and data values
+
+        :param init: Data to initialize this equation's data (defaults to `None`)
+        :param for_flash: Whether this equation supports flag chips (default to `True`)
+        :param name: The name of this equation (defaults to `'Y1'`)
+        :param version: This equation's version (defaults to `None`)
+        :param archived: Whether this equation is archived (defaults to `False`)
+        :param data: This equation's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section(8, EquationName)
@@ -166,7 +237,7 @@ class TIEquation(TokenizedEntry):
         """
         The name of the entry
 
-        Must be one of the equation names: Y1 - Y0, X1T - X6T, Y1T - Y6T, r1 - r6, u, v, or w
+        Must be one of the equation names: `Y1` - `Y0`, `X1T` - `X6T`, `Y1T` - `Y6T`, `r1` - `r6`, `u`, `v`, or `w`
         """
 
 
@@ -194,6 +265,17 @@ class TIString(TokenizedEntry):
                  for_flash: bool = True, name: str = "Str1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `TIString` with specified meta and data values
+
+        :param init: Data to initialize this string's data (defaults to `None`)
+        :param for_flash: Whether this string supports flag chips (default to `True`)
+        :param name: The name of this string (defaults to `'Str1'`)
+        :param version: This string's version (defaults to `None`)
+        :param archived: Whether this string is archived (defaults to `False`)
+        :param data: This string's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Loader[str]
@@ -223,6 +305,9 @@ class TIProgram(TokenizedEntry):
     }
 
     is_protected = False
+    """
+    Whether this program type is protected
+    """
 
     _type_id = b'\x05'
 
@@ -230,6 +315,17 @@ class TIProgram(TokenizedEntry):
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `TIProgram` with specified meta and data values
+
+        :param init: Data to initialize this program's data (defaults to `None`)
+        :param for_flash: Whether this program supports flag chips (default to `True`)
+        :param name: The name of this program (defaults to `'UNNAMED'`)
+        :param version: This program's version (defaults to `None`)
+        :param archived: Whether this program is archived (defaults to `False`)
+        :param data: This program's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section(8, TokenizedString)
@@ -237,9 +333,9 @@ class TIProgram(TokenizedEntry):
         """
         The name of the entry
 
-        Must be 1 to 8 characters in length
-        Can include any characters A-Z, 0-9, or θ
-        Cannot start with a digit
+        Names must 1 to 8 characters in length.
+        The name can include any characters A-Z, 0-9, or θ.
+        The name cannot start with a digit.
         """
 
         varname = value[:8].upper()

@@ -395,6 +395,7 @@ class TIEntry(Dock, Converter):
         """
         The version number of the entry
 
+        The version is used to determine model compatibility where necessary.
         Only flash files support this entry, and it thus not present if `meta_length` <= 11.
         """
 
