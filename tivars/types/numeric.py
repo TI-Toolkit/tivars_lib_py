@@ -168,7 +168,7 @@ class TIReal(TIEntry):
                     return super().__format__(format_spec)
 
     def __int__(self) -> int:
-        return self.int()
+        return int(self.float())
 
     def __neg__(self) -> 'TIReal':
         negated = copy.copy(self)
