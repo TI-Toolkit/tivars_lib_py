@@ -5,7 +5,6 @@ from typing import ByteString, Iterator
 from warnings import warn
 
 from tivars.models import *
-from tivars.tokenizer import decode, encode
 from ..flags import *
 from ..data import *
 from ..var import TIEntry
@@ -187,20 +186,6 @@ class TIGraphedEquation(TIEquation):
     def color(self) -> bytes:
         """
         The color of the equation
-        """
-
-    @Section()
-    def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the tokens and their total size
-        """
-
-    @View(data, Integer)[0:2]
-    def length(self) -> int:
-        """
-        The total size of the tokens
         """
 
     def load_data_section(self, data: io.BytesIO):
