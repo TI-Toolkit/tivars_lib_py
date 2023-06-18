@@ -954,6 +954,13 @@ class TIVar:
 
 
 class SizedEntry(TIEntry):
+    """
+    Base class for all sized entries
+
+    A sized entry is an entry with variable-length data, where the length of the data is stored in the first two bytes.
+    This length is two less than the length stored in the `data_length` section(s).
+    """
+
     @Section()
     def data(self) -> bytearray:
         """

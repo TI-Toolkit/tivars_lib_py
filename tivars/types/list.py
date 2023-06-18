@@ -12,10 +12,25 @@ from .numeric import TIReal, TIComplex
 
 
 class ListName(TokenizedString):
+    """
+    Converter for the name section of lists
+
+    List names can be `L1` - `L6` or a string of five alphanumeric characters that do not start with a digit.
+    The special name and token `IDList` is also used (but is planned to be relegated to a separate type).
+    """
+
     _T = str
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `str` as done by the memory viewer
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The list name contained in `data`
+        """
+
         if data[0] == 0x5D:
             if data[1] < 6:
                 return super().get(data, instance)
@@ -29,6 +44,14 @@ class ListName(TokenizedString):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts `str` -> `bytes` to match apperance in the memory viewer
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The name encoding of `value`
+        """
+
         varname = value[:7].upper()
         varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
         varname = re.sub(r"]", "|L", varname)
@@ -45,6 +68,13 @@ class ListName(TokenizedString):
 
 
 class ListEntry(TIEntry):
+    """
+    Base class for all list entries
+
+    A list entry contains its elements in a contiguous block of data following two bytes specifying its length.
+    Lists can hold `TIReal` or `TIComplex` elements (the former able to be any exact subtype).
+    """
+
     _E = TIEntry
 
     min_data_length = 2
@@ -53,6 +83,17 @@ class ListEntry(TIEntry):
                  for_flash: bool = True, name: str = "L1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `ListEntry` with specified meta and data values
+
+        :param init: Data to initialize this list's data (defaults to `None`)
+        :param for_flash: Whether this list supports flag chips (default to `True`)
+        :param name: The name of this list (defaults to `'L1'`)
+        :param version: This list's version (defaults to `None`)
+        :param archived: Whether this list is archived (defaults to `False`)
+        :param data: This list's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
@@ -72,9 +113,9 @@ class ListEntry(TIEntry):
         """
         The name of the entry
 
-        Must be 1 to 5 characters in length
-        Can include any characters A-Z, 0-9, or θ
-        Cannot start with a digit; use L1 - L6 instead
+        Names must be 1 to 5 characters in length.
+        The name can include any characters A-Z, 0-9, or θ.
+        The name cannot start with a digit; for these lists, use `L1` - `L6` instead.
         """
 
     @Section()
@@ -82,7 +123,7 @@ class ListEntry(TIEntry):
         """
         The data section of the entry
 
-        Contains the length of the list, followed by sequential variable data sections
+        The data begins with the length of the list and is followed by sequential element data sections.
         """
 
     @View(data, Integer)[0:2]
@@ -90,7 +131,7 @@ class ListEntry(TIEntry):
         """
         The length of the list
 
-        Cannot exceed 999
+        TI-OS imposes a limit of 999.
         """
 
         if value > 999:
@@ -114,9 +155,18 @@ class ListEntry(TIEntry):
 
     @Loader[list]
     def load_list(self, lst: list[_E]):
+        """
+        Loads a `list` into this list
+
+        :param lst: The list to load
+        """
         self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.data for entry in lst))
 
     def list(self) -> list[_E]:
+        """
+        :return: A `list` of the elements in this list
+        """
+
         lst = []
         for i in range(self.length):
             entry = self._E()
