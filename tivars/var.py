@@ -811,7 +811,10 @@ class TIVar:
         try:
             extension = self.entries[0].extensions[self._model]
             if not extension:
-                raise TypeError(f"The {self._model} does not support this var type.")
+                raise TypeError(f"the {self._model} does not support this var type")
+
+        except IndexError:
+            raise ValueError("this var is empty")
 
         except KeyError:
             warn(f"Model {self._model} not recognized.")
