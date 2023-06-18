@@ -295,7 +295,7 @@ class TIEntry(Dock, Converter):
 
         :param init: Data to initialize this entry's data (defaults to `None`)
         :param for_flash: Whether this entry supports flag chips (default to `True`)
-        :param name: The name of this entry (defaults to `'UNNAMED'`; may not be valid for all types)
+        :param name: The name of this entry (defaults to `UNNAMED`; may not be valid for all types)
         :param version: This entry's version (defaults to `None`; not supported if `for_flash == False`)
         :param archived: Whether this entry is archived (defaults to `False`; not supported if `for_flash == False`)
         :param data: This entry's data (defaults to empty)
@@ -742,7 +742,7 @@ class TIVar:
         Creates an empty var with a specified name, header, and targeted model
 
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param name: The name of the var (defaults to `'UNNAMED'`)
+        :param name: The name of the var (defaults to `UNNAMED`)
         :param model: A `TIModel` to target (defaults to `None`)
         """
 

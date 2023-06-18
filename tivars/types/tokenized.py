@@ -224,7 +224,7 @@ class TIEquation(TokenizedEntry):
 
         :param init: Data to initialize this equation's data (defaults to `None`)
         :param for_flash: Whether this equation supports flag chips (default to `True`)
-        :param name: The name of this equation (defaults to `'Y1'`)
+        :param name: The name of this equation (defaults to `Y1`)
         :param version: This equation's version (defaults to `None`)
         :param archived: Whether this equation is archived (defaults to `False`)
         :param data: This equation's data (defaults to empty)
@@ -270,7 +270,7 @@ class TIString(TokenizedEntry):
 
         :param init: Data to initialize this string's data (defaults to `None`)
         :param for_flash: Whether this string supports flag chips (default to `True`)
-        :param name: The name of this string (defaults to `'Str1'`)
+        :param name: The name of this string (defaults to `Str1`)
         :param version: This string's version (defaults to `None`)
         :param archived: Whether this string is archived (defaults to `False`)
         :param data: This string's data (defaults to empty)
@@ -320,7 +320,7 @@ class TIProgram(TokenizedEntry):
 
         :param init: Data to initialize this program's data (defaults to `None`)
         :param for_flash: Whether this program supports flag chips (default to `True`)
-        :param name: The name of this program (defaults to `'UNNAMED'`)
+        :param name: The name of this program (defaults to `UNNAMED`)
         :param version: This program's version (defaults to `None`)
         :param archived: Whether this program is archived (defaults to `False`)
         :param data: This program's data (defaults to empty)

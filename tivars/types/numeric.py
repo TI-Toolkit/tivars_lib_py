@@ -139,7 +139,7 @@ class TIReal(TIEntry):
 
         :param init: Data to initialize this real number's data (defaults to `None`)
         :param for_flash: Whether this real number supports flag chips (default to `True`)
-        :param name: The name of this real number (defaults to `'A'`)
+        :param name: The name of this real number (defaults to `A`)
         :param version: This real number's version (defaults to `None`)
         :param archived: Whether this real number is archived (defaults to `False`)
         :param data: This real number's data (defaults to empty)
@@ -365,7 +365,7 @@ class TIComplex(TIEntry):
 
         :param init: Data to initialize this complex number's data (defaults to `None`)
         :param for_flash: Whether this complex number supports flag chips (default to `True`)
-        :param name: The name of this complex number (defaults to `'A'`)
+        :param name: The name of this complex number (defaults to `A`)
         :param version: This complex number's version (defaults to `None`)
         :param archived: Whether this complex number is archived (defaults to `False`)
         :param data: This complex number's data (defaults to empty)

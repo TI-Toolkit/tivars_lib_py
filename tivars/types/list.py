@@ -45,7 +45,7 @@ class ListName(TokenizedString):
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
         """
-        Converts `str` -> `bytes` to match apperance in the memory viewer
+        Converts `str` -> `bytes` to match appearance in the memory viewer
 
         :param value: The value to convert
         :param instance: The instance which contains the data section (unused)
@@ -87,7 +87,7 @@ class ListEntry(TIEntry):
 
         :param init: Data to initialize this list's data (defaults to `None`)
         :param for_flash: Whether this list supports flag chips (default to `True`)
-        :param name: The name of this list (defaults to `'L1'`)
+        :param name: The name of this list (defaults to `L1`)
         :param version: This list's version (defaults to `None`)
         :param archived: Whether this list is archived (defaults to `False`)
         :param data: This list's data (defaults to empty)
