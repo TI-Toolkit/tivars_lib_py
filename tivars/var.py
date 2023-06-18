@@ -846,7 +846,7 @@ class TIVar:
         """
         Adds an entry to this var
 
-        :param entry: A `TIEntry` to add
+        :param entry: A `TIEntry` to add (defaults to an empty entry)
         """
 
         entry = entry or TIEntry()
@@ -870,7 +870,7 @@ class TIVar:
         """
         Loads a byte string or bytestream into this var
 
-        :param data: The source bytes
+        :param data: The bytes to load
         """
 
         try:
