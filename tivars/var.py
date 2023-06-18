@@ -209,15 +209,31 @@ class TIEntry(Dock, Converter):
     _T = 'TIEntry'
 
     flash_only = False
+    """
+    Whether this entry only supports flash chips
+    """
 
     extensions = {None: "8xg"}
+    """
+    The file extension used for this entry per-model
+    """
+
     type_ids = {}
 
     versions = []
+    """
+    The possible versions of this entry
+    """
 
     base_meta_length = 11
     flash_meta_length = 13
+
     min_data_length = 0
+    """
+    The minimum length of this entry's data
+    
+    If an entry's data is fixed in size, this value is necessarily the length of the data
+    """
 
     _type_id = None
 
@@ -424,14 +440,26 @@ class TIEntry(Dock, Converter):
 
     @property
     def flash_bytes(self) -> bytes:
+        """
+        :return: The flash bytes of this entry if they exist
+        """
+
         return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]
 
     @property
     def is_empty(self) -> bool:
+        """
+        :return: Whether this entry's data is empty
+        """
+
         return self.data_length == 0
 
     @property
     def meta(self) -> bytes:
+        """
+        :return: The meta section of this entry
+        """
+
         return self.raw.data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @staticmethod
@@ -771,6 +799,15 @@ class TIVar:
 
     @property
     def extension(self) -> str:
+        """
+        Determines the var's file extension based on its entries and targeted model.
+
+        If there is only one entry, that entry's extension for the target model is used.
+        Otherwise, `.8xg` is used.
+
+        :return: The var's file extension
+        """
+
         try:
             extension = self.entries[0].extensions[self._model]
             if not extension:
@@ -788,10 +825,18 @@ class TIVar:
 
     @property
     def is_empty(self) -> bool:
+        """
+        :return: Whether this var contains no entries
+        """
+
         return len(self.entries) == 0
 
     @property
     def model(self) -> TIModel:
+        """
+        :return: This var's targeted model
+        """
+
         return self.model
 
     def add_entry(self, entry: TIEntry = None):

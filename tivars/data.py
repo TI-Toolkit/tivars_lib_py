@@ -184,8 +184,9 @@ class Section:
     A data section is given by its length and type converter.
     Their primary function is to permit the user to read and write data sections as their natural data types.
 
+    The sections are stored in the `raw` attribute of their class, which is an instance of a `Raw` container.
     A priori, a data section does not correspond to any one part of a var file.
-    Individual sections are instead stitched together to yield a var file's contents.
+    Individual sections are instead stitched together to yield a var file's contents via `raw.bytes()`.
 
     Distinct data sections are entirely independent, which is useful for sections which may vary in length.
     To construct sections which point to a portion of another section, see the `View` class.
@@ -264,10 +265,18 @@ class Section:
 
     @property
     def name(self) -> str:
+        """
+        :return: The `Raw` class attribute name that this section stores to
+        """
+
         return self._name
 
     @property
     def length(self) -> int | None:
+        """
+        :return: The length of this section
+        """
+
         return self._length
 
 
@@ -324,6 +333,10 @@ class View(Section):
 
     @property
     def length(self) -> int | None:
+        """
+        :return: The length of this view
+        """
+
         if self._target.length is None:
             if (self._indices.step or 1) > 0:
                 if (self._indices.start or 0) >= 0 and (self._indices.stop is None or self._indices.stop < 0):

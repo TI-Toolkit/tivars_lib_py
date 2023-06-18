@@ -14,6 +14,14 @@ class BCD(Converter):
 
     @classmethod
     def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `int` from 2-digit binary coded decimal
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (usually unused)
+        :return: The 2-digit number stored in `data`
+        """
+
         value = 0
         for byte in data:
             value *= 100
@@ -24,6 +32,14 @@ class BCD(Converter):
 
     @classmethod
     def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts  `int` -> `bytes` as 2-digit binary coded decimal
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (usually unused)
+        :return: The bytes representing `value` in BCD
+        """
+
         return int.to_bytes(int(str(value), 16), 7, 'big')
 
 
@@ -203,14 +219,26 @@ class TIReal(TIEntry):
 
     @property
     def is_complex_component(self) -> bool:
+        """
+        :return: Whether this real number is part of a complex number
+        """
+
         return FloatFlags.ComplexComponent in self.flags
 
     @property
     def is_undefined(self) -> bool:
+        """
+        :return: Whether this real number is undefined
+        """
+
         return FloatFlags.Undefined in self.flags
 
     @property
     def sign(self) -> int:
+        """
+        :return: The sign of this real number
+        """
+
         return -1 if FloatFlags.Negative in self.flags else 1
 
     @Loader[dec.Decimal]
