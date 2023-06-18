@@ -9,6 +9,12 @@ from .numeric import TIReal
 
 
 class TIMatrix(TIEntry):
+    """
+    Parser for the matrix type
+
+    A `TIMatrix` is a two-dimensional array of `TIReal` elements.
+    """
+
     extensions = {
         None: "8xm",
         TI_82: "82m",
@@ -34,6 +40,17 @@ class TIMatrix(TIEntry):
                  for_flash: bool = True, name: str = "[A]",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `TIMatrix` with specified meta and data values
+
+        :param init: Data to initialize this matrix's data (defaults to `None`)
+        :param for_flash: Whether this matrix supports flag chips (default to `True`)
+        :param name: The name of this matrix (defaults to `'[A]'`)
+        :param version: This matrix's version (defaults to `None`)
+        :param archived: Whether this matrix is archived (defaults to `False`)
+        :param data: This matrix's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
@@ -58,7 +75,7 @@ class TIMatrix(TIEntry):
         """
         The data section of the entry
 
-        Contains the dimensions of the matrix, followed by sequential real variable data sections
+        The width and height of the matrix each take a byte and are followed by sequential element data sections.
         """
 
     @View(data, Integer)[0:1]
@@ -66,7 +83,7 @@ class TIMatrix(TIEntry):
         """
         The number of columns in the matrix
 
-        Cannot exceed 255, though TI-OS imposes a limit of 99
+        TI-OS imposes a limit of 99.
         """
 
     @View(data, Integer)[1:2]
@@ -74,11 +91,15 @@ class TIMatrix(TIEntry):
         """
         The number of rows in the matrix
 
-        Cannot exceed 255, though TI-OS imposes a limit of 99
+        TI-OS imposes a limit of 99.
         """
 
     @property
     def size(self) -> int:
+        """
+        :return: The number of elements in the matrix
+        """
+
         return self.width * self.height
 
     @Loader[ByteString, BytesIO]
@@ -97,6 +118,12 @@ class TIMatrix(TIEntry):
 
     @Loader[list]
     def load_matrix(self, matrix: list[list[TIReal]]):
+        """
+        Loads a two-dimensional `list` into this matrix
+
+        :param matrix: The matrix to load
+        """
+
         if len({len(row) for row in matrix}) != 1:
             raise IndexError("matrix has uneven rows")
 
@@ -104,6 +131,10 @@ class TIMatrix(TIEntry):
                         b''.join(entry.data for row in matrix for entry in row))
 
     def matrix(self) -> list[list[TIReal]]:
+        """
+        :return: A two-dimensional `list` of the elements in this matrix
+        """
+
         matrix = []
         for i in range(self.height):
             row = []
