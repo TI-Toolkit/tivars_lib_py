@@ -10,6 +10,12 @@ from ..var import TIEntry
 
 
 class BCD(Converter):
+    """
+    Converter for 2-digit binary-coded decimal
+
+    A single byte contains two decimal digits as if they were hex digits
+    """
+
     _T = int
 
     @classmethod
@@ -18,7 +24,7 @@ class BCD(Converter):
         Converts `bytes` -> `int` from 2-digit binary coded decimal
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (usually unused)
+        :param instance: The instance which contains the data section (unused)
         :return: The 2-digit number stored in `data`
         """
 
@@ -36,7 +42,7 @@ class BCD(Converter):
         Converts  `int` -> `bytes` as 2-digit binary coded decimal
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (usually unused)
+        :param instance: The instance which contains the data section (unused)
         :return: The bytes representing `value` in BCD
         """
 
