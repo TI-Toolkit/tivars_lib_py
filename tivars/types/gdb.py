@@ -171,21 +171,21 @@ class TIGraphedEquation(TIEquation):
     @Section(1, EquationFlags)
     def flags(self) -> EquationFlags:
         """
-        The flags for the equation
+        The flags for the GDB equation
 
-        Whether the equation is selected, used for graphing, or is participating in a link transfer
+        The flags track whether the equation is selected, used for graphing, or is participating in a link transfer.
         """
 
     @Section(1, GraphStyle)
     def style(self) -> bytes:
         """
-        The style of the equation
+        The style of the GDB equation
         """
 
     @Section(1, GraphColor)
     def color(self) -> bytes:
         """
-        The color of the equation
+        The color of the GDB equation
         """
 
     def load_data_section(self, data: io.BytesIO):
@@ -195,6 +195,12 @@ class TIGraphedEquation(TIEquation):
 
     @Loader[dict]
     def load_dict(self, dct: dict):
+        """
+        Loads a JSON `dict` into this GDB equation
+
+        :param dct: The dict to load
+        """
+
         self.style = getattr(GraphStyle, dct["style"])
         self.color = getattr(GraphColor, dct["color"])
 
@@ -208,6 +214,10 @@ class TIGraphedEquation(TIEquation):
         self.flags |= EquationFlags.LinkTransferSet if flags["linkTransfer"] else EquationFlags.LinkTransferClear
 
     def dict(self) -> dict:
+        """
+        :return: A `dict` representing this GDB equation in JSON format
+        """
+
         dct = {"style": GraphStyle.get_name(self.style)}
 
         if self.color != GraphColor.Mono:
@@ -224,9 +234,19 @@ class TIGraphedEquation(TIEquation):
 
     @Loader[TIEquation]
     def load_equation(self, equation: TIEquation):
+        """
+        Loads a `TIEquation` into this GDB equation
+
+        :param equation: The equation to load
+        """
+
         self.raw.data = equation.data
 
     def equation(self) -> TIEquation:
+        """
+        :return: The `TIEquation` component of this GDB equation
+        """
+
         return TIEquation(self.bytes()[:-self.data_length - 1] + self.bytes()[-self.data_length:])
 
     @Loader[str]
@@ -245,6 +265,14 @@ def color_data(gdb: 'TIMonoGDB') -> bytes:
 
 
 class TIMonoGDB(TIEntry):
+    """
+    Base class for all GDB entries
+
+    A GDB is a collection of equations and graph settings representing the state of one of the equation plotters.
+    A GDB can correspond to one of the Function, Parametric, Polar, or Sequence plotting modes.
+    GDBs for monochrome models are truncations of those for color models.
+    """
+
     extensions = {
         None: "8xd",
         TI_82: "82d",
@@ -264,15 +292,52 @@ class TIMonoGDB(TIEntry):
 
     _type_id = b'\x08'
     mode_byte = 0x00
+    """
+    The byte which identifies the GDB type
+    """
 
     min_data_length = 61
     has_color = False
+    """
+    Whether this GDB type carries color information
+    """
 
     num_equations = 0
+    """
+    The number of equations contained in this GDB type
+    """
+
     num_parameters = 0
+    """
+    The number of graph parameters contained in this GDB type
+    """
+
     num_styles = 0
+    """
+    The number of equation styles contained in this GDB type
+    """
 
     equation_names = []
+    """
+    The names of the equations in this GDB type
+    """
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIMonoGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __iter__(self) -> Iterator:
         return iter(self.dict().items())
@@ -282,7 +347,8 @@ class TIMonoGDB(TIEntry):
         """
         The data section of the entry
 
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
+        The data begins with the mode settings and graphscreen settings, followed by the equation styles.
+        The equations comprise the remainder of the data, one after the other.
         """
 
     @View(data, Integer)[0:2]
@@ -296,7 +362,7 @@ class TIMonoGDB(TIEntry):
         """
         The mode ID for the GDB
 
-        One of 0x10, 0x20, 0x40, or 0x80
+        The ID is one of `0x10` (Function), `0x20` (Polar), `0x40` (Parametric), or `0x80` (Sequence).
         """
 
     @View(data, GraphMode)[4:5]
@@ -374,12 +440,15 @@ class TIMonoGDB(TIEntry):
 
     @property
     def offset(self) -> int:
+        """
+        :return: The index of the start of the equation styles in this GDB
+        """
         return TIMonoGDB.min_data_length + TIReal.min_data_length * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
         """
-        The GDB's stored graph equations
+        :return: This GDB's stored equations
         """
 
         data = io.BytesIO(self.data[self.offset:])
@@ -406,6 +475,12 @@ class TIMonoGDB(TIEntry):
 
     @Loader[dict]
     def load_dict(self, dct: dict):
+        """
+        Loads a JSON `dict` into this GDB
+
+        :param dct: The dict to load
+        """
+
         self.clear()
         self.raw.data[3] = {
             'Function': 0x10,
@@ -466,6 +541,10 @@ class TIMonoGDB(TIEntry):
         pass
 
     def dict(self) -> dict:
+        """
+        :return: A `dict` representing this GDB in JSON format
+        """
+
         return {
             "graphMode": self.mode,
             "formatSettings": [
@@ -525,9 +604,20 @@ class TIGDB(TIMonoGDB):
     has_color = True
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "GDB1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+        """
+        Creates an empty `TIGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.axes_color = GraphColor.Black
@@ -535,11 +625,7 @@ class TIGDB(TIMonoGDB):
 
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, GraphColor)[-5:-4]
     def grid_color(self) -> bytes:
@@ -638,20 +724,31 @@ class TIMonoFuncGDB(TIMonoGDB):
 
     equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIMonoFuncGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB
-
-        Always 0x10
+        The mode ID for the GDB - `0x10`
         """
 
     @View(data, TIReal)[61:70]
@@ -659,7 +756,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         """
         Xres: The pixel separation of points in a function plot
 
-        Must be an integer between 1 and 8
+        The value must be an integer between 1 and 8.
         """
 
         if int(value) != float(value) or not 1 <= int(value) <= 8:
@@ -752,25 +849,36 @@ class TIMonoFuncGDB(TIMonoGDB):
 class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     min_data_length = 128
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIFuncGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, String)[-18:-15]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented
-
-        Always set to 84C
+        Magic to identify the GDB as color-oriented - `84C`
         """
 
     def mono(self) -> TIMonoFuncGDB:
         """
-        Returns a copy of this GDB with all color data removed
+        :return: A copy of this GDB with all color data removed
         """
 
         return TIMonoFuncGDB(self.bytes()[:-18])
@@ -794,20 +902,31 @@ class TIMonoParamGDB(TIMonoGDB):
 
     equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIMonoParamGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB
-
-        Always 0x40
+        The mode ID for the GDB - `0x40`
         """
 
     @View(data, TIReal)[61:70]
@@ -936,25 +1055,36 @@ class TIMonoParamGDB(TIMonoGDB):
 class TIParamGDB(TIGDB, TIMonoParamGDB):
     min_data_length = 144
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIParamGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, String)[-14:-11]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented
-
-        Always set to 84C
+        Magic to identify the GDB as color-oriented -`84C`
         """
 
     def mono(self) -> TIMonoParamGDB:
         """
-        Returns a copy of this GDB with all color data removed
+        :return: A copy of this GDB with all color data removed
         """
 
         return TIMonoParamGDB(self.bytes()[:-14])
@@ -978,20 +1108,31 @@ class TIMonoPolarGDB(TIMonoGDB):
 
     equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIMonoPolarGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB
-
-        Always 0x20
+        The mode ID for the GDB - `0x20`
         """
 
     @View(data, TIReal)[61:70]
@@ -1074,25 +1215,36 @@ class TIMonoPolarGDB(TIMonoGDB):
 class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     min_data_length = 126
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIPolarGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, String)[-14:-11]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented
-
-        Always set to 84C
+        Magic to identify the GDB as color-oriented - `84C`
         """
 
     def mono(self) -> TIMonoPolarGDB:
         """
-        Returns a copy of this GDB with all color data removed
+        :return: A copy of this GDB with all color data removed
         """
 
         return TIMonoPolarGDB(self.bytes()[:-14])
@@ -1116,20 +1268,31 @@ class TIMonoSeqGDB(TIMonoGDB):
 
     equation_names = ["u", "v", "w"]
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TIMonoSeqGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB
-
-        Always 0x80
+        The mode ID for the GDB - `0x80`
         """
 
     @View(data, GraphMode)[5:6]
@@ -1143,7 +1306,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
         PlotStart: The initial value of n for sequential plots
 
-        Must be an integer
+        The value must be an integer
         """
 
         if int(value) != float(value):
@@ -1157,7 +1320,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
         nMax: The final value of n
 
-        Must be an integer
+        The value must be an integer
         """
 
         if int(value) != float(value):
@@ -1183,7 +1346,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
         nMin: the initial value of n for sequential equations
 
-        Must be an integer
+        The value must be an integer
         """
 
         if int(value) != float(value):
@@ -1215,7 +1378,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
         PlotStep: The n increment for sequential plots
 
-        Must be an integer
+        The value must be an integer
         """
 
         if int(value) != float(value):
@@ -1323,25 +1486,36 @@ class TIMonoSeqGDB(TIMonoGDB):
 class TISeqGDB(TIGDB, TIMonoSeqGDB):
     min_data_length = 174
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "GDB1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        """
+        Creates an empty `TISeqGDB` with specified meta and data values
+
+        :param init: Data to initialize this GDB's data (defaults to `None`)
+        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param name: The name of this GDB (defaults to `GDB1`)
+        :param version: This GDB's version (defaults to `None`)
+        :param archived: Whether this GDB is archived (defaults to `False`)
+        :param data: This GDB's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains the mode settings, graphscreen settings, graph styles, and graph equations
-        """
+        pass
 
     @View(data, String)[-11:-8]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented
-
-        Always set to 84C
+        Magic to identify the GDB as color-oriented - `84C`
         """
 
     def mono(self) -> TIMonoSeqGDB:
         """
-        Returns a copy of this GDB with all color data removed
+        :return: A copy of this GDB with all color data removed
         """
 
         return TIMonoSeqGDB(self.bytes()[:-11])
