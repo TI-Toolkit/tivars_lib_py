@@ -13,7 +13,7 @@ class BCD(Converter):
     """
     Converter for 2-digit binary-coded decimal
 
-    A single byte contains two decimal digits as if they were hex digits
+    A single byte contains two decimal digits as if they were hex digits.
     """
 
     _T = int
@@ -47,6 +47,40 @@ class BCD(Converter):
         """
 
         return int.to_bytes(int(str(value), 16), 7, 'big')
+
+
+class Subtype(Converter):
+    """
+    Converter to extract the subtype of a `TIReal`
+
+    The subtype is stored in the first five bits of the data section.
+    """
+
+    _T = bytes
+
+    @classmethod
+    def get(cls, data: bytes, instance) -> _T:
+        """
+        Converts `bytes` -> `int` from 2-digit binary coded decimal
+
+        :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The 2-digit number stored in `data`
+        """
+
+        return bytes([data[0] & 31])
+
+    @classmethod
+    def set(cls, value: _T, instance) -> bytes:
+        """
+        Converts  `int` -> `bytes` as 2-digit binary coded decimal
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section (unused)
+        :return: The bytes representing `value` in BCD
+        """
+
+        return bytes([value[0] & 31 | instance.data[0] & 224])
 
 
 def replacer(string: str, replacements: dict[str, str]) -> str:
