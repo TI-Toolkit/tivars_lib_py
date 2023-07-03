@@ -18,24 +18,22 @@ class Enum(Converter):
     _all = []
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `bytes`, returning the first byte
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The first byte of `data`
         """
 
         return bytes(data[0:1])
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `bytes` -> `bytes`, enforcing that the input is a recognized enum value
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The byte in `value`, unchanged
         """
 
@@ -98,24 +96,22 @@ class Flags(Converter, dict, Mapping[int, int]):
     has = __contains__
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `Flags`, splitting the byte into the corresponding bitfields
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: A `Flags` instance with bitfields given by `data`
         """
 
         return cls({bit: int(value) for bit, value in enumerate(f"{int.from_bytes(data, 'little'):b}"[::-1])})
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `Flags` -> `bytes`, packing the bitfields into the appropriate number of bytes
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The byte string composed of the bitfields in these flags
         """
 

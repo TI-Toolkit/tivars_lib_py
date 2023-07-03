@@ -140,11 +140,11 @@ class TIGraphedEquation(TIEquation):
             _T = TIGraphedEquation
 
             @classmethod
-            def get(cls, data: bytes, instance: 'TIMonoGDB') -> _T:
+            def get(cls, data: bytes, *, instance: 'TIMonoGDB' = None, **kwargs) -> _T:
                 return instance.equations[index]
 
             @classmethod
-            def set(cls, value: _T, instance: 'TIMonoGDB') -> bytes:
+            def set(cls, value: _T, *, instance: 'TIMonoGDB' = None, **kwargs) -> bytes:
                 equations = list(instance.equations)
                 equations[index] = value
 

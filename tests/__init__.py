@@ -184,8 +184,6 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_real.sign, -1)
         self.assertEqual(test_real.exponent, 129)
         self.assertEqual(test_real.mantissa, 42133700000000)
-        self.assertEqual(test_real.is_undefined, False)
-        self.assertEqual(test_real.is_complex_component, False)
 
         self.assertEqual(str(test_real), "-42.1337")
         self.assertEqual(f"{test_real:.1f}", "-42.1")
@@ -283,7 +281,7 @@ class SettingsTests(unittest.TestCase):
         test_window = TIWindowSettings()
         test_window.open("tests/data/var/Window.8xw")
 
-        zero, one, undef = TIReal(0), TIReal(1), TIReal(1, flags={1: 1, 2: 1, 3: 1})
+        zero, one, undef = TIReal(0), TIReal(1), TIReal(1)
         tau, pi_twenty_fourths = TIReal("6.283185307"), TIReal("0.13089969389957")
 
         self.assertEqual(test_window.name, "Window")
@@ -298,13 +296,6 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(test_window.Tmin, zero)
         self.assertEqual(test_window.Tstep, pi_twenty_fourths)
 
-        self.assertEqual(test_window.unMin0, undef)
-        self.assertEqual(test_window.unMin1, undef)
-        self.assertEqual(test_window.vnMin0, undef)
-        self.assertEqual(test_window.vnMin1, undef)
-        self.assertEqual(test_window.wnMin0, undef)
-        self.assertEqual(test_window.wnMin1, undef)
-
         self.assertEqual(test_window.Xmax, TIReal("10"))
         self.assertEqual(test_window.Xmin, TIReal("-10"))
         self.assertEqual(test_window.Xres, TIReal(2))
@@ -318,7 +309,7 @@ class SettingsTests(unittest.TestCase):
         test_recall = TIRecallWindow()
         test_recall.open("tests/data/var/RecallWindow.8xz")
 
-        zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1", flags={1: 1, 2: 1, 3: 1})
+        zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1")
         tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
 
         self.assertEqual(test_recall.name, "RclWindw")
@@ -332,13 +323,6 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(test_recall.Tmax, tau)
         self.assertEqual(test_recall.Tmin, zero)
         self.assertEqual(test_recall.Tstep, pi_twenty_fourths)
-
-        self.assertEqual(test_recall.unMin0, undef)
-        self.assertEqual(test_recall.unMin1, undef)
-        self.assertEqual(test_recall.vnMin0, undef)
-        self.assertEqual(test_recall.vnMin1, undef)
-        self.assertEqual(test_recall.wnMin0, undef)
-        self.assertEqual(test_recall.wnMin1, undef)
 
         self.assertEqual(test_recall.Xmax, TIReal("10"))
         self.assertEqual(test_recall.Xmin, TIReal(-10.0))
@@ -394,7 +378,7 @@ class GDBTests(unittest.TestCase):
         test_gdb.load_dict(param)
 
         tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
-        self.assertEqual(test_gdb.Xmax, TIReal(10))
+        self.assertEqual(test_gdb.Xmax.bytes(), TIReal(10).bytes())
         self.assertEqual(test_gdb.Xmin, TIReal(-10))
         self.assertEqual(test_gdb.Tmax, tau)
         self.assertEqual(test_gdb.Tstep, pi_twenty_fourths)

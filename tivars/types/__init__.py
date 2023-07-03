@@ -58,7 +58,7 @@ TIEntry.register(TIImage)
 
 
 __all__ = ["TIEntry",
-           "TIReal", "FloatFlags",
+           "TIReal",
            "TIRealList", "TIMatrix",
            "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
            "TIPicture", "TIMonoPicture",

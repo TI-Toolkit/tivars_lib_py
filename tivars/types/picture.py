@@ -13,11 +13,11 @@ class L1(Converter):
     _T = tuple[int, ...]
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         return tuple(255 * (1 - int(bit)) for bit in f"{data[0]:08b}")
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         return bytes([int("".join("0" if bit else "1" for bit in value), 2)])
 
 
@@ -53,11 +53,11 @@ class RGBPalette(Converter):
         return nearest
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         return cls.palette[data[0] >> 4], cls.palette[data[0] & 15]
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         return bytes([(cls.palette.index(cls.nearest(*value[0])) << 4) + cls.palette.index(cls.nearest(*value[1]))])
 
 
@@ -65,7 +65,7 @@ class RGB565(Converter):
     _T = RGB
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         return (
             (data[1] >> 3) * 255 // 31,
             (((data[1] & 7) << 3) | (data[0] >> 5)) * 255 // 63,
@@ -73,7 +73,7 @@ class RGB565(Converter):
         )
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         return bytes([((value[1] >> 2 & 7) << 5) | value[2] >> 3]) + bytes([(value[0] & ~7) | (value[1] >> 5)])
 
 
@@ -143,7 +143,7 @@ class TIMonoPicture(PictureEntry):
 
     def __iter__(self) -> Iterator[pixel_type]:
         for byte in self.data[self.data_offset:]:
-            for bit in L1.get(byte, self):
+            for bit in L1.get(byte):
                 yield bit
 
     @Section(min_data_length)
@@ -156,11 +156,11 @@ class TIMonoPicture(PictureEntry):
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
-        self.raw.data[2:] = b''.join(L1.set(entry, self) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
+        self.raw.data[2:] = b''.join(L1.set(entry) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
     def array(self) -> list[list[pixel_type]]:
         return [[bw for col in range(self.data_width)
-                 for bw in L1.get(self.data[self.data_width * row + col + self.data_offset:][:1], self)]
+                 for bw in L1.get(self.data[self.data_width * row + col + self.data_offset:][:1])]
                 for row in range(self.data_height)]
 
     def coerce(self):
@@ -206,7 +206,7 @@ class TIPicture(PictureEntry):
 
     def __iter__(self) -> Iterator[pixel_type]:
         for byte in self.data[self.data_offset:]:
-            for rgb in RGBPalette.get(byte, self):
+            for rgb in RGBPalette.get(byte):
                 yield rgb
 
     @Section(min_data_length)
@@ -219,11 +219,11 @@ class TIPicture(PictureEntry):
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
-        self.raw.data[2:] = b''.join(RGBPalette.set(entry, self) for row in arr for entry in zip(row[::2], row[1::2]))
+        self.raw.data[2:] = b''.join(RGBPalette.set(entry) for row in arr for entry in zip(row[::2], row[1::2]))
 
     def array(self) -> list[list[pixel_type]]:
         return [[rgb for col in range(self.data_width)
-                 for rgb in RGBPalette.get(self.data[self.data_width * row + col + self.data_offset:][:1], self)]
+                 for rgb in RGBPalette.get(self.data[self.data_width * row + col + self.data_offset:][:1])]
                 for row in range(self.data_height)]
 
     def coerce(self):
@@ -240,11 +240,11 @@ class ImageName(TokenizedString):
     _T = str
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         return f"Image{data[1] + 1}"
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         return b"\x3C" + bytes([int(value[-1], 16) - 1])
 
 
@@ -293,7 +293,7 @@ class TIImage(PictureEntry):
     def __iter__(self) -> Iterator[pixel_type]:
         for row in range(self.data_height - 1, -1, -1):
             for col in range(0, self.data_width - 2, 2):
-                yield RGB565.get(self.data[self.data_width * row + col + self.data_offset:][:2], self)
+                yield RGB565.get(self.data[self.data_width * row + col + self.data_offset:][:2])
 
     @Section(8, ImageName)
     def name(self) -> str:
@@ -321,10 +321,10 @@ class TIImage(PictureEntry):
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
-        self.raw.data[3:] = b''.join(RGB565.set(entry, self) for row in arr[::-1] for entry in row + [(0, 0, 0)])
+        self.raw.data[3:] = b''.join(RGB565.set(entry) for row in arr[::-1] for entry in row + [(0, 0, 0)])
 
     def array(self) -> list[list[pixel_type]]:
-        return [[RGB565.get(self.data[self.data_width * row + col + 3:][:2], self)
+        return [[RGB565.get(self.data[self.data_width * row + col + 3:][:2])
                  for col in range(0, self.data_width - 2, 2)]
                 for row in range(self.data_height)][::-1]
 

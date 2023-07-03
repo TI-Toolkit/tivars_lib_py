@@ -17,24 +17,25 @@ class Converter:
     _T = _T
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> _T:
         """
         Converts `bytes` -> `_T`
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (usually unused)
+        :param instance: The instance which contains the data section
         :return: An instance of `_T`
         """
 
         raise NotImplementedError
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, *, instance=None, current: bytes = None) -> bytes:
         """
         Converts  `_T` -> `bytes`
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (usually unused)
+        :param instance: The instance which contains the data section
+        :param current: The current value of the data section
         :return: A string of bytes
         """
 
@@ -49,24 +50,22 @@ class Bytes(Converter):
     _T = bytes
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `bytes` (no-op)
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The bytes in `data`, unchanged
         """
 
         return data
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `bytes` -> `bytes` (no-op)
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The bytes in `value`, unchanged
         """
 
@@ -83,24 +82,22 @@ class Boolean(Converter):
     _T = bool
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `bool`, where any nonzero value is truthy
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: Whether `data` is nonzero
         """
 
         return data != b'\x00'
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `bool` -> `bytes`, where `b'\x80'` is truthy and `b'\x00'` is falsy
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: `b'\x80'` if `value` is truthy else `b'\x00'`
         """
 
@@ -117,26 +114,24 @@ class Integer(Converter):
     _T = int
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `int`
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The little-endian integer given by `data`
         """
 
         return int.from_bytes(data, 'little')
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `int` -> `bytes`
 
         For implementation reasons, the output of this converter is always two bytes wide
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The little-endian representation of `value`
         """
 
@@ -153,28 +148,88 @@ class String(Converter):
     _T = str
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `str`
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The utf-8 decoding of `data` with trailing null bytes removed
         """
 
         return data.decode('utf8').rstrip('\0')
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `str` -> `bytes`
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The utf-8 encoding of `value`
         """
 
         return value.encode('utf8')
+
+
+class Bits:
+    """
+    Sliceable converter to extract and package a slice of bits within a byte
+
+    Use like `Bits[start:end:step]` to view a slice of a byte.
+    """
+
+    def __class_getitem__(cls, item: slice = slice(None)):
+        indices = range(*item.indices(8))
+
+        class BitSlice(Converter):
+            """
+            Converter to extract and package a slice of bits within a byte
+
+            The data section is expected to have length one.
+            """
+
+            _T = int
+
+            mask = sum(1 << i for i in indices)
+
+            @classmethod
+            def get(cls, data: bytes, **kwargs) -> _T:
+                """
+                Converts `bytes` -> `bytes` by concatenating bits in a slice
+
+                :param data: The raw bytes to convert
+                :return: The sliced bits in `data` joined without gaps
+                """
+
+                value = ""
+                for index, bit in enumerate(f"{data[0]:08b}"[::-1]):
+                    if index in indices:
+                        value += bit
+
+                return int(value, 2)
+
+            @classmethod
+            def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+                """
+                Converts `bytes` -> `bytes` by setting bits in a slice
+
+                :param value: The value to convert
+                :param current: The current value of the data section
+                :return: The bytes in `value`, unchanged
+                """
+
+                data = 0
+                bits = iter(f"{value % 256:08b}"[::-1])
+
+                for index in range(8):
+                    if index in indices:
+                        data += int(next(bits)) << index
+
+                    else:
+                        data += current[0] & (1 << index)
+
+                return bytes([data])
+
+        return BitSlice
 
 
 class Section:
@@ -236,10 +291,10 @@ class Section:
         if instance is None:
             return self
 
-        return self._get(getattr(instance.raw, self._name), instance)
+        return self._get(self._get_raw(instance), instance=instance)
 
     def __set__(self, instance, value: _T):
-        value = self._set(value, instance)
+        value = self._set(value, instance=instance, current=self._get_raw(instance))
 
         if self._length is not None:
             if len(value) > self._length:
@@ -258,10 +313,13 @@ class Section:
         signature = inspect.signature(func)
         match len(signature.parameters):
             case 1: pass
-            case 2: new._set = lambda value, instance, _set=new._set: _set(func(instance, value), instance)
+            case 2: new._set = lambda value, _set=new._set, **kwargs: _set(func(self, value), **kwargs)
             case _: raise TypeError("Section and View function definitions can only take 1 or 2 parameters.")
 
         return new
+
+    def _get_raw(self, instance) -> bytes:
+        return getattr(instance.raw, self._name, None)
 
     @property
     def name(self) -> str:
@@ -314,42 +372,51 @@ class View(Section):
         self._target = target
         self._indices = indices
 
+        if self._target.length is None:
+            self._length = max(ceil(((self._indices.stop or 0) - (self._indices.start or 0))
+                                    // (self._indices.step or 1)), 0)
+
+            if (self._indices.step or 1) > 0:
+                if (self._indices.start or 0) >= 0 and (self._indices.stop is None or self._indices.stop < 0):
+                    self._length = None
+
+            else:
+                if (self._indices.stop or 0) >= 0 and (self._indices.start is None or self._indices.start < 0):
+                    self._length = None
+
+        else:
+            self._length = len(range(*self._indices.indices(self._target.length)))
+
     def __get__(self, instance, owner: type = None) -> _T:
         if instance is None:
             return self
 
-        return self._get(getattr(instance.raw, self._target.name)[self._indices], instance)
+        return self._get(self._get_raw(instance), instance=instance)
 
     def __set__(self, instance, value: _T):
-        value = self._set(value, instance)
+        value = self._set(value, instance=instance, current=self._get_raw(instance))
 
-        if self.length is not None:
-            value = value[:self.length].rjust(self.length, b'\x00')
+        if self._length is not None:
+            value = value[:self._length].rjust(self._length, b'\x00')
 
         getattr(instance.raw, self._target.name)[self._indices] = value
 
     def __getitem__(self, indices: slice) -> 'View':
         return self.__class__(self._target, self._converter, indices)
 
+    def __index__(self) -> slice:
+        return self.indices
+
+    def _get_raw(self, instance) -> bytes:
+        return getattr(instance.raw, self._target.name)[self._indices]
+
     @property
-    def length(self) -> int | None:
-        """
-        :return: The length of this view
-        """
+    def target(self) -> 'Section':
+        return self._target
 
-        if self._target.length is None:
-            if (self._indices.step or 1) > 0:
-                if (self._indices.start or 0) >= 0 and (self._indices.stop is None or self._indices.stop < 0):
-                    return None
-
-            else:
-                if (self._indices.stop or 0) >= 0 and (self._indices.start is None or self._indices.start < 0):
-                    return None
-
-            return max(ceil(((self._indices.stop or 0) - (self._indices.start or 0)) // (self._indices.step or 1)), 0)
-
-        else:
-            return len(range(*self._indices.indices(self._target.length)))
+    @property
+    def indices(self) -> slice:
+        return self._indices
 
 
 class Dock:
@@ -406,4 +473,4 @@ class Loader:
 
 
 __all__ = ["Section", "View", "Dock", "Loader",
-           "Converter", "Bytes", "Boolean", "Integer", "String"]
+           "Converter", "Bytes", "Boolean", "Integer", "String", "Bits"]

@@ -157,16 +157,15 @@ class EquationName(TokenizedString):
     _T = str
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `str` as done by the memory viewer
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The equation name contained in `data`
         """
 
-        varname = super().get(data, instance)
+        varname = super().get(data)
 
         if varname.startswith("|"):
             return varname[1:]
@@ -175,12 +174,11 @@ class EquationName(TokenizedString):
             return varname.upper().strip("{}")
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `str` -> `bytes` to match appearance in the memory viewer
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The name encoding of `value`
         """
 
@@ -192,7 +190,7 @@ class EquationName(TokenizedString):
         elif varname[0] != "{" and varname[-1] != "}":
             varname = "{" + varname + "}"
 
-        return super().set(varname, instance)
+        return super().set(varname)
 
 
 class TIEquation(TokenizedEntry):

@@ -416,24 +416,22 @@ class TIEntry(Dock, Converter):
         """
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `TIEntry`
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: A `TIEntry` instance with data equal to `data`
         """
 
         return cls(data=data)
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `TIEntry` -> `bytes`
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The data of `value`
         """
 

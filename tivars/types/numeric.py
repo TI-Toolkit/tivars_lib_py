@@ -5,7 +5,6 @@ from warnings import warn
 
 from tivars.models import *
 from ..data import *
-from ..flags import *
 from ..var import TIEntry
 
 
@@ -19,12 +18,11 @@ class BCD(Converter):
     _T = int
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `int` from 2-digit binary coded decimal
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The 2-digit number stored in `data`
         """
 
@@ -37,50 +35,15 @@ class BCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts  `int` -> `bytes` as 2-digit binary coded decimal
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The bytes representing `value` in BCD
         """
 
         return int.to_bytes(int(str(value), 16), 7, 'big')
-
-
-class Subtype(Converter):
-    """
-    Converter to extract the subtype of a `TIReal`
-
-    The subtype is stored in the first five bits of the data section.
-    """
-
-    _T = bytes
-
-    @classmethod
-    def get(cls, data: bytes, instance) -> _T:
-        """
-        Converts `bytes` -> `int` from 2-digit binary coded decimal
-
-        :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
-        :return: The 2-digit number stored in `data`
-        """
-
-        return bytes([data[0] & 31])
-
-    @classmethod
-    def set(cls, value: _T, instance) -> bytes:
-        """
-        Converts  `int` -> `bytes` as 2-digit binary coded decimal
-
-        :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
-        :return: The bytes representing `value` in BCD
-        """
-
-        return bytes([value[0] & 31 | instance.data[0] & 224])
 
 
 def replacer(string: str, replacements: dict[str, str]) -> str:
@@ -126,15 +89,6 @@ def read_string(string: str) -> (int, int, bool):
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
-class FloatFlags(Flags):
-    Undefined = {1: 1}
-    Defined = {1: 0}
-    ComplexComponent = {1: 0, 2: 1, 3: 1}
-    Modified = {6: 1}
-    Positive = {7: 0}
-    Negative = {7: 1}
-
-
 class TIReal(TIEntry):
     """
     Parser for real numeric types
@@ -172,8 +126,7 @@ class TIReal(TIEntry):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None,
-                 flags: dict[int, int] = None):
+                 data: bytearray = None):
         """
         Creates an empty `TIReal` with specified meta and data values
 
@@ -183,13 +136,9 @@ class TIReal(TIEntry):
         :param version: This real number's version (defaults to `None`)
         :param archived: Whether this real number is archived (defaults to `False`)
         :param data: This real number's data (defaults to empty)
-        :param flags: This real number's flags (defaults to no bits set)
         """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        if flags is not None:
-            self.flags |= flags
 
     def __float__(self) -> float:
         return self.float()
@@ -212,11 +161,7 @@ class TIReal(TIEntry):
 
     def __neg__(self) -> 'TIReal':
         negated = copy.copy(self)
-        if FloatFlags.Positive in self.flags:
-            negated.flags |= FloatFlags.Negative
-
-        else:
-            negated.flags |= FloatFlags.Negative
+        negated.sign_bit = 1 - negated.sign_bit
 
         return negated
 
@@ -228,10 +173,26 @@ class TIReal(TIEntry):
         Contains flags, a mantissa, and an exponent.
         """
 
-    @View(data, FloatFlags)[0:1]
-    def flags(self) -> FloatFlags:
+    @View(data, Bits[0:5])[0:1]
+    def subtype(self) -> bytes:
         """
-        Flags for the real number
+        The subtype of the number
+
+        Differentiates the exact radical and fraction formats.
+        """
+
+    @View(data, Bits[6:7])[0:1]
+    def graph_bit(self) -> int:
+        """
+        Whether the entry is used during graphing
+        """
+
+    @View(data, Bits[7:8])[0:1]
+    def sign_bit(self) -> int:
+        """
+        The sign bit for the number
+
+        If this bit is used, the number is negative when set.
         """
 
     @View(data, Integer)[1:2]
@@ -250,36 +211,13 @@ class TIReal(TIEntry):
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
-    @classmethod
-    def set(cls, value: _T, instance) -> bytes:
-        if isinstance(instance, TIComplex):
-            instance.set_flags()
-
-        return super(TIReal, cls).set(value, instance)
-
-    @property
-    def is_complex_component(self) -> bool:
-        """
-        :return: Whether this real number is part of a complex number
-        """
-
-        return FloatFlags.ComplexComponent in self.flags
-
-    @property
-    def is_undefined(self) -> bool:
-        """
-        :return: Whether this real number is undefined
-        """
-
-        return FloatFlags.Undefined in self.flags
-
     @property
     def sign(self) -> int:
         """
         :return: The sign of this real number
         """
 
-        return -1 if FloatFlags.Negative in self.flags else 1
+        return -1 if self.sign_bit else 1
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
@@ -343,16 +281,9 @@ class TIReal(TIEntry):
 
         if not string:
             self.mantissa, self.exponent = 0, 0x80
-            self.flags |= FloatFlags.Undefined
 
         else:
-            self.mantissa, self.exponent, neg = read_string(string)
-
-            if neg:
-                self.flags |= FloatFlags.Negative
-
-            else:
-                self.flags |= FloatFlags.Positive
+            self.mantissa, self.exponent, self.sign_bit = read_string(string)
 
     def string(self) -> str:
         """
@@ -413,15 +344,6 @@ class TIComplex(TIEntry):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        if data:
-            if FloatFlags.ComplexComponent not in self.real_flags:
-                warn("Bits 2 and 3 of the real component flags should be set in a complex entry.",
-                     BytesWarning)
-
-            if FloatFlags.ComplexComponent not in self.imag_flags:
-                warn("Bits 2 and 3 of the imaginary component flags should be set in a complex entry.",
-                     BytesWarning)
-
     def __complex__(self):
         return self.complex()
 
@@ -458,10 +380,26 @@ class TIComplex(TIEntry):
         The imaginary part of the complex number
         """
 
-    @View(data, FloatFlags)[0:1]
-    def real_flags(self) -> FloatFlags:
+    @View(data, Bits[0:5])[0:1]
+    def real_subtype(self) -> bytes:
         """
-        Flags for the real part of the complex number
+        The subtype of the real part
+
+        The subtype of a complex component is always 0xC.
+        """
+
+    @View(data, Bits[6:7])[0:1]
+    def real_graph_bit(self) -> int:
+        """
+        Whether the entry is used during graphing
+        """
+
+    @View(data, Bits[7:8])[0:1]
+    def real_sign_bit(self) -> int:
+        """
+        The sign bit for the real part
+
+        If this bit is set, the real part is negative
         """
 
     @View(data, Integer)[1:2]
@@ -480,10 +418,26 @@ class TIComplex(TIEntry):
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
-    @View(data, FloatFlags)[9:10]
-    def imag_flags(self) -> FloatFlags:
+    @View(data, Bits[0:5])[9:10]
+    def imag_subtype(self) -> bytes:
         """
-        Flags for the imaginary part of the complex number
+        The subtype of the complex part
+
+        The subtype of a complex component is always 0xC.
+        """
+
+    @View(data, Bits[6:7])[9:10]
+    def imag_graph_bit(self) -> int:
+        """
+        Whether the entry is used during graphing
+        """
+
+    @View(data, Bits[7:8])[9:10]
+    def imag_sign_bit(self) -> int:
+        """
+        The sign bit for the complex part
+
+        If this bit is set, the complex part is negative
         """
 
     @View(data, Integer)[10:11]
@@ -509,10 +463,6 @@ class TIComplex(TIEntry):
 
         return self.real, self.imag
 
-    def set_flags(self):
-        self.real_flags |= FloatFlags.ComplexComponent
-        self.imag_flags |= FloatFlags.ComplexComponent
-
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         """
@@ -528,7 +478,7 @@ class TIComplex(TIEntry):
         imag.load_float(comp.imag)
 
         self.real, self.imag = real, imag
-        self.set_flags()
+        self.real_subtype = self.imag_subtype = 0xC
 
     def complex(self):
         """
@@ -559,7 +509,7 @@ class TIComplex(TIEntry):
 
         self.real = TIReal(parts[0])
         self.imag = TIReal(parts[1].replace("i", "") if parts[1] != "i" else "1")
-        self.set_flags()
+        self.real_subtype = self.imag_subtype = 0xC
 
     def string(self) -> str:
         """
@@ -573,4 +523,4 @@ class TIComplex(TIEntry):
             case _, _: return replacer(f"{self.real} + {self.imag}i", {"+ -": "- ", " 1i": " i"})
 
 
-__all__ = ["TIReal", "TIComplex", "BCD", "FloatFlags"]
+__all__ = ["TIReal", "TIComplex", "BCD"]

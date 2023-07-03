@@ -22,33 +22,31 @@ class ListName(TokenizedString):
     _T = str
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         """
         Converts `bytes` -> `str` as done by the memory viewer
 
         :param data: The raw bytes to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The list name contained in `data`
         """
 
         if data[0] == 0x5D:
             if data[1] < 6:
-                return super().get(data, instance)
+                return super().get(data)
 
             elif data[1] == 0x40:
                 return "IDList"
 
             data = data[1:]
 
-        return super().get(data, instance)
+        return super().get(data)
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `str` -> `bytes` to match appearance in the memory viewer
 
         :param value: The value to convert
-        :param instance: The instance which contains the data section (unused)
         :return: The name encoding of `value`
         """
 
@@ -61,10 +59,10 @@ class ListName(TokenizedString):
             return b']@'
 
         elif varname.startswith("|L"):
-            return super().set(varname[-5:], instance)
+            return super().set(varname[-5:])
 
         else:
-            return super().set(varname[:2], instance)
+            return super().set(varname[:2])
 
 
 class ListEntry(TIEntry):

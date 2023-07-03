@@ -69,11 +69,11 @@ class TokenizedString(String):
     _T = str
 
     @classmethod
-    def get(cls, data: bytes, instance) -> _T:
+    def get(cls, data: bytes, **kwargs) -> _T:
         return decode(data.ljust(8, b'\x00'), CE_BYTES)
 
     @classmethod
-    def set(cls, value: _T, instance) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         return encode(value, CE_TOKENS).rstrip(b'\x00')
 
 
