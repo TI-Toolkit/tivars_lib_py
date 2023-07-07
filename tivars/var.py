@@ -603,12 +603,7 @@ class TIEntry(Dock, Converter):
 
         self.raw.data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
 
-        try:
-            self.coerce()
-
-        except TypeError:
-            warn(f"Type ID 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
-                 BytesWarning)
+        self.coerce()
 
     def bytes(self) -> bytes:
         """
@@ -713,7 +708,7 @@ class TIEntry(Dock, Converter):
 
     def coerce(self):
         """
-        Coerces this entry to a subtype if possible using the entry's type ID
+        Coerces this entry to a subclass if possible using the entry's type ID
 
         Valid types must be registered using `TIEntry.register` to be considered for coercion.
         """
@@ -725,7 +720,8 @@ class TIEntry(Dock, Converter):
                 self.coerce()
 
             except KeyError:
-                raise TypeError(f"type ID 0x{self.raw.type_id.hex()} not recognized")
+                warn(f"Type ID 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
+                     BytesWarning)
 
 
 class TIVar:
