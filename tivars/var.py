@@ -218,8 +218,6 @@ class TIEntry(Dock, Converter):
     The file extension used for this entry per-model
     """
 
-    type_ids = {}
-
     versions = []
     """
     The possible versions of this entry
@@ -236,6 +234,7 @@ class TIEntry(Dock, Converter):
     """
 
     _type_id = None
+    _type_ids = {}
 
     class Raw:
         """
@@ -347,6 +346,12 @@ class TIEntry(Dock, Converter):
 
     def __format__(self, format_spec: str) -> str:
         raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
+
+    def __init_subclass__(cls, /, register=False, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if register:
+            TIEntry.register(cls)
 
     def __iter__(self) -> Iterator:
         raise NotImplementedError
@@ -461,6 +466,17 @@ class TIEntry(Dock, Converter):
 
         return self.raw.data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
+    @classmethod
+    def get_type(cls, type_id: bytes) -> 'TIEntry':
+        """
+        Gets the subclass corresponding to a type ID if one is registered
+
+        :param type_id: The type ID to search by
+        :return: A subclass of `TIEntry` with corresponding type ID or `None`
+        """
+
+        return cls._type_ids.get(type_id, None)
+
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:
         """
@@ -484,7 +500,7 @@ class TIEntry(Dock, Converter):
         :param var_type: The `TIEntry` subtype to register
         """
 
-        cls.type_ids[var_type._type_id] = var_type
+        cls._type_ids[var_type._type_id] = var_type
 
     def archive(self):
         """
@@ -549,8 +565,8 @@ class TIEntry(Dock, Converter):
         self.raw.type_id = data.read(1)
 
         if self._type_id is not None and self.raw.type_id != self._type_id:
-            if self.raw.type_id in TIEntry.type_ids:
-                warn(f"The entry type is incorrect (expected {type(self)}, got {TIEntry.type_ids[self.raw.type_id]}).",
+            if subclass := TIEntry.get_type(self.raw.type_id):
+                warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
                      BytesWarning)
 
             else:
@@ -710,16 +726,16 @@ class TIEntry(Dock, Converter):
         """
         Coerces this entry to a subclass if possible using the entry's type ID
 
-        Valid types must be registered using `TIEntry.register` to be considered for coercion.
+        Valid types must be registered to be considered for coercion.
         """
 
         if self._type_id is None:
-            try:
-                self.__class__ = self.type_ids[self.raw.type_id]
+            if subclass := self.get_type(self.raw.type_id):
+                self.__class__ = subclass
                 self.set_length()
                 self.coerce()
 
-            except KeyError:
+            else:
                 warn(f"Type ID 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
                      BytesWarning)
 

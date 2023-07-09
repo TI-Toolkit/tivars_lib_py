@@ -264,7 +264,7 @@ def color_data(gdb: 'TIMonoGDB') -> bytes:
     return data.read()
 
 
-class TIMonoGDB(TIEntry):
+class TIMonoGDB(TIEntry, register=True):
     """
     Base class for all GDB entries
 

@@ -89,7 +89,7 @@ def read_string(string: str) -> (int, int, bool):
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
-class TIReal(TIEntry):
+class TIReal(TIEntry, register=True):
     """
     Parser for real numeric types
 
@@ -298,7 +298,7 @@ class TIReal(TIEntry):
             return string
 
 
-class TIComplex(TIEntry):
+class TIComplex(TIEntry, register=True):
     """
     Parser for the complex numeric type
 

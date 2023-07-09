@@ -52,7 +52,7 @@ class SettingsEntry(TIEntry):
         return json.dumps(self.dict())
 
 
-class TIWindowSettings(SettingsEntry):
+class TIWindowSettings(SettingsEntry, register=True):
     extensions = {
         None: "8xw",
         TI_82: "82w",
@@ -297,7 +297,7 @@ class TIWindowSettings(SettingsEntry):
         }
 
 
-class TIRecallWindow(SettingsEntry):
+class TIRecallWindow(SettingsEntry, register=True):
     extensions = {
         None: "8xz",
         TI_82: "82z",
@@ -548,7 +548,7 @@ class TIRecallWindow(SettingsEntry):
         }
 
 
-class TITableSettings(SettingsEntry):
+class TITableSettings(SettingsEntry, register=True):
     extensions = {
         None: "8xt",
         TI_82: "82t",

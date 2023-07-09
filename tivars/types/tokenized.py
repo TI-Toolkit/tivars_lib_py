@@ -193,7 +193,7 @@ class EquationName(TokenizedString):
         return super().set(varname)
 
 
-class TIEquation(TokenizedEntry):
+class TIEquation(TokenizedEntry, register=True):
     extensions = {
         None: "8xy",
         TI_82: "82y",
@@ -239,7 +239,7 @@ class TIEquation(TokenizedEntry):
         """
 
 
-class TIString(TokenizedEntry):
+class TIString(TokenizedEntry, register=True):
     extensions = {
         None: "8xs",
         TI_82: "82s",
@@ -284,7 +284,7 @@ class TIString(TokenizedEntry):
         return f"\"{super().string()}\""
 
 
-class TIProgram(TokenizedEntry):
+class TIProgram(TokenizedEntry, register=True):
     extensions = {
         None: "8xp",
         TI_82: "82p",
@@ -347,7 +347,7 @@ class TIProgram(TokenizedEntry):
         return varname
 
 
-class TIProtectedProgram(TIProgram):
+class TIProtectedProgram(TIProgram, register=True):
     is_protected = True
 
     _type_id = b'\x06'

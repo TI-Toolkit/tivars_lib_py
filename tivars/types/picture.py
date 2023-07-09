@@ -172,7 +172,7 @@ class TIMonoPicture(PictureEntry):
                          BytesWarning)
 
 
-class TIPicture(PictureEntry):
+class TIPicture(PictureEntry, register=True):
     flash_only = True
 
     extensions = {
@@ -248,7 +248,7 @@ class ImageName(TokenizedString):
         return b"\x3C" + bytes([int(value[-1], 16) - 1])
 
 
-class TIImage(PictureEntry):
+class TIImage(PictureEntry, register=True):
     flash_only = True
 
     extensions = {

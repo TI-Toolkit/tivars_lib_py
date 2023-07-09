@@ -8,7 +8,7 @@ from ..var import TIEntry
 from .numeric import TIReal
 
 
-class TIMatrix(TIEntry):
+class TIMatrix(TIEntry, register=True):
     """
     Parser for the matrix type
 

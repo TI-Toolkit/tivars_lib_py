@@ -192,7 +192,7 @@ class ListEntry(TIEntry):
         return format(self, "")
 
 
-class TIRealList(ListEntry):
+class TIRealList(ListEntry, register=True):
     _E = TIReal
 
     extensions = {
@@ -215,7 +215,7 @@ class TIRealList(ListEntry):
     _type_id = b'\x01'
 
 
-class TIComplexList(ListEntry):
+class TIComplexList(ListEntry, register=True):
     _E = TIComplex
 
     extensions = {
