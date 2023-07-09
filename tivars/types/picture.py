@@ -204,6 +204,8 @@ class TIPicture(PictureEntry, register=True):
     pil_mode = "RGB"
     pixel_type = RGB
 
+    _type_id = b'\x07'
+
     def __iter__(self) -> Iterator[pixel_type]:
         for byte in self.data[self.data_offset:]:
             for rgb in RGBPalette.get(byte):
