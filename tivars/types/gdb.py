@@ -330,7 +330,7 @@ class TIMonoGDB(TIEntry, register=True):
         Creates an empty `TIMonoGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -611,7 +611,7 @@ class TIGDB(TIMonoGDB):
         Creates an empty `TIGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -732,7 +732,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         Creates an empty `TIMonoFuncGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -857,7 +857,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
         Creates an empty `TIFuncGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -910,7 +910,7 @@ class TIMonoParamGDB(TIMonoGDB):
         Creates an empty `TIMonoParamGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -1063,7 +1063,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
         Creates an empty `TIParamGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -1116,7 +1116,7 @@ class TIMonoPolarGDB(TIMonoGDB):
         Creates an empty `TIMonoPolarGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -1223,7 +1223,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
         Creates an empty `TIPolarGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -1276,7 +1276,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         Creates an empty `TIMonoSeqGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)
@@ -1494,7 +1494,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
         Creates an empty `TISeqGDB` with specified meta and data values
 
         :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flag chips (defaults to `True`)
+        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
         :param name: The name of this GDB (defaults to `GDB1`)
         :param version: This GDB's version (defaults to `None`)
         :param archived: Whether this GDB is archived (defaults to `False`)

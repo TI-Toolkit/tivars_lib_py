@@ -89,6 +89,20 @@ def read_string(string: str) -> (int, int, bool):
     return int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
 
+class Subtype:
+    _subtype_id = None
+    _subtype_ids = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        Subtype._subtype_ids[cls._subtype_id] = cls
+
+    @classmethod
+    def get_subtype(cls, subtype_id: int) -> 'Subtype':
+        return cls._subtype_ids.get(subtype_id, None)
+
+
 class TIReal(TIEntry, register=True):
     """
     Parser for real numeric types
@@ -131,7 +145,7 @@ class TIReal(TIEntry, register=True):
         Creates an empty `TIReal` with specified meta and data values
 
         :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flag chips (default to `True`)
+        :param for_flash: Whether this real number supports flash chips (default to `True`)
         :param name: The name of this real number (defaults to `A`)
         :param version: This real number's version (defaults to `None`)
         :param archived: Whether this real number is archived (defaults to `False`)
@@ -335,7 +349,7 @@ class TIComplex(TIEntry, register=True):
         Creates an empty `TIComplex` with specified meta and data values
 
         :param init: Data to initialize this complex number's data (defaults to `None`)
-        :param for_flash: Whether this complex number supports flag chips (default to `True`)
+        :param for_flash: Whether this complex number supports flash chips (default to `True`)
         :param name: The name of this complex number (defaults to `A`)
         :param version: This complex number's version (defaults to `None`)
         :param archived: Whether this complex number is archived (defaults to `False`)

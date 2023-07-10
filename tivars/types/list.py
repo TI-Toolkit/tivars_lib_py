@@ -84,7 +84,7 @@ class ListEntry(TIEntry):
         Creates an empty `ListEntry` with specified meta and data values
 
         :param init: Data to initialize this list's data (defaults to `None`)
-        :param for_flash: Whether this list supports flag chips (default to `True`)
+        :param for_flash: Whether this list supports flash chips (default to `True`)
         :param name: The name of this list (defaults to `L1`)
         :param version: This list's version (defaults to `None`)
         :param archived: Whether this list is archived (defaults to `False`)

@@ -44,7 +44,7 @@ class TIMatrix(TIEntry, register=True):
         Creates an empty `TIMatrix` with specified meta and data values
 
         :param init: Data to initialize this matrix's data (defaults to `None`)
-        :param for_flash: Whether this matrix supports flag chips (default to `True`)
+        :param for_flash: Whether this matrix supports flash chips (default to `True`)
         :param name: The name of this matrix (defaults to `[A]`)
         :param version: This matrix's version (defaults to `None`)
         :param archived: Whether this matrix is archived (defaults to `False`)
