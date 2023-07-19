@@ -8,7 +8,7 @@ from tivars.models import *
 from ..flags import *
 from ..data import *
 from ..var import TIEntry
-from .numeric import TIReal
+from .real import TIReal
 from .tokenized import TIEquation
 
 

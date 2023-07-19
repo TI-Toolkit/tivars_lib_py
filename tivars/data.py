@@ -205,7 +205,7 @@ class Bits:
                     if index in indices:
                         value += bit
 
-                return int(value, 2)
+                return int(value[::-1], 2)
 
             @classmethod
             def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:

@@ -251,7 +251,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
         self.assertEqual(list(iter(test_comp_list)), test_list)
-        self.assertEqual(str(test_comp_list), "[1 + i, -3 + 2i, 4]")
+        self.assertEqual(str(test_comp_list), "[1 + 1i, -3 + 2i, 4 + 0i]")
         self.assertEqual(f"{test_comp_list:t}", "{1+[i],~3+2[i],4}")
 
     def test_matrix(self):
@@ -274,6 +274,20 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(f"{test_matrix:t}", "[[0.5,~1,2.6457513110646]"
                                              "[2.7386127875258,0.5,3.1415926535898]"
                                              "[1,99999999,0]]")
+
+    def test_exact_matrix(self):
+        test_matrix = TIMatrix()
+        test_matrix.open("tests/data/var/Matrix_2x2_exact.8xm")
+
+        test_array = [[TIRealPi(3), TIRealRadical("3√10 + 0√1")],
+                      [TIRealFraction(0.5), TIRealRadical("(4√5 + 2√3) / 7")]]
+        test_array[1][0].subtype_id = 0x18
+
+        self.assertEqual(test_matrix.name, "[B]")
+        self.assertEqual(test_matrix.height, 2)
+        self.assertEqual(test_matrix.width, 2)
+        self.assertEqual(test_matrix.matrix(), test_array)
+        self.assertEqual(list(iter(test_matrix)), [entry for row in test_array for entry in row])
 
 
 class SettingsTests(unittest.TestCase):

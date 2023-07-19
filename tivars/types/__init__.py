@@ -1,9 +1,8 @@
-from .exact import *
-from .fraction import *
+from .complex import *
 from .gdb import *
 from .list import *
 from .matrix import *
-from .numeric import *
+from .real import *
 from .picture import *
 from .settings import *
 from .tokenized import *
@@ -22,5 +21,10 @@ __all__ = ["TIEntry",
            "EquationFlags", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle",
            "TIComplex", "TIComplexList",
            "TIWindowSettings", "TIRecallWindow", "TITableSettings",
-           "TIImage"
+           "TIRealFraction",
+           "TIImage",
+           "TIComplexFraction",
+           "TIRealRadical", "TIComplexRadical",
+           "TIComplexPi", "TIComplexPiFraction",
+           "TIRealPi", "TIRealPiFraction"
            ]

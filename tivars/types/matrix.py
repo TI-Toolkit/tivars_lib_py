@@ -5,7 +5,7 @@ from warnings import warn
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
-from .numeric import TIReal
+from .real import RealEntry
 
 
 class TIMatrix(TIEntry, register=True):
@@ -65,7 +65,7 @@ class TIMatrix(TIEntry, register=True):
         return "[" + outer_sep.join(f"[{inner_sep.join(format(entry, format_spec)for entry in row)}]"
                                     for row in self.matrix()) + "]"
 
-    def __iter__(self) -> Iterator[TIReal]:
+    def __iter__(self) -> Iterator[RealEntry]:
         for row in self.matrix():
             for entry in row:
                 yield entry
@@ -106,9 +106,9 @@ class TIMatrix(TIEntry, register=True):
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.data_length // TIReal.min_data_length != self.size:
+        if self.data_length // RealEntry.min_data_length != self.size:
             warn(f"The matrix has an unexpected size "
-                 f"(expected {self.data_length // TIReal.min_data_length}, got {self.size}).",
+                 f"(expected {self.data_length // RealEntry.min_data_length}, got {self.size}).",
                  BytesWarning)
 
     def load_data_section(self, data: BytesIO):
@@ -117,7 +117,7 @@ class TIMatrix(TIEntry, register=True):
         self.raw.data = bytearray(width_byte + height_byte + data.read(width * height))
 
     @Loader[list]
-    def load_matrix(self, matrix: list[list[TIReal]]):
+    def load_matrix(self, matrix: list[list[RealEntry]]):
         """
         Loads a two-dimensional `list` into this matrix
 
@@ -130,7 +130,7 @@ class TIMatrix(TIEntry, register=True):
         self.load_bytes(bytes([len(matrix[0])]) + bytes([len(matrix)]) +
                         b''.join(entry.data for row in matrix for entry in row))
 
-    def matrix(self) -> list[list[TIReal]]:
+    def matrix(self) -> list[list[RealEntry]]:
         """
         :return: A two-dimensional `list` of the elements in this matrix
         """
@@ -139,13 +139,13 @@ class TIMatrix(TIEntry, register=True):
         for i in range(self.height):
             row = []
             for j in range(self.width):
-                entry = TIReal()
-
-                entry.meta_length = self.meta_length
-                entry.archived = self.archived
-
                 index = self.width * i + j
-                entry.data = self.data[entry.data_length * index + self.min_data_length:][:entry.data_length]
+                entry = RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length,
+                                  name="A",
+                                  archived=self.archived,
+                                  data=self.data[RealEntry.min_data_length * index + self.min_data_length:]
+                                  [:RealEntry.min_data_length])
+
                 row.append(entry)
 
             matrix.append(row.copy())
@@ -159,7 +159,7 @@ class TIMatrix(TIEntry, register=True):
         for string in ''.join(string.split())[1:-1].replace("],[", "][").split("]["):
             row = []
             for item in string.replace("[", "").replace("]", "").split(","):
-                entry = TIReal()
+                entry = RealEntry()
                 entry.load_string(item)
                 row.append(entry)
 

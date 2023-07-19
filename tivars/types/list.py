@@ -8,7 +8,8 @@ from tivars.models import *
 from tivars.tokenizer import TokenizedString
 from ..data import *
 from ..var import TIEntry
-from .numeric import TIReal, TIComplex
+from .complex import ComplexEntry
+from .real import RealEntry
 
 
 class ListName(TokenizedString):
@@ -165,17 +166,11 @@ class ListEntry(TIEntry):
         :return: A `list` of the elements in this list
         """
 
-        lst = []
-        for i in range(self.length):
-            entry = self._E()
-
-            entry.meta_length = self.meta_length
-            entry.archived = self.archived
-
-            entry.data = self.data[entry.data_length * i + 2:][:entry.data_length]
-            lst.append(entry)
-
-        return lst
+        return [self._E(for_flash=self.meta_length > TIEntry.base_meta_length,
+                        name="A",
+                        archived=self.archived,
+                        data=self.data[self._E.min_data_length * i + 2:][:self._E.min_data_length])
+                for i in range(self.length)]
 
     @Loader[str]
     def load_string(self, string: str):
@@ -193,7 +188,7 @@ class ListEntry(TIEntry):
 
 
 class TIRealList(ListEntry, register=True):
-    _E = TIReal
+    _E = RealEntry
 
     extensions = {
         None: "8xl",
@@ -216,7 +211,7 @@ class TIRealList(ListEntry, register=True):
 
 
 class TIComplexList(ListEntry, register=True):
-    _E = TIComplex
+    _E = ComplexEntry
 
     extensions = {
         None: "8xl",

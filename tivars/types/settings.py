@@ -7,7 +7,7 @@ from warnings import warn
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
-from .numeric import TIReal
+from .real import TIReal
 
 
 class SettingsEntry(TIEntry):

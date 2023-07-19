@@ -320,6 +320,8 @@ class TIEntry(Dock, Converter):
         self.clear()
         if data:
             self.data[:len(data)] = bytearray(data)
+            self.coerce()
+
         elif init is not None:
             try:
                 self.load_bytes(init.bytes())
@@ -384,7 +386,6 @@ class TIEntry(Dock, Converter):
         The type ID of the entry
 
         The type determines how the contents of the data section of the entry are interpreted.
-        Real subtypes have the same type ID.
         """
 
     @Section(8, TokenizedString)
