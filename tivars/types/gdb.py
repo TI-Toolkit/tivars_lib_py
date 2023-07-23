@@ -384,37 +384,37 @@ class TIMonoGDB(TIEntry, register=True):
     @View(data, TIReal)[7:16]
     def Xmin(self) -> TIReal:
         """
-        Xmin: The leftmost graphscreen coordinate
+        Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
     @View(data, TIReal)[16:25]
     def Xmax(self) -> TIReal:
         """
-        Xmax: The rightmost graphscreen coordinate
+        Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
     @View(data, TIReal)[25:34]
     def Xscl(self) -> TIReal:
         """
-        Xscl: The separation between ticks on the horizontal axis
+        Xscl: the separation between ticks on the X-axis
         """
 
     @View(data, TIReal)[34:43]
     def Ymin(self) -> TIReal:
         """
-        Ymin: The bottommost graphscreen coordinate
+        Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
     @View(data, TIReal)[43:52]
     def Ymax(self) -> TIReal:
         """
-        Ymax: The topmost graphscreen coordinate
+        Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
     @View(data, TIReal)[52:61]
     def Yscl(self) -> TIReal:
         """
-        Yscl: The separation between ticks on the vertical axis
+        Yscl: the separation between ticks on the Y-axis
         """
 
     @property
@@ -656,7 +656,7 @@ class TIGDB(TIMonoGDB):
         """
         The flags for extended color mode settings
 
-        Only DetectAsymptotesOn/Off is stored here
+        Only DetectAsymptotesOn/Off is stored here.
         """
 
     def _load_dict(self, dct: dict):
@@ -1304,9 +1304,9 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[61:70]
     def PlotStart(self, value) -> TIReal:
         """
-        PlotStart: The initial value of n for sequential plots
+        PlotStart: The initial value of 𝑛 for sequential plots
 
-        The value must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -1318,9 +1318,9 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[70:79]
     def nMax(self, value) -> TIReal:
         """
-        nMax: The final value of n
+        𝑛Max: The final value of 𝑛
 
-        The value must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -1332,21 +1332,21 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[79:88]
     def unMin(self) -> TIReal:
         """
-        u(nMin): The initial value of u at nMin
+        u(𝑛Min): The initial value of u at 𝑛Min
         """
 
     @View(data, TIReal)[88:97]
     def vnMin(self) -> TIReal:
         """
-        v(nMin): The initial value of v at nMin
+        v(𝑛Min): The initial value of v at 𝑛Min
         """
 
     @View(data, TIReal)[97:106]
     def nMin(self, value) -> TIReal:
         """
-        nMin: the initial value of n for sequential equations
+        nMin: the initial value of 𝑛
 
-        The value must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -1358,27 +1358,27 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[106:115]
     def unMinp1(self) -> TIReal:
         """
-        u(nMin + 1): The initial value of u at nMin + 1
+        u(𝑛Min+1): The initial value of u at 𝑛Min + 1
         """
 
     @View(data, TIReal)[115:124]
     def vnMinp1(self) -> TIReal:
         """
-        v(nMin + 1): The initial value of v at nMin + 1
+        v(nMin+1): The initial value of v at 𝑛Min + 1
         """
 
     @View(data, TIReal)[124:133]
     def wnMin(self) -> TIReal:
         """
-        w(nMin): The initial value of w at nMin
+        w(𝑛Min): The initial value of w at 𝑛Min
         """
 
     @View(data, TIReal)[133:142]
     def PlotStep(self, value) -> TIReal:
         """
-        PlotStep: The n increment for sequential plots
+        PlotStep: The 𝑛 increment for sequential plots
 
-        The value must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -1390,7 +1390,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(data, TIReal)[142:151]
     def wnMinp1(self) -> TIReal:
         """
-        w(nMin + 1): The initial value of w at nMin + 1
+        w(𝑛Min+1): The initial value of w at 𝑛Min + 1
         """
 
     @View(data, TIGraphedEquation[1])

@@ -80,7 +80,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
         The name of the entry
 
-        Always equal to Window
+        Always equal to Window.
         """
 
     @Section(min_data_length)
@@ -88,43 +88,43 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
         The data section of the entry
 
-        Contains the window parameter values
+        Each parameter is stored in a contiguous list of real numbers.
         """
 
     @View(data, TIReal)[3:12]
     def Xmin(self) -> TIReal:
         """
-        Xmin: the smallest or leftmost horizontal coordinate on the graphscreen
+        Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
     @View(data, TIReal)[12:21]
     def Xmax(self) -> TIReal:
         """
-        Xmax: the largest or rightmost horizontal coordinate on the graphscreen
+        Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
     @View(data, TIReal)[21:30]
     def Xscl(self) -> TIReal:
         """
-        Xscl: the separation between ticks on the horizontal axis
+        Xscl: the separation between ticks on the X-axis
         """
 
     @View(data, TIReal)[30:39]
     def Ymin(self) -> TIReal:
         """
-        Ymin: the smallest or bottommost vertical coordinate on the graphscreen
+        Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
     @View(data, TIReal)[39:48]
     def Ymax(self) -> TIReal:
         """
-        Ymax: the largest or topmost vertical coordinate on the graphscreen
+        Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
     @View(data, TIReal)[48:57]
     def Yscl(self) -> TIReal:
         """
-        Yscl: the separation between ticks on the vertical axis
+        Yscl: the separation between ticks on the Y-axis
         """
 
     @View(data, TIReal)[57:66]
@@ -166,9 +166,9 @@ class TIWindowSettings(SettingsEntry, register=True):
     @View(data, TIReal)[111:120]
     def PlotStart(self, value) -> TIReal:
         """
-        PlotStart: the initial value of n for sequential plots
+        PlotStart: the initial value of 𝑛 for sequential plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -180,9 +180,9 @@ class TIWindowSettings(SettingsEntry, register=True):
     @View(data, TIReal)[120:129]
     def nMax(self, value) -> TIReal:
         """
-        nMax: the final value of n for sequential equations and plots
+        𝑛Max: the final value of 𝑛 for sequential equations and plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -194,21 +194,21 @@ class TIWindowSettings(SettingsEntry, register=True):
     @View(data, TIReal)[129:138]
     def unMin0(self) -> TIReal:
         """
-        u(nMin): the initial value of u at nMin
+        u(𝑛Min): the initial value of u at 𝑛Min
         """
 
     @View(data, TIReal)[138:147]
     def vnMin0(self) -> TIReal:
         """
-        v(nMin): the initial value of v at nMin
+        v(𝑛Min): the initial value of v at 𝑛Min
         """
 
     @View(data, TIReal)[147:156]
     def nMin(self, value) -> TIReal:
         """
-        nMin: the initial value of n for sequential equations
+        𝑛Min: the initial value of 𝑛 for sequential plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -220,27 +220,27 @@ class TIWindowSettings(SettingsEntry, register=True):
     @View(data, TIReal)[156:165]
     def unMin1(self) -> TIReal:
         """
-        u(nMin + 1): the initial value of u at nMin + 1
+        u(𝑛Min+1): the initial value of u at 𝑛Min + 1
         """
 
     @View(data, TIReal)[165:174]
     def vnMin1(self) -> TIReal:
         """
-        v(nMin + 1): the initial value of v at nMin + 1
+        v(𝑛Min+1): the initial value of v at 𝑛Min + 1
         """
 
     @View(data, TIReal)[174:183]
     def wnMin0(self) -> TIReal:
         """
-        w(nMin): the initial value of w at nMin
+        w(𝑛Min): the initial value of w at 𝑛Min
         """
 
     @View(data, TIReal)[183:192]
     def PlotStep(self, value) -> TIReal:
         """
-        PlotStep: the n increment for sequential plots
+        PlotStep: the 𝑛 increment for sequential plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -254,7 +254,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
         Xres: the pixel separation of points in a function plot
 
-        Must be an integer between 1 and 8
+        The value must be an integer in [1,8]
         """
 
         if int(value) != float(value) or not 1 <= int(value) <= 8:
@@ -266,7 +266,7 @@ class TIWindowSettings(SettingsEntry, register=True):
     @View(data, TIReal)[201:210]
     def wnMin1(self) -> TIReal:
         """
-        w(nMin + 1): the initial value of w at nMin + 1
+        w(𝑛Min+1): the initial value of w at 𝑛Min + 1
         """
 
     def dict(self) -> dict:
@@ -331,7 +331,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
         The name of the entry
 
-        Always equal to RclWindw
+        Always equal to RclWindw.
         """
 
     @Section(min_data_length)
@@ -339,43 +339,43 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
         The data section of the entry
 
-        Contains the window parameter values
+        Each parameter is stored in a contiguous list of real numbers.
         """
 
     @View(data, TIReal)[2:11]
     def Xmin(self) -> TIReal:
         """
-        Xmin: the smallest or leftmost horizontal coordinate on the graphscreen
+        Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
     @View(data, TIReal)[11:20]
     def Xmax(self) -> TIReal:
         """
-        Xmax: the largest or rightmost horizontal coordinate on the graphscreen
+        Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
     @View(data, TIReal)[20:29]
     def Xscl(self) -> TIReal:
         """
-        Xscl: the separation between ticks on the horizontal axis
+        Xscl: the separation between ticks on the X-axis
         """
 
     @View(data, TIReal)[29:38]
     def Ymin(self) -> TIReal:
         """
-        Ymin: the smallest or bottommost vertical coordinate on the graphscreen
+        Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
     @View(data, TIReal)[38:47]
     def Ymax(self) -> TIReal:
         """
-        Ymax: the largest or topmost vertical coordinate on the graphscreen
+        Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
     @View(data, TIReal)[47:56]
     def Yscl(self) -> TIReal:
         """
-        Yscl: the separation between ticks on the vertical axis
+        Yscl: the separation between ticks on the Y-axis
         """
 
     @View(data, TIReal)[56:65]
@@ -417,9 +417,9 @@ class TIRecallWindow(SettingsEntry, register=True):
     @View(data, TIReal)[110:119]
     def PlotStart(self, value) -> TIReal:
         """
-        PlotStart: the initial value of n for sequential plots
+        PlotStart: the initial value of 𝑛 for sequential plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -431,9 +431,9 @@ class TIRecallWindow(SettingsEntry, register=True):
     @View(data, TIReal)[119:128]
     def nMax(self, value) -> TIReal:
         """
-        nMax: the final value of n for sequential equations and plots
+        𝑛Max: the final value of 𝑛 for sequential equations and plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -445,21 +445,21 @@ class TIRecallWindow(SettingsEntry, register=True):
     @View(data, TIReal)[128:137]
     def unMin0(self) -> TIReal:
         """
-        u(nMin): the initial value of u at nMin
+        u(𝑛Min): the initial value of u at 𝑛Min
         """
 
     @View(data, TIReal)[137:146]
     def vnMin0(self) -> TIReal:
         """
-        v(nMin): the initial value of v at nMin
+        v(𝑛Min): the initial value of v at 𝑛Min
         """
 
     @View(data, TIReal)[146:155]
     def nMin(self, value) -> TIReal:
         """
-        nMin: the initial value of n for sequential equations
+        𝑛Min: the initial value of 𝑛 for sequential equations
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -471,27 +471,27 @@ class TIRecallWindow(SettingsEntry, register=True):
     @View(data, TIReal)[155:164]
     def unMin1(self) -> TIReal:
         """
-        u(nMin + 1): the initial value of u at nMin + 1
+        u(𝑛Min + 1): the initial value of u at 𝑛Min + 1
         """
 
     @View(data, TIReal)[164:173]
     def vnMin1(self) -> TIReal:
         """
-        v(nMin + 1): the initial value of v at nMin + 1
+        v(𝑛Min + 1): the initial value of v at 𝑛Min + 1
         """
 
     @View(data, TIReal)[173:182]
     def wnMin0(self) -> TIReal:
         """
-        w(nMin): the initial value of w at nMin
+        w(𝑛Min): the initial value of w at 𝑛Min
         """
 
     @View(data, TIReal)[182:191]
     def PlotStep(self, value) -> TIReal:
         """
-        PlotStep: the n increment for sequential plots
+        PlotStep: the 𝑛 increment for sequential plots
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -505,7 +505,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
         Xres: the pixel separation of points in a function plot
 
-        Must be an integer between 1 and 8
+        The value must be an integer in [1,8]
         """
 
         if int(value) != float(value) or not 1 <= int(value) <= 8:
@@ -517,7 +517,7 @@ class TIRecallWindow(SettingsEntry, register=True):
     @View(data, TIReal)[200:209]
     def wnMin1(self) -> TIReal:
         """
-        w(nMin + 1): the initial value of w at nMin + 1
+        w(𝑛Min + 1): the initial value of w at 𝑛Min + 1
         """
 
     def dict(self) -> dict:
@@ -582,7 +582,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
         The name of the entry
 
-        Always equal to TblSet
+        Always equal to TblSet.
         """
 
     @Section(min_data_length)
@@ -590,7 +590,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
         The data section of the entry
 
-        Contains the table parameter values
+        Each parameter is stored in a contiguous list of real numbers.
         """
 
     @View(data, TIReal)[2:11]
@@ -598,7 +598,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
         TblMin: the initial value for the table
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
@@ -612,7 +612,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
         ΔTbl: the increment for the table
 
-        Must be an integer
+        The value must be an integer.
         """
 
         if int(value) != float(value):
