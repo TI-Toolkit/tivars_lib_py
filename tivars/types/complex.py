@@ -38,10 +38,13 @@ class ImaginaryPart(Converter):
 
 class ComplexEntry(TIEntry):
     """
-    Parser for the complex numeric type
+    Parser for complex numeric types
 
-    A `TIComplex` is a pair of signed floating point numbers with 8 exponent bits and 14 decimal mantissa digits each.
-    The pair corresponds to the real and imaginary parts of the number and share a common flag byte.
+    This class handles floating-point types as well as the exact formats for the TI-83PCE and other newer models.
+    The format for these types varies and is handled by `real_subtype_id` and `imag_subtype_id`.
+
+    Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
+    These types need not be the same, and may have subtype IDs not corresponding to their native type IDs.
     """
 
     extensions = {
@@ -144,10 +147,18 @@ class ComplexEntry(TIEntry):
 
     @property
     def real_type(self) -> Type['RealEntry']:
+        """
+        :return: The subclass of `RealEntry` corresponding to this entry's `real_subtype_id`.
+        """
+
         return RealEntry
 
     @property
     def imag_type(self) -> Type['RealEntry']:
+        """
+        :return: The subclass of `RealEntry` corresponding to this entry's `imag_subtype_id`.
+        """
+
         return RealEntry
 
     def components(self) -> (RealEntry, RealEntry):
@@ -198,6 +209,12 @@ class ComplexEntry(TIEntry):
 
 
 class TIComplex(ComplexEntry, register=True):
+    """
+    Parser for complex floating point values
+
+    A `TIComplex` has 8 exponent bits and 14 decimal mantissa digits for each component.
+    """
+
     min_data_length = 18
 
     _type_id = b'\x0C'
@@ -313,6 +330,13 @@ class TIComplex(ComplexEntry, register=True):
 
 
 class TIComplexFraction(TIComplex, register=True):
+    """
+    Parser for complex fractions
+
+    A `TIComplexFraction` has 8 exponent bits and 14 decimal mantissa digits for each component.
+    However, unlike a `TIComplex`, the floating point values are automatically converted to exact fractions on-calc.
+    """
+
     is_exact = True
 
     _type_id = b'\x1B'
@@ -346,6 +370,20 @@ class TIComplexFraction(TIComplex, register=True):
 
 
 class TIComplexRadical(ComplexEntry, register=True):
+    r"""
+    Parser for complex radicals
+
+    A `TIComplexRadical` is an exact sum of two square roots with rational scalars in both components.
+    Specifically, a `TIComplexRadical` can represent numbers of the form
+
+    $$\frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e} + \frac{\pm m\sqrt{n} \pm o\sqrt{p}}{q} \times i$$
+
+    where all values are non-negative integers. Additionally, $b > d \ge 0$, $n > p \ge 0$, $e > 0$, and $q > 0$.
+
+    Each value is given three nibbles of storage in BCD format.
+    Sign information for each radical is stored in an additional nibble.
+    """
+
     flash_only = True
 
     min_data_length = 18
@@ -476,6 +514,13 @@ class TIComplexRadical(ComplexEntry, register=True):
 
 
 class TIComplexPi(TIComplex, register=True):
+    """
+    Parser for complex floating point values with imaginary integer multiples of π
+
+    A `TIComplexPi` has real part equal to a `TIReal` or `TIRealFraction`.
+    A `TIComplexPi` has imaginary part equal to an integral `TIReal` with an implicit factor of π.
+    """
+
     flash_only = True
 
     is_exact = True
@@ -522,6 +567,13 @@ class TIComplexPi(TIComplex, register=True):
 
 
 class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
+    """
+    Parser for complex floating point values with imaginary fractional multiples of π
+
+    A `TIComplexPiFraction` has real part equal to a `TIReal` or `TIRealFraction`.
+    A `TIComplexPiFraction` has imaginary part equal to a `TIReal` or `TIRealFraction` with an implicit factor of π.
+    """
+
     flash_only = True
 
     is_exact = True

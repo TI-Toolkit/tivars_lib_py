@@ -10,6 +10,15 @@ from ..var import TIEntry
 
 
 class RealEntry(TIEntry):
+    """
+    Parser for real numeric types
+
+    This class handles floating-point types as well as the exact formats for the TI-83PCE and other newer models.
+    The format for these types varies and is handled by the `subtype_id`, the first six bits of the first data byte.
+
+    Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
+    """
+
     _T = 'RealEntry'
 
     extensions = {
@@ -65,8 +74,6 @@ class RealEntry(TIEntry):
     def data(self) -> bytearray:
         """
         The data section of the real number
-
-        Contains flags, a mantissa, and an exponent.
         """
 
     @View(data, Bits[0:6])[0:1]
@@ -171,13 +178,11 @@ class RealEntry(TIEntry):
 
 class TIReal(RealEntry, register=True):
     """
-    Parser for real numeric types
+    Parser for real floating point values
 
-    A standard `TIReal` is a signed floating point number with 8 exponent bits and 14 decimal mantissa digits.
-    Two `TIReal` entries are used to form a single `TIComplex` complex number.
+    A `TIReal` has 8 exponent bits and 14 decimal mantissa digits.
 
-    The `TIReal` type also handles exact types found on the TI-83PCE and other newer models.
-    The format for these types varies and is handled by a subtype value contained in the `flags` byte.
+    A `TIReal` entry can be used to form `TIComplex` or `TIComplexPi` complex numbers.
     """
 
     min_data_length = 9
@@ -307,11 +312,10 @@ class TIRealFraction(TIReal, register=True):
     """
     Parser for real fractions
 
-    A standard `TIReal` is a signed floating point number with 8 exponent bits and 14 decimal mantissa digits.
-    Two `TIReal` entries are used to form a single `TIComplex` complex number.
+    A `TIRealFraction` has 8 exponent bits and 14 decimal mantissa digits.
+    However, unlike a `TIReal`, the floating point value is automatically converted to an exact fraction on-calc.
 
-    The `TIReal` type also handles exact types found on the TI-83PCE and other newer models.
-    The format for these types varies and is handled by a subtype value contained in the `flags` byte.
+    A `TIRealFraction` can be used to form `TIComplexFraction`, `TIComplexPi`, or `TIComplexPiFraction` complex numbers.
     """
 
     min_exponent = 0x7C
@@ -379,14 +383,20 @@ class TIRealFraction(TIReal, register=True):
 
 
 class TIRealRadical(RealEntry, register=True):
-    """
+    r"""
     Parser for real radicals
 
-    A standard `TIReal` is a signed floating point number with 8 exponent bits and 14 decimal mantissa digits.
-    Two `TIReal` entries are used to form a single `TIComplex` complex number.
+    A `TIRealRadical` is an exact sum of two square roots with rational scalars.
+    Specifically, a `TIRealRadical` can represent numbers of the form
 
-    The `TIReal` type also handles exact types found on the TI-83PCE and other newer models.
-    The format for these types varies and is handled by a subtype value contained in the `flags` byte.
+    $$\frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e}$$
+
+    where all values are non-negative integers. Additionally, $b > d \ge 0$ and $e > 0$.
+
+    Each value is given three nibbles of storage in BCD format.
+    Sign information for each radical is stored in an additional nibble.
+
+    A `TIRealRadical` can be used to form `TIComplexRadical` complex numbers.
     """
 
     flash_only = True
@@ -574,13 +584,11 @@ class TIRealRadical(RealEntry, register=True):
 
 class TIRealPi(TIReal, register=True):
     """
-    Parser for real fractions
+    Parser for real floating point multiples of π
 
-    A standard `TIReal` is a signed floating point number with 8 exponent bits and 14 decimal mantissa digits.
-    Two `TIReal` entries are used to form a single `TIComplex` complex number.
+    A `TIRealPi` is simply a `TIReal` with an implicit factor of π.
 
-    The `TIReal` type also handles exact types found on the TI-83PCE and other newer models.
-    The format for these types varies and is handled by a subtype value contained in the `flags` byte.
+    A `TIRealPi` can be used to form `TIComplexPi` or `TIComplexPiFraction` complex numbers.
     """
 
     flash_only = True
@@ -620,13 +628,11 @@ class TIRealPi(TIReal, register=True):
 
 class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
     """
-    Parser for real fractions
+    Parser for real fractional multiples of π
 
-    A standard `TIReal` is a signed floating point number with 8 exponent bits and 14 decimal mantissa digits.
-    Two `TIReal` entries are used to form a single `TIComplex` complex number.
+    A `TIRealPiFraction` is simply a `TIRealFraction` with an implicit factor of π.
 
-    The `TIReal` type also handles exact types found on the TI-83PCE and other newer models.
-    The format for these types varies and is handled by a subtype value contained in the `flags` byte.
+    A `TIRealPiFraction` can be used to form `TIComplexPiFraction` complex numbers.
     """
 
     flash_only = True
