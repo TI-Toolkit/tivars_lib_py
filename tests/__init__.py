@@ -297,12 +297,19 @@ class SettingsTests(unittest.TestCase):
         test_window = TIWindowSettings()
         test_window.open("tests/data/var/Window.8xw")
 
-        zero, one, undef = TIReal(0), TIReal(1), TIReal(1)
+        zero, one, undef = TIReal(0), TIReal(1), TIUndefinedReal(1)
         tau, pi_twenty_fourths = TIReal("6.283185307"), TIReal("0.13089969389957")
 
         self.assertEqual(test_window.name, "Window")
         self.assertEqual(test_window.PlotStart, one)
         self.assertEqual(test_window.PlotStep, one)
+
+        self.assertEqual(test_window.unMin0, undef)
+        self.assertEqual(test_window.unMin1, undef)
+        self.assertEqual(test_window.vnMin0, undef)
+        self.assertEqual(test_window.vnMin1, undef)
+        self.assertEqual(test_window.wnMin0, undef)
+        self.assertEqual(test_window.wnMin1, undef)
 
         self.assertEqual(test_window.Thetamax, tau)
         self.assertEqual(test_window.Thetamin, zero)
@@ -325,12 +332,19 @@ class SettingsTests(unittest.TestCase):
         test_recall = TIRecallWindow()
         test_recall.open("tests/data/var/RecallWindow.8xz")
 
-        zero, one, undef = TIReal("0"), TIReal("1"), TIReal("1")
+        zero, one, undef = TIReal("0"), TIReal("1"), TIUndefinedReal("1")
         tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
 
         self.assertEqual(test_recall.name, "RclWindw")
         self.assertEqual(test_recall.PlotStart, one)
         self.assertEqual(test_recall.PlotStep, one)
+
+        self.assertEqual(test_recall.unMin0, undef)
+        self.assertEqual(test_recall.unMin1, undef)
+        self.assertEqual(test_recall.vnMin0, undef)
+        self.assertEqual(test_recall.vnMin1, undef)
+        self.assertEqual(test_recall.wnMin0, undef)
+        self.assertEqual(test_recall.wnMin1, undef)
 
         self.assertEqual(test_recall.Thetamax, tau)
         self.assertEqual(test_recall.Thetamin, zero)

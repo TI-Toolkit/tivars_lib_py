@@ -52,6 +52,26 @@ class RealEntry(TIEntry):
     Whether this numeric type is exact
     """
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "A",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        """
+        Creates an empty `RealEntry` with specified meta and data values
+
+        :param init: Data to initialize this real number's data (defaults to `None`)
+        :param for_flash: Whether this real number supports flash chips (default to `True`)
+        :param name: The name of this real number (defaults to `A`)
+        :param version: This real number's version (defaults to `None`)
+        :param archived: Whether this real number is archived (defaults to `False`)
+        :param data: This real number's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+        if self._type_id is not None:
+            self.subtype_id = self._type_id[0]
+
     def __float__(self) -> float:
         return self.float()
 
@@ -122,20 +142,6 @@ class RealEntry(TIEntry):
         """
 
         return -1 if self.sign_bit else 1
-
-    @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
-        """
-        Converts `bytes` -> `RealEntry`
-
-        :param data: The raw bytes to convert
-        :return: A `RealEntry` instance with data equal to `data` and subtype reset
-        """
-
-        value = super().get(data)
-        value.subtype_id = cls._type_id[0]
-
-        return value
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
@@ -339,6 +345,35 @@ class TIReal(RealEntry, register=True):
             return string
 
 
+class TIUndefinedReal(TIReal, register=True):
+    """
+    Parser for undefined real values
+
+    A `TIUndefinedReal` is precisely a `TIReal` but marked as undefined for use in initial sequence values
+    """
+
+    _T = 'TIUndefinedReal'
+
+    _type_id = b'\x0E'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "A",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        """
+        Creates an empty `TIUndefinedReal` with specified meta and data values
+
+        :param init: Data to initialize this real number's data (defaults to `None`)
+        :param for_flash: Whether this real number supports flash chips (default to `True`)
+        :param name: The name of this real number (defaults to `A`)
+        :param version: This real number's version (defaults to `None`)
+        :param archived: Whether this real number is archived (defaults to `False`)
+        :param data: This real number's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
+
 class TIRealFraction(TIReal, register=True):
     """
     Parser for real fractions
@@ -454,8 +489,6 @@ class TIRealRadical(RealEntry, register=True):
         """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.subtype_id = 0x1C
 
     @Section(min_data_length)
     def data(self) -> bytearray:
@@ -623,7 +656,7 @@ class TIRealRadical(RealEntry, register=True):
 
 class TIRealPi(TIReal, register=True):
     """
-    Parser for real floating point multiples of π
+    Parser for real integer multiples of π
 
     A `TIRealPi` is simply a `TIReal` with an implicit factor of π.
 
@@ -654,8 +687,6 @@ class TIRealPi(TIReal, register=True):
         """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.subtype_id = 0x20
 
     def string(self) -> str:
         """
@@ -695,8 +726,6 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.subtype_id = 0x21
-
     def string(self) -> str:
         """
         :return: A string representation of this real number
@@ -705,4 +734,4 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
         return super().string().replace(" /", "π /")
 
 
-__all__ = ["TIReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction", "RealEntry"]
+__all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction", "RealEntry"]

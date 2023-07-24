@@ -7,7 +7,7 @@ from warnings import warn
 from tivars.models import *
 from ..data import *
 from ..var import TIEntry
-from .real import TIReal
+from .real import RealEntry
 
 
 class SettingsEntry(TIEntry):
@@ -39,7 +39,7 @@ class SettingsEntry(TIEntry):
                 warn(f"Unrecognized window setting ({var}).",
                      UserWarning)
             else:
-                setattr(self, var, TIReal(value))
+                setattr(self, var, RealEntry(value))
 
     def dict(self) -> dict:
         raise NotImplementedError
@@ -91,80 +91,80 @@ class TIWindowSettings(SettingsEntry, register=True):
         Each parameter is stored in a contiguous list of real numbers.
         """
 
-    @View(data, TIReal)[3:12]
-    def Xmin(self) -> TIReal:
+    @View(data, RealEntry)[3:12]
+    def Xmin(self) -> RealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(data, TIReal)[12:21]
-    def Xmax(self) -> TIReal:
+    @View(data, RealEntry)[12:21]
+    def Xmax(self) -> RealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(data, TIReal)[21:30]
-    def Xscl(self) -> TIReal:
+    @View(data, RealEntry)[21:30]
+    def Xscl(self) -> RealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(data, TIReal)[30:39]
-    def Ymin(self) -> TIReal:
+    @View(data, RealEntry)[30:39]
+    def Ymin(self) -> RealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(data, TIReal)[39:48]
-    def Ymax(self) -> TIReal:
+    @View(data, RealEntry)[39:48]
+    def Ymax(self) -> RealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(data, TIReal)[48:57]
-    def Yscl(self) -> TIReal:
+    @View(data, RealEntry)[48:57]
+    def Yscl(self) -> RealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
 
-    @View(data, TIReal)[57:66]
-    def Thetamin(self) -> TIReal:
+    @View(data, RealEntry)[57:66]
+    def Thetamin(self) -> RealEntry:
         """
         Θmin: the initial angle for polar plots
         """
 
-    @View(data, TIReal)[66:75]
-    def Thetamax(self) -> TIReal:
+    @View(data, RealEntry)[66:75]
+    def Thetamax(self) -> RealEntry:
         """
         Θmax: the final angle for polar plots
         """
 
-    @View(data, TIReal)[75:84]
-    def Thetastep(self) -> TIReal:
+    @View(data, RealEntry)[75:84]
+    def Thetastep(self) -> RealEntry:
         """
         Θstep: the angle increment for polar plots
         """
 
-    @View(data, TIReal)[84:93]
-    def Tmin(self) -> TIReal:
+    @View(data, RealEntry)[84:93]
+    def Tmin(self) -> RealEntry:
         """
         Tmin: the initial time for parametric plots
         """
 
-    @View(data, TIReal)[93:102]
-    def Tmax(self) -> TIReal:
+    @View(data, RealEntry)[93:102]
+    def Tmax(self) -> RealEntry:
         """
         Tmax: the final time for parametric plots
         """
 
-    @View(data, TIReal)[102:111]
-    def Tstep(self) -> TIReal:
+    @View(data, RealEntry)[102:111]
+    def Tstep(self) -> RealEntry:
         """
         Tstep: the time increment for parametric plots
         """
 
-    @View(data, TIReal)[111:120]
-    def PlotStart(self, value) -> TIReal:
+    @View(data, RealEntry)[111:120]
+    def PlotStart(self, value) -> RealEntry:
         """
         PlotStart: the initial value of 𝑛 for sequential plots
 
@@ -177,8 +177,8 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[120:129]
-    def nMax(self, value) -> TIReal:
+    @View(data, RealEntry)[120:129]
+    def nMax(self, value) -> RealEntry:
         """
         𝑛Max: the final value of 𝑛 for sequential equations and plots
 
@@ -191,20 +191,20 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[129:138]
-    def unMin0(self) -> TIReal:
+    @View(data, RealEntry)[129:138]
+    def unMin0(self) -> RealEntry:
         """
         u(𝑛Min): the initial value of u at 𝑛Min
         """
 
-    @View(data, TIReal)[138:147]
-    def vnMin0(self) -> TIReal:
+    @View(data, RealEntry)[138:147]
+    def vnMin0(self) -> RealEntry:
         """
         v(𝑛Min): the initial value of v at 𝑛Min
         """
 
-    @View(data, TIReal)[147:156]
-    def nMin(self, value) -> TIReal:
+    @View(data, RealEntry)[147:156]
+    def nMin(self, value) -> RealEntry:
         """
         𝑛Min: the initial value of 𝑛 for sequential plots
 
@@ -217,26 +217,26 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[156:165]
-    def unMin1(self) -> TIReal:
+    @View(data, RealEntry)[156:165]
+    def unMin1(self) -> RealEntry:
         """
         u(𝑛Min+1): the initial value of u at 𝑛Min + 1
         """
 
-    @View(data, TIReal)[165:174]
-    def vnMin1(self) -> TIReal:
+    @View(data, RealEntry)[165:174]
+    def vnMin1(self) -> RealEntry:
         """
         v(𝑛Min+1): the initial value of v at 𝑛Min + 1
         """
 
-    @View(data, TIReal)[174:183]
-    def wnMin0(self) -> TIReal:
+    @View(data, RealEntry)[174:183]
+    def wnMin0(self) -> RealEntry:
         """
         w(𝑛Min): the initial value of w at 𝑛Min
         """
 
-    @View(data, TIReal)[183:192]
-    def PlotStep(self, value) -> TIReal:
+    @View(data, RealEntry)[183:192]
+    def PlotStep(self, value) -> RealEntry:
         """
         PlotStep: the 𝑛 increment for sequential plots
 
@@ -249,8 +249,8 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[192:201]
-    def Xres(self, value) -> TIReal:
+    @View(data, RealEntry)[192:201]
+    def Xres(self, value) -> RealEntry:
         """
         Xres: the pixel separation of points in a function plot
 
@@ -263,8 +263,8 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[201:210]
-    def wnMin1(self) -> TIReal:
+    @View(data, RealEntry)[201:210]
+    def wnMin1(self) -> RealEntry:
         """
         w(𝑛Min+1): the initial value of w at 𝑛Min + 1
         """
@@ -342,80 +342,80 @@ class TIRecallWindow(SettingsEntry, register=True):
         Each parameter is stored in a contiguous list of real numbers.
         """
 
-    @View(data, TIReal)[2:11]
-    def Xmin(self) -> TIReal:
+    @View(data, RealEntry)[2:11]
+    def Xmin(self) -> RealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(data, TIReal)[11:20]
-    def Xmax(self) -> TIReal:
+    @View(data, RealEntry)[11:20]
+    def Xmax(self) -> RealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(data, TIReal)[20:29]
-    def Xscl(self) -> TIReal:
+    @View(data, RealEntry)[20:29]
+    def Xscl(self) -> RealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(data, TIReal)[29:38]
-    def Ymin(self) -> TIReal:
+    @View(data, RealEntry)[29:38]
+    def Ymin(self) -> RealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(data, TIReal)[38:47]
-    def Ymax(self) -> TIReal:
+    @View(data, RealEntry)[38:47]
+    def Ymax(self) -> RealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(data, TIReal)[47:56]
-    def Yscl(self) -> TIReal:
+    @View(data, RealEntry)[47:56]
+    def Yscl(self) -> RealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
 
-    @View(data, TIReal)[56:65]
-    def Thetamin(self) -> TIReal:
+    @View(data, RealEntry)[56:65]
+    def Thetamin(self) -> RealEntry:
         """
         Θmin: the initial angle for polar plots
         """
 
-    @View(data, TIReal)[65:74]
-    def Thetamax(self) -> TIReal:
+    @View(data, RealEntry)[65:74]
+    def Thetamax(self) -> RealEntry:
         """
         Θmax: the final angle for polar plots
         """
 
-    @View(data, TIReal)[74:83]
-    def Thetastep(self) -> TIReal:
+    @View(data, RealEntry)[74:83]
+    def Thetastep(self) -> RealEntry:
         """
         Θstep: the angle increment for polar plots
         """
 
-    @View(data, TIReal)[83:92]
-    def Tmin(self) -> TIReal:
+    @View(data, RealEntry)[83:92]
+    def Tmin(self) -> RealEntry:
         """
         Tmin: the initial time for parametric plots
         """
 
-    @View(data, TIReal)[92:101]
-    def Tmax(self) -> TIReal:
+    @View(data, RealEntry)[92:101]
+    def Tmax(self) -> RealEntry:
         """
         Tmax: the final time for parametric plots
         """
 
-    @View(data, TIReal)[101:110]
-    def Tstep(self) -> TIReal:
+    @View(data, RealEntry)[101:110]
+    def Tstep(self) -> RealEntry:
         """
         Tstep: the time increment for parametric plots
         """
 
-    @View(data, TIReal)[110:119]
-    def PlotStart(self, value) -> TIReal:
+    @View(data, RealEntry)[110:119]
+    def PlotStart(self, value) -> RealEntry:
         """
         PlotStart: the initial value of 𝑛 for sequential plots
 
@@ -428,8 +428,8 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[119:128]
-    def nMax(self, value) -> TIReal:
+    @View(data, RealEntry)[119:128]
+    def nMax(self, value) -> RealEntry:
         """
         𝑛Max: the final value of 𝑛 for sequential equations and plots
 
@@ -442,20 +442,20 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[128:137]
-    def unMin0(self) -> TIReal:
+    @View(data, RealEntry)[128:137]
+    def unMin0(self) -> RealEntry:
         """
         u(𝑛Min): the initial value of u at 𝑛Min
         """
 
-    @View(data, TIReal)[137:146]
-    def vnMin0(self) -> TIReal:
+    @View(data, RealEntry)[137:146]
+    def vnMin0(self) -> RealEntry:
         """
         v(𝑛Min): the initial value of v at 𝑛Min
         """
 
-    @View(data, TIReal)[146:155]
-    def nMin(self, value) -> TIReal:
+    @View(data, RealEntry)[146:155]
+    def nMin(self, value) -> RealEntry:
         """
         𝑛Min: the initial value of 𝑛 for sequential equations
 
@@ -468,26 +468,26 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[155:164]
-    def unMin1(self) -> TIReal:
+    @View(data, RealEntry)[155:164]
+    def unMin1(self) -> RealEntry:
         """
         u(𝑛Min + 1): the initial value of u at 𝑛Min + 1
         """
 
-    @View(data, TIReal)[164:173]
-    def vnMin1(self) -> TIReal:
+    @View(data, RealEntry)[164:173]
+    def vnMin1(self) -> RealEntry:
         """
         v(𝑛Min + 1): the initial value of v at 𝑛Min + 1
         """
 
-    @View(data, TIReal)[173:182]
-    def wnMin0(self) -> TIReal:
+    @View(data, RealEntry)[173:182]
+    def wnMin0(self) -> RealEntry:
         """
         w(𝑛Min): the initial value of w at 𝑛Min
         """
 
-    @View(data, TIReal)[182:191]
-    def PlotStep(self, value) -> TIReal:
+    @View(data, RealEntry)[182:191]
+    def PlotStep(self, value) -> RealEntry:
         """
         PlotStep: the 𝑛 increment for sequential plots
 
@@ -500,8 +500,8 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[191:200]
-    def Xres(self, value) -> TIReal:
+    @View(data, RealEntry)[191:200]
+    def Xres(self, value) -> RealEntry:
         """
         Xres: the pixel separation of points in a function plot
 
@@ -514,8 +514,8 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[200:209]
-    def wnMin1(self) -> TIReal:
+    @View(data, RealEntry)[200:209]
+    def wnMin1(self) -> RealEntry:
         """
         w(𝑛Min + 1): the initial value of w at 𝑛Min + 1
         """
@@ -593,8 +593,8 @@ class TITableSettings(SettingsEntry, register=True):
         Each parameter is stored in a contiguous list of real numbers.
         """
 
-    @View(data, TIReal)[2:11]
-    def TblMin(self, value) -> TIReal:
+    @View(data, RealEntry)[2:11]
+    def TblMin(self, value) -> RealEntry:
         """
         TblMin: the initial value for the table
 
@@ -607,8 +607,8 @@ class TITableSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, TIReal)[11:20]
-    def DeltaTbl(self, value) -> TIReal:
+    @View(data, RealEntry)[11:20]
+    def DeltaTbl(self, value) -> RealEntry:
         """
         ΔTbl: the increment for the table
 

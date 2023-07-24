@@ -119,6 +119,23 @@ class ComplexEntry(TIEntry):
 
     _imag_subtypes = {None: RealEntry}
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "A",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+        """
+        Creates an empty `RealEntry` with specified meta and data values
+
+        :param init: Data to initialize this real number's data (defaults to `None`)
+        :param for_flash: Whether this real number supports flash chips (default to `True`)
+        :param name: The name of this real number (defaults to `A`)
+        :param version: This real number's version (defaults to `None`)
+        :param archived: Whether this real number is archived (defaults to `False`)
+        :param data: This real number's data (defaults to empty)
+        """
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     def __complex__(self):
         return self.complex()
 
@@ -640,9 +657,9 @@ class TIComplexPi(TIComplex, register=True):
 
 class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
     """
-    Parser for complex floating point values with imaginary fractional multiples of π
+    Parser for complex fractional multiples of π
 
-    A `TIComplexPiFraction` has real part equal to a `TIReal` or `TIRealFraction`.
+    A `TIComplexPiFraction` has real part equal to a `TIReal` or `TIRealFraction` with an implicit factor of π.
     A `TIComplexPiFraction` has imaginary part equal to a `TIReal` or `TIRealFraction` with an implicit factor of π.
     """
 

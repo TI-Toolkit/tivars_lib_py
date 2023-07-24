@@ -8,7 +8,7 @@ from tivars.models import *
 from ..flags import *
 from ..data import *
 from ..var import TIEntry
-from .real import TIReal
+from .real import RealEntry, TIReal
 from .tokenized import TIEquation
 
 
@@ -381,38 +381,38 @@ class TIMonoGDB(TIEntry, register=True):
         ExprOn/Off and sequence plot offsets for sequence mode
         """
 
-    @View(data, TIReal)[7:16]
-    def Xmin(self) -> TIReal:
+    @View(data, RealEntry)[7:16]
+    def Xmin(self) -> RealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(data, TIReal)[16:25]
-    def Xmax(self) -> TIReal:
+    @View(data, RealEntry)[16:25]
+    def Xmax(self) -> RealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(data, TIReal)[25:34]
-    def Xscl(self) -> TIReal:
+    @View(data, RealEntry)[25:34]
+    def Xscl(self) -> RealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(data, TIReal)[34:43]
-    def Ymin(self) -> TIReal:
+    @View(data, RealEntry)[34:43]
+    def Ymin(self) -> RealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(data, TIReal)[43:52]
-    def Ymax(self) -> TIReal:
+    @View(data, RealEntry)[43:52]
+    def Ymax(self) -> RealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(data, TIReal)[52:61]
-    def Yscl(self) -> TIReal:
+    @View(data, RealEntry)[52:61]
+    def Yscl(self) -> RealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
@@ -443,7 +443,7 @@ class TIMonoGDB(TIEntry, register=True):
         """
         :return: The index of the start of the equation styles in this GDB
         """
-        return TIMonoGDB.min_data_length + TIReal.min_data_length * self.num_parameters
+        return TIMonoGDB.min_data_length + RealEntry.min_data_length * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -751,8 +751,8 @@ class TIMonoFuncGDB(TIMonoGDB):
         The mode ID for the GDB - `0x10`
         """
 
-    @View(data, TIReal)[61:70]
-    def Xres(self, value: TIReal) -> TIReal:
+    @View(data, RealEntry)[61:70]
+    def Xres(self, value: RealEntry) -> RealEntry:
         """
         Xres: The pixel separation of points in a function plot
 
@@ -929,20 +929,20 @@ class TIMonoParamGDB(TIMonoGDB):
         The mode ID for the GDB - `0x40`
         """
 
-    @View(data, TIReal)[61:70]
-    def Tmin(self) -> TIReal:
+    @View(data, RealEntry)[61:70]
+    def Tmin(self) -> RealEntry:
         """
         Tmin: The initial time
         """
 
-    @View(data, TIReal)[70:79]
-    def Tmax(self) -> TIReal:
+    @View(data, RealEntry)[70:79]
+    def Tmax(self) -> RealEntry:
         """
         Tmax: The final time
         """
 
-    @View(data, TIReal)[79:88]
-    def Tstep(self) -> TIReal:
+    @View(data, RealEntry)[79:88]
+    def Tstep(self) -> RealEntry:
         """
         Tstep: The time increment
         """
@@ -1135,20 +1135,20 @@ class TIMonoPolarGDB(TIMonoGDB):
         The mode ID for the GDB - `0x20`
         """
 
-    @View(data, TIReal)[61:70]
-    def Thetamin(self) -> TIReal:
+    @View(data, RealEntry)[61:70]
+    def Thetamin(self) -> RealEntry:
         """
         θmin: The initial angle
         """
 
-    @View(data, TIReal)[70:79]
-    def Thetamax(self) -> TIReal:
+    @View(data, RealEntry)[70:79]
+    def Thetamax(self) -> RealEntry:
         """
         θmax: The final angle
         """
 
-    @View(data, TIReal)[79:88]
-    def Thetastep(self) -> TIReal:
+    @View(data, RealEntry)[79:88]
+    def Thetastep(self) -> RealEntry:
         """
         θstep: The angle increment
         """
@@ -1301,8 +1301,8 @@ class TIMonoSeqGDB(TIMonoGDB):
         The flags for the sequence mode settings
         """
 
-    @View(data, TIReal)[61:70]
-    def PlotStart(self, value) -> TIReal:
+    @View(data, RealEntry)[61:70]
+    def PlotStart(self, value) -> RealEntry:
         """
         PlotStart: The initial value of 𝑛 for sequential plots
 
@@ -1315,8 +1315,8 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, TIReal)[70:79]
-    def nMax(self, value) -> TIReal:
+    @View(data, RealEntry)[70:79]
+    def nMax(self, value) -> RealEntry:
         """
         𝑛Max: The final value of 𝑛
 
@@ -1329,20 +1329,20 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, TIReal)[79:88]
-    def unMin(self) -> TIReal:
+    @View(data, RealEntry)[79:88]
+    def unMin(self) -> RealEntry:
         """
         u(𝑛Min): The initial value of u at 𝑛Min
         """
 
-    @View(data, TIReal)[88:97]
-    def vnMin(self) -> TIReal:
+    @View(data, RealEntry)[88:97]
+    def vnMin(self) -> RealEntry:
         """
         v(𝑛Min): The initial value of v at 𝑛Min
         """
 
-    @View(data, TIReal)[97:106]
-    def nMin(self, value) -> TIReal:
+    @View(data, RealEntry)[97:106]
+    def nMin(self, value) -> RealEntry:
         """
         nMin: the initial value of 𝑛
 
@@ -1355,26 +1355,26 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, TIReal)[106:115]
-    def unMinp1(self) -> TIReal:
+    @View(data, RealEntry)[106:115]
+    def unMinp1(self) -> RealEntry:
         """
         u(𝑛Min+1): The initial value of u at 𝑛Min + 1
         """
 
-    @View(data, TIReal)[115:124]
-    def vnMinp1(self) -> TIReal:
+    @View(data, RealEntry)[115:124]
+    def vnMinp1(self) -> RealEntry:
         """
         v(nMin+1): The initial value of v at 𝑛Min + 1
         """
 
-    @View(data, TIReal)[124:133]
-    def wnMin(self) -> TIReal:
+    @View(data, RealEntry)[124:133]
+    def wnMin(self) -> RealEntry:
         """
         w(𝑛Min): The initial value of w at 𝑛Min
         """
 
-    @View(data, TIReal)[133:142]
-    def PlotStep(self, value) -> TIReal:
+    @View(data, RealEntry)[133:142]
+    def PlotStep(self, value) -> RealEntry:
         """
         PlotStep: The 𝑛 increment for sequential plots
 
@@ -1387,8 +1387,8 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, TIReal)[142:151]
-    def wnMinp1(self) -> TIReal:
+    @View(data, RealEntry)[142:151]
+    def wnMinp1(self) -> RealEntry:
         """
         w(𝑛Min+1): The initial value of w at 𝑛Min + 1
         """
