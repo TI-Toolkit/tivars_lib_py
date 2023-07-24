@@ -217,16 +217,6 @@ class TIEquation(TokenizedEntry, register=True):
                  for_flash: bool = True, name: str = "Y1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        """
-        Creates an empty `TIEquation` with specified meta and data values
-
-        :param init: Data to initialize this equation's data (defaults to `None`)
-        :param for_flash: Whether this equation supports flash chips (default to `True`)
-        :param name: The name of this equation (defaults to `Y1`)
-        :param version: This equation's version (defaults to `None`)
-        :param archived: Whether this equation is archived (defaults to `False`)
-        :param data: This equation's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -263,16 +253,6 @@ class TIString(TokenizedEntry, register=True):
                  for_flash: bool = True, name: str = "Str1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        """
-        Creates an empty `TIString` with specified meta and data values
-
-        :param init: Data to initialize this string's data (defaults to `None`)
-        :param for_flash: Whether this string supports flash chips (default to `True`)
-        :param name: The name of this string (defaults to `Str1`)
-        :param version: This string's version (defaults to `None`)
-        :param archived: Whether this string is archived (defaults to `False`)
-        :param data: This string's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -308,23 +288,6 @@ class TIProgram(TokenizedEntry, register=True):
     """
 
     _type_id = b'\x05'
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIProgram` with specified meta and data values
-
-        :param init: Data to initialize this program's data (defaults to `None`)
-        :param for_flash: Whether this program supports flash chips (default to `True`)
-        :param name: The name of this program (defaults to `UNNAMED`)
-        :param version: This program's version (defaults to `None`)
-        :param archived: Whether this program is archived (defaults to `False`)
-        :param data: This program's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section(8, TokenizedString)
     def name(self, value) -> str:

@@ -75,6 +75,13 @@ class TIWindowSettings(SettingsEntry, register=True):
     _type_id = b'\x0F'
     leading_bytes = b'\xD0\x00\x00'
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "Window",
+                 version: bytes = None, archived: bool = None,
+                 data: bytearray = None):
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     @Section(8, String)
     def name(self) -> str:
         """
@@ -324,6 +331,7 @@ class TIRecallWindow(SettingsEntry, register=True):
                  for_flash: bool = True, name: str = "RclWindw",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section(8, String)
@@ -575,6 +583,7 @@ class TITableSettings(SettingsEntry, register=True):
                  for_flash: bool = True, name: str = "TblSet",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section(8, String)

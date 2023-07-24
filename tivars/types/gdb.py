@@ -326,16 +326,6 @@ class TIMonoGDB(TIEntry, register=True):
                  for_flash: bool = True, name: str = "GDB1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        """
-        Creates an empty `TIMonoGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -607,16 +597,6 @@ class TIGDB(TIMonoGDB):
                  for_flash: bool = True, name: str = "GDB1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        """
-        Creates an empty `TIGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -723,23 +703,6 @@ class TIMonoFuncGDB(TIMonoGDB):
     num_styles = 10
 
     equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIMonoFuncGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section()
     def data(self) -> bytearray:
@@ -849,23 +812,6 @@ class TIMonoFuncGDB(TIMonoGDB):
 class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     min_data_length = 128
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIFuncGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
     @Section()
     def data(self) -> bytearray:
         pass
@@ -901,23 +847,6 @@ class TIMonoParamGDB(TIMonoGDB):
     num_styles = 6
 
     equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIMonoParamGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section()
     def data(self) -> bytearray:
@@ -1055,23 +984,6 @@ class TIMonoParamGDB(TIMonoGDB):
 class TIParamGDB(TIGDB, TIMonoParamGDB):
     min_data_length = 144
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIParamGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
     @Section()
     def data(self) -> bytearray:
         pass
@@ -1107,23 +1019,6 @@ class TIMonoPolarGDB(TIMonoGDB):
     num_styles = 6
 
     equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIMonoPolarGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section()
     def data(self) -> bytearray:
@@ -1215,23 +1110,6 @@ class TIMonoPolarGDB(TIMonoGDB):
 class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     min_data_length = 126
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIPolarGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
     @Section()
     def data(self) -> bytearray:
         pass
@@ -1267,23 +1145,6 @@ class TIMonoSeqGDB(TIMonoGDB):
     num_styles = 3
 
     equation_names = ["u", "v", "w"]
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TIMonoSeqGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section()
     def data(self) -> bytearray:
@@ -1485,23 +1346,6 @@ class TIMonoSeqGDB(TIMonoGDB):
 
 class TISeqGDB(TIGDB, TIMonoSeqGDB):
     min_data_length = 174
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
-                 version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
-        """
-        Creates an empty `TISeqGDB` with specified meta and data values
-
-        :param init: Data to initialize this GDB's data (defaults to `None`)
-        :param for_flash: Whether this GDB supports flash chips (defaults to `True`)
-        :param name: The name of this GDB (defaults to `GDB1`)
-        :param version: This GDB's version (defaults to `None`)
-        :param archived: Whether this GDB is archived (defaults to `False`)
-        :param data: This GDB's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section()
     def data(self) -> bytearray:

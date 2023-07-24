@@ -38,7 +38,7 @@ class TIHeader:
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
                  comment: str = "Created with tivars_lib_py v0.6.1"):
         """
-        Create an empty `TIHeader` which targets a specified model
+        Create an empty header which targets a specified model
 
         :param model: A `TImodel` to target (defaults to `TI_82AEP`)
         :param magic: File magic at the start of the header (default to the model's magic)
@@ -290,7 +290,7 @@ class TIEntry(Dock, Converter):
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
         """
-        Creates an empty `TIEntry` with specified meta and data values
+        Creates an empty entry with specified meta and data values
 
         :param init: Data to initialize this entry's data (defaults to `None`)
         :param for_flash: Whether this entry supports flash chips (default to `True`)

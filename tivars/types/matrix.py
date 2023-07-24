@@ -40,16 +40,6 @@ class TIMatrix(TIEntry, register=True):
                  for_flash: bool = True, name: str = "[A]",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
-        """
-        Creates an empty `TIMatrix` with specified meta and data values
-
-        :param init: Data to initialize this matrix's data (defaults to `None`)
-        :param for_flash: Whether this matrix supports flash chips (default to `True`)
-        :param name: The name of this matrix (defaults to `[A]`)
-        :param version: This matrix's version (defaults to `None`)
-        :param archived: Whether this matrix is archived (defaults to `False`)
-        :param data: This matrix's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 

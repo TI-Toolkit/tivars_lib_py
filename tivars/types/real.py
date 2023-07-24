@@ -56,16 +56,6 @@ class RealEntry(TIEntry):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `RealEntry` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -226,23 +216,6 @@ class TIReal(RealEntry, register=True):
 
     _type_id = b'\x00'
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        """
-        Creates an empty `TIReal` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
     @Section(min_data_length)
     def data(self) -> bytearray:
         """
@@ -356,23 +329,6 @@ class TIUndefinedReal(TIReal, register=True):
 
     _type_id = b'\x0E'
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        """
-        Creates an empty `TIUndefinedReal` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
 
 class TIRealFraction(TIReal, register=True):
     """
@@ -389,25 +345,6 @@ class TIRealFraction(TIReal, register=True):
     is_exact = True
 
     _type_id = b'\x18'
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        """
-        Creates an empty `TIRealFraction` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.subtype_id = 0x18
 
     @Loader[frac.Fraction]
     def load_fraction(self, fraction: frac.Fraction):
@@ -472,23 +409,6 @@ class TIRealRadical(RealEntry, register=True):
     is_exact = True
 
     _type_id = b'\x1C'
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        """
-        Creates an empty `TIRealRadical` with specified meta and data values
-
-        :param init: Data to initialize this real radical's data (defaults to `None`)
-        :param for_flash: Whether this real radical supports flash chips (default to `True`)
-        :param name: The name of this real radical (defaults to `A`)
-        :param version: This real radical's version (defaults to `None`)
-        :param archived: Whether this real radical is archived (defaults to `False`)
-        :param data: This real radical's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Section(min_data_length)
     def data(self) -> bytearray:
@@ -671,23 +591,6 @@ class TIRealPi(TIReal, register=True):
 
     _type_id = b'\x20'
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        """
-        Creates an empty `TIRealPi` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
     def string(self) -> str:
         """
         :return: A string representation of this real number
@@ -708,23 +611,6 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
     flash_only = True
 
     _type_id = b'\x21'
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-        """
-        Creates an empty `TIRealPiFraction` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def string(self) -> str:
         """

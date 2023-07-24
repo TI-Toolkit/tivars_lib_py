@@ -123,16 +123,6 @@ class ComplexEntry(TIEntry):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `RealEntry` with specified meta and data values
-
-        :param init: Data to initialize this real number's data (defaults to `None`)
-        :param for_flash: Whether this real number supports flash chips (default to `True`)
-        :param name: The name of this real number (defaults to `A`)
-        :param version: This real number's version (defaults to `None`)
-        :param archived: Whether this real number is archived (defaults to `False`)
-        :param data: This real number's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -333,16 +323,7 @@ class TIComplex(ComplexEntry, register=True):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `TIComplex` with specified meta and data values
 
-        :param init: Data to initialize this complex number's data (defaults to `None`)
-        :param for_flash: Whether this complex number supports flash chips (default to `True`)
-        :param name: The name of this complex number (defaults to `A`)
-        :param version: This complex number's version (defaults to `None`)
-        :param archived: Whether this complex number is archived (defaults to `False`)
-        :param data: This complex number's data (defaults to empty)
-        """
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.real_subtype_id = self.imag_subtype_id = 0x0C
@@ -450,16 +431,6 @@ class TIComplexFraction(TIComplex, register=True):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `TIComplexFraction` with specified meta and data values
-
-        :param init: Data to initialize this complex number's data (defaults to `None`)
-        :param for_flash: Whether this complex number supports flash chips (default to `True`)
-        :param name: The name of this complex number (defaults to `A`)
-        :param version: This complex number's version (defaults to `None`)
-        :param archived: Whether this complex number is archived (defaults to `False`)
-        :param data: This complex number's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -497,16 +468,6 @@ class TIComplexRadical(ComplexEntry, register=True):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `TIComplexRadical` with specified meta and data values
-
-        :param init: Data to initialize this complex number's data (defaults to `None`)
-        :param for_flash: Whether this complex number supports flash chips (default to `True`)
-        :param name: The name of this complex number (defaults to `A`)
-        :param version: This complex number's version (defaults to `None`)
-        :param archived: Whether this complex number is archived (defaults to `False`)
-        :param data: This complex number's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -639,16 +600,6 @@ class TIComplexPi(TIComplex, register=True):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `TIComplexPi` with specified meta and data values
-
-        :param init: Data to initialize this complex number's data (defaults to `None`)
-        :param for_flash: Whether this complex number supports flash chips (default to `True`)
-        :param name: The name of this complex number (defaults to `A`)
-        :param version: This complex number's version (defaults to `None`)
-        :param archived: Whether this complex number is archived (defaults to `False`)
-        :param data: This complex number's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -679,16 +630,6 @@ class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
-        """
-        Creates an empty `TIComplexPiFraction` with specified meta and data values
-
-        :param init: Data to initialize this complex number's data (defaults to `None`)
-        :param for_flash: Whether this complex number supports flash chips (default to `True`)
-        :param name: The name of this complex number (defaults to `A`)
-        :param version: This complex number's version (defaults to `None`)
-        :param archived: Whether this complex number is archived (defaults to `False`)
-        :param data: This complex number's data (defaults to empty)
-        """
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 

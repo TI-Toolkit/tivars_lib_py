@@ -93,6 +93,7 @@ class PictureEntry(SizedEntry):
                  for_flash: bool = True, name: str = "Pic1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.length = self.min_data_length
