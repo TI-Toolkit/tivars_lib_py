@@ -215,7 +215,9 @@ class NumericTests(unittest.TestCase):
 
         test_components = TIComplex(name="C")
         test_components.real, test_components.imag = test_complex.real, test_complex.imag
-        self.assertEqual(test_complex.bytes(), test_components.bytes())
+        self.assertEqual(test_complex, test_components)
+        self.assertEqual(test_components.components()[0], test_complex.real)
+        self.assertEqual(test_components.components()[1], test_complex.imag)
 
         test_complex.clear()
         test_complex.load_complex(7)
@@ -248,6 +250,7 @@ class NumericTests(unittest.TestCase):
 
         test_list = [TIComplex(1 + 1j), TIComplex("-3 + 2i"), TIComplex(4 + 0j)]
 
+        self.assertEqual(test_comp_list.name, "I")
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
         self.assertEqual(list(iter(test_comp_list)), test_list)
@@ -281,7 +284,6 @@ class NumericTests(unittest.TestCase):
 
         test_array = [[TIRealPi(3), TIRealRadical("3√10 + 0√1")],
                       [TIRealFraction(0.5), TIRealRadical("(4√5 + 2√3) / 7")]]
-        test_array[1][0].subtype_id = 0x18
 
         self.assertEqual(test_matrix.name, "[B]")
         self.assertEqual(test_matrix.height, 2)
