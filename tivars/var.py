@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import BinaryIO, ByteString, Iterator
+from typing import BinaryIO, ByteString, Iterator, Type
 from warnings import warn
 
 from tivars.models import *
@@ -468,7 +468,7 @@ class TIEntry(Dock, Converter):
         return self.raw.data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @classmethod
-    def get_type(cls, type_id: bytes) -> 'TIEntry':
+    def get_type(cls, type_id: bytes) -> Type['TIEntry']:
         """
         Gets the subclass corresponding to a type ID if one is registered
 

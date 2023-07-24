@@ -3,6 +3,8 @@ import decimal as dec
 import fractions as frac
 import re
 
+from typing import Type
+
 from tivars.models import *
 from .numeric import *
 from ..data import *
@@ -39,9 +41,16 @@ class RealEntry(TIEntry):
     }
 
     min_data_length = 9
+
     min_exponent = 0x00
+    """
+    The smallest allowed floating point exponent
+    """
 
     is_exact = False
+    """
+    Whether this numeric type is exact
+    """
 
     def __float__(self) -> float:
         return self.float()
@@ -97,6 +106,14 @@ class RealEntry(TIEntry):
 
         If this bit is used, the number is negative when set.
         """
+
+    @property
+    def subtype(self) -> Type['RealEntry']:
+        """
+        :return: The subtype of this real number
+        """
+
+        return self.get_type(self.subtype_id)
 
     @property
     def sign(self) -> int:
@@ -472,6 +489,14 @@ class TIRealRadical(RealEntry, register=True):
         """
         The left radicand of the real radical
         """
+
+    @property
+    def sign(self) -> int:
+        """
+        :return: The sign of this real number
+        """
+
+        return -1 if self.decimal() < 0 else 1
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):

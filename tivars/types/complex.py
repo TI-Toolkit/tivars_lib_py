@@ -1,5 +1,5 @@
 from typing import Type
-from warnings import warn
+from warnings import catch_warnings, warn
 
 from tivars.models import *
 from ..data import *
@@ -9,31 +9,75 @@ from .real import *
 
 
 class RealPart(Converter):
+    """
+    Converter for the real part of complex numbers
+
+    Real parts are instances of `RealEntry`.
+    """
+
     _T = RealEntry
 
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
+        """
+        Converts `bytes` -> `RealType`
+
+        :param data: The raw bytes to convert
+        :param instance: The instance containing the data section
+        :return: The real part of `data` converted to the appropriate type
+        """
+
         return instance.real_type.get(data)
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+        """
+        Converts `RealEntry` -> `bytes`
+
+        :param value: The value to convert
+        :param instance: The instance containing the data section
+        :return: The data of `value`
+        """
+
         value.subtype_id = instance.type_id[0]
 
-        return instance.real_type.set(value, **kwargs)
+        return type(value).set(value, **kwargs)
 
 
 class ImaginaryPart(Converter):
+    """
+    Converter for the imaginary part of complex numbers
+
+    Imaginary parts are instances of `RealEntry`.
+    """
+
     _T = RealEntry
 
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
+        """
+        Converts `bytes` -> `RealType`
+
+        :param data: The raw bytes to convert
+        :param instance: The instance containing the data section
+        :return: The real part of `data` converted to the appropriate type
+        """
+
         return instance.imag_type.get(data)
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+        """
+        Converts `str` -> `bytes`
+
+        :param value: The value to convert
+        :param instance: The instance containing the data section
+        :return: The data of `value`
+        """
+
         value.subtype_id = instance.type_id[0]
 
-        return instance.imag_type.set(value, **kwargs)
+        return type(value).set(value, **kwargs)
 
 
 class ComplexEntry(TIEntry):
@@ -67,6 +111,13 @@ class ComplexEntry(TIEntry):
     min_data_length = 18
 
     is_exact = False
+    """
+    Whether this numeric type is exact
+    """
+
+    _real_subtypes = {None: RealEntry}
+
+    _imag_subtypes = {None: RealEntry}
 
     def __complex__(self):
         return self.complex()
@@ -151,7 +202,14 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `real_subtype_id`.
         """
 
-        return RealEntry
+        try:
+            return self._real_subtypes[self.real_subtype_id]
+
+        except KeyError:
+            warn(f"Real subtype ID 0x{self.real_subtype_id:x} not recognized for type {type(self)}.",
+                 BytesWarning)
+
+            return self._real_subtypes[self._type_id[0]]
 
     @property
     def imag_type(self) -> Type['RealEntry']:
@@ -159,7 +217,14 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `imag_subtype_id`.
         """
 
-        return RealEntry
+        try:
+            return self._imag_subtypes[self.imag_subtype_id]
+
+        except KeyError:
+            warn(f"Imag subtype ID 0x{self.imag_subtype_id:x} not recognized for type {type(self)}.",
+                 BytesWarning)
+
+            return self._imag_subtypes[self._type_id[0]]
 
     def components(self) -> (RealEntry, RealEntry):
         """
@@ -218,6 +283,10 @@ class TIComplex(ComplexEntry, register=True):
     min_data_length = 18
 
     _type_id = b'\x0C'
+
+    _real_subtypes = {0x0C: TIReal}
+
+    _imag_subtypes = {0x0C: TIReal}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -278,14 +347,6 @@ class TIComplex(ComplexEntry, register=True):
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
-    @property
-    def real_type(self) -> Type['TIReal']:
-        return TIReal
-
-    @property
-    def imag_type(self) -> Type['TIReal']:
-        return TIReal
-
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         """
@@ -294,13 +355,14 @@ class TIComplex(ComplexEntry, register=True):
         :param comp: The complex number to load
         """
 
-        real, imag = self.real_type(), self.imag_type()
-        comp = complex(comp)
+        with catch_warnings(action='ignore'):
+            real, imag = self.real_type(), self.imag_type()
+            comp = complex(comp)
 
-        real.load_float(comp.real)
-        imag.load_float(comp.imag)
+            real.load_float(comp.real)
+            imag.load_float(comp.imag)
 
-        self.real, self.imag = real, imag
+            self.real, self.imag = real, imag
 
     @Loader[str]
     def load_string(self, string: str):
@@ -325,8 +387,9 @@ class TIComplex(ComplexEntry, register=True):
 
         parts[1] = parts[1].replace("i", "") or "1"
 
-        self.real = self.real_type(parts[0])
-        self.imag = self.imag_type(parts[1])
+        with catch_warnings(action='ignore'):
+            self.real = self.real_type(parts[0])
+            self.imag = self.imag_type(parts[1])
 
 
 class TIComplexFraction(TIComplex, register=True):
@@ -340,6 +403,10 @@ class TIComplexFraction(TIComplex, register=True):
     is_exact = True
 
     _type_id = b'\x1B'
+
+    _real_subtypes = {0x1B: TIRealFraction}
+
+    _imag_subtypes = {0x1B: TIRealFraction}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -359,14 +426,6 @@ class TIComplexFraction(TIComplex, register=True):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.real_subtype_id = self.imag_subtype_id = 0x1B
-
-    @property
-    def real_type(self) -> Type['TIRealFraction']:
-        return TIRealFraction
-
-    @property
-    def imag_type(self) -> Type['TIRealFraction']:
-        return TIRealFraction
 
 
 class TIComplexRadical(ComplexEntry, register=True):
@@ -391,6 +450,10 @@ class TIComplexRadical(ComplexEntry, register=True):
     is_exact = True
 
     _type_id = b'\x1D'
+
+    _real_subtypes = {0x1D: TIRealRadical}
+
+    _imag_subtypes = {0x1D: TIRealRadical}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -497,14 +560,6 @@ class TIComplexRadical(ComplexEntry, register=True):
         The left radicand of the imaginary part of the radical
         """
 
-    @property
-    def real_type(self) -> Type['TIRealRadical']:
-        return TIRealRadical
-
-    @property
-    def imag_type(self) -> Type['TIRealRadical']:
-        return TIRealRadical
-
     def string(self) -> str:
         """
         :return: A string representation of this complex number
@@ -527,6 +582,11 @@ class TIComplexPi(TIComplex, register=True):
 
     _type_id = b'\x1E'
 
+    _real_subtypes = {0x1B: TIRealFraction,
+                      0x1C: TIReal}
+
+    _imag_subtypes = {0x1E: TIRealPi}
+
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
@@ -546,25 +606,6 @@ class TIComplexPi(TIComplex, register=True):
 
         self.real_subtype_id, self.imag_subtype_id = 0x1B, 0x1E
 
-    @property
-    def real_type(self) -> Type['TIReal']:
-        match self.real_subtype_id:
-            case 0x1B:
-                return TIRealFraction
-
-            case 0x1C:
-                return TIReal
-
-            case _:
-                warn(f"Real subtype ID 0x{self.real_subtype_id} not recognized for type {type(self)}.",
-                     BytesWarning)
-
-                return TIReal
-
-    @property
-    def imag_type(self) -> Type['TIRealPi']:
-        return TIRealPi
-
 
 class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
     """
@@ -579,6 +620,12 @@ class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
     is_exact = True
 
     _type_id = b'\x1F'
+
+    _real_subtypes = {0x1E: TIReal,
+                      0x1F: TIRealFraction}
+
+    _imag_subtypes = {0x1E: TIRealPi,
+                      0x1F: TIRealPiFraction}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -598,36 +645,6 @@ class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.real_subtype_id = self.imag_subtype_id = 0x1F
-
-    @property
-    def real_type(self) -> Type['TIReal']:
-        match self.real_subtype_id:
-            case 0x1E:
-                return TIReal
-
-            case 0x1F:
-                return TIRealFraction
-
-            case _:
-                warn(f"Real subtype ID 0x{self.real_subtype_id} not recognized for type {type(self)}.",
-                     BytesWarning)
-
-                return TIReal
-
-    @property
-    def imag_type(self) -> Type['TIRealPi']:
-        match self.imag_subtype_id:
-            case 0x1E:
-                return TIRealPi
-
-            case 0x1F:
-                return TIRealPiFraction
-
-            case _:
-                warn(f"Imag subtype ID 0x{self.imag_subtype_id} not recognized for type {type(self)}.",
-                     BytesWarning)
-
-                return TIRealPi
 
     def string(self) -> str:
         """
