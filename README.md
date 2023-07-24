@@ -10,11 +10,7 @@ The current pre-release version is `v0.6.0`. Official releases are coming soon. 
 
 ### As a Package
 
-Clone this repository or [download a release](https://github.com/TI-Toolkit/tivars_lib_py/tags) and extract the `tivars` directory to include it in your next project. You can also install the package directly with `pip`:
-
-```
-pip install git+https://github.com/TI-Toolkit/tivars_lib_py.git 
-```
+Clone this repository or [download a release](https://github.com/TI-Toolkit/tivars_lib_py/tags) and extract the `tivars` directory to include it in your next project.
 
 ### As a Submodule
 
