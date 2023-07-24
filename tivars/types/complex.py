@@ -1,5 +1,5 @@
 from typing import Type
-from warnings import catch_warnings, filterwarnings, warn
+from warnings import warn
 
 from tivars.models import *
 from ..data import *
