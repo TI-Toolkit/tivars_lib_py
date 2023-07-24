@@ -1,5 +1,5 @@
 from typing import Type
-from warnings import catch_warnings, warn
+from warnings import catch_warnings, filterwarnings, warn
 
 from tivars.models import *
 from ..data import *
@@ -355,7 +355,9 @@ class TIComplex(ComplexEntry, register=True):
         :param comp: The complex number to load
         """
 
-        with catch_warnings(action='ignore'):
+        with catch_warnings():
+            filterwarnings('ignore')
+
             real, imag = self.real_type(), self.imag_type()
             comp = complex(comp)
 
@@ -387,7 +389,9 @@ class TIComplex(ComplexEntry, register=True):
 
         parts[1] = parts[1].replace("i", "") or "1"
 
-        with catch_warnings(action='ignore'):
+        with catch_warnings():
+            filterwarnings('ignore')
+
             self.real = self.real_type(parts[0])
             self.imag = self.imag_type(parts[1])
 
