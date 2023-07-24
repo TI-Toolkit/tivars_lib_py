@@ -39,7 +39,7 @@ class RealPart(Converter):
         :return: The data of `value`
         """
 
-        value.subtype_id = instance.type_id[0]
+        value.subtype_id = instance.get_real_subtype_id(type(value))
 
         return type(value).set(value, **kwargs)
 
@@ -75,7 +75,7 @@ class ImaginaryPart(Converter):
         :return: The data of `value`
         """
 
-        value.subtype_id = instance.type_id[0]
+        value.subtype_id = instance.get_imag_subtype_id(type(value))
 
         return type(value).set(value, **kwargs)
 
@@ -227,6 +227,28 @@ class ComplexEntry(TIEntry):
                      BytesWarning)
 
             return self._imag_subtypes[self._type_id[0]]
+
+    @classmethod
+    def get_real_subtype_id(cls, subtype: Type['RealEntry']) -> int:
+        """
+        Gets the subtype ID corresponding to the given subtype of the real part
+
+        :param subtype: The subtype for the real part
+        :return: The subtype ID used to identify `subtype` as a real part
+        """
+
+        return {v: k for k, v in cls._real_subtypes.items()}[subtype]
+
+    @classmethod
+    def get_imag_subtype_id(cls, subtype: Type['RealEntry']) -> int:
+        """
+        Gets the subtype ID corresponding to the given subtype of the imaginary part
+
+        :param subtype: The subtype for the real part
+        :return: The subtype ID used to identify `subtype` as an imaginary part
+        """
+
+        return {v: k for k, v in cls._imag_subtypes.items()}[subtype]
 
     def components(self) -> (RealEntry, RealEntry):
         """

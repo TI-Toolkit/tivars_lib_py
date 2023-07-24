@@ -123,6 +123,20 @@ class RealEntry(TIEntry):
 
         return -1 if self.sign_bit else 1
 
+    @classmethod
+    def get(cls, data: bytes, **kwargs) -> _T:
+        """
+        Converts `bytes` -> `RealEntry`
+
+        :param data: The raw bytes to convert
+        :return: A `RealEntry` instance with data equal to `data` and subtype reset
+        """
+
+        value = super().get(data)
+        value.subtype_id = cls._type_id[0]
+
+        return value
+
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
         """
