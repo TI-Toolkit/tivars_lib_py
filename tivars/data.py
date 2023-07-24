@@ -194,7 +194,7 @@ class Bits:
             @classmethod
             def get(cls, data: bytes, **kwargs) -> _T:
                 """
-                Converts `bytes` -> `bytes` by concatenating bits in a slice
+                Converts `bytes` -> `int` by concatenating bits in a slice
 
                 :param data: The raw bytes to convert
                 :return: The sliced bits in `data` joined without gaps
@@ -210,7 +210,7 @@ class Bits:
             @classmethod
             def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
                 """
-                Converts `bytes` -> `bytes` by setting bits in a slice
+                Converts `int` -> `bytes` by setting bits in a slice
 
                 :param value: The value to convert
                 :param current: The current value of the data section
@@ -350,7 +350,7 @@ class View(Section):
 
     Data views can be declared by decorating methods:
     ```py
-    @View(section, Converter)
+    @View(section[slice], Converter)
     def data_view(self) -> _T:
         ...
     ```
