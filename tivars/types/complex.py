@@ -206,8 +206,9 @@ class ComplexEntry(TIEntry):
             return self._real_subtypes[self.real_subtype_id]
 
         except KeyError:
-            warn(f"Real subtype ID 0x{self.real_subtype_id:x} not recognized for type {type(self)}.",
-                 BytesWarning)
+            if self.real_subtype_id:
+                warn(f"Real subtype ID 0x{self.real_subtype_id:x} not recognized for type {type(self)}.",
+                     BytesWarning)
 
             return self._real_subtypes[self._type_id[0]]
 
@@ -221,8 +222,9 @@ class ComplexEntry(TIEntry):
             return self._imag_subtypes[self.imag_subtype_id]
 
         except KeyError:
-            warn(f"Imag subtype ID 0x{self.imag_subtype_id:x} not recognized for type {type(self)}.",
-                 BytesWarning)
+            if self.imag_subtype_id:
+                warn(f"Imag subtype ID 0x{self.imag_subtype_id:x} not recognized for type {type(self)}.",
+                     BytesWarning)
 
             return self._imag_subtypes[self._type_id[0]]
 
@@ -302,7 +304,6 @@ class TIComplex(ComplexEntry, register=True):
         :param archived: Whether this complex number is archived (defaults to `False`)
         :param data: This complex number's data (defaults to empty)
         """
-
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.real_subtype_id = self.imag_subtype_id = 0x0C
@@ -355,16 +356,13 @@ class TIComplex(ComplexEntry, register=True):
         :param comp: The complex number to load
         """
 
-        with catch_warnings():
-            filterwarnings('ignore')
+        real, imag = self.real_type(), self.imag_type()
+        comp = complex(comp)
 
-            real, imag = self.real_type(), self.imag_type()
-            comp = complex(comp)
+        real.load_float(comp.real)
+        imag.load_float(comp.imag)
 
-            real.load_float(comp.real)
-            imag.load_float(comp.imag)
-
-            self.real, self.imag = real, imag
+        self.real, self.imag = real, imag
 
     @Loader[str]
     def load_string(self, string: str):
@@ -389,11 +387,8 @@ class TIComplex(ComplexEntry, register=True):
 
         parts[1] = parts[1].replace("i", "") or "1"
 
-        with catch_warnings():
-            filterwarnings('ignore')
-
-            self.real = self.real_type(parts[0])
-            self.imag = self.imag_type(parts[1])
+        self.real = self.real_type(parts[0])
+        self.imag = self.imag_type(parts[1])
 
 
 class TIComplexFraction(TIComplex, register=True):
@@ -563,6 +558,16 @@ class TIComplexRadical(ComplexEntry, register=True):
         """
         The left radicand of the imaginary part of the radical
         """
+
+    @Loader[complex, float, int]
+    def load_complex(self, comp: complex):
+        """
+        Loads this complex number from a `complex`, upcasting as necessary
+
+        :param comp: The complex number to load
+        """
+
+        return NotImplemented
 
     def string(self) -> str:
         """
