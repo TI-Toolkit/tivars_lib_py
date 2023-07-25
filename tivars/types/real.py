@@ -254,6 +254,7 @@ class TIReal(RealEntry, register=True):
             self.mantissa, self.exponent, self.sign_bit = 0, 0x80, False
             return
 
+        # Normalize string
         string = replacer(squash(string).lower(), {"~": "-", "|e": "e"})
 
         if "e" not in string:
@@ -265,6 +266,7 @@ class TIReal(RealEntry, register=True):
         neg = string.startswith("-")
         string = string.strip("+-")
 
+        # Obtain integer and decimal parts
         number, exponent = string.split("e")
         integer, decimal = number.split(".")
         integer, decimal = integer or "0", decimal or "0"
@@ -273,6 +275,7 @@ class TIReal(RealEntry, register=True):
             self.mantissa, self.exponent, self.sign_bit = 0, 0x80, neg
             return
 
+        # Adjust exponent to make integer mantissa
         exponent = int(exponent or "0")
         while not 0 < (value := int(integer)) < 10:
             if value == 0:
@@ -429,6 +432,7 @@ class TIRealRadical(RealEntry, register=True):
             self.left_scalar, self.left_radicand = 0, 0
             self.right_scalar, self.right_radicand = 0, 0
 
+        # Normalize string
         string = replacer(squash(string), {"(": "", ")": "", "*": "", "~": "-", "sqrt": "√", "-": "+-"}).lstrip("+")
 
         if "." in string:
@@ -444,6 +448,7 @@ class TIRealRadical(RealEntry, register=True):
         if "+" not in string:
             string = string.replace("/", "+0√0/")
 
+        # Obtain left component, right component, and denominator
         top, bot = string.split("/")
         left, right = top.split("+")
 
@@ -453,6 +458,7 @@ class TIRealRadical(RealEntry, register=True):
         if "√" not in right:
             right += "√1"
 
+        # Obtain scalars and radicands
         left_scalar, left_radicand = left.split("√")
         right_scalar, right_radicand = right.split("√")
 
@@ -461,6 +467,7 @@ class TIRealRadical(RealEntry, register=True):
         right_scalar = int(right_scalar if right_scalar.rstrip("+-") else right_scalar + "1")
         right_radicand = int(right_radicand)
 
+        # Normalize radicands
         if left_radicand < 0 or right_radicand < 0:
             raise ValueError("square roots cannot be negative")
 
@@ -477,6 +484,7 @@ class TIRealRadical(RealEntry, register=True):
         if denominator == 0:
             raise ValueError("denominator must be nonzero")
 
+        # Obtain sign type
         left_scalar, right_scalar = left_scalar * sign(denominator), right_scalar * sign(denominator)
         match sign(left_scalar), sign(right_scalar):
             case 1, -1:

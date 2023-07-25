@@ -364,10 +364,12 @@ class TIComplex(ComplexEntry, register=True):
     def load_string(self, string: str):
         string = replacer(squash(string), {"-": "+-", "[i]": "i", "j": "i"})
 
-        parts = string.split("+")
+        # Split into real and imaginary components
+        parts = string.strip("+").split("+")
         if not parts[0]:
             parts = parts[1:]
 
+        # Add missing components
         if len(parts) == 1:
             if "i" in parts[0]:
                 parts = ["0", parts[0]]

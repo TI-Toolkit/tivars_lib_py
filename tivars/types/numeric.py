@@ -2,6 +2,14 @@ from ..data import *
 
 
 def replacer(string: str, replacements: dict[str, str]) -> str:
+    """
+    Iteratively applies string replacements
+
+    :param string: The input string
+    :param replacements: The replacements to make
+    :return: The input string with all replacements made in-order
+    """
+
     for substring, replacement in replacements.items():
         string = string.replace(substring, replacement)
 
@@ -9,10 +17,24 @@ def replacer(string: str, replacements: dict[str, str]) -> str:
 
 
 def sign(x: int):
+    """
+    Computes the mathematical sign of a number
+
+    :param x: The input number
+    :return: The sign of `x`
+    """
+
     return (x > 0) - (x < 0)
 
 
 def squash(string: str) -> str:
+    """
+    Removes all spaces from a string
+
+    :param string: The input string
+    :return: The input string with all spaces removed
+    """
+
     return ''.join(string.split())
 
 

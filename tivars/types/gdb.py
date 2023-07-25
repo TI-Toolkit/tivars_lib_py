@@ -180,12 +180,16 @@ class TIGraphedEquation(TIEquation):
     def style(self) -> bytes:
         """
         The style of the GDB equation
+
+        This value is not intrinsically stored with the equation, but is bundled for convenience.
         """
 
     @Section(1, GraphColor)
     def color(self) -> bytes:
         """
         The color of the GDB equation
+
+        This value is not intrinsically stored with the equation, but is bundled for convenience.
         """
 
     def load_data_section(self, data: io.BytesIO):
@@ -206,6 +210,7 @@ class TIGraphedEquation(TIEquation):
 
         self.load_equation(TIEquation(dct["expr"]))
 
+        # Set flags
         flags = {"selected": False, "wasUsedForGraph": False, "linkTransfer": False} | dct["flags"]
         self.flags = EquationFlags({1: 1, 0: 1})
 
@@ -441,14 +446,17 @@ class TIMonoGDB(TIEntry, register=True):
         data = io.BytesIO(self.data[self.offset:])
         equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
+        # Load styles
         for i in range(self.num_styles):
             style = data.read(1)
             for j in range(r := self.num_equations // self.num_styles):
                 equations[r * i + j].style = style
 
+        # Load data sections
         for i in range(self.num_equations):
             equations[i].load_data_section(data)
 
+        # Load colors (if they exist)
         if rest := data.read():
             data = io.BytesIO(rest)
             data.seek(3, 1)
@@ -476,6 +484,7 @@ class TIMonoGDB(TIEntry, register=True):
             'Sequence': 0x80
         }.get(mode := dct.get("graphMode", "Function"), 0x00)
 
+        # Load formatSettings
         for setting in dct.get("formatSettings", []):
             try:
                 self.mode_flags |= getattr(GraphMode, setting)
@@ -483,6 +492,7 @@ class TIMonoGDB(TIEntry, register=True):
                 warn(f"Unrecognized format setting ({setting}).",
                      UserWarning)
 
+        # Load extSettings
         ext_settings = dct.get("extSettings", {})
         if "showExpr" in ext_settings:
             self.extended_mode_flags |= GraphMode.ExprOn if ext_settings["showExpr"] else GraphMode.ExprOff
@@ -492,6 +502,7 @@ class TIMonoGDB(TIEntry, register=True):
                 warn(f"Sequence settings have been provided, but this GDB is for {mode.lower()} graphs.",
                      UserWarning)
 
+        # Load globalWindowSettings
         for var, value in dct.get("globalWindowSettings", {}).items():
             if not hasattr(self, var):
                 warn(f"Unrecognized window setting ({var}).",
@@ -499,6 +510,7 @@ class TIMonoGDB(TIEntry, register=True):
             else:
                 setattr(self, var, TIReal(value))
 
+        # Load specific data
         data = dct.get("specificData", {})
         for var, value in data.get("settings", {}).items():
             if not hasattr(self, var):
@@ -507,6 +519,7 @@ class TIMonoGDB(TIEntry, register=True):
             else:
                 setattr(self, var, TIReal(value))
 
+        # Load equations
         for name, equation in data.get("equations", {}).items():
             if name in self.equation_names:
                 plotted = TIGraphedEquation(name=name)
@@ -517,6 +530,7 @@ class TIMonoGDB(TIEntry, register=True):
                 warn(f"Unrecognized equation ({name}).",
                      UserWarning)
 
+        # Set type if color data exists so it can be loaded
         if "global84CSettings" in dct:
             self.__class__ = TIGDB
 
