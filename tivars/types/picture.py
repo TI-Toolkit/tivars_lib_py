@@ -256,6 +256,12 @@ class TIMonoPicture(PictureEntry):
 
     _type_id = b'\x07'
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "Pic1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     def __iter__(self) -> Iterator[pixel_type]:
         for byte in self.data[self.data_offset:]:
             for bit in L1.get(byte):
@@ -319,6 +325,12 @@ class TIPicture(PictureEntry, register=True):
     pixel_type = RGB
 
     _type_id = b'\x07'
+
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "Pic1",
+                 version: bytes = None, archived: bool = None,
+                 data: ByteString = None):
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __iter__(self) -> Iterator[pixel_type]:
         for byte in self.data[self.data_offset:]:
@@ -400,7 +412,7 @@ class TIImage(PictureEntry, register=True):
     _type_id = b'\x1A'
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 for_flash: bool = True, name: str = "Image1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
