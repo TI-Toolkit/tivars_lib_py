@@ -65,20 +65,42 @@ class TIMatrix(TIEntry, register=True):
         pass
 
     @View(data, Integer)[0:1]
-    def width(self) -> int:
+    def width(self, value: int) -> int:
         """
         The number of columns in the matrix
 
         TI-OS imposes a limit of 99.
+        Additionally, TI-OS imposes a limit of 400 total elements.
         """
 
+        if value > 99:
+            warn(f"The matrix is too wide ({value} > 99).",
+                 UserWarning)
+
+        if value * self.height > 400:
+            warn(f"The matrix is too big ({value * self.height} > 400).",
+                 UserWarning)
+
+        return value
+
     @View(data, Integer)[1:2]
-    def height(self) -> int:
+    def height(self, value: int) -> int:
         """
         The number of rows in the matrix
 
         TI-OS imposes a limit of 99.
+        Additionally, TI-OS imposes a limit of 400 total elements.
         """
+
+        if value > 99:
+            warn(f"The matrix is too tall ({value} > 99).",
+                 UserWarning)
+
+        if self.width * value > 400:
+            warn(f"The matrix is too big ({self.width * value} > 400).",
+                 UserWarning)
+
+        return value
 
     @property
     def size(self) -> int:
