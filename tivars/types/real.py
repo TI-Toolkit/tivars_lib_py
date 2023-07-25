@@ -442,11 +442,11 @@ class TIRealRadical(RealEntry, register=True):
             string += "/1"
 
         if "√" not in string:
-            string = "0√0+" + string
+            string = "0√1+" + string
             string = string.replace("/", "√1/")
 
         if "+" not in string:
-            string = string.replace("/", "+0√0/")
+            string = string.replace("/", "+0√1/")
 
         # Obtain left component, right component, and denominator
         top, bot = string.split("/")

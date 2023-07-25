@@ -24,7 +24,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(str(test_var.entries[0]), "setDate(1")
         self.assertEqual(test_var.checksum, b'M\x03')
 
-    def test_all_byte_sections(self):
+    def test_all_sections(self):
         test_var = TIVar()
         test_var.open("tests/data/var/Program.8xp")
 
@@ -282,7 +282,7 @@ class NumericTests(unittest.TestCase):
         test_matrix = TIMatrix()
         test_matrix.open("tests/data/var/Matrix_2x2_exact.8xm")
 
-        test_array = [[TIRealPi(3), TIRealRadical("3√10 + 0√1")],
+        test_array = [[TIRealPi(3), TIRealRadical("3√10")],
                       [TIRealFraction(0.5), TIRealRadical("(4√5 + 2√3) / 7")]]
 
         self.assertEqual(test_matrix.name, "[B]")
