@@ -4,6 +4,7 @@ import fractions as frac
 import re
 
 from typing import Type
+from warnings import warn
 
 from tivars.models import *
 from .numeric import *
@@ -182,6 +183,24 @@ class RealEntry(TIEntry):
         self.raw.type_id = bytes([self.subtype_id])
 
         super().coerce()
+
+
+class GraphRealEntry(RealEntry):
+    """
+    Warning converter for real numeric types supported by graph parameters
+
+    Values used for plotting (e.g. Xmin) will behave unexpectedly if set to a radical or π type.
+    """
+
+    _T = 'RealEntry'
+
+    @classmethod
+    def set(cls, value: _T, **kwargs) -> bytes:
+        if type(value) not in (TIReal, TIUndefinedReal, TIRealFraction):
+            warn(f"Graph parameters cannot store {type(value)} values correctly.",
+                 UserWarning)
+
+        return super().set(value)
 
 
 class TIReal(RealEntry, register=True):
@@ -521,4 +540,5 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
         return super().string().replace(" /", "π /")
 
 
-__all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction", "RealEntry"]
+__all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction",
+           "RealEntry", "GraphRealEntry"]
