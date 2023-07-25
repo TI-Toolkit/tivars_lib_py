@@ -62,11 +62,7 @@ class TIMatrix(TIEntry, register=True):
 
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        The width and height of the matrix each take a byte and are followed by sequential element data sections.
-        """
+        pass
 
     @View(data, Integer)[0:1]
     def width(self) -> int:

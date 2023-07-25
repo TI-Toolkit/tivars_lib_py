@@ -334,12 +334,7 @@ class TIMonoGDB(TIEntry, register=True):
 
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        The data begins with the mode settings and graphscreen settings, followed by the equation styles.
-        The equations comprise the remainder of the data, one after the other.
-        """
+        pass
 
     @View(data, Integer)[0:2]
     def length(self):
@@ -414,6 +409,7 @@ class TIMonoGDB(TIEntry, register=True):
 
         One of Function, Parametric, Polar, or Sequence
         """
+
         match self.mode_id:
             case TIMonoFuncGDB.mode_byte:
                 return 'Function'
@@ -433,6 +429,7 @@ class TIMonoGDB(TIEntry, register=True):
         """
         :return: The index of the start of the equation styles in this GDB
         """
+
         return TIMonoGDB.min_data_length + RealEntry.min_data_length * self.num_parameters
 
     @property

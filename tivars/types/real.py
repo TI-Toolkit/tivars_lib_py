@@ -91,9 +91,7 @@ class RealEntry(TIEntry):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the real number
-        """
+        pass
 
     @View(data, Bits[0:6])[0:1]
     def subtype_id(self) -> bytes:
@@ -201,11 +199,7 @@ class TIReal(RealEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the real number
-
-        Contains flags, a mantissa, and an exponent.
-        """
+        pass
 
     @View(data, Integer)[1:2]
     def exponent(self) -> int:
@@ -355,11 +349,7 @@ class TIRealRadical(RealEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the real radical
-
-        Contains the scalars, radicands, denominator, and sign type.
-        """
+        pass
 
     @View(data, Bits[0:4])[1:2]
     def sign_type(self) -> int:

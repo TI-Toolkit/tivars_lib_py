@@ -316,11 +316,7 @@ class TIComplex(ComplexEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains two real numbers, the real and imaginary parts
-        """
+        pass
 
     @View(data, Integer)[1:2]
     def real_exponent(self) -> int:
@@ -449,11 +445,7 @@ class TIComplexRadical(ComplexEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Contains two real numbers, the real and imaginary parts
-        """
+        pass
 
     @View(data, Bits[0:4])[1:2]
     def real_sign_type(self) -> int:

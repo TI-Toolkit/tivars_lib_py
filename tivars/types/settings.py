@@ -84,11 +84,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     @Section(8, String)
     def name(self) -> str:
-        """
-        The name of the entry
-
-        Always equal to Window.
-        """
+        pass
 
     @Section(min_data_length)
     def data(self) -> bytearray:
@@ -344,11 +340,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Each parameter is stored in a contiguous list of real numbers.
-        """
+        pass
 
     @View(data, RealEntry)[2:11]
     def Xmin(self) -> RealEntry:
@@ -596,11 +588,7 @@ class TITableSettings(SettingsEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Each parameter is stored in a contiguous list of real numbers.
-        """
+        pass
 
     @View(data, RealEntry)[2:11]
     def TblMin(self, value) -> RealEntry:

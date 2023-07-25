@@ -417,8 +417,6 @@ class TIEntry(Dock, Converter):
     def data(self) -> bytearray:
         """
         The data section of the entry
-
-        See individual entry types for how this data is interpreted.
         """
 
     @classmethod

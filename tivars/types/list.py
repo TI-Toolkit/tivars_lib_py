@@ -108,11 +108,7 @@ class ListEntry(TIEntry):
 
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        The length of the list takes two bytes and is followed by sequential element data sections.
-        """
+        pass
 
     @View(data, Integer)[0:2]
     def length(self, value) -> int:
