@@ -88,11 +88,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     @Section(min_data_length)
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        Each parameter is stored in a contiguous list of real numbers.
-        """
+        pass
 
     @View(data, RealEntry)[3:12]
     def Xmin(self) -> RealEntry:
