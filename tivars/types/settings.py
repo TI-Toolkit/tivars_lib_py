@@ -11,6 +11,12 @@ from .real import RealEntry
 
 
 class SettingsEntry(TIEntry):
+    """
+    Base class for settings entries
+
+    A settings entry stores all parameters for the different plot windows or tables
+    """
+
     min_data_length = 2
 
     leading_bytes = b''
@@ -34,6 +40,12 @@ class SettingsEntry(TIEntry):
 
     @Loader[dict]
     def load_dict(self, dct: dict):
+        """
+        Loads a JSON `dict` into this settings entry
+
+        :param dct: The dict to load
+        """
+
         for var, value in dct:
             if not hasattr(self, var):
                 warn(f"Unrecognized window setting ({var}).",
@@ -42,6 +54,10 @@ class SettingsEntry(TIEntry):
                 setattr(self, var, RealEntry(value))
 
     def dict(self) -> dict:
+        """
+        :return: A `dict` representing this settings entry in JSON format
+        """
+
         raise NotImplementedError
 
     @Loader[str]
@@ -53,6 +69,12 @@ class SettingsEntry(TIEntry):
 
 
 class TIWindowSettings(SettingsEntry, register=True):
+    """
+    Parser for window settings
+
+    A `TIWindowSettings` stores all plot window parameters as a contiguous stream of `TIReal` values
+    """
+
     extensions = {
         None: "8xw",
         TI_82: "82w",
@@ -297,6 +319,12 @@ class TIWindowSettings(SettingsEntry, register=True):
 
 
 class TIRecallWindow(SettingsEntry, register=True):
+    """
+    Parser for recalled windows
+
+    A `TIRecallWindow` stores all plot window parameters as a contiguous stream of `TIReal` values
+    """
+
     extensions = {
         None: "8xz",
         TI_82: "82z",
@@ -545,6 +573,12 @@ class TIRecallWindow(SettingsEntry, register=True):
 
 
 class TITableSettings(SettingsEntry, register=True):
+    """
+    Parser for table settings
+
+    A `TITableSettings` stores all plot table parameters as a contiguous stream of `TIReal` values
+    """
+
     extensions = {
         None: "8xt",
         TI_82: "82t",
