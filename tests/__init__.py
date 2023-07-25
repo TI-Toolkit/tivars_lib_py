@@ -461,7 +461,7 @@ class PictureTests(unittest.TestCase):
         self.assertEqual(test_from_array.array(), test_picture.array())
 
     def test_image(self):
-        test_image = TIPicture()
+        test_image = TIImage()
 
         with open("tests/data/var/Image1.8ca", 'rb') as file:
             test_image.load_from_file(file)

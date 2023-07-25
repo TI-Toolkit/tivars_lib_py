@@ -216,6 +216,14 @@ class PictureEntry(SizedEntry):
 
         raise NotImplementedError
 
+    def coerce(self):
+        match self.length + 2:
+            case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
+            case TIPicture.min_data_length: self.__class__ = TIPicture
+            case TIImage.min_data_length: self.__class__ = TIImage
+            case _: warn(f"Picture has unexpected length ({self.length}).",
+                         BytesWarning)
+
 
 class TIMonoPicture(PictureEntry):
     """
@@ -275,14 +283,6 @@ class TIMonoPicture(PictureEntry):
         return [[bw for col in range(self.data_width)
                  for bw in L1.get(self.data[self.data_width * row + col + self.data_offset:][:1])]
                 for row in range(self.data_height)]
-
-    def coerce(self):
-        match self.length + 2:
-            case self.min_data_length: pass
-            case TIPicture.min_data_length: self.__class__ = TIPicture
-            case TIImage.min_data_length: self.__class__ = TIImage
-            case _: warn(f"Picture has unexpected length ({self.length}).",
-                         BytesWarning)
 
 
 class TIPicture(PictureEntry, register=True):
@@ -345,14 +345,6 @@ class TIPicture(PictureEntry, register=True):
         return [[rgb for col in range(self.data_width)
                  for rgb in RGBPalette.get(self.data[self.data_width * row + col + self.data_offset:][:1])]
                 for row in range(self.data_height)]
-
-    def coerce(self):
-        match self.length + 2:
-            case self.min_data_length: pass
-            case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
-            case TIImage.min_data_length: self.__class__ = TIImage
-            case _: warn(f"Picture has unexpected length ({self.length}).",
-                         BytesWarning)
 
 
 # Workaround until the token sheets are updated
@@ -452,14 +444,6 @@ class TIImage(PictureEntry, register=True):
         return [[RGB565.get(self.data[self.data_width * row + col + 3:][:2])
                  for col in range(0, self.data_width - 2, 2)]
                 for row in range(self.data_height)][::-1]
-
-    def coerce(self):
-        match self.length + 2:
-            case self.min_data_length: pass
-            case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
-            case TIPicture.min_data_length: self.__class__ = TIPicture
-            case _: warn(f"Image has unexpected length ({self.length}).",
-                         BytesWarning)
 
 
 __all__ = ["TIMonoPicture", "TIPicture", "TIImage",
