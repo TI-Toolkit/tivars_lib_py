@@ -1,6 +1,3 @@
-import decimal as dec
-import fractions as frac
-
 from ..data import *
 
 

@@ -281,21 +281,7 @@ class ComplexEntry(TIEntry):
 
         return self.real.float() + 1j * self.imag.float()
 
-    @Loader[str]
-    def load_string(self, string: str):
-        """
-        Loads this complex number from a string representation
-
-        :param string: The string to load
-        """
-
-        raise NotImplementedError
-
     def string(self) -> str:
-        """
-        :return: A string representation of this complex number
-        """
-
         return f"{self.real} + {self.imag}i".replace("+ -", "- ")
 
     def coerce(self):
@@ -370,12 +356,6 @@ class TIComplex(ComplexEntry, register=True):
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
-        """
-        Loads this complex number from a `complex`, upcasting as necessary
-
-        :param comp: The complex number to load
-        """
-
         real, imag = self.real_type(), self.imag_type()
         comp = complex(comp)
 
@@ -386,12 +366,6 @@ class TIComplex(ComplexEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str):
-        """
-        Loads this complex number from a string representation
-
-        :param string: The string to load
-        """
-
         string = replacer(squash(string), {"-": "+-", "[i]": "i", "j": "i"})
 
         parts = string.split("+")
@@ -561,19 +535,9 @@ class TIComplexRadical(ComplexEntry, register=True):
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
-        """
-        Loads this complex number from a `complex`, upcasting as necessary
-
-        :param comp: The complex number to load
-        """
-
         return NotImplemented
 
     def string(self) -> str:
-        """
-        :return: A string representation of this complex number
-        """
-
         return f"{self.real} + {self.imag} * i"
 
 
@@ -636,8 +600,4 @@ class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
         self.real_subtype_id = self.imag_subtype_id = 0x1F
 
     def string(self) -> str:
-        """
-        :return: A string representation of this complex number
-        """
-
         return f"{self.real} + {str(self.imag).replace(' /', 'i /')}"

@@ -180,23 +180,6 @@ class RealEntry(TIEntry):
 
         return float(self.decimal())
 
-    @Loader[str]
-    def load_string(self, string: str):
-        """
-        Loads this real number from a string representation
-
-        :param string: The string to load
-        """
-
-        raise NotImplementedError
-
-    def string(self) -> str:
-        """
-        :return: A string representation of this real number
-        """
-
-        raise NotImplementedError
-
     def coerce(self):
         self.raw.type_id = bytes([self.subtype_id])
 
@@ -242,19 +225,9 @@ class TIReal(RealEntry, register=True):
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
-        """
-        Loads a `dec.Decimal` into this real number
-
-        :param decimal: The decimal to load
-        """
-
         self.load_string(str(decimal))
 
     def decimal(self) -> dec.Decimal:
-        """
-        :return: A `dec.Decimal` object corresponding to this real number
-        """
-
         with dec.localcontext() as ctx:
             ctx.prec = 14
             decimal = dec.Decimal(self.sign * self.mantissa)
@@ -264,12 +237,6 @@ class TIReal(RealEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str):
-        """
-        Loads this real number from a string representation
-
-        :param string: The string to load
-        """
-
         if not string:
             self.mantissa, self.exponent, self.sign_bit = 0, 0x80, False
             return
@@ -306,10 +273,6 @@ class TIReal(RealEntry, register=True):
         self.mantissa, self.exponent, self.sign_bit = int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
     def string(self) -> str:
-        """
-        :return: A string representation of this real number
-        """
-
         string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
 
         if string.startswith("0e"):
@@ -348,12 +311,6 @@ class TIRealFraction(TIReal, register=True):
 
     @Loader[frac.Fraction]
     def load_fraction(self, fraction: frac.Fraction):
-        """
-        Loads a `frac.Fraction` into this real number
-
-        :param fraction: The fraction to load
-        """
-
         with dec.localcontext() as ctx:
             ctx.prec = 14
             decimal = dec.Decimal(fraction.numerator) / fraction.denominator
@@ -361,27 +318,13 @@ class TIRealFraction(TIReal, register=True):
         super().load_string(str(decimal))
 
     def fraction(self) -> frac.Fraction:
-        """
-        :return: A `frac.Fraction` object corresponding to this real number
-        """
-
         return frac.Fraction(self.decimal())
 
     @Loader[str]
     def load_string(self, string: str):
-        """
-        Loads this real number from a string representation
-
-        :param string: The string to load
-        """
-
         self.load_fraction(frac.Fraction(string))
 
     def string(self) -> str:
-        """
-        :return: A string representation of this real number
-        """
-
         return "%d / %d" % self.fraction().as_integer_ratio()
 
 
@@ -459,39 +402,19 @@ class TIRealRadical(RealEntry, register=True):
 
     @property
     def sign(self) -> int:
-        """
-        :return: The sign of this real number
-        """
-
         return -1 if self.decimal() < 0 else 1
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
-        """
-        Loads a `dec.Decimal` into this real number
-
-        :param decimal: The decimal to load
-        """
-
         return NotImplemented
 
     def decimal(self) -> dec.Decimal:
-        """
-        :return: A `dec.Decimal` object corresponding to this real number
-        """
-
         return (self.left_scalar * (-1 if self.sign_type % 2 else 1) * dec.Decimal(self.left_radicand).sqrt() +
                 self.right_scalar * (-1 if self.sign_type > 1 else 1) * dec.Decimal(self.right_radicand).sqrt()) \
             / self.denominator
 
     @Loader[str]
     def load_string(self, string: str):
-        """
-        Loads this real number from a string representation
-
-        :param string: The string to load
-        """
-
         if not string:
             self.sign_type, self.denominator = 0, 1
             self.left_scalar, self.left_radicand = 0, 0
@@ -564,10 +487,6 @@ class TIRealRadical(RealEntry, register=True):
         self.left_radicand, self.right_radicand = left_radicand, right_radicand
 
     def string(self) -> str:
-        """
-        :return: A string representation of this real number
-        """
-
         left = f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}"
         right = f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}"
 
@@ -592,10 +511,6 @@ class TIRealPi(TIReal, register=True):
     _type_id = b'\x20'
 
     def string(self) -> str:
-        """
-        :return: A string representation of this real number
-        """
-
         return super().string() + "π"
 
 
@@ -613,10 +528,6 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
     _type_id = b'\x21'
 
     def string(self) -> str:
-        """
-        :return: A string representation of this real number
-        """
-
         return super().string().replace(" /", "π /")
 
 
