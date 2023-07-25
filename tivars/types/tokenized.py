@@ -194,6 +194,12 @@ class EquationName(TokenizedString):
 
 
 class TIEquation(TokenizedEntry, register=True):
+    """
+    Parser for equations
+
+    A `TIEquation` is a stream of tokens that is evaluated either for graphing or on the homescreen.
+    """
+
     extensions = {
         None: "8xy",
         TI_82: "82y",
@@ -230,6 +236,12 @@ class TIEquation(TokenizedEntry, register=True):
 
 
 class TIString(TokenizedEntry, register=True):
+    """
+    Parser for strings
+
+    A `TIString` is a stream of tokens.
+    """
+
     extensions = {
         None: "8xs",
         TI_82: "82s",
@@ -265,6 +277,12 @@ class TIString(TokenizedEntry, register=True):
 
 
 class TIProgram(TokenizedEntry, register=True):
+    """
+    Parser for programs
+
+    A `TIProgram` is a stream of tokens that is run as a TI-BASIC program.
+    """
+
     extensions = {
         None: "8xp",
         TI_82: "82p",
@@ -311,6 +329,12 @@ class TIProgram(TokenizedEntry, register=True):
 
 
 class TIProtectedProgram(TIProgram, register=True):
+    """
+    Parser for protected programs
+
+    A `TIProtectedProgram` is a `TIProgram` with protection against editing.
+    """
+
     is_protected = True
 
     _type_id = b'\x06'

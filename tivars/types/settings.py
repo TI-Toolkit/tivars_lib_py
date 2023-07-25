@@ -72,7 +72,7 @@ class TIWindowSettings(SettingsEntry, register=True):
     """
     Parser for window settings
 
-    A `TIWindowSettings` stores all plot window parameters as a contiguous stream of `TIReal` values
+    A `TIWindowSettings` stores all plot window parameters as a contiguous stream of `TIReal` values.
     """
 
     extensions = {
@@ -322,7 +322,7 @@ class TIRecallWindow(SettingsEntry, register=True):
     """
     Parser for recalled windows
 
-    A `TIRecallWindow` stores all plot window parameters as a contiguous stream of `TIReal` values
+    A `TIRecallWindow` stores all plot window parameters as a contiguous stream of `TIReal` values.
     """
 
     extensions = {
@@ -576,7 +576,7 @@ class TITableSettings(SettingsEntry, register=True):
     """
     Parser for table settings
 
-    A `TITableSettings` stores all plot table parameters as a contiguous stream of `TIReal` values
+    A `TITableSettings` stores all plot table parameters as a contiguous stream of `TIReal` values.
     """
 
     extensions = {

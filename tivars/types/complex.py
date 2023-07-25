@@ -82,7 +82,7 @@ class ImaginaryPart(Converter):
 
 class ComplexEntry(TIEntry):
     """
-    Parser for complex numeric types
+    Base class for complex numeric types
 
     This class handles floating-point types as well as the exact formats for the TI-83PCE and other newer models.
     The format for these types varies and is handled by `real_subtype_id` and `imag_subtype_id`.

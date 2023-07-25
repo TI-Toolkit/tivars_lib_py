@@ -13,7 +13,7 @@ from ..var import TIEntry
 
 class RealEntry(TIEntry):
     """
-    Parser for real numeric types
+    Base class for real numeric types
 
     This class handles floating-point types as well as the exact formats for the TI-83PCE and other newer models.
     The format for these types varies and is handled by the `subtype_id`, the first six bits of the first data byte.
