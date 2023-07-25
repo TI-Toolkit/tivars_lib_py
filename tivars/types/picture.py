@@ -10,18 +10,40 @@ RGB = tuple[int, int, int]
 
 
 class L1(Converter):
+    """
+    Converter for black-and-white pixels packed eight-per-byte
+    """
+
     _T = tuple[int, ...]
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
+        """
+        Converts `bytes` -> `tuple[int, ...]`
+
+        :param data: The raw bytes to convert
+        :return: A tuple of eight integers in {0, 255} corresponding to the bits of `data`
+        """
+
         return tuple(255 * (1 - int(bit)) for bit in f"{data[0]:08b}")
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
+        """
+        Converts  `tuple[int, ...]` -> `bytes`
+
+        :param value: The value to convert
+        :return: The values in `value` joined into a single byte
+        """
+
         return bytes([int("".join("0" if bit else "1" for bit in value), 2)])
 
 
 class RGBPalette(Converter):
+    """
+    Converter for color pixels indexed by the TI palette
+    """
+
     _T = tuple[RGB, RGB]
 
     Blue = (0, 0, 255)
@@ -45,6 +67,15 @@ class RGBPalette(Converter):
 
     @classmethod
     def nearest(cls, r: int, g: int, b: int) -> RGB:
+        """
+        Finds the nearest palette color to the given RGB components under the Euclidean metric
+
+        :param r: The red component
+        :param g: The green component
+        :param b: The blue component
+        :return: The RGB components of the nearest palette color
+        """
+
         nearest = min(cls.palette, key=lambda x: (x[0] - r) ** 2 + (x[1] - g) ** 2 + (x[2] - b) ** 2)
         if nearest != (r, g, b):
             warn(f"The pixel {(r, g, b)} is not contained in the palette; using {nearest} as an approximation.",
@@ -54,18 +85,43 @@ class RGBPalette(Converter):
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
+        """
+        Converts `bytes` -> `tuple[RGB, RGB]`
+
+        :param data: The raw bytes to convert
+        :return: The pair of RGB values from the palette indexed by the nibbles in `data`
+        """
+
         return cls.palette[data[0] >> 4], cls.palette[data[0] & 15]
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
+        """
+        Converts  `tuple[RGB, RBG]` -> `bytes`
+
+        :param value: The value to convert
+        :return: The byte formed by finding the indices of the colors nearest to the RGB values in `value`
+        """
+
         return bytes([(cls.palette.index(cls.nearest(*value[0])) << 4) + cls.palette.index(cls.nearest(*value[1]))])
 
 
 class RGB565(Converter):
+    """
+    Converter for color pixels stored in RGB565 format
+    """
+
     _T = RGB
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
+        """
+        Converts `bytes` -> `RGB`
+
+        :param data: The raw bytes to convert
+        :return: The RGB value stored in the two bytes of `data`
+        """
+
         return (
             (data[1] >> 3) * 255 // 31,
             (((data[1] & 7) << 3) | (data[0] >> 5)) * 255 // 63,
@@ -74,20 +130,62 @@ class RGB565(Converter):
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
+        """
+        Converts  `RGB` -> `bytes`
+
+        :param value: The value to convert
+        :return: The bytes formed by concatenating the RGB components of `value` in 565 format
+        """
+
         return bytes([((value[1] >> 2 & 7) << 5) | value[2] >> 3]) + bytes([(value[0] & ~7) | (value[1] >> 5)])
 
 
 class PictureEntry(SizedEntry):
+    """
+    Base class for all picture types
+
+    A picture or image is stored as a stream of pixels in some encoding format.
+    """
+
     width = 0
+    """
+    The width of the picture
+    """
+
     height = 0
+    """
+    The height of the picture
+    """
 
     data_width = width
+    """
+    The width of the picture while stored as data
+    """
+
     data_height = height
+    """
+    The height of the picture while stored as data
+    """
+
     data_offset = 2
+    """
+    The offset of the picture data within the data section
+    """
 
     pil_mode = None
+    """
+    The mode used by PIL images for this image type
+    """
+
     pixel_type = None
+    """
+    The type of a single pixel
+    """
+
     has_color = True
+    """
+    Whether this picture has color
+    """
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
@@ -103,13 +201,29 @@ class PictureEntry(SizedEntry):
 
     @Loader[list, ]
     def load_array(self, arr: list[list[pixel_type]]):
+        """
+        Loads a two-dimensional `list` of pixels into this picture
+
+        :param arr: The array to load
+        """
+
         raise NotImplementedError
 
     def array(self) -> list[list[pixel_type]]:
+        """
+        :return: A two-dimensional `list` of the pixels in this picture
+        """
+
         raise NotImplementedError
 
 
 class TIMonoPicture(PictureEntry):
+    """
+    Parser for monochromatic pictures
+
+    A `TIMonoPicture` is a 96 x 63 grid of black or white pixels, stored as 8 pixels per byte.
+    """
+
     extensions = {
         None: "8xi",
         TI_82: "",
@@ -174,6 +288,13 @@ class TIMonoPicture(PictureEntry):
 
 
 class TIPicture(PictureEntry, register=True):
+    """
+    Parser for color pictures
+
+    A `TIPicture` is a 266 x 165 grid of pixels which can take on any of the 15 standard colors.
+    Each pixel comprises a single nibble, which stores an (offset) index into the color palette.
+    """
+
     flash_only = True
 
     extensions = {
@@ -252,6 +373,15 @@ class ImageName(TokenizedString):
 
 
 class TIImage(PictureEntry, register=True):
+    """
+    Parser for color images
+
+    A `TIImage` is a 133 x 83 grid of pixels which can take on any value in the full color space.
+    Each pixel comprises two bytes, stored in RGB565 format.
+
+    On-calc, each pixel is duplicated in both directions to fill the screen.
+    """
+
     flash_only = True
 
     extensions = {
