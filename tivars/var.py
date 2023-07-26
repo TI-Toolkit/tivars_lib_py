@@ -254,7 +254,7 @@ class TIEntry(Dock, Converter):
         Most entry types do not require a new `Raw` class since only the entry's data changes between types.
         """
 
-        __slots__ = "meta_length", "type_id", "name", "version", "archived", "data"
+        __slots__ = "meta_length", "type_id", "name", "version", "archived", "calc_data"
 
         @property
         def data_length(self) -> bytes:
@@ -262,7 +262,7 @@ class TIEntry(Dock, Converter):
             :return: The length of this entry's data portion
             """
 
-            return int.to_bytes(len(self.data), 2, 'little')
+            return int.to_bytes(len(self.calc_data), 2, 'little')
 
         @property
         def flash_bytes(self) -> bytes:
@@ -288,7 +288,7 @@ class TIEntry(Dock, Converter):
 
             return self.meta_length + self.data_length + \
                 self.type_id + self.name + self.version + self.archived + \
-                self.data_length + self.data
+                self.data_length + self.calc_data
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
@@ -297,8 +297,8 @@ class TIEntry(Dock, Converter):
         """
         Creates an empty entry with specified meta and data values
 
-        :param init: Data to initialize this entry's data (defaults to `None`)
-        :param for_flash: Whether this entry supports flash chips (default to `True`)
+        :param init: Values to initialize this entry's data (defaults to `None`)
+        :param for_flash: Whether this entry supports flash chips (defaults to `True`)
         :param name: The name of this entry (defaults to a valid default name)
         :param version: This entry's version (defaults to `None`; not supported if `for_flash == False`)
         :param archived: Whether this entry is archived (defaults to `False`; not supported if `for_flash == False`)
@@ -324,7 +324,7 @@ class TIEntry(Dock, Converter):
 
         self.clear()
         if data:
-            self.data[:len(data)] = bytearray(data)
+            self.calc_data[:len(data)] = bytearray(data)
             self.coerce()
 
         elif init is not None:
@@ -383,7 +383,7 @@ class TIEntry(Dock, Converter):
         The length of the data section of the entry
         """
 
-        return len(self.data)
+        return len(self.calc_data)
 
     @Section(1, Bits[:])
     def type_id(self) -> bytes:
@@ -419,9 +419,15 @@ class TIEntry(Dock, Converter):
         """
 
     @Section()
+    def calc_data(self) -> bytearray:
+        """
+        The data section of the entry which is loaded on-calc
+        """
+
+    @View(calc_data, Bytes)[:]
     def data(self) -> bytearray:
         """
-        The data section of the entry
+        The entry's user data
         """
 
     @classmethod
@@ -444,7 +450,7 @@ class TIEntry(Dock, Converter):
         :return: The data of `value`
         """
 
-        return value.data
+        return value.calc_data
 
     @property
     def flash_bytes(self) -> bytes:
@@ -521,19 +527,8 @@ class TIEntry(Dock, Converter):
         Clears this entry's data
         """
 
-        self.raw.data = bytearray(self.leading_bytes)
-        self.set_length()
-
-    def set_length(self, length: int = None):
-        """
-        Sets the length of this entry's data to a specified value if it exceeds the current length
-
-        :param length: The length to extend to
-        """
-
-        length = length or self.min_data_length
-        if length > self.data_length:
-            self.raw.data.extend(bytearray(length - self.data_length))
+        self.raw.calc_data = bytearray(self.leading_bytes)
+        self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
 
     def unarchive(self):
         """
@@ -621,7 +616,7 @@ class TIEntry(Dock, Converter):
                  f"using {data_length2} to read the data section.",
                  BytesWarning)
 
-        self.raw.data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
+        self.raw.calc_data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
 
         self.coerce()
 
@@ -639,7 +634,7 @@ class TIEntry(Dock, Converter):
         :param data: The source bytes
         """
 
-        self.raw.data = bytearray(data.read(type(self).data.length))
+        self.raw.calc_data = bytearray(data.read(type(self).calc_data.length))
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
@@ -736,7 +731,6 @@ class TIEntry(Dock, Converter):
         if self._type_id is None:
             if subclass := self.get_type(self.type_id):
                 self.__class__ = subclass
-                self.set_length()
                 self.coerce()
 
             elif self.type_id != 0xFF:
@@ -980,35 +974,34 @@ class SizedEntry(TIEntry):
     min_data_length = 2
 
     @Section()
+    def calc_data(self) -> bytearray:
+        pass
+
+    @View(calc_data, Integer)[0:2]
+    def length(self) -> int:
+        """
+        The length of this entry's user data section
+        """
+
+    @View(calc_data, SizedBytes)[2:]
     def data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[0:2]
-    def length(self) -> int:
-        """
-        The length of the data section following this portion
-        """
-
-    def append_data(self, data: ByteString):
-        """
-        Adds data onto the end of this entry's data section
-
-        :param data: The data to add
-        """
-
-        self.data += bytearray(data)
-        self.set_length()
-
-    def set_length(self, length: int = None):
-        super().set_length(length)
-        self.length = len(self.raw.data) - 2
+    def clear(self):
+        self.raw.calc_data = bytearray([0, 0, *self.leading_bytes])
+        self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
+        self.length = len(self.raw.calc_data) - 2
 
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.length != len(self.data) - 2:
-            warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data) - 2}).",
+        if self.length != len(self.data):
+            warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data)}).",
                  BytesWarning)
+
+    def load_data_section(self, data: BytesIO):
+        data_length = int.from_bytes(length_bytes := data.read(2), 'little')
+        self.raw.calc_data = bytearray(length_bytes + data.read(data_length))
 
 
 __all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry"]

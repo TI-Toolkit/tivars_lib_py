@@ -144,38 +144,38 @@ class ComplexEntry(TIEntry):
                     return super().__format__(format_spec)
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         """
         The data section of the entry
 
         Contains two real numbers, the real and imaginary parts
         """
 
-    @View(data, RealPart)[0:9]
+    @View(calc_data, RealPart)[0:9]
     def real(self) -> RealEntry:
         """
         The real part of the complex number
         """
 
-    @View(data, ImaginaryPart)[9:18]
+    @View(calc_data, ImaginaryPart)[9:18]
     def imag(self) -> RealEntry:
         """
         The imaginary part of the complex number
         """
 
-    @View(data, Bits[0:6])[0:1]
+    @View(calc_data, Bits[0:6])[0:1]
     def real_subtype_id(self) -> bytes:
         """
         The subtype ID of the real part
         """
 
-    @View(data, Bits[6:7])[0:1]
+    @View(calc_data, Bits[6:7])[0:1]
     def real_graph_bit(self) -> int:
         """
         Whether the entry is used during graphing
         """
 
-    @View(data, Bits[7:8])[0:1]
+    @View(calc_data, Bits[7:8])[0:1]
     def real_sign_bit(self) -> int:
         """
         The sign bit for the real part
@@ -183,19 +183,19 @@ class ComplexEntry(TIEntry):
         If this bit is set, the real part is negative.
         """
 
-    @View(data, Bits[0:6])[9:10]
+    @View(calc_data, Bits[0:6])[9:10]
     def imag_subtype_id(self) -> bytes:
         """
         The subtype ID of the complex part
         """
 
-    @View(data, Bits[6:7])[9:10]
+    @View(calc_data, Bits[6:7])[9:10]
     def imag_graph_bit(self) -> int:
         """
         Whether the entry is used during graphing
         """
 
-    @View(data, Bits[7:8])[9:10]
+    @View(calc_data, Bits[7:8])[9:10]
     def imag_sign_bit(self) -> int:
         """
         The sign bit for the complex part
@@ -315,10 +315,10 @@ class TIComplex(ComplexEntry, register=True):
         self.real_subtype_id = self.imag_subtype_id = 0x0C
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[1:2]
+    @View(calc_data, Integer)[1:2]
     def real_exponent(self) -> int:
         """
         The exponent of the real part of the complex number
@@ -326,7 +326,7 @@ class TIComplex(ComplexEntry, register=True):
         The exponent has a bias of 0x80.
         """
 
-    @View(data, BCD)[2:9]
+    @View(calc_data, BCD)[2:9]
     def real_mantissa(self) -> int:
         """
         The mantissa of the real part of the complex number
@@ -334,7 +334,7 @@ class TIComplex(ComplexEntry, register=True):
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
-    @View(data, Integer)[10:11]
+    @View(calc_data, Integer)[10:11]
     def imag_exponent(self) -> int:
         """
         The exponent of the imaginary part of the complex number
@@ -342,7 +342,7 @@ class TIComplex(ComplexEntry, register=True):
         The exponent has a bias of 0x80.
         """
 
-    @View(data, BCD)[11:18]
+    @View(calc_data, BCD)[11:18]
     def imag_mantissa(self) -> int:
         """
         The mantissa of the imaginary part of the complex number
@@ -446,10 +446,10 @@ class TIComplexRadical(ComplexEntry, register=True):
         self.real_subtype_id = self.imag_subtype_id = 0x1D
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Bits[0:4])[1:2]
+    @View(calc_data, Bits[0:4])[1:2]
     def real_sign_type(self) -> int:
         """
         The sign type of the real part of the radical
@@ -458,37 +458,37 @@ class TIComplexRadical(ComplexEntry, register=True):
         If the sign type is greater than one, the right scalar is negative.
         """
 
-    @View(data, LeftNibbleBCD)[1:3]
+    @View(calc_data, LeftNibbleBCD)[1:3]
     def real_denominator(self) -> int:
         """
         The denominator of the real part of the radical
         """
 
-    @View(data, RightNibbleBCD)[3:5]
+    @View(calc_data, RightNibbleBCD)[3:5]
     def real_right_scalar(self) -> int:
         """
         The right scalar of the real part of the radical
         """
 
-    @View(data, LeftNibbleBCD)[4:6]
+    @View(calc_data, LeftNibbleBCD)[4:6]
     def real_left_scalar(self) -> int:
         """
         The left scalar of the real part of the radical
         """
 
-    @View(data, RightNibbleBCD)[6:8]
+    @View(calc_data, RightNibbleBCD)[6:8]
     def real_right_radicand(self) -> int:
         """
         The right radicand of the real part of the radical
         """
 
-    @View(data, LeftNibbleBCD)[7:9]
+    @View(calc_data, LeftNibbleBCD)[7:9]
     def real_left_radicand(self) -> int:
         """
         The left radicand of the real part of the radical
         """
 
-    @View(data, Bits[0:4])[10:11]
+    @View(calc_data, Bits[0:4])[10:11]
     def imag_sign_type(self) -> int:
         """
         The sign type of the imaginary part of the radical
@@ -497,31 +497,31 @@ class TIComplexRadical(ComplexEntry, register=True):
         If the sign type is greater than one, the right scalar is negative.
         """
 
-    @View(data, LeftNibbleBCD)[10:12]
+    @View(calc_data, LeftNibbleBCD)[10:12]
     def imag_denominator(self) -> int:
         """
         The denominator of the imaginary part of the radical
         """
 
-    @View(data, RightNibbleBCD)[12:14]
+    @View(calc_data, RightNibbleBCD)[12:14]
     def imag_right_scalar(self) -> int:
         """
         The right scalar of the imaginary part of the radical
         """
 
-    @View(data, LeftNibbleBCD)[13:15]
+    @View(calc_data, LeftNibbleBCD)[13:15]
     def imag_left_scalar(self) -> int:
         """
         The left scalar of the imaginary part of the radical
         """
 
-    @View(data, RightNibbleBCD)[15:17]
+    @View(calc_data, RightNibbleBCD)[15:17]
     def imag_right_radicand(self) -> int:
         """
         The right radicand of the imaginary part of the radical
         """
 
-    @View(data, LeftNibbleBCD)[16:18]
+    @View(calc_data, LeftNibbleBCD)[16:18]
     def imag_left_radicand(self) -> int:
         """
         The left radicand of the imaginary part of the radical

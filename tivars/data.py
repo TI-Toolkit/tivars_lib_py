@@ -72,6 +72,23 @@ class Bytes(Converter):
         return value
 
 
+class SizedBytes(Bytes):
+    _T = bytes
+
+    @classmethod
+    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+        """
+        Converts `bytes` -> `bytes` and sets the instance's length field
+
+        :param value: The value to convert
+        :param instance: The instance which contains the data section
+        :return: The bytes in `value`, unchanged
+        """
+
+        instance.length = len(value)
+        return value
+
+
 class Boolean(Converter):
     """
     Converter for data sections best interpreted as boolean flags
@@ -358,7 +375,7 @@ class View(Section):
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
-    def __init__(self, target: Section, converter: type[Converter] = None, indices: slice = slice(None)):
+    def __init__(self, target: Section, converter: type[Converter], indices: slice = slice(None)):
         """
         Define a new data view given a data section to watch, a type converter, and the portion of the section to view
 
@@ -473,4 +490,4 @@ class Loader:
 
 
 __all__ = ["Section", "View", "Dock", "Loader",
-           "Converter", "Bytes", "Boolean", "Integer", "String", "Bits"]
+           "Converter", "Bytes", "SizedBytes", "Boolean", "Integer", "String", "Bits"]

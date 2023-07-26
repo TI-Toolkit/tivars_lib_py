@@ -65,10 +65,10 @@ class TokenizedEntry(SizedEntry):
         """
 
         def has_bytes_in(prefix: bytes, start: int, end: int):
-            return any(prefix + bytes([byte]) in self.raw.data for byte in range(start, end + 1))
+            return any(prefix + bytes([byte]) in self.data for byte in range(start, end + 1))
 
         version = 0x00
-        match self.raw.data:
+        match self.data:
             case _TI_84PCE if has_bytes_in(b'\xEF', 0x9E, 0xA6):
                 version = 0x0C
 
@@ -96,7 +96,7 @@ class TokenizedEntry(SizedEntry):
             case _TI_83P if has_bytes_in(b'\xBB', 0x68, 0xCE):
                 version = 0x01
 
-        if any(token in self.raw.data for token in self.clock_tokens):
+        if any(token in self.data for token in self.clock_tokens):
             version += 0x20
 
         return version
@@ -133,18 +133,13 @@ class TokenizedEntry(SizedEntry):
             warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
                  BytesWarning)
 
-    def load_data_section(self, data: BytesIO):
-        data_length = int.from_bytes(length_bytes := data.read(2), 'little')
-        self.raw.data = bytearray(length_bytes + data.read(data_length))
-
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
-        self.raw.data[2:] = self.encode(string, model=model)
-        self.length = len(self.raw.data[2:])
+        self.data = self.encode(string, model=model)
         self.version = self.derive_version()
 
     def string(self) -> str:
-        return self.decode(self.data[2:])
+        return self.decode(self.data)
 
 
 class EquationName(TokenizedString):

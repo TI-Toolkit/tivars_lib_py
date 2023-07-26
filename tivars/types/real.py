@@ -91,10 +91,10 @@ class RealEntry(TIEntry):
         return negated
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Bits[0:6])[0:1]
+    @View(calc_data, Bits[0:6])[0:1]
     def subtype_id(self) -> bytes:
         """
         The subtype ID of the number
@@ -102,13 +102,13 @@ class RealEntry(TIEntry):
         Differentiates the exact radical and fraction formats.
         """
 
-    @View(data, Bits[6:7])[0:1]
+    @View(calc_data, Bits[6:7])[0:1]
     def graph_bit(self) -> int:
         """
         Whether the entry is used during graphing
         """
 
-    @View(data, Bits[7:8])[0:1]
+    @View(calc_data, Bits[7:8])[0:1]
     def sign_bit(self) -> int:
         """
         The sign bit for the number
@@ -217,10 +217,10 @@ class TIReal(RealEntry, register=True):
     _type_id = 0x00
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[1:2]
+    @View(calc_data, Integer)[1:2]
     def exponent(self) -> int:
         """
         The exponent of the real number
@@ -228,7 +228,7 @@ class TIReal(RealEntry, register=True):
         The exponent has a bias of 0x80.
         """
 
-    @View(data, BCD)[2:9]
+    @View(calc_data, BCD)[2:9]
     def mantissa(self) -> int:
         """
         The mantissa of the real number
@@ -370,10 +370,10 @@ class TIRealRadical(RealEntry, register=True):
     _type_id = 0x1C
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Bits[0:4])[1:2]
+    @View(calc_data, Bits[0:4])[1:2]
     def sign_type(self) -> int:
         """
         The sign type of the real radical
@@ -382,31 +382,31 @@ class TIRealRadical(RealEntry, register=True):
         If the sign type is greater than one, the right scalar is negative.
         """
 
-    @View(data, LeftNibbleBCD)[1:3]
+    @View(calc_data, LeftNibbleBCD)[1:3]
     def denominator(self) -> int:
         """
         The denominator of the real radical
         """
 
-    @View(data, RightNibbleBCD)[3:5]
+    @View(calc_data, RightNibbleBCD)[3:5]
     def right_scalar(self) -> int:
         """
         The right scalar of the real radical
         """
 
-    @View(data, LeftNibbleBCD)[4:6]
+    @View(calc_data, LeftNibbleBCD)[4:6]
     def left_scalar(self) -> int:
         """
         The left scalar of the real radical
         """
 
-    @View(data, RightNibbleBCD)[6:8]
+    @View(calc_data, RightNibbleBCD)[6:8]
     def right_radicand(self) -> int:
         """
         The right radicand of the real radical
         """
 
-    @View(data, LeftNibbleBCD)[7:9]
+    @View(calc_data, LeftNibbleBCD)[7:9]
     def left_radicand(self) -> int:
         """
         The left radicand of the real radical

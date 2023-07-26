@@ -107,10 +107,10 @@ class ListEntry(TIEntry):
         """
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[0:2]
+    @View(calc_data, Integer)[0:2]
     def length(self, value) -> int:
         """
         The length of the list
@@ -124,6 +124,10 @@ class ListEntry(TIEntry):
 
         return value
 
+    @View(calc_data, Bytes)[2:]
+    def data(self) -> bytearray:
+        pass
+
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
@@ -133,10 +137,6 @@ class ListEntry(TIEntry):
                  f"(expected {self.data_length // self._E.min_data_length}, got {self.length}).",
                  BytesWarning)
 
-    def load_data_section(self, data: BytesIO):
-        data_length = int.from_bytes(length_bytes := data.read(2), 'little')
-        self.raw.data = bytearray(length_bytes + data.read(data_length))
-
     @Loader[list]
     def load_list(self, lst: list[_E]):
         """
@@ -145,7 +145,7 @@ class ListEntry(TIEntry):
         :param lst: The list to load
         """
 
-        self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.data for entry in lst))
+        self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.calc_data for entry in lst))
 
     def list(self) -> list[_E]:
         """
@@ -155,7 +155,7 @@ class ListEntry(TIEntry):
         return [self._E(for_flash=self.meta_length > TIEntry.base_meta_length,
                         name="A",
                         archived=self.archived,
-                        data=self.data[self._E.min_data_length * i + 2:][:self._E.min_data_length])
+                        data=self.calc_data[self._E.min_data_length * i + 2:][:self._E.min_data_length])
                 for i in range(self.length)]
 
     @Loader[str]

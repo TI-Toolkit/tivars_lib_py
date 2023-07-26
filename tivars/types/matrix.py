@@ -61,10 +61,10 @@ class TIMatrix(TIEntry, register=True):
                 yield entry
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[0:1]
+    @View(calc_data, Integer)[0:1]
     def width(self, value: int) -> int:
         """
         The number of columns in the matrix
@@ -83,7 +83,7 @@ class TIMatrix(TIEntry, register=True):
 
         return value
 
-    @View(data, Integer)[1:2]
+    @View(calc_data, Integer)[1:2]
     def height(self, value: int) -> int:
         """
         The number of rows in the matrix
@@ -101,6 +101,10 @@ class TIMatrix(TIEntry, register=True):
                  UserWarning)
 
         return value
+
+    @View(calc_data, Bytes)[2:]
+    def data(self) -> bytearray:
+        pass
 
     @property
     def size(self) -> int:
@@ -122,7 +126,7 @@ class TIMatrix(TIEntry, register=True):
     def load_data_section(self, data: BytesIO):
         width = int.from_bytes(width_byte := data.read(1), 'little')
         height = int.from_bytes(height_byte := data.read(1), 'little')
-        self.raw.data = bytearray(width_byte + height_byte + data.read(width * height))
+        self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height))
 
     @Loader[list]
     def load_matrix(self, matrix: list[list[RealEntry]]):
@@ -136,7 +140,7 @@ class TIMatrix(TIEntry, register=True):
             raise IndexError("matrix has uneven rows")
 
         self.load_bytes(bytes([len(matrix[0])]) + bytes([len(matrix)]) +
-                        b''.join(entry.data for row in matrix for entry in row))
+                        b''.join(entry.calc_data for row in matrix for entry in row))
 
     def matrix(self) -> list[list[RealEntry]]:
         """
@@ -151,7 +155,7 @@ class TIMatrix(TIEntry, register=True):
                 entry = RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length,
                                   name="A",
                                   archived=self.archived,
-                                  data=self.data[RealEntry.min_data_length * index + self.min_data_length:]
+                                  data=self.calc_data[RealEntry.min_data_length * index + self.min_data_length:]
                                   [:RealEntry.min_data_length])
 
                 row.append(entry)

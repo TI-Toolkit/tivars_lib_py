@@ -7,7 +7,7 @@ from warnings import warn
 from tivars.models import *
 from ..flags import *
 from ..data import *
-from ..var import TIEntry
+from ..var import TIEntry, SizedEntry
 from .real import *
 from .tokenized import TIEquation
 
@@ -115,13 +115,10 @@ class EquationFlags(Flags):
 
 
 class TIGraphedEquation(TIEquation):
-    class Raw(TIEntry.Raw):
-        __slots__ = "meta_length", "type_id", "name", "version", "archived", "flags", "style", "color", "data"
+    min_data_length = 3
 
-        def bytes(self) -> bytes:
-            return self.meta_length + self.data_length + \
-                self.type_id + self.name + self.version + self.archived + \
-                self.data_length + self.flags + self.data
+    class Raw(TIEntry.Raw):
+        __slots__ = "meta_length", "type_id", "name", "version", "archived", "style", "color", "calc_data"
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Y1",
@@ -148,11 +145,11 @@ class TIGraphedEquation(TIEquation):
                 equations = list(instance.equations)
                 equations[index] = value
 
-                data = instance.raw.data[:instance.offset]
+                data = instance.raw.calc_data[:instance.offset]
                 for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                     data += equations[i].style
 
-                data += b''.join(equation.raw.flags + equation.raw.data for equation in equations)
+                data += b''.join(equation.raw.calc_data for equation in equations)
 
                 if color := color_data(instance):
                     data += b'84C'
@@ -167,14 +164,6 @@ class TIGraphedEquation(TIEquation):
 
     def __iter__(self) -> Iterator:
         return iter(self.dict().items())
-
-    @Section(1, EquationFlags)
-    def flags(self) -> EquationFlags:
-        """
-        The flags for the GDB equation
-
-        The flags track whether the equation is selected, used for graphing, or is participating in a link transfer.
-        """
 
     @Section(1, GraphStyle)
     def style(self) -> bytes:
@@ -192,10 +181,32 @@ class TIGraphedEquation(TIEquation):
         This value is not intrinsically stored with the equation, but is bundled for convenience.
         """
 
+    @Section()
+    def calc_data(self) -> bytearray:
+        pass
+
+    @View(calc_data, EquationFlags)[0:1]
+    def flags(self) -> EquationFlags:
+        """
+        The flags for the GDB equation
+
+        The flags track whether the equation is selected, used for graphing, or is participating in a link transfer.
+        """
+
+    @View(calc_data, Integer)[1:3]
+    def length(self) -> int:
+        """
+        The length of this entry's user data section
+        """
+
+    @View(calc_data, SizedBytes)[3:]
+    def data(self) -> bytearray:
+        pass
+
     def load_data_section(self, data: io.BytesIO):
-        self.raw.flags = data.read(1)
+        flag_byte = data.read(1)
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
-        self.raw.data = bytearray(length_bytes + data.read(data_length))
+        self.raw.calc_data = bytearray(flag_byte + length_bytes + data.read(data_length))
 
     @Loader[dict]
     def load_dict(self, dct: dict):
@@ -245,14 +256,14 @@ class TIGraphedEquation(TIEquation):
         :param equation: The equation to load
         """
 
-        self.raw.data = equation.data
+        self.raw.calc_data[1:] = equation.calc_data
 
     def equation(self) -> TIEquation:
         """
         :return: The `TIEquation` component of this GDB equation
         """
 
-        return TIEquation(self.bytes()[:-self.data_length - 1] + self.bytes()[-self.data_length:])
+        return TIEquation(self.bytes()[:-self.data_length] + self.bytes()[-self.data_length + 1:])
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
@@ -262,14 +273,14 @@ class TIGraphedEquation(TIEquation):
 
 
 def color_data(gdb: 'TIMonoGDB') -> bytes:
-    data = io.BytesIO(gdb.data[gdb.offset + gdb.num_styles:])
+    data = io.BytesIO(gdb.calc_data[gdb.offset + gdb.num_styles:])
     for i in range(gdb.num_equations):
         TIGraphedEquation().load_data_section(data)
 
     return data.read()
 
 
-class TIMonoGDB(TIEntry, register=True):
+class TIMonoGDB(SizedEntry, register=True):
     """
     Base class for all GDB entries
 
@@ -339,16 +350,10 @@ class TIMonoGDB(TIEntry, register=True):
         return iter(self.dict().items())
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[0:2]
-    def length(self):
-        """
-        Two less than the length of the GDB
-        """
-
-    @View(data, Integer)[3:4]
+    @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
         The mode ID for the GDB
@@ -356,7 +361,7 @@ class TIMonoGDB(TIEntry, register=True):
         The ID is one of `0x10` (Function), `0x20` (Polar), `0x40` (Parametric), or `0x80` (Sequence).
         """
 
-    @View(data, GraphMode)[4:5]
+    @View(calc_data, GraphMode)[4:5]
     def mode_flags(self) -> GraphMode:
         """
         The flags for the mode settings
@@ -364,7 +369,7 @@ class TIMonoGDB(TIEntry, register=True):
         Dot/Connected, Simul/Sequential, GridOn/Line/Dot/Off, PolarGC/RectGC, CoordOn/Off, AxesOff/On, and LabelOn/Off
         """
 
-    @View(data, GraphMode)[6:7]
+    @View(calc_data, GraphMode)[6:7]
     def extended_mode_flags(self) -> GraphMode:
         """
         The flags for the extended mode settings
@@ -372,37 +377,37 @@ class TIMonoGDB(TIEntry, register=True):
         ExprOn/Off and sequence plot offsets for sequence mode
         """
 
-    @View(data, GraphRealEntry)[7:16]
+    @View(calc_data, GraphRealEntry)[7:16]
     def Xmin(self) -> GraphRealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[16:25]
+    @View(calc_data, GraphRealEntry)[16:25]
     def Xmax(self) -> GraphRealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[25:34]
+    @View(calc_data, GraphRealEntry)[25:34]
     def Xscl(self) -> GraphRealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(data, GraphRealEntry)[34:43]
+    @View(calc_data, GraphRealEntry)[34:43]
     def Ymin(self) -> GraphRealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[43:52]
+    @View(calc_data, GraphRealEntry)[43:52]
     def Ymax(self) -> GraphRealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[52:61]
+    @View(calc_data, GraphRealEntry)[52:61]
     def Yscl(self) -> GraphRealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
@@ -444,7 +449,7 @@ class TIMonoGDB(TIEntry, register=True):
         :return: This GDB's stored equations
         """
 
-        data = io.BytesIO(self.data[self.offset:])
+        data = io.BytesIO(self.calc_data[self.offset:])
         equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
         # Load styles
@@ -478,7 +483,7 @@ class TIMonoGDB(TIEntry, register=True):
         """
 
         self.clear()
-        self.raw.data[3] = {
+        self.raw.calc_data[3] = {
             'Function': 0x10,
             'Parametric': 0x40,
             'Polar': 0x20,
@@ -498,7 +503,7 @@ class TIMonoGDB(TIEntry, register=True):
         if "showExpr" in ext_settings:
             self.extended_mode_flags |= GraphMode.ExprOn if ext_settings["showExpr"] else GraphMode.ExprOff
 
-        if self.raw.data[3] != 0x80:
+        if self.raw.calc_data[3] != 0x80:
             if "seqMode" in ext_settings or "seqSettings" in dct:
                 warn(f"Sequence settings have been provided, but this GDB is for {mode.lower()} graphs.",
                      UserWarning)
@@ -537,7 +542,6 @@ class TIMonoGDB(TIEntry, register=True):
 
         self.coerce()
         self._load_dict(dct)
-        self.length = self.data_length - 2
 
     def _load_dict(self, dct: dict):
         pass
@@ -581,7 +585,6 @@ class TIMonoGDB(TIEntry, register=True):
     def coerce(self):
         if color_data(self):
             self.__class__ = TIGDB
-            self.set_length()
             self.coerce()
         else:
             match self.mode_id:
@@ -597,8 +600,6 @@ class TIMonoGDB(TIEntry, register=True):
                 case _:
                     warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                          BytesWarning)
-
-            self.set_length()
 
 
 class TIGDB(TIMonoGDB):
@@ -616,34 +617,34 @@ class TIGDB(TIMonoGDB):
         self.grid_color = GraphColor.MedGray
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, GraphColor)[-5:-4]
+    @View(calc_data, GraphColor)[-5:-4]
     def grid_color(self) -> bytes:
         """
         The color of the grid
         """
 
-    @View(data, GraphColor)[-4:-3]
+    @View(calc_data, GraphColor)[-4:-3]
     def axes_color(self) -> bytes:
         """
         The color of the axes
         """
 
-    @View(data, GlobalLineStyle)[-3:-2]
+    @View(calc_data, GlobalLineStyle)[-3:-2]
     def global_line_style(self) -> bytes:
         """
         The line style for all plotted equations
         """
 
-    @View(data, BorderColor)[-2:-1]
+    @View(calc_data, BorderColor)[-2:-1]
     def border_color(self) -> bytes:
         """
         The color of the graph border
         """
 
-    @View(data, GraphMode)[-1:]
+    @View(calc_data, GraphMode)[-1:]
     def color_mode_flags(self) -> GraphMode:
         """
         The flags for extended color mode settings
@@ -702,8 +703,6 @@ class TIGDB(TIMonoGDB):
                 warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                      BytesWarning)
 
-        self.set_length()
-
 
 class TIMonoFuncGDB(TIMonoGDB):
     mode_byte = 0x10
@@ -717,16 +716,16 @@ class TIMonoFuncGDB(TIMonoGDB):
     equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[3:4]
+    @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
         The mode ID for the GDB - `0x10`
         """
 
-    @View(data, GraphRealEntry)[61:70]
+    @View(calc_data, GraphRealEntry)[61:70]
     def Xres(self, value: GraphRealEntry) -> GraphRealEntry:
         """
         Xres: The pixel separation of points in a function plot
@@ -740,61 +739,61 @@ class TIMonoFuncGDB(TIMonoGDB):
 
         return value
 
-    @View(data, TIGraphedEquation[1])
+    @View(calc_data, TIGraphedEquation[1])
     def Y1(self) -> TIGraphedEquation:
         """
         Y1: The 1st equation in function mode
         """
 
-    @View(data, TIGraphedEquation[2])
+    @View(calc_data, TIGraphedEquation[2])
     def Y2(self) -> TIGraphedEquation:
         """
         Y2: The 2nd equation in function mode
         """
 
-    @View(data, TIGraphedEquation[3])
+    @View(calc_data, TIGraphedEquation[3])
     def Y3(self) -> TIGraphedEquation:
         """
         Y3: The 3rd equation in function mode
         """
 
-    @View(data, TIGraphedEquation[4])
+    @View(calc_data, TIGraphedEquation[4])
     def Y4(self) -> TIGraphedEquation:
         """
         Y4: The 4th equation in function mode
         """
 
-    @View(data, TIGraphedEquation[5])
+    @View(calc_data, TIGraphedEquation[5])
     def Y5(self) -> TIGraphedEquation:
         """
         Y5: The 5th equation in function mode
         """
 
-    @View(data, TIGraphedEquation[6])
+    @View(calc_data, TIGraphedEquation[6])
     def Y6(self) -> TIGraphedEquation:
         """
         Y6: The 6th equation in function mode
         """
 
-    @View(data, TIGraphedEquation[7])
+    @View(calc_data, TIGraphedEquation[7])
     def Y7(self) -> TIGraphedEquation:
         """
         Y7: The 7th equation in function mode
         """
 
-    @View(data, TIGraphedEquation[8])
+    @View(calc_data, TIGraphedEquation[8])
     def Y8(self) -> TIGraphedEquation:
         """
         Y8: The 8th equation in function mode
         """
 
-    @View(data, TIGraphedEquation[9])
+    @View(calc_data, TIGraphedEquation[9])
     def Y9(self) -> TIGraphedEquation:
         """
         Y9: The 9th equation in function mode
         """
 
-    @View(data, TIGraphedEquation[10])
+    @View(calc_data, TIGraphedEquation[10])
     def Y0(self) -> TIGraphedEquation:
         """
         Y0: The 10th equation in function mode
@@ -825,10 +824,10 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     min_data_length = 128
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, String)[-18:-15]
+    @View(calc_data, String)[-18:-15]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented - `84C`
@@ -861,100 +860,100 @@ class TIMonoParamGDB(TIMonoGDB):
     equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[3:4]
+    @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
         The mode ID for the GDB - `0x40`
         """
 
-    @View(data, GraphRealEntry)[61:70]
+    @View(calc_data, GraphRealEntry)[61:70]
     def Tmin(self) -> GraphRealEntry:
         """
         Tmin: The initial time
         """
 
-    @View(data, GraphRealEntry)[70:79]
+    @View(calc_data, GraphRealEntry)[70:79]
     def Tmax(self) -> GraphRealEntry:
         """
         Tmax: The final time
         """
 
-    @View(data, GraphRealEntry)[79:88]
+    @View(calc_data, GraphRealEntry)[79:88]
     def Tstep(self) -> GraphRealEntry:
         """
         Tstep: The time increment
         """
 
-    @View(data, TIGraphedEquation[1])
+    @View(calc_data, TIGraphedEquation[1])
     def X1T(self) -> TIGraphedEquation:
         """
         X1T: The 1st X-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[2])
+    @View(calc_data, TIGraphedEquation[2])
     def Y1T(self) -> TIGraphedEquation:
         """
         Y1T: The 1st Y-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[3])
+    @View(calc_data, TIGraphedEquation[3])
     def X2T(self) -> TIGraphedEquation:
         """
         X2T: The 2nd X-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[4])
+    @View(calc_data, TIGraphedEquation[4])
     def Y2T(self) -> TIGraphedEquation:
         """
         Y2T: The 2nd Y-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[5])
+    @View(calc_data, TIGraphedEquation[5])
     def X3T(self) -> TIGraphedEquation:
         """
         X3T: The 3rd X-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[6])
+    @View(calc_data, TIGraphedEquation[6])
     def Y3T(self) -> TIGraphedEquation:
         """
         Y3T: The 3rd Y-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[7])
+    @View(calc_data, TIGraphedEquation[7])
     def X4T(self) -> TIGraphedEquation:
         """
         X4T: The 4th X-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[8])
+    @View(calc_data, TIGraphedEquation[8])
     def Y4T(self) -> TIGraphedEquation:
         """
         Y4T: The 4th Y-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[9])
+    @View(calc_data, TIGraphedEquation[9])
     def X5T(self) -> TIGraphedEquation:
         """
         X5T: The 5th X-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[10])
+    @View(calc_data, TIGraphedEquation[10])
     def Y5T(self) -> TIGraphedEquation:
         """
         Y5T: The 5th Y-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[11])
+    @View(calc_data, TIGraphedEquation[11])
     def X6T(self) -> TIGraphedEquation:
         """
         X6T: The 6th X-component in parametric mode
         """
 
-    @View(data, TIGraphedEquation[12])
+    @View(calc_data, TIGraphedEquation[12])
     def Y6T(self) -> TIGraphedEquation:
         """
         Y6T: The 6th Y-component in parametric mode
@@ -997,10 +996,10 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     min_data_length = 144
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, String)[-14:-11]
+    @View(calc_data, String)[-14:-11]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented -`84C`
@@ -1033,64 +1032,64 @@ class TIMonoPolarGDB(TIMonoGDB):
     equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[3:4]
+    @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
         The mode ID for the GDB - `0x20`
         """
 
-    @View(data, GraphRealEntry)[61:70]
+    @View(calc_data, GraphRealEntry)[61:70]
     def Thetamin(self) -> GraphRealEntry:
         """
         θmin: The initial angle
         """
 
-    @View(data, GraphRealEntry)[70:79]
+    @View(calc_data, GraphRealEntry)[70:79]
     def Thetamax(self) -> GraphRealEntry:
         """
         θmax: The final angle
         """
 
-    @View(data, GraphRealEntry)[79:88]
+    @View(calc_data, GraphRealEntry)[79:88]
     def Thetastep(self) -> GraphRealEntry:
         """
         θstep: The angle increment
         """
 
-    @View(data, TIGraphedEquation[1])
+    @View(calc_data, TIGraphedEquation[1])
     def r1(self) -> TIGraphedEquation:
         """
         r1: The 1st equation in polar mode
         """
 
-    @View(data, TIGraphedEquation[2])
+    @View(calc_data, TIGraphedEquation[2])
     def r2(self) -> TIGraphedEquation:
         """
         r1: The 2nd equation in polar mode
         """
 
-    @View(data, TIGraphedEquation[3])
+    @View(calc_data, TIGraphedEquation[3])
     def r3(self) -> TIGraphedEquation:
         """
         r3: The 3rd equation in polar mode
         """
 
-    @View(data, TIGraphedEquation[4])
+    @View(calc_data, TIGraphedEquation[4])
     def r4(self) -> TIGraphedEquation:
         """
         r4: The 4th equation in polar mode
         """
 
-    @View(data, TIGraphedEquation[5])
+    @View(calc_data, TIGraphedEquation[5])
     def r5(self) -> TIGraphedEquation:
         """
         r5: The 5th equation in polar mode
         """
 
-    @View(data, TIGraphedEquation[6])
+    @View(calc_data, TIGraphedEquation[6])
     def r6(self) -> TIGraphedEquation:
         """
         r6: The 6th equation in polar mode
@@ -1123,10 +1122,10 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     min_data_length = 126
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, String)[-14:-11]
+    @View(calc_data, String)[-14:-11]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented - `84C`
@@ -1159,22 +1158,22 @@ class TIMonoSeqGDB(TIMonoGDB):
     equation_names = ["u", "v", "w"]
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, Integer)[3:4]
+    @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
         The mode ID for the GDB - `0x80`
         """
 
-    @View(data, GraphMode)[5:6]
+    @View(calc_data, GraphMode)[5:6]
     def sequence_flags(self) -> SeqMode:
         """
         The flags for the sequence mode settings
         """
 
-    @View(data, GraphRealEntry)[61:70]
+    @View(calc_data, GraphRealEntry)[61:70]
     def PlotStart(self, value) -> GraphRealEntry:
         """
         PlotStart: The initial value of 𝑛 for sequential plots
@@ -1188,7 +1187,7 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, GraphRealEntry)[70:79]
+    @View(calc_data, GraphRealEntry)[70:79]
     def nMax(self, value) -> GraphRealEntry:
         """
         𝑛Max: The final value of 𝑛
@@ -1202,19 +1201,19 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, GraphRealEntry)[79:88]
+    @View(calc_data, GraphRealEntry)[79:88]
     def unMin(self) -> GraphRealEntry:
         """
         u(𝑛Min): The initial value of u at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[88:97]
+    @View(calc_data, GraphRealEntry)[88:97]
     def vnMin(self) -> GraphRealEntry:
         """
         v(𝑛Min): The initial value of v at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[97:106]
+    @View(calc_data, GraphRealEntry)[97:106]
     def nMin(self, value) -> GraphRealEntry:
         """
         nMin: the initial value of 𝑛
@@ -1228,25 +1227,25 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, GraphRealEntry)[106:115]
+    @View(calc_data, GraphRealEntry)[106:115]
     def unMinp1(self) -> GraphRealEntry:
         """
         u(𝑛Min+1): The initial value of u at 𝑛Min + 1
         """
 
-    @View(data, GraphRealEntry)[115:124]
+    @View(calc_data, GraphRealEntry)[115:124]
     def vnMinp1(self) -> GraphRealEntry:
         """
         v(nMin+1): The initial value of v at 𝑛Min + 1
         """
 
-    @View(data, GraphRealEntry)[124:133]
+    @View(calc_data, GraphRealEntry)[124:133]
     def wnMin(self) -> GraphRealEntry:
         """
         w(𝑛Min): The initial value of w at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[133:142]
+    @View(calc_data, GraphRealEntry)[133:142]
     def PlotStep(self, value) -> GraphRealEntry:
         """
         PlotStep: The 𝑛 increment for sequential plots
@@ -1260,25 +1259,25 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(data, GraphRealEntry)[142:151]
+    @View(calc_data, GraphRealEntry)[142:151]
     def wnMinp1(self) -> GraphRealEntry:
         """
         w(𝑛Min+1): The initial value of w at 𝑛Min + 1
         """
 
-    @View(data, TIGraphedEquation[1])
+    @View(calc_data, TIGraphedEquation[1])
     def u(self) -> TIGraphedEquation:
         """
         u: The 1st equation in sequence mode
         """
 
-    @View(data, TIGraphedEquation[2])
+    @View(calc_data, TIGraphedEquation[2])
     def v(self) -> TIGraphedEquation:
         """
         v: The 2nd equation in sequence mode
         """
 
-    @View(data, TIGraphedEquation[3])
+    @View(calc_data, TIGraphedEquation[3])
     def w(self) -> TIGraphedEquation:
         """
         w: The 3rd equation in sequence mode
@@ -1360,10 +1359,10 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     min_data_length = 174
 
     @Section()
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, String)[-11:-8]
+    @View(calc_data, String)[-11:-8]
     def color_magic(self) -> str:
         """
         Magic to identify the GDB as color-oriented - `84C`

@@ -52,10 +52,10 @@ class VarTests(unittest.TestCase):
                          test_var.entries[0].raw.name + test_var.entries[0].raw.version +
                          test_var.entries[0].raw.archived)
 
-        self.assertEqual(test_var.entries[0].raw.data, bytearray(b'\x03\x00\xef\x001'))
+        self.assertEqual(test_var.entries[0].raw.calc_data, bytearray(b'\x03\x00\xef\x001'))
         self.assertEqual(test_var.entries[0].bytes(),
                          test_var.entries[0].raw.meta_length + test_var.entries[0].raw.meta +
-                         test_var.entries[0].raw.data_length + test_var.entries[0].raw.data)
+                         test_var.entries[0].raw.data_length + test_var.entries[0].raw.calc_data)
 
         self.assertEqual(test_var.checksum, b'M\x03')
 
@@ -129,13 +129,6 @@ class EntryTests(unittest.TestCase):
 
         test_program.open("tests/data/var/Program.8xp")
         self.assertEqual(bool(test_program), True)
-
-    def test_data_append(self):
-        test_program = TIProgram()
-        test_program.open("tests/data/var/Program.8xp")
-
-        test_program.append_data(b"\x11")
-        self.assertEqual(test_program.string(), "setDate(1)")
 
 
 class TokenizationTests(unittest.TestCase):

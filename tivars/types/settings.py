@@ -31,9 +31,9 @@ class SettingsEntry(TIEntry):
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.data[:len(self.leading_bytes)] != self.leading_bytes:
+        if self.calc_data[:len(self.leading_bytes)] != self.leading_bytes:
             warn(f"The entry has unexpected leading bytes "
-                 f"(expected {self.leading_bytes}, got {self.data[:len(self.leading_bytes)]}).",
+                 f"(expected {self.leading_bytes}, got {self.calc_data[:len(self.leading_bytes)]}).",
                  BytesWarning)
 
     @Loader[dict]
@@ -107,82 +107,82 @@ class TIWindowSettings(SettingsEntry, register=True):
         pass
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, GraphRealEntry)[3:12]
+    @View(calc_data, GraphRealEntry)[3:12]
     def Xmin(self) -> GraphRealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[12:21]
+    @View(calc_data, GraphRealEntry)[12:21]
     def Xmax(self) -> GraphRealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[21:30]
+    @View(calc_data, GraphRealEntry)[21:30]
     def Xscl(self) -> GraphRealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(data, GraphRealEntry)[30:39]
+    @View(calc_data, GraphRealEntry)[30:39]
     def Ymin(self) -> GraphRealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[39:48]
+    @View(calc_data, GraphRealEntry)[39:48]
     def Ymax(self) -> GraphRealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[48:57]
+    @View(calc_data, GraphRealEntry)[48:57]
     def Yscl(self) -> GraphRealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
 
-    @View(data, GraphRealEntry)[57:66]
+    @View(calc_data, GraphRealEntry)[57:66]
     def Thetamin(self) -> GraphRealEntry:
         """
         Θmin: the initial angle for polar plots
         """
 
-    @View(data, GraphRealEntry)[66:75]
+    @View(calc_data, GraphRealEntry)[66:75]
     def Thetamax(self) -> GraphRealEntry:
         """
         Θmax: the final angle for polar plots
         """
 
-    @View(data, GraphRealEntry)[75:84]
+    @View(calc_data, GraphRealEntry)[75:84]
     def Thetastep(self) -> GraphRealEntry:
         """
         Θstep: the angle increment for polar plots
         """
 
-    @View(data, GraphRealEntry)[84:93]
+    @View(calc_data, GraphRealEntry)[84:93]
     def Tmin(self) -> GraphRealEntry:
         """
         Tmin: the initial time for parametric plots
         """
 
-    @View(data, GraphRealEntry)[93:102]
+    @View(calc_data, GraphRealEntry)[93:102]
     def Tmax(self) -> GraphRealEntry:
         """
         Tmax: the final time for parametric plots
         """
 
-    @View(data, GraphRealEntry)[102:111]
+    @View(calc_data, GraphRealEntry)[102:111]
     def Tstep(self) -> GraphRealEntry:
         """
         Tstep: the time increment for parametric plots
         """
 
-    @View(data, GraphRealEntry)[111:120]
+    @View(calc_data, GraphRealEntry)[111:120]
     def PlotStart(self, value) -> GraphRealEntry:
         """
         PlotStart: the initial value of 𝑛 for sequential plots
@@ -196,7 +196,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[120:129]
+    @View(calc_data, GraphRealEntry)[120:129]
     def nMax(self, value) -> GraphRealEntry:
         """
         𝑛Max: the final value of 𝑛 for sequential equations and plots
@@ -210,19 +210,19 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[129:138]
+    @View(calc_data, GraphRealEntry)[129:138]
     def unMin0(self) -> GraphRealEntry:
         """
         u(𝑛Min): the initial value of u at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[138:147]
+    @View(calc_data, GraphRealEntry)[138:147]
     def vnMin0(self) -> GraphRealEntry:
         """
         v(𝑛Min): the initial value of v at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[147:156]
+    @View(calc_data, GraphRealEntry)[147:156]
     def nMin(self, value) -> GraphRealEntry:
         """
         𝑛Min: the initial value of 𝑛 for sequential plots
@@ -236,25 +236,25 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[156:165]
+    @View(calc_data, GraphRealEntry)[156:165]
     def unMin1(self) -> GraphRealEntry:
         """
         u(𝑛Min+1): the initial value of u at 𝑛Min + 1
         """
 
-    @View(data, GraphRealEntry)[165:174]
+    @View(calc_data, GraphRealEntry)[165:174]
     def vnMin1(self) -> GraphRealEntry:
         """
         v(𝑛Min+1): the initial value of v at 𝑛Min + 1
         """
 
-    @View(data, GraphRealEntry)[174:183]
+    @View(calc_data, GraphRealEntry)[174:183]
     def wnMin0(self) -> GraphRealEntry:
         """
         w(𝑛Min): the initial value of w at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[183:192]
+    @View(calc_data, GraphRealEntry)[183:192]
     def PlotStep(self, value) -> GraphRealEntry:
         """
         PlotStep: the 𝑛 increment for sequential plots
@@ -268,7 +268,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[192:201]
+    @View(calc_data, GraphRealEntry)[192:201]
     def Xres(self, value) -> GraphRealEntry:
         """
         Xres: the pixel separation of points in a function plot
@@ -282,7 +282,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[201:210]
+    @View(calc_data, GraphRealEntry)[201:210]
     def wnMin1(self) -> GraphRealEntry:
         """
         w(𝑛Min+1): the initial value of w at 𝑛Min + 1
@@ -361,82 +361,82 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, GraphRealEntry)[2:11]
+    @View(calc_data, GraphRealEntry)[2:11]
     def Xmin(self) -> GraphRealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[11:20]
+    @View(calc_data, GraphRealEntry)[11:20]
     def Xmax(self) -> GraphRealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[20:29]
+    @View(calc_data, GraphRealEntry)[20:29]
     def Xscl(self) -> GraphRealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(data, GraphRealEntry)[29:38]
+    @View(calc_data, GraphRealEntry)[29:38]
     def Ymin(self) -> GraphRealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[38:47]
+    @View(calc_data, GraphRealEntry)[38:47]
     def Ymax(self) -> GraphRealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(data, GraphRealEntry)[47:56]
+    @View(calc_data, GraphRealEntry)[47:56]
     def Yscl(self) -> GraphRealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
 
-    @View(data, GraphRealEntry)[56:65]
+    @View(calc_data, GraphRealEntry)[56:65]
     def Thetamin(self) -> GraphRealEntry:
         """
         Θmin: the initial angle for polar plots
         """
 
-    @View(data, GraphRealEntry)[65:74]
+    @View(calc_data, GraphRealEntry)[65:74]
     def Thetamax(self) -> GraphRealEntry:
         """
         Θmax: the final angle for polar plots
         """
 
-    @View(data, GraphRealEntry)[74:83]
+    @View(calc_data, GraphRealEntry)[74:83]
     def Thetastep(self) -> GraphRealEntry:
         """
         Θstep: the angle increment for polar plots
         """
 
-    @View(data, GraphRealEntry)[83:92]
+    @View(calc_data, GraphRealEntry)[83:92]
     def Tmin(self) -> GraphRealEntry:
         """
         Tmin: the initial time for parametric plots
         """
 
-    @View(data, GraphRealEntry)[92:101]
+    @View(calc_data, GraphRealEntry)[92:101]
     def Tmax(self) -> GraphRealEntry:
         """
         Tmax: the final time for parametric plots
         """
 
-    @View(data, GraphRealEntry)[101:110]
+    @View(calc_data, GraphRealEntry)[101:110]
     def Tstep(self) -> GraphRealEntry:
         """
         Tstep: the time increment for parametric plots
         """
 
-    @View(data, GraphRealEntry)[110:119]
+    @View(calc_data, GraphRealEntry)[110:119]
     def PlotStart(self, value) -> GraphRealEntry:
         """
         PlotStart: the initial value of 𝑛 for sequential plots
@@ -450,7 +450,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[119:128]
+    @View(calc_data, GraphRealEntry)[119:128]
     def nMax(self, value) -> GraphRealEntry:
         """
         𝑛Max: the final value of 𝑛 for sequential equations and plots
@@ -464,19 +464,19 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[128:137]
+    @View(calc_data, GraphRealEntry)[128:137]
     def unMin0(self) -> GraphRealEntry:
         """
         u(𝑛Min): the initial value of u at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[137:146]
+    @View(calc_data, GraphRealEntry)[137:146]
     def vnMin0(self) -> GraphRealEntry:
         """
         v(𝑛Min): the initial value of v at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[146:155]
+    @View(calc_data, GraphRealEntry)[146:155]
     def nMin(self, value) -> GraphRealEntry:
         """
         𝑛Min: the initial value of 𝑛 for sequential equations
@@ -490,25 +490,25 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[155:164]
+    @View(calc_data, GraphRealEntry)[155:164]
     def unMin1(self) -> GraphRealEntry:
         """
         u(𝑛Min + 1): the initial value of u at 𝑛Min + 1
         """
 
-    @View(data, GraphRealEntry)[164:173]
+    @View(calc_data, GraphRealEntry)[164:173]
     def vnMin1(self) -> GraphRealEntry:
         """
         v(𝑛Min + 1): the initial value of v at 𝑛Min + 1
         """
 
-    @View(data, GraphRealEntry)[173:182]
+    @View(calc_data, GraphRealEntry)[173:182]
     def wnMin0(self) -> GraphRealEntry:
         """
         w(𝑛Min): the initial value of w at 𝑛Min
         """
 
-    @View(data, GraphRealEntry)[182:191]
+    @View(calc_data, GraphRealEntry)[182:191]
     def PlotStep(self, value) -> GraphRealEntry:
         """
         PlotStep: the 𝑛 increment for sequential plots
@@ -522,7 +522,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[191:200]
+    @View(calc_data, GraphRealEntry)[191:200]
     def Xres(self, value) -> GraphRealEntry:
         """
         Xres: the pixel separation of points in a function plot
@@ -536,7 +536,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[200:209]
+    @View(calc_data, GraphRealEntry)[200:209]
     def wnMin1(self) -> GraphRealEntry:
         """
         w(𝑛Min + 1): the initial value of w at 𝑛Min + 1
@@ -615,10 +615,10 @@ class TITableSettings(SettingsEntry, register=True):
         """
 
     @Section(min_data_length)
-    def data(self) -> bytearray:
+    def calc_data(self) -> bytearray:
         pass
 
-    @View(data, GraphRealEntry)[2:11]
+    @View(calc_data, GraphRealEntry)[2:11]
     def TblMin(self, value) -> GraphRealEntry:
         """
         TblMin: the initial value for the table
@@ -632,7 +632,7 @@ class TITableSettings(SettingsEntry, register=True):
 
         return value
 
-    @View(data, GraphRealEntry)[11:20]
+    @View(calc_data, GraphRealEntry)[11:20]
     def DeltaTbl(self, value) -> GraphRealEntry:
         """
         ΔTbl: the increment for the table
