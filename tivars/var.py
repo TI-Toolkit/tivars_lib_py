@@ -324,7 +324,7 @@ class TIEntry(Dock, Converter):
 
         self.clear()
         if data:
-            self.calc_data[:len(data)] = bytearray(data)
+            self.data = bytearray(data)
             self.coerce()
 
         elif init is not None:
