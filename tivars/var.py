@@ -588,7 +588,7 @@ class TIEntry(Dock, Converter):
                 self.raw.archived = data.read(1)
 
                 if self.versions and self.raw.version not in self.versions:
-                    warn(f"The version ({self.raw.version.hex()}) is not recognized.",
+                    warn(f"The version (0x{self.version:02x}) is not recognized.",
                          BytesWarning)
 
                 if self.raw.archived not in b'\x00\x80':
@@ -1007,7 +1007,7 @@ class SizedEntry(TIEntry):
         super().load_bytes(data)
 
         if self.length != len(self.data) - 2:
-            warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data[2:])}).",
+            warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data) - 2}).",
                  BytesWarning)
 
 
