@@ -1,3 +1,4 @@
+from .appvar import *
 from .complex import *
 from .gdb import *
 from .list import *
@@ -22,6 +23,7 @@ __all__ = ["TIEntry",
            "TIComplex", "TIComplexList",
            "TIUndefinedReal",
            "TIWindowSettings", "TIRecallWindow", "TITableSettings",
+           "TIAppVar",
            "TIRealFraction",
            "TIImage",
            "TIComplexFraction",
