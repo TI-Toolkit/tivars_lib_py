@@ -35,7 +35,7 @@ class TIHeader:
             return self.magic + self.extra + self.product_id + self.comment
 
     def __init__(self, model: TIModel = None, *,
-                 magic: str = None, extra: bytes = b'\x1a\x0a', product_id: bytes = b'\x00',
+                 magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
                  comment: str = "Created with tivars_lib_py v0.6.1"):
         """
         Create an empty header which targets a specified model
@@ -53,7 +53,7 @@ class TIHeader:
 
         self.magic = magic or model.magic
         self.extra = extra
-        self.product_id = product_id or model.product_id
+        self.product_id = product_id if product_id is not None else model.product_id
         self.comment = comment
 
     def __bytes__(self) -> bytes:
@@ -97,8 +97,8 @@ class TIHeader:
         These bytes are set by different export tools and can often be "incorrect" without causing issues.
         """
 
-    @Section(1)
-    def product_id(self) -> bytes:
+    @Section(1, Bits[:])
+    def product_id(self) -> int:
         """
         The product ID for the var
 
@@ -233,6 +233,11 @@ class TIEntry(Dock, Converter):
     If an entry's data is fixed in size, this value is necessarily the length of the data
     """
 
+    leading_bytes = b''
+    """
+    Bytes that always occur at the start of this entry's data
+    """
+
     _type_id = None
     _type_ids = {}
 
@@ -303,9 +308,9 @@ class TIEntry(Dock, Converter):
         self.raw = self.Raw()
 
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
-        self.type_id = self._type_id if self._type_id else b'\xFF'
+        self.type_id = self._type_id if self._type_id is not None else 0xFF
         self.name = name
-        self.version = version or b'\x00'
+        self.version = version or 0
         self.archived = archived or False
 
         if not for_flash:
@@ -380,7 +385,7 @@ class TIEntry(Dock, Converter):
 
         return len(self.data)
 
-    @Section(1, Bytes)
+    @Section(1, Bits[:])
     def type_id(self) -> bytes:
         """
         The type ID of the entry
@@ -396,7 +401,7 @@ class TIEntry(Dock, Converter):
         Interpretation as text depends on the entry type; see individual types for details.
         """
 
-    @Section(1, Bytes)
+    @Section(1, Bits[:])
     def version(self) -> bytes:
         """
         The version number of the entry
@@ -466,7 +471,7 @@ class TIEntry(Dock, Converter):
         return self.raw.data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @classmethod
-    def get_type(cls, type_id: bytes) -> Type['TIEntry']:
+    def get_type(cls, type_id: int) -> Type['TIEntry']:
         """
         Gets the subclass corresponding to a type ID if one is registered
 
@@ -516,7 +521,7 @@ class TIEntry(Dock, Converter):
         Clears this entry's data
         """
 
-        self.raw.data = bytearray(0)
+        self.raw.data = bytearray(self.leading_bytes)
         self.set_length()
 
     def set_length(self, length: int = None):
@@ -563,8 +568,8 @@ class TIEntry(Dock, Converter):
         # Read and check type ID
         self.raw.type_id = data.read(1)
 
-        if self._type_id is not None and self.raw.type_id != self._type_id:
-            if subclass := TIEntry.get_type(self.raw.type_id):
+        if self._type_id is not None and self.type_id != self._type_id:
+            if subclass := TIEntry.get_type(self.type_id):
                 warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
                      BytesWarning)
 
@@ -729,13 +734,13 @@ class TIEntry(Dock, Converter):
         """
 
         if self._type_id is None:
-            if subclass := self.get_type(self.raw.type_id):
+            if subclass := self.get_type(self.type_id):
                 self.__class__ = subclass
                 self.set_length()
                 self.coerce()
 
-            else:
-                warn(f"Type ID 0x{self.raw.type_id.hex()} is not recognized; entry will not be coerced to a subclass.",
+            elif self.type_id != 0xFF:
+                warn(f"Type ID 0x{self.type_id:02x} is not recognized; entry will not be coerced to a subclass.",
                      BytesWarning)
 
 
@@ -894,6 +899,7 @@ class TIVar:
         entry_length = int.from_bytes(data.read(2), 'little')
 
         # Read entries
+        self.clear()
         while entry_length:
             self.add_entry()
 
@@ -971,13 +977,11 @@ class SizedEntry(TIEntry):
     This length is two less than the length stored in the `data_length` section(s).
     """
 
+    min_data_length = 2
+
     @Section()
     def data(self) -> bytearray:
-        """
-        The data section of the entry
-
-        The first two bytes are the remaining length of the data section.
-        """
+        pass
 
     @View(data, Integer)[0:2]
     def length(self) -> int:
@@ -985,10 +989,24 @@ class SizedEntry(TIEntry):
         The length of the data section following this portion
         """
 
+    def append_data(self, data: ByteString):
+        """
+        Adds data onto the end of this entry's data section
+
+        :param data: The data to add
+        """
+
+        self.data += bytearray(data)
+        self.set_length()
+
+    def set_length(self, length: int = None):
+        super().set_length(length)
+        self.length = len(self.raw.data) - 2
+
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.length != len(self.data[2:]):
+        if self.length != len(self.data) - 2:
             warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data[2:])}).",
                  BytesWarning)
 

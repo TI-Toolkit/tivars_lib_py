@@ -295,7 +295,6 @@ class TIMonoGDB(TIEntry, register=True):
         TI_82AEP: "8xd"
     }
 
-    _type_id = b'\x08'
     mode_byte = 0x00
     """
     The byte which identifies the GDB type
@@ -326,6 +325,8 @@ class TIMonoGDB(TIEntry, register=True):
     """
     The names of the equations in this GDB type
     """
+
+    _type_id = 0x08
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "GDB1",

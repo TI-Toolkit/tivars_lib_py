@@ -161,7 +161,7 @@ You can read and write to individual sections of an entry or header as their "ca
 my_header.comment = "This is my (even cooler) comment!"
 my_program.archived = True
 
-assert my_program.type_id == b'\x05'
+assert my_program.type_id == 0x05
 ```
 
 Data sections can also be other entry types:

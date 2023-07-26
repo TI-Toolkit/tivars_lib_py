@@ -61,7 +61,7 @@ class RealEntry(TIEntry):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         if self._type_id is not None:
-            self.subtype_id = self._type_id[0]
+            self.subtype_id = self._type_id
 
     def __float__(self) -> float:
         return self.float()
@@ -180,7 +180,7 @@ class RealEntry(TIEntry):
         return float(self.decimal())
 
     def coerce(self):
-        self.raw.type_id = bytes([self.subtype_id])
+        self.type_id = self.subtype_id
 
         super().coerce()
 
@@ -214,7 +214,7 @@ class TIReal(RealEntry, register=True):
 
     min_data_length = 9
 
-    _type_id = b'\x00'
+    _type_id = 0x00
 
     @Section(min_data_length)
     def data(self) -> bytearray:
@@ -306,7 +306,7 @@ class TIUndefinedReal(TIReal, register=True):
 
     _T = 'TIUndefinedReal'
 
-    _type_id = b'\x0E'
+    _type_id = 0x0E
 
 
 class TIRealFraction(TIReal, register=True):
@@ -323,7 +323,7 @@ class TIRealFraction(TIReal, register=True):
 
     is_exact = True
 
-    _type_id = b'\x18'
+    _type_id = 0x18
 
     @Loader[frac.Fraction]
     def load_fraction(self, fraction: frac.Fraction):
@@ -367,7 +367,7 @@ class TIRealRadical(RealEntry, register=True):
 
     is_exact = True
 
-    _type_id = b'\x1C'
+    _type_id = 0x1C
 
     @Section(min_data_length)
     def data(self) -> bytearray:
@@ -525,7 +525,7 @@ class TIRealPi(TIReal, register=True):
 
     is_exact = True
 
-    _type_id = b'\x20'
+    _type_id = 0x20
 
     def string(self) -> str:
         return super().string() + "π"
@@ -542,7 +542,7 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
 
     flash_only = True
 
-    _type_id = b'\x21'
+    _type_id = 0x21
 
     def string(self) -> str:
         return super().string().replace(" /", "π /")

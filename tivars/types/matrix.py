@@ -34,7 +34,7 @@ class TIMatrix(TIEntry, register=True):
 
     min_data_length = 2
 
-    _type_id = b'\x02'
+    _type_id = 0x02
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "[A]",

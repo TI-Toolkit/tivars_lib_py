@@ -13,12 +13,13 @@ class VarTests(unittest.TestCase):
 
         self.assertEqual(test_var.header.magic, "**TI83F*")
         self.assertEqual(test_var.header.extra, b'\x1A\x0A')
-        self.assertEqual(test_var.header.product_id, b'\x0A')
+        self.assertEqual(test_var.header.product_id, 0x0A)
         self.assertEqual(test_var.header.comment, "Created by TI Connect CE 5.1.0.68")
 
         self.assertEqual(test_var.entries[0].meta_length, TIEntry.flash_meta_length)
+        self.assertEqual(test_var.entries[0].type_id, 0x05)
         self.assertEqual(test_var.entries[0].name, "SETDATE")
-        self.assertEqual(test_var.entries[0].version, b'\x04')
+        self.assertEqual(test_var.entries[0].version, 0x04)
         self.assertEqual(test_var.entries[0].archived, False)
 
         self.assertEqual(str(test_var.entries[0]), "setDate(1")
@@ -38,6 +39,7 @@ class VarTests(unittest.TestCase):
                          test_var.header.raw.product_id + test_var.header.raw.comment)
 
         self.assertEqual(test_var.entries[0].raw.meta_length, b'\x0D\x00')
+        self.assertEqual(test_var.entries[0].raw.type_id, b'\x05')
         self.assertEqual(test_var.entries[0].raw.name, b'SETDATE\x00')
         self.assertEqual(test_var.entries[0].raw.version, b'\x04')
         self.assertEqual(test_var.entries[0].raw.archived, b'\x00')
@@ -62,7 +64,7 @@ class VarTests(unittest.TestCase):
         clibs.open("tests/data/var/clibs.8xg")
 
         self.assertEqual(len(clibs.entries), 9)
-        self.assertTrue(all(entry.type_id == b'\x15' for entry in clibs.entries))
+        self.assertTrue(all(entry.type_id == 0x15 for entry in clibs.entries))
 
         second = TIEntry()
         with open("tests/data/var/clibs.8xg", 'rb') as file:
@@ -128,6 +130,13 @@ class EntryTests(unittest.TestCase):
         test_program.open("tests/data/var/Program.8xp")
         self.assertEqual(bool(test_program), True)
 
+    def test_data_append(self):
+        test_program = TIProgram()
+        test_program.open("tests/data/var/Program.8xp")
+
+        test_program.append_data(b"\x11")
+        self.assertEqual(test_program.string(), "setDate(1)")
+
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
@@ -158,7 +167,7 @@ class TokenizationTests(unittest.TestCase):
         self.assertEqual(test_program.string(), string)
 
         # Version is wrong(?)
-        test_program.version = b'\x04'
+        test_program.version = 0x04
 
         with open("tests/data/var/Program.8xp", 'rb') as file:
             file.seek(55)

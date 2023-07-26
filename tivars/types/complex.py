@@ -217,7 +217,7 @@ class ComplexEntry(TIEntry):
                 warn(f"Real subtype ID 0x{self.real_subtype_id:x} not recognized for type {type(self)}.",
                      BytesWarning)
 
-            return self._real_subtypes[self._type_id[0]]
+            return self._real_subtypes[self._type_id]
 
     @property
     def imag_type(self) -> Type['RealEntry']:
@@ -233,7 +233,7 @@ class ComplexEntry(TIEntry):
                 warn(f"Imag subtype ID 0x{self.imag_subtype_id:x} not recognized for type {type(self)}.",
                      BytesWarning)
 
-            return self._imag_subtypes[self._type_id[0]]
+            return self._imag_subtypes[self._type_id]
 
     @classmethod
     def get_real_subtype_id(cls, subtype: Type['RealEntry']) -> int:
@@ -299,7 +299,7 @@ class TIComplex(ComplexEntry, register=True):
 
     min_data_length = 18
 
-    _type_id = b'\x0C'
+    _type_id = 0x0C
 
     _real_subtypes = {0x0C: TIReal}
 
@@ -393,7 +393,7 @@ class TIComplexFraction(TIComplex, register=True):
 
     is_exact = True
 
-    _type_id = b'\x1B'
+    _type_id = 0x1B
 
     _real_subtypes = {0x1B: TIRealFraction}
 
@@ -430,7 +430,7 @@ class TIComplexRadical(ComplexEntry, register=True):
 
     is_exact = True
 
-    _type_id = b'\x1D'
+    _type_id = 0x1D
 
     _real_subtypes = {0x1D: TIRealRadical}
 
@@ -547,7 +547,7 @@ class TIComplexPi(TIComplex, register=True):
 
     is_exact = True
 
-    _type_id = b'\x1E'
+    _type_id = 0x1E
 
     _real_subtypes = {0x1B: TIRealFraction,
                       0x1C: TIReal}
@@ -576,7 +576,7 @@ class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
 
     is_exact = True
 
-    _type_id = b'\x1F'
+    _type_id = 0x1F
 
     _real_subtypes = {0x1E: TIReal,
                       0x1F: TIRealFraction}

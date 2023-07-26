@@ -262,7 +262,7 @@ class TIMonoPicture(PictureEntry):
     pixel_type = int
     has_color = False
 
-    _type_id = b'\x07'
+    _type_id = 0x07
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
@@ -324,7 +324,7 @@ class TIPicture(PictureEntry, register=True):
     pil_mode = "RGB"
     pixel_type = RGB
 
-    _type_id = b'\x07'
+    _type_id = 0x07
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
@@ -401,7 +401,7 @@ class TIImage(PictureEntry, register=True):
     pil_mode = "RGB"
     pixel_type = RGB
 
-    _type_id = b'\x1A'
+    _type_id = 0x1A
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Image1",

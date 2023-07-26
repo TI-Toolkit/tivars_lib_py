@@ -55,7 +55,7 @@ class TokenizedEntry(SizedEntry):
     These tokens influence the entry's version, though detecting the presence of the RTC has no current application.
     """
 
-    def derive_version(self) -> bytes:
+    def derive_version(self) -> int:
         """
         Determines the version for this entry
 
@@ -99,7 +99,7 @@ class TokenizedEntry(SizedEntry):
         if any(token in self.raw.data for token in self.clock_tokens):
             version += 0x20
 
-        return bytes([version])
+        return version
 
     def decode(self, data: bytearray, *, model: TIModel = None) -> str:
         """
@@ -129,8 +129,8 @@ class TokenizedEntry(SizedEntry):
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.raw.version != (version := self.derive_version()):
-            warn(f"The version is incorrect (expected {version}, got {self.raw.version}).",
+        if self.version != (version := self.derive_version()):
+            warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
                  BytesWarning)
 
     def load_data_section(self, data: BytesIO):
@@ -141,7 +141,7 @@ class TokenizedEntry(SizedEntry):
     def load_string(self, string: str, *, model: TIModel = None):
         self.raw.data[2:] = self.encode(string, model=model)
         self.length = len(self.raw.data[2:])
-        self.raw.version = self.derive_version()
+        self.version = self.derive_version()
 
     def string(self) -> str:
         return self.decode(self.data[2:])
@@ -217,7 +217,7 @@ class TIEquation(TokenizedEntry, register=True):
         TI_82AEP: "8xy"
     }
 
-    _type_id = b'\x03'
+    _type_id = 0x03
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Y1",
@@ -259,7 +259,7 @@ class TIString(TokenizedEntry, register=True):
         TI_82AEP: "8xs"
     }
 
-    _type_id = b'\x04'
+    _type_id = 0x04
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Str1",
@@ -305,7 +305,7 @@ class TIProgram(TokenizedEntry, register=True):
     Whether this program type is protected
     """
 
-    _type_id = b'\x05'
+    _type_id = 0x05
 
     @Section(8, TokenizedString)
     def name(self, value) -> str:
@@ -337,7 +337,7 @@ class TIProtectedProgram(TIProgram, register=True):
 
     is_protected = True
 
-    _type_id = b'\x06'
+    _type_id = 0x06
 
 
 __all__ = ["TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]

@@ -27,8 +27,6 @@ class SettingsEntry(TIEntry):
                  data: bytearray = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.raw.data[:len(self.leading_bytes)] = self.leading_bytes
-
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
@@ -94,7 +92,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     min_data_length = 210
 
-    _type_id = b'\x0F'
+    _type_id = 0x0F
     leading_bytes = b'\xD0\x00\x00'
 
     def __init__(self, init=None, *,
@@ -344,7 +342,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
     min_data_length = 209
 
-    _type_id = b'\x10'
+    _type_id = 0x10
     leading_bytes = b'\xCF\x00'
 
     def __init__(self, init=None, *,
@@ -598,7 +596,7 @@ class TITableSettings(SettingsEntry, register=True):
 
     min_data_length = 20
 
-    _type_id = b'\x11'
+    _type_id = 0x11
     leading_bytes = b'\x12\x00'
 
     def __init__(self, init=None, *,

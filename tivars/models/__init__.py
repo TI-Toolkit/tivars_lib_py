@@ -2,7 +2,7 @@ from ..flags import *
 
 
 class TIModel:
-    def __init__(self, name: str, flags: Flags, magic: str, product_id: bytes):
+    def __init__(self, name: str, flags: Flags, magic: str, product_id: int):
         self.name = name
         self.flags = TIFeature(flags, width=9)
         self.magic = magic
@@ -36,19 +36,19 @@ flags83pceep = flags83pce | TIFeature.Python
 flags84pcepy = flags84pce | TIFeature.Python
 flags82aep = flags83pceep | {3: 0}
 
-TI_82 = TIModel("TI-82", flags82, "**TI82**", b'\x00')
-TI_83 = TIModel("TI-83", flags83, "**TI83**", b'\x00')
-TI_82A = TIModel("TI-82A", flags82a, "**TI83F*", b'\x0B')
-TI_82P = TIModel("TI-82+", flags83p, "**TI83F*", b'\x00')
-TI_83P = TIModel("TI-83+", flags83p, "**TI83F*", b'\x04')
-TI_84P = TIModel("TI-84+", flags84p, "**TI83F*", b'\x0A')
-TI_84T = TIModel("TI-84+T", flags84p, "**TI83F*", b'\x1B')
-TI_84PCSE = TIModel("TI-84+CSE", flags84pcse, "**TI83F*", b'\x0F')
-TI_84PCE = TIModel("TI-84+CE", flags84pce, "**TI83F*", b'\x13')
-TI_84PCEPY = TIModel("TI-84+CEPY", flags84pcepy, "**TI83F*", b'\x13')
-TI_83PCE = TIModel("TI-83PCE", flags83pce, "**TI83F*", b'\x13')
-TI_83PCEEP = TIModel("TI-83PCEEP", flags83pceep, "**TI83F*", b'\x13')
-TI_82AEP = TIModel("TI-82AEP", flags82aep, "**TI83F*", b'\x00')
+TI_82 = TIModel("TI-82", flags82, "**TI82**", 0x00)
+TI_83 = TIModel("TI-83", flags83, "**TI83**", 0x00)
+TI_82A = TIModel("TI-82A", flags82a, "**TI83F*", 0x0B)
+TI_82P = TIModel("TI-82+", flags83p, "**TI83F*", 0x00)
+TI_83P = TIModel("TI-83+", flags83p, "**TI83F*", 0x04)
+TI_84P = TIModel("TI-84+", flags84p, "**TI83F*", 0x0A)
+TI_84T = TIModel("TI-84+T", flags84p, "**TI83F*", 0x1B)
+TI_84PCSE = TIModel("TI-84+CSE", flags84pcse, "**TI83F*", 0x0F)
+TI_84PCE = TIModel("TI-84+CE", flags84pce, "**TI83F*", 0x13)
+TI_84PCEPY = TIModel("TI-84+CEPY", flags84pcepy, "**TI83F*", 0x13)
+TI_83PCE = TIModel("TI-83PCE", flags83pce, "**TI83F*", 0x13)
+TI_83PCEEP = TIModel("TI-83PCEEP", flags83pceep, "**TI83F*", 0x13)
+TI_82AEP = TIModel("TI-82AEP", flags82aep, "**TI83F*", 0x00)
 
 MODELS = [TI_82, TI_83, TI_82A, TI_82P, TI_83P,
           TI_84P, TI_84T, TI_84PCSE, TI_84PCE, TI_84PCEPY,

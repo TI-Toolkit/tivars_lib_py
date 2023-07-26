@@ -193,7 +193,7 @@ class TIRealList(ListEntry, register=True):
         TI_82AEP: "8xl"
     }
 
-    _type_id = b'\x01'
+    _type_id = 0x01
 
 
 class TIComplexList(ListEntry, register=True):
@@ -216,7 +216,7 @@ class TIComplexList(ListEntry, register=True):
         TI_82AEP: "8xl"
     }
 
-    _type_id = b'\x0D'
+    _type_id = 0x0D
 
 
 __all__ = ["TIRealList", "TIComplexList"]
