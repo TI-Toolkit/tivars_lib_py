@@ -990,7 +990,7 @@ class SizedEntry(TIEntry):
     def clear(self):
         self.raw.calc_data = bytearray([0, 0, *self.leading_bytes])
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
-        self.length = len(self.raw.calc_data) - 2
+        self.length = len(self.leading_bytes) + len(self.data)
 
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)

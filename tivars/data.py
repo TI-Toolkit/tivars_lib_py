@@ -58,7 +58,7 @@ class Bytes(Converter):
         :return: The bytes in `data`, unchanged
         """
 
-        return data
+        return bytes(data)
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
@@ -69,7 +69,7 @@ class Bytes(Converter):
         :return: The bytes in `value`, unchanged
         """
 
-        return value
+        return bytes(value)
 
 
 class SizedBytes(Bytes):
@@ -86,7 +86,7 @@ class SizedBytes(Bytes):
         """
 
         instance.length = len(value)
-        return value
+        return super().set(value)
 
 
 class Boolean(Converter):
