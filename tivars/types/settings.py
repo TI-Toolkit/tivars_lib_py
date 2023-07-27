@@ -19,8 +19,6 @@ class SettingsEntry(TIEntry):
 
     min_data_length = 2
 
-    leading_bytes = b''
-
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Window",
                  version: bytes = None, archived: bool = None,
@@ -92,8 +90,9 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     min_data_length = 210
 
-    _type_id = 0x0F
     leading_bytes = b'\xD0\x00\x00'
+
+    _type_id = 0x0F
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Window",
@@ -108,6 +107,18 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     @Section(min_data_length)
     def calc_data(self) -> bytearray:
+        pass
+
+    @View(calc_data, Bytes)[0:3]
+    def table_magic(self) -> bytearray:
+        """
+        Magic identifying the file as window settings
+
+        This value is always `0xD00000`.
+        """
+
+    @View(calc_data, Bytes)[3:]
+    def data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphRealEntry)[3:12]
@@ -342,8 +353,9 @@ class TIRecallWindow(SettingsEntry, register=True):
 
     min_data_length = 209
 
-    _type_id = 0x10
     leading_bytes = b'\xCF\x00'
+
+    _type_id = 0x10
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "RclWindw",
@@ -362,6 +374,18 @@ class TIRecallWindow(SettingsEntry, register=True):
 
     @Section(min_data_length)
     def calc_data(self) -> bytearray:
+        pass
+
+    @View(calc_data, Bytes)[0:2]
+    def recall_magic(self) -> bytearray:
+        """
+        Magic identifying the file as a recalled window
+
+        This value is always `0xCF00`.
+        """
+
+    @View(calc_data, Bytes)[2:]
+    def data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphRealEntry)[2:11]
@@ -596,8 +620,9 @@ class TITableSettings(SettingsEntry, register=True):
 
     min_data_length = 20
 
-    _type_id = 0x11
     leading_bytes = b'\x12\x00'
+
+    _type_id = 0x11
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "TblSet",
@@ -616,6 +641,18 @@ class TITableSettings(SettingsEntry, register=True):
 
     @Section(min_data_length)
     def calc_data(self) -> bytearray:
+        pass
+
+    @View(calc_data, Bytes)[0:2]
+    def table_magic(self) -> bytearray:
+        """
+        Magic identifying the file as an image
+
+        This value is always `0x1200`.
+        """
+
+    @View(calc_data, Bytes)[2:]
+    def data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphRealEntry)[2:11]

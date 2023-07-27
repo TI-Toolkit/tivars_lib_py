@@ -995,8 +995,8 @@ class SizedEntry(TIEntry):
     def load_bytes(self, data: ByteString):
         super().load_bytes(data)
 
-        if self.length != len(self.data):
-            warn(f"The entry has an unexpected data length (expected {self.length}, got {len(self.data)}).",
+        if self.length != (data_length := len(self.leading_bytes) + len(self.data)):
+            warn(f"The entry has an unexpected data length (expected {self.length}, got {data_length}).",
                  BytesWarning)
 
     def load_data_section(self, data: BytesIO):

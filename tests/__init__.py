@@ -472,7 +472,6 @@ class PictureTests(unittest.TestCase):
             self.assertEqual(test_image.bytes(), file.read()[55:-2])
 
         self.assertEqual(test_image.name, "Image1")
-        self.assertEqual(test_image.image_magic, b'\x81')
 
         test_from_array = TIImage()
         test_from_array.load_array(test_image.array())

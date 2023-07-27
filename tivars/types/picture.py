@@ -395,8 +395,6 @@ class TIImage(PictureEntry, register=True):
                  data: ByteString = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.image_magic = b'\x81'
-
     def __iter__(self) -> Iterator[pixel_type]:
         for row in range(self.data_height - 1, -1, -1):
             for col in range(0, self.data_width - 2, 2):
@@ -409,6 +407,22 @@ class TIImage(PictureEntry, register=True):
 
         Must be one of the image names: Image1 - Image0
         """
+
+    @Section()
+    def calc_data(self) -> bytearray:
+        pass
+
+    @View(calc_data, Bytes)[2:3]
+    def image_magic(self) -> bytes:
+        """
+        Magic identifying the file as an image
+
+        This value is always `0x81`.
+        """
+
+    @View(calc_data, SizedBytes)[3:]
+    def data(self) -> bytearray:
+        pass
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
