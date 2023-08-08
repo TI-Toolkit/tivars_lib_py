@@ -29,12 +29,13 @@ class Converter:
         raise NotImplementedError
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, current: bytes = None) -> bytes:
+    def set(cls, value: _T, *, instance=None, length: int = None, current: bytes = None) -> bytes:
         """
         Converts  `_T` -> `bytes`
 
         :param value: The value to convert
         :param instance: The instance which contains the data section
+        :param length: The length of the data section
         :param current: The current value of the data section
         :return: A string of bytes
         """
@@ -142,18 +143,18 @@ class Integer(Converter):
         return int.from_bytes(data, 'little')
 
     @classmethod
-    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: _T, *, length: int = None, **kwargs) -> bytes:
         """
         Converts `int` -> `bytes`
 
         For implementation reasons, the output of this converter is always two bytes wide
 
         :param value: The value to convert
-        :param current: The current value of the data section
+        :param length: The length of the data section
         :return: The little-endian representation of `value`
         """
 
-        return int.to_bytes(value, len(current or b'\x00\x00'), 'little')
+        return int.to_bytes(value, length if length is not None else 2, 'little')
 
 
 class String(Converter):
@@ -312,7 +313,7 @@ class Section:
         return self._get(self._get_raw(instance), instance=instance)
 
     def __set__(self, instance, value: _T):
-        value = self._set(value, instance=instance, current=self._get_raw(instance))
+        value = self._set(value, instance=instance, length=self._length, current=self._get_raw(instance))
 
         if self._length is not None:
             if len(value) > self._length:
@@ -412,7 +413,7 @@ class View(Section):
         return self._get(self._get_raw(instance), instance=instance)
 
     def __set__(self, instance, value: _T):
-        value = self._set(value, instance=instance, current=self._get_raw(instance))
+        value = self._set(value, instance=instance, length=self._length, current=self._get_raw(instance))
 
         if self._length is not None:
             if len(value) > self._length:
