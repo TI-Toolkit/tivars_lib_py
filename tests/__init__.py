@@ -1,6 +1,7 @@
-import decimal
 import json
 import unittest
+
+from decimal import Decimal
 
 from tivars.types import *
 from tivars import TIHeader, TIVar
@@ -178,61 +179,100 @@ class TokenizationTests(unittest.TestCase):
 
 
 class NumericTests(unittest.TestCase):
-    def test_real_number(self):
-        test_real = TIReal()
-        test_real.open("tests/data/var/Real.8xn")
+    def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):
+        test_num = real_type()
+        test_num.open(f"tests/data/var/{filename}.8xn")
 
-        self.assertEqual(test_real.name, "A")
-        self.assertEqual(test_real.sign, -1)
-        self.assertEqual(test_real.exponent, 129)
-        self.assertEqual(test_real.mantissa, 42133700000000)
+        self.assertEqual(test_num.name, name)
+        self.assertEqual(test_num.sign, sign)
+        self.assertEqual(test_num.exponent, exponent)
+        self.assertEqual(test_num.mantissa, mantissa)
 
-        self.assertEqual(str(test_real), "-42.1337")
-        self.assertEqual(f"{test_real:.1f}", "-42.1")
-        self.assertEqual(test_real.decimal(), decimal.Decimal("-42.1337"))
+        self.assertEqual(str(test_num), string)
+        self.assertEqual(f"{test_num:.2f}", f"{dec:.2f}")
+        self.assertEqual(test_num.decimal(), dec)
 
-        test_real.clear()
-        test_real.load_string(string := "-42.1337")
-        self.assertEqual(test_real.string(), string)
+        test_num.clear()
+        test_num.load_string(string)
+        self.assertEqual(test_num.string(), string)
 
-        with open("tests/data/var/Real.8xn", 'rb') as file:
+        with open(f"tests/data/var/{filename}.8xn", 'rb') as file:
             file.seek(55)
-            self.assertEqual(test_real.bytes(), file.read()[:-2])
+            self.assertEqual(test_num.bytes(), file.read()[:-2])
+
+    def test_real_number(self):
+        self.real_float_test(TIReal, "Real", "A", -1, 129, 42133700000000, "-42.1337",
+                             Decimal("-42.1337"))
+
+    def test_real_pi(self):
+        self.real_float_test(TIRealPi, "Exact_RealPi", "C", 1, 129, 30000000000000, "30π",
+                             Decimal("94.247779607694"))
+
+    def test_real_pi_frac(self):
+        self.real_float_test(TIRealPiFraction, "Exact_RealPiFrac", "D", 1, 127, 28571428571429, "2π / 7",
+                             Decimal("0.89759790102567"))
+
+    def test_real_radical(self):
+        test_radical = TIRealRadical()
+        test_radical.open("tests/data/var/Exact_RealRadical.8xn")
+
+        self.assertEqual(test_radical.sign_type, 2)
+        self.assertEqual(test_radical.left_scalar, 41)
+        self.assertEqual(test_radical.left_radicand, 789)
+        self.assertEqual(test_radical.right_scalar, 14)
+        self.assertEqual(test_radical.right_radicand, 654)
+        self.assertEqual(test_radical.denominator, 259)
+
+    def complex_float_test(self, comp_type, filename, name, real_sign, real_exponent, real_mantissa,
+                           imag_sign, imag_exponent, imag_mantissa, string, comp):
+
+        test_num = comp_type()
+        test_num.open(f"tests/data/var/{filename}.8xc")
+
+        self.assertEqual(test_num.real.sign, real_sign)
+        self.assertEqual(test_num.real.exponent, real_exponent)
+        self.assertEqual(test_num.real.mantissa, real_mantissa)
+
+        self.assertEqual(test_num.imag.sign, imag_sign)
+        self.assertEqual(test_num.imag.exponent, imag_exponent)
+        self.assertEqual(test_num.imag.mantissa, imag_mantissa)
+
+        self.assertEqual(str(test_num), string)
+        self.assertEqual(f"{test_num:.2f}", f"{comp:.2f}")
+
+        self.assertEqual(test_num.name, name)
+        test_components = comp_type(name=name)
+        test_components.real, test_components.imag = test_num.real, test_num.imag
+        self.assertEqual(test_num, test_components)
+        self.assertEqual(test_components.components()[0], test_num.real)
+        self.assertEqual(test_components.components()[1], test_num.imag)
+
+        test_num.clear()
+        test_num.load_string(string)
+        self.assertEqual(test_num.string(), string)
+
+        with open(f"tests/data/var/{filename}.8xc", 'rb') as file:
+            file.seek(55)
+            self.assertEqual(test_num.bytes(), file.read()[:-2])
 
     def test_complex_number(self):
-        test_complex = TIComplex()
-        test_complex.open("tests/data/var/Complex.8xc")
+        self.complex_float_test(TIComplex, "Complex", "C", -1, 128, 50000000000000,
+                                1, 128, 20000000000000, "-5 + 2i", -5 + 2j)
 
-        self.assertEqual(test_complex.real.sign, -1)
-        self.assertEqual(test_complex.real.exponent, 128)
-        self.assertEqual(test_complex.real.mantissa, 50000000000000)
+    def test_complex_frac(self):
+        self.complex_float_test(TIComplexFraction, "Exact_ComplexFrac", "E", 1, 127, 20000000000000,
+                                -1, 127, 40000000000000, "1 / 5 - 2i / 5", 0.2 - 0.4j)
 
-        self.assertEqual(test_complex.imag.sign, 1)
-        self.assertEqual(test_complex.imag.exponent, 128)
-        self.assertEqual(test_complex.imag.mantissa, 20000000000000)
+    def test_complex_pi(self):
+        self.complex_float_test(TIComplexPi, "Exact_ComplexPi", "H", 1, 127, 20000000000000,
+                                -1, 128, 30000000000000, "1 / 5 - 3πi", 0.2 - 9.42j)
 
-        self.assertEqual(str(test_complex), "-5 + 2i")
-        self.assertEqual(f"{test_complex:.2f}", "-5.00+2.00j")
-        self.assertEqual(f"{test_complex:t}", "~5+2[i]")
+    def test_complex_pi_frac(self):
+        self.complex_float_test(TIComplexPiFraction, "Exact_ComplexPiFrac", "A", 1, 128, 0,
+                                1, 127, 28571428571429, "2πi / 7", 0.90j)
 
-        test_components = TIComplex(name="C")
-        test_components.real, test_components.imag = test_complex.real, test_complex.imag
-        self.assertEqual(test_complex, test_components)
-        self.assertEqual(test_components.components()[0], test_complex.real)
-        self.assertEqual(test_components.components()[1], test_complex.imag)
 
-        test_complex.clear()
-        test_complex.load_complex(7)
-        self.assertEqual(test_complex.complex(), 7 + 0j)
-
-        test_complex.clear()
-        test_complex.load_string(string := "-5 + 2i")
-        self.assertEqual(test_complex.string(), string)
-
-        with open("tests/data/var/Complex.8xc", 'rb') as file:
-            file.seek(55)
-            self.assertEqual(test_complex.bytes(), file.read()[:-2])
-
+class ArrayTests(unittest.TestCase):
     def test_real_list(self):
         test_real_list = TIRealList()
         test_real_list.open("tests/data/var/RealList.8xl")
@@ -256,7 +296,7 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
         self.assertEqual(list(iter(test_comp_list)), test_list)
-        self.assertEqual(str(test_comp_list), "[1 + 1i, -3 + 2i, 4 + 0i]")
+        self.assertEqual(str(test_comp_list), "[1 + i, -3 + 2i, 4]")
         self.assertEqual(f"{test_comp_list:t}", "{1+[i],~3+2[i],4}")
 
     def test_matrix(self):
@@ -284,8 +324,8 @@ class NumericTests(unittest.TestCase):
         test_matrix = TIMatrix()
         test_matrix.open("tests/data/var/Matrix_2x2_exact.8xm")
 
-        test_array = [[TIRealPi(3), TIRealRadical("3√10")],
-                      [TIRealFraction(0.5), TIRealRadical("(4√5 + 2√3) / 7")]]
+        test_array = [[TIRealPi("3π"), TIRealRadical("3√10")],
+                      [TIRealFraction("1/2"), TIRealRadical("(4√5 + 2√3) / 7")]]
 
         self.assertEqual(test_matrix.name, "[B]")
         self.assertEqual(test_matrix.height, 2)

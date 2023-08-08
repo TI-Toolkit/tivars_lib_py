@@ -1,4 +1,23 @@
+import decimal as dec
+
 from ..data import *
+
+
+with dec.localcontext() as ctx:
+    ctx.prec = 16
+    pi, prev = 3, 0
+    t = dec.Decimal(3)
+
+    n, na, d, da = 1, 0, 0, 24
+    while pi != prev:
+        prev = pi
+
+        n, na = n + na, na + 8
+        d, da = d + da, da + 32
+        t = (t * n) / d
+        pi += t
+
+    ctx.prec = 14
 
 
 def replacer(string: str, replacements: dict[str, str]) -> str:
@@ -162,5 +181,5 @@ class RightNibbleBCD(Converter):
         return bytes(data)
 
 
-__all__ = ["replacer", "sign", "squash",
+__all__ = ["pi", "replacer", "sign", "squash",
            "BCD", "LeftNibbleBCD", "RightNibbleBCD"]

@@ -30,18 +30,17 @@ class RealPart(Converter):
         return instance.real_type.get(data)
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: _T, **kwargs) -> bytes:
         """
         Converts `RealEntry` -> `bytes`
 
         :param value: The value to convert
-        :param instance: The instance containing the data section
         :return: The data of `value`
         """
 
-        value.subtype_id = instance.get_real_subtype_id(type(value))
+        value.subtype_id = value.imag_subtype_id
 
-        return type(value).set(value, **kwargs)
+        return type(value).set(value)
 
 
 class ImaginaryPart(Converter):
@@ -68,16 +67,17 @@ class ImaginaryPart(Converter):
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
         """
-        Converts `str` -> `bytes`
+        Converts `RealEntry` -> `bytes`
 
         :param value: The value to convert
         :param instance: The instance containing the data section
         :return: The data of `value`
         """
 
-        value.subtype_id = instance.get_imag_subtype_id(type(value))
+        value.subtype_id = value.imag_subtype_id
+        instance.coerce()
 
-        return type(value).set(value, **kwargs)
+        return type(value).set(value)
 
 
 class ComplexEntry(TIEntry):
@@ -88,7 +88,7 @@ class ComplexEntry(TIEntry):
     The format for these types varies and is handled by `real_subtype_id` and `imag_subtype_id`.
 
     Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
-    These types need not be the same, and may have subtype IDs not corresponding to their native type IDs.
+    These types need not be the same, and will have subtype IDs not corresponding to their native type IDs.
     """
 
     extensions = {
@@ -115,9 +115,10 @@ class ComplexEntry(TIEntry):
     Whether this numeric type is exact
     """
 
-    _real_subtypes = {None: RealEntry}
-
-    _imag_subtypes = {None: RealEntry}
+    real_analogue = TIReal
+    """
+    The real type corresponding to this complex type used in an imaginary part
+    """
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -209,15 +210,7 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `real_subtype_id`.
         """
 
-        try:
-            return self._real_subtypes[self.real_subtype_id]
-
-        except KeyError:
-            if self.real_subtype_id:
-                warn(f"Real subtype ID 0x{self.real_subtype_id:x} not recognized for type {type(self)}.",
-                     BytesWarning)
-
-            return self._real_subtypes[self._type_id]
+        return self.get_type(self.real_subtype_id).real_analogue
 
     @property
     def imag_type(self) -> Type['RealEntry']:
@@ -225,37 +218,13 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `imag_subtype_id`.
         """
 
-        try:
-            return self._imag_subtypes[self.imag_subtype_id]
+        return self.get_type(self.imag_subtype_id).real_analogue
 
-        except KeyError:
-            if self.imag_subtype_id:
-                warn(f"Imag subtype ID 0x{self.imag_subtype_id:x} not recognized for type {type(self)}.",
-                     BytesWarning)
+    def clear(self):
+        super().clear()
 
-            return self._imag_subtypes[self._type_id]
-
-    @classmethod
-    def get_real_subtype_id(cls, subtype: Type['RealEntry']) -> int:
-        """
-        Gets the subtype ID corresponding to the given subtype of the real part
-
-        :param subtype: The subtype for the real part
-        :return: The subtype ID used to identify `subtype` as a real part
-        """
-
-        return {v: k for k, v in cls._real_subtypes.items()}[subtype]
-
-    @classmethod
-    def get_imag_subtype_id(cls, subtype: Type['RealEntry']) -> int:
-        """
-        Gets the subtype ID corresponding to the given subtype of the imaginary part
-
-        :param subtype: The subtype for the real part
-        :return: The subtype ID used to identify `subtype` as an imaginary part
-        """
-
-        return {v: k for k, v in cls._imag_subtypes.items()}[subtype]
+        self.real_subtype_id = 0x0C
+        self.imag_subtype_id = self.type_id
 
     def components(self) -> (RealEntry, RealEntry):
         """
@@ -281,88 +250,9 @@ class ComplexEntry(TIEntry):
 
         return self.real.float() + 1j * self.imag.float()
 
-    def string(self) -> str:
-        return f"{self.real} + {self.imag}i".replace("+ -", "- ")
-
-    def coerce(self):
-        self.raw.type_id = bytes([self.imag_subtype_id])
-
-        super().coerce()
-
-
-class TIComplex(ComplexEntry, register=True):
-    """
-    Parser for complex floating point values
-
-    A `TIComplex` has 8 exponent bits and 14 decimal mantissa digits for each component.
-    """
-
-    min_data_length = 18
-
-    _type_id = 0x0C
-
-    _real_subtypes = {0x0C: TIReal}
-
-    _imag_subtypes = {0x0C: TIReal}
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.real_subtype_id = self.imag_subtype_id = 0x0C
-
-    @Section(min_data_length)
-    def calc_data(self) -> bytearray:
-        pass
-
-    @View(calc_data, Integer)[1:2]
-    def real_exponent(self) -> int:
-        """
-        The exponent of the real part of the complex number
-
-        The exponent has a bias of 0x80.
-        """
-
-    @View(calc_data, BCD)[2:9]
-    def real_mantissa(self) -> int:
-        """
-        The mantissa of the real part of the complex number
-
-        The mantissa is 14 digits stored in BCD format, two digits per byte.
-        """
-
-    @View(calc_data, Integer)[10:11]
-    def imag_exponent(self) -> int:
-        """
-        The exponent of the imaginary part of the complex number
-
-        The exponent has a bias of 0x80.
-        """
-
-    @View(calc_data, BCD)[11:18]
-    def imag_mantissa(self) -> int:
-        """
-        The mantissa of the imaginary part of the complex number
-
-        The mantissa is 14 digits stored in BCD format, two digits per byte.
-        """
-
-    @Loader[complex, float, int]
-    def load_complex(self, comp: complex):
-        real, imag = self.real_type(), self.imag_type()
-        comp = complex(comp)
-
-        real.load_float(comp.real)
-        imag.load_float(comp.imag)
-
-        self.real, self.imag = real, imag
-
     @Loader[str]
     def load_string(self, string: str):
-        string = replacer(squash(string), {"-": "+-", "[i]": "i", "j": "i"})
+        string = replacer(squash(string), {"*": "", "-": "+-", "[i]": "i", "j": "i"})
 
         # Split into real and imaginary components
         parts = string.strip("+").split("+")
@@ -379,25 +269,84 @@ class TIComplex(ComplexEntry, register=True):
 
         parts[1] = parts[1].replace("i", "") or "1"
 
-        self.real = self.real_type(parts[0])
+        try:
+            self.real = self.real_type(parts[0])
+
+        except (TypeError, ValueError):
+            for type_id in [0x00, 0x18, 0x1C, 0x20, 0x21]:
+                if type_id == self.real_subtype_id:
+                    continue
+
+                try:
+                    self.real = self.get_type(type_id)(parts[0])
+                    break
+
+                except (TypeError, ValueError):
+                    continue
+
+            else:
+                raise ValueError(f"could not parse real part '{parts[0]}'")
+
         self.imag = self.imag_type(parts[1])
+
+    def string(self) -> str:
+        match str(self.real), str(self.imag):
+            case "0", "0":
+                return "0"
+
+            case _, "0":
+                return str(self.real)
+
+            case "0", _:
+                return f"{self.imag}i"
+
+            case _:
+                return replacer(f"{self.real} + {self.imag}i", {"+ -": "- ", " 1i": " i"})
+
+    def coerce(self):
+        self.type_id = self.imag_subtype_id
+        if subclass := self.get_type(self.type_id):
+            self.__class__ = subclass
+
+        else:
+            warn(f"Subtype ID 0x{self.type_id:02x} is not recognized; entry will not be coerced to its proper type.",
+                 BytesWarning)
+
+
+class TIComplex(ComplexEntry, register=True):
+    """
+    Parser for complex entries with floating point imaginary part
+
+    A `TIComplex` has a `TIReal` as its imaginary part.
+    """
+
+    real_analogue = TIReal
+
+    _type_id = 0x0C
+
+    @Loader[complex, float, int]
+    def load_complex(self, comp: complex):
+        real, imag = self.real_type(), self.imag_type()
+        comp = complex(comp)
+
+        real.load_float(comp.real)
+        imag.load_float(comp.imag)
+
+        self.real, self.imag = real, imag
 
 
 class TIComplexFraction(TIComplex, register=True):
     """
-    Parser for complex fractions
+    Parser for complex entries with fractional imaginary part
 
-    A `TIComplexFraction` has 8 exponent bits and 14 decimal mantissa digits for each component.
-    However, unlike a `TIComplex`, the floating point values are automatically converted to exact fractions on-calc.
+    A `TIComplexFraction` has a `TIRealFraction` as its imaginary part.
     """
 
     is_exact = True
 
+    real_analogue = TIRealFraction
+
     _type_id = 0x1B
-
-    _real_subtypes = {0x1B: TIRealFraction}
-
-    _imag_subtypes = {0x1B: TIRealFraction}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -406,35 +355,37 @@ class TIComplexFraction(TIComplex, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.real_subtype_id = self.imag_subtype_id = 0x1B
+        self.version = 0x0B
+
+    def string(self) -> str:
+        match str(self.real), str(self.imag):
+            case "0", "0":
+                return "0"
+
+            case _, "0":
+                return str(self.real)
+
+            case "0", _:
+                return str(self.imag).replace(' /', 'i /')
+
+            case _:
+                return replacer(f"{self.real} + {str(self.imag).replace(' /', 'i /')}", {"+ -": "- ", " 1i": " i"})
 
 
 class TIComplexRadical(ComplexEntry, register=True):
     r"""
-    Parser for complex radicals
+    Parser for complex entries with radical imaginary part
 
-    A `TIComplexRadical` is an exact sum of two square roots with rational scalars in both components.
-    Specifically, a `TIComplexRadical` can represent numbers of the form
-
-    $$\frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e} + \frac{\pm m\sqrt{n} \pm o\sqrt{p}}{q} \times i$$
-
-    where all values are non-negative integers. Additionally, $b > d \ge 0$, $n > p \ge 0$, $e > 0$, and $q > 0$.
-
-    Each value is given three nibbles of storage in BCD format.
-    Sign information for each radical is stored in an additional nibble.
+    A `TIComplexRadical` has a `TIRealRadical` as its imaginary part.
     """
 
     flash_only = True
 
-    min_data_length = 18
-
     is_exact = True
 
+    real_analogue = TIRealRadical
+
     _type_id = 0x1D
-
-    _real_subtypes = {0x1D: TIRealRadical}
-
-    _imag_subtypes = {0x1D: TIRealRadical}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -442,118 +393,30 @@ class TIComplexRadical(ComplexEntry, register=True):
                  data: bytearray = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.real_subtype_id = self.imag_subtype_id = 0x1D
-
-    @Section(min_data_length)
-    def calc_data(self) -> bytearray:
-        pass
-
-    @View(calc_data, Bits[0:4])[1:2]
-    def real_sign_type(self) -> int:
-        """
-        The sign type of the real part of the radical
-
-        If the sign type is odd, the left scalar is negative.
-        If the sign type is greater than one, the right scalar is negative.
-        """
-
-    @View(calc_data, LeftNibbleBCD)[1:3]
-    def real_denominator(self) -> int:
-        """
-        The denominator of the real part of the radical
-        """
-
-    @View(calc_data, RightNibbleBCD)[3:5]
-    def real_right_scalar(self) -> int:
-        """
-        The right scalar of the real part of the radical
-        """
-
-    @View(calc_data, LeftNibbleBCD)[4:6]
-    def real_left_scalar(self) -> int:
-        """
-        The left scalar of the real part of the radical
-        """
-
-    @View(calc_data, RightNibbleBCD)[6:8]
-    def real_right_radicand(self) -> int:
-        """
-        The right radicand of the real part of the radical
-        """
-
-    @View(calc_data, LeftNibbleBCD)[7:9]
-    def real_left_radicand(self) -> int:
-        """
-        The left radicand of the real part of the radical
-        """
-
-    @View(calc_data, Bits[0:4])[10:11]
-    def imag_sign_type(self) -> int:
-        """
-        The sign type of the imaginary part of the radical
-
-        If the sign type is odd, the left scalar is negative.
-        If the sign type is greater than one, the right scalar is negative.
-        """
-
-    @View(calc_data, LeftNibbleBCD)[10:12]
-    def imag_denominator(self) -> int:
-        """
-        The denominator of the imaginary part of the radical
-        """
-
-    @View(calc_data, RightNibbleBCD)[12:14]
-    def imag_right_scalar(self) -> int:
-        """
-        The right scalar of the imaginary part of the radical
-        """
-
-    @View(calc_data, LeftNibbleBCD)[13:15]
-    def imag_left_scalar(self) -> int:
-        """
-        The left scalar of the imaginary part of the radical
-        """
-
-    @View(calc_data, RightNibbleBCD)[15:17]
-    def imag_right_radicand(self) -> int:
-        """
-        The right radicand of the imaginary part of the radical
-        """
-
-    @View(calc_data, LeftNibbleBCD)[16:18]
-    def imag_left_radicand(self) -> int:
-        """
-        The left radicand of the imaginary part of the radical
-        """
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         return NotImplemented
 
     def string(self) -> str:
-        return f"{self.real} + {self.imag} * i"
+        return super().string().replace("i", " * i")
 
 
 class TIComplexPi(TIComplex, register=True):
     """
-    Parser for complex floating point values with imaginary integer multiples of π
+    Parser for complex entries with imaginary part an integer multiple of π
 
-    A `TIComplexPi` has real part equal to a `TIReal` or `TIRealFraction`.
-    A `TIComplexPi` has imaginary part equal to an integral `TIReal` with an implicit factor of π.
+    A `TIComplexPi` has a `TIRealPi` as its imaginary part.
     """
 
     flash_only = True
 
     is_exact = True
+
+    real_analogue = TIRealPi
 
     _type_id = 0x1E
 
-    _real_subtypes = {0x1B: TIRealFraction,
-                      0x1C: TIReal}
-
-    _imag_subtypes = {0x1E: TIRealPi}
-
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
@@ -561,28 +424,27 @@ class TIComplexPi(TIComplex, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.real_subtype_id, self.imag_subtype_id = 0x1B, 0x1E
+        self.version = 0x10
+
+    @Loader[complex, float, int]
+    def load_complex(self, comp: complex):
+        return NotImplemented
 
 
-class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
+class TIComplexPiFraction(TIComplexPi, TIComplexFraction, register=True):
     """
-    Parser for complex fractional multiples of π
+    Parser for complex entries with imaginary part a fractional multiple of π
 
-    A `TIComplexPiFraction` has real part equal to a `TIReal` or `TIRealFraction` with an implicit factor of π.
-    A `TIComplexPiFraction` has imaginary part equal to a `TIReal` or `TIRealFraction` with an implicit factor of π.
+    A `TIComplexPiFraction` has a `TIRealPiFraction` as its imaginary part.
     """
 
     flash_only = True
 
     is_exact = True
 
+    real_analogue = TIRealPiFraction
+
     _type_id = 0x1F
-
-    _real_subtypes = {0x1E: TIReal,
-                      0x1F: TIRealFraction}
-
-    _imag_subtypes = {0x1E: TIRealPi,
-                      0x1F: TIRealPiFraction}
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
@@ -591,7 +453,7 @@ class TIComplexPiFraction(TIComplexFraction, TIComplexPi, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-        self.real_subtype_id = self.imag_subtype_id = 0x1F
+        self.version = 0x10
 
     def string(self) -> str:
-        return f"{self.real} + {str(self.imag).replace(' /', 'i /')}"
+        return super(TIComplexPi, self).string()

@@ -53,15 +53,17 @@ class RealEntry(TIEntry):
     Whether this numeric type is exact
     """
 
+    imag_subtype_id = None
+    """
+    The subtype ID this type receives if used as an imaginary part
+    """
+
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
                  data: bytearray = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        if self._type_id is not None:
-            self.subtype_id = self._type_id
 
     def __float__(self) -> float:
         return self.float()
@@ -132,6 +134,12 @@ class RealEntry(TIEntry):
 
         return -1 if self.sign_bit else 1
 
+    def clear(self):
+        super().clear()
+
+        if self._type_id is not None:
+            self.subtype_id = self._type_id
+
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
         """
@@ -180,9 +188,10 @@ class RealEntry(TIEntry):
         return float(self.decimal())
 
     def coerce(self):
-        self.type_id = self.subtype_id
+        if self._type_id is None:
+            self.type_id = self.subtype_id
 
-        super().coerce()
+            super().coerce()
 
 
 class GraphRealEntry(RealEntry):
@@ -213,6 +222,8 @@ class TIReal(RealEntry, register=True):
     """
 
     min_data_length = 9
+
+    imag_subtype_id = 0x0C
 
     _type_id = 0x00
 
@@ -323,6 +334,8 @@ class TIRealFraction(TIReal, register=True):
 
     is_exact = True
 
+    imag_subtype_id = 0x1B
+
     _type_id = 0x18
 
     @Loader[frac.Fraction]
@@ -334,14 +347,18 @@ class TIRealFraction(TIReal, register=True):
         super().load_string(str(decimal))
 
     def fraction(self) -> frac.Fraction:
-        return frac.Fraction(self.decimal())
+        return frac.Fraction(self.decimal()).limit_denominator(10000)
 
     @Loader[str]
     def load_string(self, string: str):
-        self.load_fraction(frac.Fraction(string))
+        self.load_fraction(frac.Fraction(squash(string)))
 
     def string(self) -> str:
-        return "%d / %d" % self.fraction().as_integer_ratio()
+        if self.fraction():
+            return "%d / %d" % self.fraction().as_integer_ratio()
+
+        else:
+            return "0"
 
 
 class TIRealRadical(RealEntry, register=True):
@@ -364,6 +381,8 @@ class TIRealRadical(RealEntry, register=True):
     flash_only = True
 
     min_data_length = 9
+
+    imag_subtype_id = 0x1D
 
     is_exact = True
 
@@ -418,7 +437,7 @@ class TIRealRadical(RealEntry, register=True):
 
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
-        return NotImplemented
+        raise NotImplementedError
 
     def decimal(self) -> dec.Decimal:
         return (self.left_scalar * (-1 if self.sign_type % 2 else 1) * dec.Decimal(self.left_radicand).sqrt() +
@@ -504,10 +523,46 @@ class TIRealRadical(RealEntry, register=True):
         self.left_radicand, self.right_radicand = left_radicand, right_radicand
 
     def string(self) -> str:
-        left = f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}"
-        right = f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}"
+        def reduce(part):
+            match [*part]:
+                case ["0", "√", *_]:
+                    return ""
 
-        return f"({left} + {right}) / {self.denominator}".replace("+ -", "- ")
+                case [*_, "√", "0"]:
+                    return ""
+
+                case [*_, "√", "1"]:
+                    return part[:-2]
+
+                case ["1", "√", *_]:
+                    return part[1:]
+
+                case ["-1", "√", *_]:
+                    return part[2:]
+
+        left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
+        right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
+
+        match left, right, self.denominator:
+            case "", "", _:
+                string = "0"
+
+            case "", _, 1:
+                string = right
+
+            case _, "", 1:
+                string = left
+
+            case "", _, _:
+                string = f"{right} / {self.denominator}"
+
+            case _, "", _:
+                string = f"{left} / {self.denominator}"
+
+            case _:
+                string = f"({left} + {right}) / {self.denominator}"
+
+        return string.replace("+ -", "- ")
 
 
 class TIRealPi(TIReal, register=True):
@@ -525,13 +580,39 @@ class TIRealPi(TIReal, register=True):
 
     is_exact = True
 
+    imag_subtype_id = 0x1E
+
     _type_id = 0x20
 
+    @Loader[dec.Decimal]
+    def load_decimal(self, decimal: dec.Decimal):
+        raise NotImplementedError
+
+    def decimal(self) -> dec.Decimal:
+        with dec.localcontext() as ctx:
+            ctx.prec = 14
+
+            return super().decimal() * pi
+
+    @Loader[str]
+    def load_string(self, string: str):
+        string = replacer(string, {"pi": "π", "*": ""})
+
+        if "π" not in string:
+            raise ValueError("value must be a multiple of π")
+
+        super().load_string(string.strip("π"))
+
     def string(self) -> str:
-        return super().string() + "π"
+        string = f"{self.decimal() / pi:.14g}".rstrip("0").rstrip(".")
+
+        if string.startswith("0e"):
+            return "0"
+        else:
+            return string + "π"
 
 
-class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
+class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
     """
     Parser for real fractional multiples of π
 
@@ -542,10 +623,24 @@ class TIRealPiFraction(TIRealFraction, TIRealPi, register=True):
 
     flash_only = True
 
+    imag_subtype_id = 0x1F
+
     _type_id = 0x21
 
+    def fraction(self) -> frac.Fraction:
+        return frac.Fraction(self.decimal() / pi).limit_denominator(10000)
+
+    @Loader[str]
+    def load_string(self, string: str):
+        replacer(string, {"pi": "π", "*": ""})
+
+        if string != "0" and "π" not in string:
+            raise ValueError("value must be a fractional multiple of π")
+
+        super(TIRealPi, self).load_string(string.replace("π", ""))
+
     def string(self) -> str:
-        return super().string().replace(" /", "π /")
+        return super(TIRealPi, self).string().replace(" /", "π /")
 
 
 __all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction",
