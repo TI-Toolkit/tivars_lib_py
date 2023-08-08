@@ -271,6 +271,18 @@ class NumericTests(unittest.TestCase):
         self.complex_float_test(TIComplexPiFraction, "Exact_ComplexPiFrac", "A", 1, 128, 0,
                                 1, 127, 28571428571429, "2πi / 7", 0.90j)
 
+    def test_coercion(self):
+        test_num = TIComplexFraction("1 + 3/5i")
+        self.assertEqual(test_num.real_type, TIReal)
+        self.assertEqual(test_num.imag_type, TIRealFraction)
+        self.assertEqual(str(test_num), "1 + 3i / 5")
+
+        test_num.imag = TIReal("0.6")
+        self.assertEqual(test_num.real_type, TIReal)
+        self.assertEqual(test_num.imag_type, TIReal)
+        self.assertEqual(str(test_num), "1 + 0.6i")
+        self.assertEqual(type(test_num), TIComplex)
+
 
 class ArrayTests(unittest.TestCase):
     def test_real_list(self):

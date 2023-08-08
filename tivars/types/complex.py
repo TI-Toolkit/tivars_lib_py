@@ -74,7 +74,7 @@ class ImaginaryPart(Converter):
         :return: The data of `value`
         """
 
-        value.subtype_id = value.imag_subtype_id
+        instance.imag_subtype_id = value.subtype_id = value.imag_subtype_id
         instance.coerce()
 
         return type(value).set(value)
@@ -290,6 +290,17 @@ class ComplexEntry(TIEntry):
         self.imag = self.imag_type(parts[1])
 
     def string(self) -> str:
+        def make_imag(entry: 'RealEntry') -> str:
+            match entry.type_id:
+                case 0x18 | 0x21:
+                    return str(entry).replace(" /", "i /")
+
+                case 0x1C:
+                    return f"{entry} * i"
+
+                case _:
+                    return f"{entry}i"
+
         match str(self.real), str(self.imag):
             case "0", "0":
                 return "0"
@@ -298,10 +309,10 @@ class ComplexEntry(TIEntry):
                 return str(self.real)
 
             case "0", _:
-                return f"{self.imag}i"
+                return make_imag(self.imag)
 
             case _:
-                return replacer(f"{self.real} + {self.imag}i", {"+ -": "- ", " 1i": " i"})
+                return replacer(f"{self.real} + " + make_imag(self.imag), {"+ -": "- ", " 1i": " i"})
 
     def coerce(self):
         self.type_id = self.imag_subtype_id
@@ -357,20 +368,6 @@ class TIComplexFraction(TIComplex, register=True):
 
         self.version = 0x0B
 
-    def string(self) -> str:
-        match str(self.real), str(self.imag):
-            case "0", "0":
-                return "0"
-
-            case _, "0":
-                return str(self.real)
-
-            case "0", _:
-                return str(self.imag).replace(' /', 'i /')
-
-            case _:
-                return replacer(f"{self.real} + {str(self.imag).replace(' /', 'i /')}", {"+ -": "- ", " 1i": " i"})
-
 
 class TIComplexRadical(ComplexEntry, register=True):
     r"""
@@ -397,9 +394,6 @@ class TIComplexRadical(ComplexEntry, register=True):
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         return NotImplemented
-
-    def string(self) -> str:
-        return super().string().replace("i", " * i")
 
 
 class TIComplexPi(TIComplex, register=True):
@@ -454,6 +448,3 @@ class TIComplexPiFraction(TIComplexPi, TIComplexFraction, register=True):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.version = 0x10
-
-    def string(self) -> str:
-        return super(TIComplexPi, self).string()
