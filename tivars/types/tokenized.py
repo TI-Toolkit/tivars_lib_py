@@ -230,6 +230,16 @@ class TIEquation(TokenizedEntry, register=True):
         """
 
 
+class TINewEquation(TIEquation, register=True):
+    """
+    Parser for internal equations
+
+    A `TINewEquation` is simply a `TIEquation` with certain internal uses
+    """
+
+    _type_id = 0x0B
+
+
 class TIString(TokenizedEntry, register=True):
     """
     Parser for strings
@@ -335,4 +345,4 @@ class TIProtectedProgram(TIProgram, register=True):
     _type_id = 0x06
 
 
-__all__ = ["TIEquation", "TIString", "TIProgram", "TIProtectedProgram"]
+__all__ = ["TIEquation", "TINewEquation", "TIString", "TIProgram", "TIProtectedProgram"]
