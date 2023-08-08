@@ -142,17 +142,18 @@ class Integer(Converter):
         return int.from_bytes(data, 'little')
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts `int` -> `bytes`
 
         For implementation reasons, the output of this converter is always two bytes wide
 
         :param value: The value to convert
+        :param current: The current value of the data section
         :return: The little-endian representation of `value`
         """
 
-        return int.to_bytes(value, 2, 'little')
+        return int.to_bytes(value, len(current or b'\x00\x00'), 'little')
 
 
 class String(Converter):
@@ -414,7 +415,12 @@ class View(Section):
         value = self._set(value, instance=instance, current=self._get_raw(instance))
 
         if self._length is not None:
-            value = value[:self._length].rjust(self._length, b'\x00')
+            if len(value) > self._length:
+                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self._length]}.",
+                     BytesWarning)
+                value = value[:self._length]
+
+            value = value.ljust(self._length, b'\x00')
 
         getattr(instance.raw, self._target.name)[self._indices] = value
 
