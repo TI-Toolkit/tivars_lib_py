@@ -91,6 +91,8 @@ class ComplexEntry(TIEntry):
     These types need not be the same, and will have subtype IDs not corresponding to their native type IDs.
     """
 
+    versions = [0x00, 0x0B, 0x10]
+
     extensions = {
         None: "8xc",
         TI_82: "",
@@ -232,6 +234,19 @@ class ComplexEntry(TIEntry):
         """
 
         return self.real, self.imag
+
+    def derive_version(self, data: bytes = None) -> int:
+        data = data or self.data
+
+        subtype_ids = data[0], data[9]
+        if subtype_ids == (0x0C, 0x0C):
+            return 0x00
+
+        elif 0x0B in subtype_ids:
+            return 0x0B
+
+        else:
+            return 0x10
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
@@ -383,13 +398,6 @@ class TIComplexRadical(ComplexEntry, register=True):
     real_analogue = TIRealRadical
 
     _type_id = 0x1D
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):

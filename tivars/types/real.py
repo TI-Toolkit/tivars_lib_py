@@ -61,7 +61,7 @@ class RealEntry(TIEntry):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -330,6 +330,8 @@ class TIRealFraction(TIReal, register=True):
     A `TIRealFraction` can be used to form `TIComplexFraction`, `TIComplexPi`, or `TIComplexPiFraction` complex numbers.
     """
 
+    versions = [0x06]
+
     min_exponent = 0x7C
 
     is_exact = True
@@ -379,6 +381,8 @@ class TIRealRadical(RealEntry, register=True):
     """
 
     flash_only = True
+
+    versions = [0x10]
 
     min_data_length = 9
 
@@ -575,6 +579,8 @@ class TIRealPi(TIReal, register=True):
     """
 
     flash_only = True
+
+    versions = [0x10]
 
     min_exponent = 0x7C
 

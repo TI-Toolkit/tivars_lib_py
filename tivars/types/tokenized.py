@@ -18,10 +18,10 @@ class TokenizedEntry(SizedEntry):
     """
 
     versions = [
-        b'\x00', b'\x01', b'\x02', b'\x03', b'\x04', b'\x05', b'\x06',
-        b'\x0A', b'\x0B', b'\x0C',
-        b'\x20', b'\x21', b'\x22', b'\x23', b'\x24', b'\x25', b'\x26',
-        b'\x2A', b'\x2B', b'\x2C'
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+        0x0A, 0x0B, 0x0C,
+        0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26,
+        0x2A, 0x2B, 0x2C
     ]
 
     min_data_length = 2
@@ -55,20 +55,14 @@ class TokenizedEntry(SizedEntry):
     These tokens influence the entry's version, though detecting the presence of the RTC has no current application.
     """
 
-    def derive_version(self) -> int:
-        """
-        Determines the version for this entry
-
-        The version increments with the presence of tokens which indicate non-backwards compatible functionality.
-
-        :return: This entry's version
-        """
+    def derive_version(self, data: bytes = None) -> int:
+        data = data or self.data
 
         def has_bytes_in(prefix: bytes, start: int, end: int):
-            return any(prefix + bytes([byte]) in self.data for byte in range(start, end + 1))
+            return any(prefix + bytes([byte]) in data for byte in range(start, end + 1))
 
         version = 0x00
-        match self.data:
+        match data:
             case _TI_84PCE if has_bytes_in(b'\xEF', 0x9E, 0xA6):
                 version = 0x0C
 
@@ -96,7 +90,7 @@ class TokenizedEntry(SizedEntry):
             case _TI_83P if has_bytes_in(b'\xBB', 0x68, 0xCE):
                 version = 0x01
 
-        if any(token in self.data for token in self.clock_tokens):
+        if any(token in data for token in self.clock_tokens):
             version += 0x20
 
         return version
@@ -136,7 +130,6 @@ class TokenizedEntry(SizedEntry):
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
         self.data = self.encode(string, model=model)
-        self.version = self.derive_version()
 
     def string(self) -> str:
         return self.decode(self.data)

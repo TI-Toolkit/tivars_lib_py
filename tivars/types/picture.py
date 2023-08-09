@@ -254,6 +254,7 @@ class TIMonoPicture(PictureEntry):
                  for_flash: bool = True, name: str = "Pic1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __iter__(self) -> Iterator[pixel_type]:
@@ -280,6 +281,8 @@ class TIPicture(PictureEntry, register=True):
     """
 
     flash_only = True
+
+    versions = [0x0A]
 
     extensions = {
         None: "8ci",
@@ -315,6 +318,7 @@ class TIPicture(PictureEntry, register=True):
                  for_flash: bool = True, name: str = "Pic1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __iter__(self) -> Iterator[pixel_type]:
@@ -357,6 +361,8 @@ class TIImage(PictureEntry, register=True):
 
     flash_only = True
 
+    versions = [0x00]
+
     extensions = {
         None: "8ca",
         TI_82: "",
@@ -393,6 +399,7 @@ class TIImage(PictureEntry, register=True):
                  for_flash: bool = True, name: str = "Image1",
                  version: bytes = None, archived: bool = None,
                  data: ByteString = None):
+
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __iter__(self) -> Iterator[pixel_type]:
@@ -420,7 +427,7 @@ class TIImage(PictureEntry, register=True):
         This value is always `0x81`.
         """
 
-    @View(calc_data, SizedBytes)[3:]
+    @View(calc_data, SizedData)[3:]
     def data(self) -> bytearray:
         pass
 

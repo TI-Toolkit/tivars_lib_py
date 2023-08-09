@@ -199,10 +199,6 @@ class TIGraphedEquation(TIEquation):
         The length of this entry's user data section
         """
 
-    @View(calc_data, SizedBytes)[3:]
-    def data(self) -> bytearray:
-        pass
-
     def load_data_section(self, data: io.BytesIO):
         flag_byte = data.read(1)
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
@@ -473,6 +469,9 @@ class TIMonoGDB(SizedEntry, register=True):
                     equations[r * i + j].color = color
 
         return equations
+
+    def derive_version(self, data: bytes = None) -> int:
+        return max(map(TIGraphedEquation.derive_version, self.equations), default=0x00)
 
     @Loader[dict]
     def load_dict(self, dct: dict):

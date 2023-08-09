@@ -75,6 +75,8 @@ class ListEntry(TIEntry):
 
     _E = TIEntry
 
+    versions = [0x10, 0x0B, 0x00]
+
     min_data_length = 2
 
     def __init__(self, init=None, *,
@@ -128,6 +130,19 @@ class ListEntry(TIEntry):
     def data(self) -> bytearray:
         pass
 
+    def derive_version(self, data: bytes = None) -> int:
+        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+        version = max(map(self._E().derive_version, it), default=0x00)
+
+        if version > 0x1B:
+            return 0x10
+
+        elif version == 0x1B:
+            return 0x0B
+
+        else:
+            return 0x00
+
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
@@ -152,11 +167,8 @@ class ListEntry(TIEntry):
         :return: A `list` of the elements in this list
         """
 
-        return [self._E(for_flash=self.meta_length > TIEntry.base_meta_length,
-                        name="A",
-                        archived=self.archived,
-                        data=self.calc_data[self._E.min_data_length * i + 2:][:self._E.min_data_length])
-                for i in range(self.length)]
+        it = zip(*[iter(self.data)] * self._E.min_data_length)
+        return [self._E(for_flash=self.meta_length > TIEntry.base_meta_length, data=bytes(data)) for data in it]
 
     @Loader[str]
     def load_string(self, string: str):

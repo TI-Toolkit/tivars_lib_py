@@ -15,6 +15,8 @@ class TIMatrix(TIEntry, register=True):
     A `TIMatrix` is a two-dimensional array of `TIReal` elements.
     """
 
+    versions = [0x10, 0x0B, 0x00]
+
     extensions = {
         None: "8xm",
         TI_82: "82m",
@@ -114,6 +116,19 @@ class TIMatrix(TIEntry, register=True):
 
         return self.width * self.height
 
+    def derive_version(self, data: bytes = None) -> int:
+        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+        version = max(map(RealEntry().derive_version, it), default=0x00)
+
+        if version > 0x1B:
+            return 0x10
+
+        elif version == 0x1B:
+            return 0x0B
+
+        else:
+            return 0x00
+
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
@@ -147,22 +162,9 @@ class TIMatrix(TIEntry, register=True):
         :return: A two-dimensional `list` of the elements in this matrix
         """
 
-        matrix = []
-        for i in range(self.height):
-            row = []
-            for j in range(self.width):
-                index = self.width * i + j
-                entry = RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length,
-                                  name="A",
-                                  archived=self.archived,
-                                  data=self.calc_data[RealEntry.min_data_length * index + self.min_data_length:]
-                                  [:RealEntry.min_data_length])
-
-                row.append(entry)
-
-            matrix.append(row.copy())
-
-        return matrix
+        it = zip(*[iter(self.data)] * RealEntry.min_data_length)
+        return [[RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length, data=bytes(data))
+                 for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]
     def load_string(self, string: str):

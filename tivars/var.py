@@ -218,7 +218,7 @@ class TIEntry(Dock, Converter):
     The file extension used for this entry per-model
     """
 
-    versions = []
+    versions = [0x00]
     """
     The possible versions of this entry
     """
@@ -293,7 +293,7 @@ class TIEntry(Dock, Converter):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
         """
         Creates an empty entry with specified meta and data values
 
@@ -310,7 +310,6 @@ class TIEntry(Dock, Converter):
         self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
         self.type_id = self._type_id if self._type_id is not None else 0xFF
         self.name = name
-        self.version = version or 0
         self.archived = archived or False
 
         if not for_flash:
@@ -332,6 +331,8 @@ class TIEntry(Dock, Converter):
                 self.load_bytes(init.bytes())
             except AttributeError:
                 self.load(init)
+
+        self.version = self.derive_version()
 
     def __bool__(self) -> bool:
         return not self.is_empty
@@ -530,6 +531,19 @@ class TIEntry(Dock, Converter):
         self.raw.calc_data = bytearray(self.leading_bytes)
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
 
+    def derive_version(self, data: bytes = None) -> int:
+        """
+        Determines the version byte corresponding to given data for this entry type
+
+        Entries which could contain non-backwards compatible data are assigned a version byte.
+        If an entry's version exceeds the "version" of a calculator, transfer to the calculator will fail.
+
+        :param data: The data to find the version of
+        :return: The version byte for `data`
+        """
+
+        return self.versions[0]
+
     def unarchive(self):
         """
         Unarchives this entry (if supported)
@@ -582,7 +596,7 @@ class TIEntry(Dock, Converter):
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
-                if self.versions and self.raw.version not in self.versions:
+                if self.versions != [0x00] and self.version not in self.versions:
                     warn(f"The version (0x{self.version:02x}) is not recognized.",
                          BytesWarning)
 
@@ -983,7 +997,7 @@ class SizedEntry(TIEntry):
         The length of this entry's user data section
         """
 
-    @View(calc_data, SizedBytes)[2:]
+    @View(calc_data, SizedData)[2:]
     def data(self) -> bytearray:
         pass
 

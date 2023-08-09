@@ -73,21 +73,35 @@ class Bytes(Converter):
         return bytes(value)
 
 
-class SizedBytes(Bytes):
+class Data(Bytes):
     _T = bytes
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
         """
-        Converts `bytes` -> `bytes` and sets the instance's length field
+        Converts `bytes` -> `bytes` and updates metadata fields
+
+        Certain metadata fields are updated automatically based on the entry's data.
+        The following are set by this converter:
+            - Version
+            - Length (for sized data)
 
         :param value: The value to convert
         :param instance: The instance which contains the data section
         :return: The bytes in `value`, unchanged
         """
 
-        instance.length = len(value)
+        instance.version = instance.derive_version(value)
         return super().set(value)
+
+
+class SizedData(Data):
+    _T = bytes
+
+    @classmethod
+    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+        instance.length = len(value)
+        return super().set(value, instance=instance)
 
 
 class Boolean(Converter):
@@ -497,4 +511,4 @@ class Loader:
 
 
 __all__ = ["Section", "View", "Dock", "Loader",
-           "Converter", "Bytes", "SizedBytes", "Boolean", "Integer", "String", "Bits"]
+           "Converter", "Bytes", "SizedData", "Boolean", "Integer", "String", "Bits"]
