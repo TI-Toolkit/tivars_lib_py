@@ -242,7 +242,7 @@ class ComplexEntry(TIEntry):
         if subtype_ids == (0x0C, 0x0C):
             return 0x00
 
-        elif 0x0B in subtype_ids:
+        elif 0x1B in subtype_ids:
             return 0x0B
 
         else:
@@ -374,15 +374,6 @@ class TIComplexFraction(TIComplex, register=True):
 
     _type_id = 0x1B
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.version = 0x0B
-
 
 class TIComplexRadical(ComplexEntry, register=True):
     r"""
@@ -419,15 +410,6 @@ class TIComplexPi(TIComplex, register=True):
 
     _type_id = 0x1E
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.version = 0x10
-
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         return NotImplemented
@@ -447,12 +429,3 @@ class TIComplexPiFraction(TIComplexPi, TIComplexFraction, register=True):
     real_analogue = TIRealPiFraction
 
     _type_id = 0x1F
-
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
-                 version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
-
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-        self.version = 0x10
