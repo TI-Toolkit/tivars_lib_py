@@ -134,23 +134,52 @@ class TIGraphedEquation(TIEquation):
         index -= 1
 
         class IndexedEquationConverter(Converter):
+            """
+            Converter for equations within a GDB
+
+            Since equations are stored contiguously within a GDB, their exact location is not static.
+            This converter interfaces with the nth equation by counting up from the start of the data section.
+
+            The `n`th equation in a GDB is interfaced by the converter `TIGraphedEquation[n]`.
+            """
+
             _T = TIGraphedEquation
 
             @classmethod
             def get(cls, data: bytes, *, instance: 'TIMonoGDB' = None, **kwargs) -> _T:
+                """
+                Converts `bytes` -> `TIGraphedEquation` by finding the equation at `index` within a GDB
+
+                :param data: The raw bytes to convert
+                :param instance: The instance which contains the data section
+                :return: The bytes in `data`, unchanged
+                """
+
                 return instance.equations[index]
 
             @classmethod
             def set(cls, value: _T, *, instance: 'TIMonoGDB' = None, **kwargs) -> bytes:
+                """
+                Converts `bytes` -> `TIGraphedEquation` by modifying the equation at `index` within a GDB
+
+                :param value: The value to convert
+                :param instance: The instance which contains the data section
+                :return: The bytes in `value`, unchanged
+                """
+
+                # Set appropriate equation
                 equations = list(instance.equations)
                 equations[index] = value
 
+                # Set styles
                 data = instance.raw.calc_data[:instance.offset]
                 for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                     data += equations[i].style
 
+                # Set data
                 data += b''.join(equation.raw.calc_data for equation in equations)
 
+                # Set colors (if they exist)
                 if color := color_data(instance):
                     data += b'84C'
                     for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):

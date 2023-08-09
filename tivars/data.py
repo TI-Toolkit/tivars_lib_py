@@ -230,7 +230,7 @@ class Bits:
                 Converts `bytes` -> `int` by concatenating bits in a slice
 
                 :param data: The raw bytes to convert
-                :return: The sliced bits in `data` joined without gaps
+                :return: The sliced bits in `data` joined without gaps as an integer
                 """
 
                 value = ""
@@ -247,7 +247,7 @@ class Bits:
 
                 :param value: The value to convert
                 :param current: The current value of the data section
-                :return: The bytes in `value`, unchanged
+                :return: The bytes in `value` fit into the section
                 """
 
                 data = 0

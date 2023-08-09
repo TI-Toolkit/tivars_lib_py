@@ -70,7 +70,8 @@ class ListEntry(TIEntry):
     """
     Base class for all list entries
 
-    A list entry is a one-dimensional array of `TIReal` or `TIComplex` elements.
+    A list entry is a one-dimensional array of `RealEntry` or `ComplexEntry` elements.
+    Exact types are supported.
     """
 
     _E = TIEntry

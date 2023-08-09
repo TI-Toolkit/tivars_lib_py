@@ -12,7 +12,8 @@ class TIMatrix(TIEntry, register=True):
     """
     Parser for the matrix type
 
-    A `TIMatrix` is a two-dimensional array of `TIReal` elements.
+    A `TIMatrix` is a two-dimensional array of `RealEntry` elements.
+    Exact types are supported, but complex numbers are not.
     """
 
     versions = [0x10, 0x0B, 0x00]

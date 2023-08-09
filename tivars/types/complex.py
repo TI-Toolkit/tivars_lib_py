@@ -89,6 +89,9 @@ class ComplexEntry(TIEntry):
 
     Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
     These types need not be the same, and will have subtype IDs not corresponding to their native type IDs.
+
+    The canonical type of the entire entry is determined by the imaginary part.
+    The entry is coerced automatically if the imaginary part is updated.
     """
 
     versions = [0x00, 0x0B, 0x10]
