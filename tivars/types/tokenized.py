@@ -101,7 +101,7 @@ class TokenizedEntry(SizedEntry):
 
         return version
 
-    def decode(self, data: bytearray, *, model: TIModel = None) -> str:
+    def decode(self, data: bytes, *, model: TIModel = None) -> str:
         """
         Decodes a byte stream into a string of tokens given a model
 
