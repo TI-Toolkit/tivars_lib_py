@@ -131,9 +131,9 @@ class ListEntry(TIEntry):
     def data(self) -> bytearray:
         pass
 
-    def derive_version(self, data: bytes = None) -> int:
+    def get_version(self, data: bytes = None) -> int:
         it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
-        version = max(map(self._E().derive_version, it), default=0x00)
+        version = max(map(self._E().get_version, it), default=0x00)
 
         if version > 0x1B:
             return 0x10

@@ -1,68 +1,74 @@
 from typing import ByteString
 
 from tivars.data import String
-from .parse import *
-from .tokens import *
+from .tokens.scripts import *
 
 
-def decode(bytestream: ByteString, byte_map: ByteMap) -> str:
-    string = ""
+with open("tivars/tokenizer/tokens/8X.xml", encoding="UTF-8") as file:
+    ALL_8X = Tokens.from_xml_string(file.read())
+
+
+def decode(bytestream: ByteString, *,
+           tokens: Tokens = None, lang: str = "en",
+           mode: str = "display") -> tuple[str | bytes, OsVersion]:
+    tokens = tokens or ALL_8X
+
+    out = []
+    since = OsVersions.INITIAL
+
     index = 0
     curr_bytes = b''
     while index < len(bytestream):
-        curr_bytes += bytestream[index].to_bytes(1, 'little')
-        if curr_bytes in byte_map:
-            string += byte_map[curr_bytes][0]
-            curr_bytes = b''
+        curr_bytes += bytestream[index:][:1]
 
-        elif len(curr_bytes) == 2:
-            if not any(key.startswith(curr_bytes[:1]) for key in byte_map):
-                raise ValueError(f"unrecognized byte '0x{curr_bytes[0]:x}' at position {index}")
+        if curr_bytes[0]:
+            if curr_bytes in tokens.bytes:
+                out.append(getattr(tokens.bytes[curr_bytes].langs[lang], mode))
+                since = max(tokens.bytes[curr_bytes].since, since)
 
-            else:
-                raise ValueError(f"unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}")
+                curr_bytes = b''
+
+            elif len(curr_bytes) >= 2:
+                if not any(key.startswith(curr_bytes[:1]) for key in tokens.bytes):
+                    raise ValueError(f"unrecognized byte '0x{curr_bytes[0]:x}' at position {index}")
+
+                else:
+                    raise ValueError(f"unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}")
 
         index += 1
 
-    return string
+    return b''.join(out) if mode == "ti_ascii" else "".join(out), since
 
 
-def encode(string: str, token_map: TokenMap) -> bytes:
+def encode(string: str, *, tokens: Tokens = None, lang: str = "en") -> tuple[bytes, OsVersion]:
+    tokens = tokens or ALL_8X
+
     data = b''
-    max_length = max(map(len, token_map.keys()))
-    within_string = False
+    since = OsVersions.INITIAL
+    max_length = max(map(len, tokens.langs[lang].keys()))
 
     index = 0
     while index < len(string):
-        if within_string:
-            length = 1
-            direction = 1
-        else:
-            length = min(len(string), max_length)
-            direction = -1
+        length = min(len(string), max_length)
 
-        while length <= max_length if within_string else length > 0:
+        while length <= max_length:
             substring = string[index:][:length]
-            if substring in token_map:
-                value = token_map[substring].bytes
-                data += value
+            if substring in tokens.langs[lang]:
+                data += tokens.langs[lang][substring]
 
-                if substring == '"':
-                    within_string = not within_string
-                elif token_map[substring].terminator:
-                    within_string = False
+                since = max(tokens.bytes[tokens.langs[lang][substring]].since, since)
 
                 index += length - 1
                 break
 
-            length += direction
+            length -= 1
 
         else:
-            raise ValueError(f"Could not tokenize input at position {index}: '{string[index:][:max_length]}'.")
+            raise ValueError(f"could not tokenize input at position {index}: '{string[index:][:max_length]}'")
 
         index += 1
 
-    return data
+    return data, since
 
 
 class TokenizedString(String):
@@ -70,15 +76,13 @@ class TokenizedString(String):
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
-        return decode(data.ljust(8, b'\x00'), CE_BYTES)
+        return decode(data.ljust(8, b'\x00'))[0]
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
-        return encode(value, CE_TOKENS).rstrip(b'\x00')
+        return encode(value)[0].rstrip(b'\x00')
 
 
-__all__ = ["decode", "encode", "load_tokens_xml", "TokenizedString",
-           "AXE_TOKENS", "CE_TOKENS", "CSE_TOKENS", "GRAMMER_TOKENS",
-           "TI83_TOKENS", "PRIZM_TOKENS", "TI82_TOKENS", "TI73_TOKENS",
-           "AXE_BYTES", "CE_BYTES", "CSE_BYTES", "GRAMMER_BYTES",
-           "TI83_BYTES", "PRIZM_BYTES", "TI82_BYTES", "TI73_BYTES"]
+__all__ = ["decode", "encode", "TokenizedString",
+           "Tokens", "OsVersion", "OsVersions",
+           "ALL_8X"]

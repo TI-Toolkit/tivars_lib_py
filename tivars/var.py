@@ -40,7 +40,7 @@ class TIHeader:
         """
         Create an empty header which targets a specified model
 
-        :param model: A `TImodel` to target (defaults to `TI_82AEP`)
+        :param model: A minimum `TIModel` to target (defaults to `TI_83P`)
         :param magic: File magic at the start of the header (default to the model's magic)
         :param extra: Extra export bytes for the header (defaults to `0x1a0a`)
         :param product_id: The targeted model's product ID (defaults to `0x00`)
@@ -49,7 +49,7 @@ class TIHeader:
 
         self.raw = self.Raw()
 
-        model = model or TI_82AEP
+        model = model or TI_83P
 
         self.magic = magic or model.magic
         self.extra = extra
@@ -72,7 +72,7 @@ class TIHeader:
             return False
 
     def __or__(self, other: list['TIEntry']):
-        new = other[0].export(header=self, name=other[0].name, model=self.derive_model())
+        new = other[0].export(header=self, name=other[0].name, model=self.targets().pop())
 
         for entry in other[1:]:
             new.add_entry(entry)
@@ -112,40 +112,29 @@ class TIHeader:
         The comment attached to the var
         """
 
-    def derive_model(self) -> TIModel:
+    def targets(self) -> set[TIModel]:
         """
-        Determine which model this header most likely represents
+        Determine which model(s) this header can target
 
         The header contains no reference to a model to target, which permits sharing across models where possible.
-        This method attempts to derive a model from the header's file magic and product ID.
+        This method derives a set of valid model from the header's file magic and product ID.
 
-        :return: A model that this header can target
+        If the header contains malformed magic, an error will be raised.
+        If the header contains a malformed product ID, it will be ignored.
+
+        :return: A set of models that this header can target
         """
 
-        match self.magic:
-            case TI_82.magic:
-                model = TI_82
-            case TI_83.magic:
-                model = TI_83
-            case TI_84P.magic:
-                try:
-                    models = [m for m in MODELS if m.magic == self.magic]
-                    if self.product_id != b'\x00':
-                        models = [m for m in models if m.product_id == self.product_id]
+        models = {m for m in TIModel.MODELS if m.magic == self.magic}
 
-                    model = max(models, key=lambda m: m.flags)
+        if self.product_id != b'\x00':
+            if filtered := {m for m in models if m.product_id == self.product_id}:
+                return filtered
 
-                except ValueError:
-                    warn(f"The var product ID ({self.product_id}) is not recognized.",
-                         BytesWarning)
-                    model = None
+        if not models:
+            raise ValueError(f"file magic '{self.magic}' not recognized")
 
-            case _:
-                warn(f"The var file magic ({self.magic}) is not recognized.",
-                     BytesWarning)
-                model = None
-
-        return model
+        return models
 
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -332,7 +321,7 @@ class TIEntry(Dock, Converter):
             except AttributeError:
                 self.load(init)
 
-        self.version = self.derive_version()
+        self.version = self.get_version()
 
     def __bool__(self) -> bool:
         return not self.is_empty
@@ -387,7 +376,7 @@ class TIEntry(Dock, Converter):
         return len(self.calc_data)
 
     @Section(1, Bits[:])
-    def type_id(self) -> bytes:
+    def type_id(self) -> int:
         """
         The type ID of the entry
 
@@ -531,14 +520,14 @@ class TIEntry(Dock, Converter):
         self.raw.calc_data = bytearray(self.leading_bytes)
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
 
-    def derive_version(self, data: bytes = None) -> int:
+    def get_version(self, data: bytes = None) -> int:
         """
         Determines the version byte corresponding to given data for this entry type
 
         Entries which could contain non-backwards compatible data are assigned a version byte.
         If an entry's version exceeds the "version" of a calculator, transfer to the calculator will fail.
 
-        :param data: The data to find the version of
+        :param data: The data to find the version of (defaults to this entry's data)
         :return: The version byte for `data`
         """
 
@@ -596,10 +585,6 @@ class TIEntry(Dock, Converter):
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
-                if self.versions != [0x00] and self.version not in self.versions:
-                    warn(f"The version (0x{self.version:02x}) is not recognized.",
-                         BytesWarning)
-
                 if self.raw.archived not in b'\x00\x80':
                     warn(f"The archive flag ({self.raw.archived.hex()}) is set to an unexpected value.",
                          BytesWarning)
@@ -633,6 +618,10 @@ class TIEntry(Dock, Converter):
         self.raw.calc_data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
 
         self.coerce()
+
+        if self.versions != [0x00] and self.version not in self.versions:
+            warn(f"The version (0x{self.version:02x}) is not recognized.",
+                 BytesWarning)
 
     def bytes(self) -> bytes:
         """
@@ -722,12 +711,12 @@ class TIEntry(Dock, Converter):
 
         self.export(header=header, model=model).save(filename)
 
-    def export(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None) -> 'TIVar':
+    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = None) -> 'TIVar':
         """
         Export this entry to a `TIVar` with a specified name, header, and target model
 
+        :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param name: The name of the var (defaults to `'UNNAMED'`; may not be valid for all types)
         :param model: A `TIModel` to target (defaults to `None`)
         """
 
@@ -759,23 +748,23 @@ class TIVar:
     A var file is composed of a header and any number of entries (though most have only one).
     """
 
-    def __init__(self, *, header: TIHeader = None, name: str = 'UNNAMED', model: TIModel = None):
+    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, model: TIModel = None):
         """
         Creates an empty var with a specified name, header, and targeted model
 
-        :param header: A `TIHeader` to attach (defaults to an empty header)
         :param name: The name of the var (defaults to `UNNAMED`)
-        :param model: A `TIModel` to target (defaults to `None`)
+        :param header: A `TIHeader` to attach (defaults to an empty header)
+        :param model: A minimum `TIModel` to target (defaults to `None`)
         """
 
-        self.header = header or TIHeader(magic=model.magic if model is not None else None)
+        self._header = header or TIHeader(model)
         self.entries = []
 
         self.name = name
         self._model = model
 
-        if self._model and self._model != self.header.derive_model():
-            warn(f"The var's model ({self._model}) doesn't match its header's ({self.header.derive_model()}).",
+        if self._model and self._model not in self._header.targets():
+            warn(f"The var's model ({self._model}) is incompatible with the given header.",
                  UserWarning)
 
     def __bool__(self) -> bool:
@@ -798,7 +787,7 @@ class TIVar:
             return False
 
     def __len__(self):
-        return len(self.header) + self.entry_length + 2
+        return len(self._header) + self.entry_length + 2
 
     @property
     def entry_length(self) -> int:
@@ -831,6 +820,9 @@ class TIVar:
         :return: The var's file extension
         """
 
+        if len(self.entries) > 1:
+            return "8xg"
+
         try:
             extension = self.entries[0].extensions[self._model]
             if not extension:
@@ -843,11 +835,15 @@ class TIVar:
             warn(f"Model {self._model} not recognized.")
             extension = self.entries[0].extensions[None]
 
-        if len(self.entries) == 1:
-            return extension
+        return extension
 
-        else:
-            return "8xg"
+    @property
+    def header(self) -> 'TIHeader':
+        """
+        :return: This var's header
+        """
+
+        return self._header
 
     @property
     def is_empty(self) -> bool:
@@ -863,7 +859,7 @@ class TIVar:
         :return: This var's targeted model
         """
 
-        return self.model
+        return self._model
 
     def add_entry(self, entry: TIEntry = None):
         """
@@ -903,7 +899,7 @@ class TIVar:
             data = BytesIO(data)
 
         # Read header
-        self.header.load_bytes(data.read(53))
+        self._header.load_bytes(data.read(53))
         entry_length = int.from_bytes(data.read(2), 'little')
 
         # Read entries
@@ -920,13 +916,9 @@ class TIVar:
         checksum = data.read(2)
 
         # Discern model
-        model = self.header.derive_model()
-
-        if self._model is None:
-            self._model = model
-
-        elif self._model != model:
-            warn(f"The var file comes from a different model (expected {self._model}, got {model}).")
+        if self._model and not self._model <= min(*self._header.targets()):
+            warn(f"The loaded var file is incompatible with the {self._model}.",
+                 BytesWarning)
 
         # Check² sum
         if checksum != self.checksum:
@@ -938,7 +930,7 @@ class TIVar:
         :return: The byte string corresponding to this var
         """
 
-        dump = self.header.bytes()
+        dump = self._header.bytes()
         dump += int.to_bytes(self.entry_length, 2, 'little')
 
         for entry in self.entries:

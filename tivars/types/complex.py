@@ -238,7 +238,7 @@ class ComplexEntry(TIEntry):
 
         return self.real, self.imag
 
-    def derive_version(self, data: bytes = None) -> int:
+    def get_version(self, data: bytes = None) -> int:
         data = data or self.data
 
         subtype_ids = data[0], data[9]

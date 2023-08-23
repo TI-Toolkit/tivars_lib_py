@@ -499,8 +499,8 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return equations
 
-    def derive_version(self, data: bytes = None) -> int:
-        return max(map(TIGraphedEquation.derive_version, self.equations), default=0x00)
+    def get_version(self, data: bytes = None) -> int:
+        return max(map(TIGraphedEquation.get_version, self.equations), default=0x00)
 
     @Loader[dict]
     def load_dict(self, dct: dict):

@@ -91,7 +91,7 @@ class Data(Bytes):
         :return: The bytes in `value`, unchanged
         """
 
-        instance.version = instance.derive_version(value)
+        instance.version = instance.get_version(value)
         return super().set(value)
 
 

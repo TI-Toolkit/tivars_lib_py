@@ -26,24 +26,6 @@ class TokenizedEntry(SizedEntry):
 
     min_data_length = 2
 
-    tokens = {
-        TI_82: (TI82_TOKENS, TI82_BYTES),
-        TI_83: (TI83_TOKENS, TI83_BYTES),
-        TI_82A: (TI83_TOKENS, TI83_BYTES),
-        TI_83P: (TI83_TOKENS, TI83_BYTES),
-        TI_84P: (TI83_TOKENS, TI83_BYTES),
-        TI_84T: (TI83_TOKENS, TI83_BYTES),
-        TI_84PCSE: (CSE_TOKENS, CSE_BYTES),
-        TI_84PCE: (CE_TOKENS, CE_BYTES),
-        TI_84PCEPY: (CE_TOKENS, CE_BYTES),
-        TI_83PCE: (CE_TOKENS, CE_BYTES),
-        TI_83PCEEP: (CE_TOKENS, CE_BYTES),
-        TI_82AEP: (CE_TOKENS, CE_BYTES)
-    }
-    """
-    Token mappings used for each model
-    """
-
     clock_tokens = [
         b'\xEF\x00', b'\xEF\x01', b'\xEF\x02', b'\xEF\x03', b'\xEF\x04',
         b'\xEF\x07', b'\xEF\x08', b'\xEF\x09', b'\xEF\x0A', b'\xEF\x0B', b'\xEF\x0C', b'\xEF\x0D',
@@ -55,84 +37,133 @@ class TokenizedEntry(SizedEntry):
     These tokens influence the entry's version, though detecting the presence of the RTC has no current application.
     """
 
-    def derive_version(self, data: bytes = None) -> int:
-        data = data or self.data
+    def __format__(self, format_spec: str) -> str:
+        if "." not in format_spec:
+            format_spec += ".en"
 
-        def has_bytes_in(prefix: bytes, start: int, end: int):
-            return any(prefix + bytes([byte]) in data for byte in range(start, end + 1))
+        spec, lang = format_spec.split(".")
 
-        version = 0x00
-        match data:
-            case _TI_84PCE if has_bytes_in(b'\xEF', 0x9E, 0xA6):
+        match spec:
+            case "":
+                return self.decode(self.data, lang=lang)
+
+            case "t":
+                return self.decode(self.data, lang=lang, mode="accessible")
+
+            case _:
+                return super().__format__(format_spec)
+
+    @staticmethod
+    def decode(data: bytes, *, lang: str = "en", mode: str = "display") -> str | bytes:
+        """
+        Decodes a byte stream into a string of tokens
+
+        Each token is represented using one of three different representations formats, dictated by `mode`:
+            - `display`: Represents the tokens with Unicode characters matching the calculator's display
+            - `accessible`: Represents the tokens with ASCII-only equivalents, often requiring multi-character glyphs
+            - `ti_ascii`: Represents the tokens with their internal font indices (returns a `bytes` object)
+
+        :param data: The bytes to decode
+        :param lang: The language used in `string` (defaults to English, `en`)
+        :param mode: The form of token representation to use for output (defaults to `display`)
+        :return: A string of token representations
+        """
+
+        return decode(data, lang=lang, mode=mode)[0]
+
+    @staticmethod
+    def encode(string: str, *, model: TIModel = None, lang: str = None) -> bytes:
+        """
+        Encodes a string of token represented in text into a byte stream
+
+        :param string: The tokens to encode
+        :param model: The model to target when encoding (defaults to no specific model)
+        :param lang: The language used in `string` (defaults to English, `en`)
+        :return: A stream of token bytes
+        """
+
+        match model, lang:
+            case None, None:
+                return encode(string)[0]
+
+            case None, _:
+                return encode(string, lang=lang)[0]
+
+            case _, None:
+                return encode(string, tokens=model.tokens, lang=model.lang)[0]
+
+            case _:
+                return encode(string, tokens=model.tokens, lang=lang)[0]
+
+    def get_version(self, data: bytes = None) -> int:
+        match self.get_min_os(data):
+            case os if os >= TI_84PCE.OS("5.3"):
                 version = 0x0C
 
-            case _TI_84PCE if has_bytes_in(b'\xEF', 0x73, 0x98):
+            case os if os >= TI_84PCE.OS("5.2"):
                 version = 0x0B
 
-            case _TI_84PCSE if has_bytes_in(b'\xEF', 0x41, 0x6C):
+            case os if os >= TI_84PCSE.OS("4.0"):
                 version = 0x0A
 
-            case _TI_84P if has_bytes_in(b'\xEF', 0x17, 0x3D):
+            case os if os >= TI_84P.OS("2.55"):
+                version = 0x07
+
+            case os if os >= TI_84P.OS("2.53"):
                 version = 0x06
 
-            case _TI_84P if has_bytes_in(b'\xEF', 0x13, 0x16):
+            case os if os >= TI_84P.OS("2.30"):
                 version = 0x05
 
-            case _TI_84P if has_bytes_in(b'\xEF', 0x00, 0x12):
+            case os if os >= TI_84P.OS("2.21"):
                 version = 0x04
 
-            case _TI_83P if has_bytes_in(b'\xBB', 0xDB, 0xF5):
+            case os if os >= TI_83P.OS("1.16"):
                 version = 0x03
 
-            case _TI_83P if has_bytes_in(b'\xBB', 0xCF, 0xDA):
+            case os if os >= TI_83P.OS("1.15"):
                 version = 0x02
 
-            case _TI_83P if has_bytes_in(b'\xBB', 0x68, 0xCE):
+            case os if os >= TI_83P.OS("1.00"):
                 version = 0x01
 
-        if any(token in data for token in self.clock_tokens):
+            case _:
+                version = 0x00
+
+        if any(token in (data or self.data) for token in self.clock_tokens):
             version += 0x20
 
         return version
 
-    def decode(self, data: bytes, *, model: TIModel = None) -> str:
+    def get_min_os(self, data: bytes = None) -> OsVersion:
         """
-        Decodes a byte stream into a string of tokens given a model
+        Determines the minimum OS that supports this entry's tokens
 
-        :param data: The bytes to decode
-        :param model: The targeted model
-        :return: A string of token representations
-        """
-
-        byte_map = self.tokens[model or TI_84PCEPY][1]
-        return decode(data, byte_map)
-
-    def encode(self, string: str, *, model: TIModel = None) -> bytes:
-        """
-        Encodes a string of tokens into a byte stream given a model
-
-        :param string: The tokens to encode
-        :param model: The targeted model
-        :return: A stream of token bytes
+        :param data: The data to find the version of (defaults to this entry's data)
+        :return: The minimum `OsVersion` this entry supports
         """
 
-        token_map = self.tokens[model or TI_84PCEPY][0]
-        return encode(string, token_map)
+        return decode(data or self.data)[1]
 
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.version != (version := self.derive_version()):
-            warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
+        try:
+            if self.version != (version := self.get_version()):
+                warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
+                     BytesWarning)
+
+        except ValueError as e:
+            warn(f"The file contains an invalid token {' '.join(str(e).split()[2:])}.",
                  BytesWarning)
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None):
-        self.data = self.encode(string, model=model)
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
+        self.data = self.encode(string, model=model, lang=lang)
 
     def string(self) -> str:
-        return self.decode(self.data)
+        return format(self, "")
 
 
 class EquationName(TokenizedString):
