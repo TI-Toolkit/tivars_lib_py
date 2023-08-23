@@ -924,6 +924,20 @@ class TIVar:
 
         self.entries.clear()
 
+    def supported_by(self, model: TIModel = None) -> bool:
+        """
+        Determines whether a given model can support this var
+
+        :param model: The model to check support for (defaults to this var's model, if it is set)
+        :return: Whether `model` supports this var
+        """
+
+        model = model or self._model
+        if model is None:
+            raise ValueError("no model was passed")
+
+        return model in self._header.targets() and all(entry.get_min_os() <= model.OS() for entry in self.entries)
+
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this var

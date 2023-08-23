@@ -94,6 +94,9 @@ class VarTests(unittest.TestCase):
             with open("tests/data/var/Program_new.8xp", 'rb') as new:
                 self.assertEqual(new.read(), orig.read())
 
+        self.assertEqual(test_var.supported_by(TI_84P), True)
+        self.assertEqual(test_var.supported_by(TI_83), False)
+
     def test_truthiness(self):
         test_var = TIVar()
         self.assertEqual(bool(test_var), False)
