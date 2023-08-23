@@ -9,9 +9,9 @@ from ..tokenizer.tokens.scripts.parse import MODEL_ORDER
 class TIModel:
     MODELS = []
 
-    def __init__(self, name: str, flags: 'TIFeature', magic: str, product_id: int, lang: str):
+    def __init__(self, name: str, features: 'TIFeature', magic: str, product_id: int, lang: str):
         self._name = name
-        self._flags = TIFeature(flags)
+        self._features = TIFeature(features)
         self._magic = magic
         self._product_id = product_id
         self._lang = lang
@@ -38,8 +38,8 @@ class TIModel:
         return self.name
 
     @property
-    def flags(self) -> 'TIFeature':
-        return self._flags
+    def features(self) -> 'TIFeature':
+        return self._features
 
     @property
     def lang(self) -> str:
@@ -86,52 +86,52 @@ class TIFeature(Flags):
     Python = {7: 1}
 
 
-flags82 = {}
-flags83 = flags82 | TIFeature.Complex
-flags82a = flags83 | TIFeature.Flash
-flags83p = flags82a | TIFeature.Apps
-flags84p = flags83p | TIFeature.Clock
-flags84pcse = flags84p | TIFeature.Color
-flags84pce = flags84pcse | TIFeature.ez80
-flags83pce = flags84pce | TIFeature.ExactMath
-flags83pceep = flags83pce | TIFeature.Python
-flags84pcepy = flags84pce | TIFeature.Python
-flags82aep = flags83pceep | {2: 0}
+features82 = {}
+features83 = features82 | TIFeature.Complex
+features82a = features83 | TIFeature.Flash
+features83p = features82a | TIFeature.Apps
+features84p = features83p | TIFeature.Clock
+features84pcse = features84p | TIFeature.Color
+features84pce = features84pcse | TIFeature.ez80
+features83pce = features84pce | TIFeature.ExactMath
+features83pceep = features83pce | TIFeature.Python
+features84pcepy = features84pce | TIFeature.Python
+features82aep = features83pceep | {2: 0}
 
 it = iter(MODEL_ORDER)
 next(it)
 
 TIModel.MODELS = [
-    TI_82 := TIModel(next(it), flags82, "**TI82**", 0x00, "en"),
+    TI_82 := TIModel(next(it), features82, "**TI82**", 0x00, "en"),
 
-    TI_83 := TIModel(next(it), flags83, "**TI83**", 0x00, "en"),
-    TI_82ST := TIModel(next(it), flags83, "**TI83**", 0x00, "en"),
-    TI_82ST_fr := TIModel(next(it), flags83, "**TI83**", 0x00, "fr"),
-    TI_76_fr := TIModel(next(it), flags83, "**TI83**", 0x00, "fr"),
+    TI_83 := TIModel(next(it), features83, "**TI83**", 0x00, "en"),
+    TI_82ST := TIModel(next(it), features83, "**TI83**", 0x00, "en"),
+    TI_82ST_fr := TIModel(next(it), features83, "**TI83**", 0x00, "fr"),
+    TI_76_fr := TIModel(next(it), features83, "**TI83**", 0x00, "fr"),
 
-    TI_83P := TIModel(next(it), flags83p, "**TI83F*", 0x04, "en"),
-    TI_83PSE := TIModel(next(it), flags83p, "**TI83F*", 0x04, "en"),
-    TI_83P_fr := TIModel(next(it), flags83p, "**TI83F*", 0x04, "fr"),
-    TI_82P := TIModel(next(it), flags83p, "**TI83F*", 0x04, "fr"),
+    TI_83P := TIModel(next(it), features83p, "**TI83F*", 0x04, "en"),
+    TI_83PSE := TIModel(next(it), features83p, "**TI83F*", 0x04, "en"),
+    TI_83P_fr := TIModel(next(it), features83p, "**TI83F*", 0x04, "fr"),
+    TI_82P := TIModel(next(it), features83p, "**TI83F*", 0x04, "fr"),
 
-    TI_84P := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "en"),
-    TI_84PSE := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "en"),
-    TI_83P_fr_USB := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "fr"),
-    TI_84P_fr := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "fr"),
-    TI_84PPSE := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "en"),
+    TI_84P := TIModel(next(it), features84p, "**TI83F*", 0x0A, "en"),
+    TI_84PSE := TIModel(next(it), features84p, "**TI83F*", 0x0A, "en"),
+    TI_83P_fr_USB := TIModel(next(it), features84p, "**TI83F*", 0x0A, "fr"),
+    TI_84P_fr := TIModel(next(it), features84p, "**TI83F*", 0x0A, "fr"),
+    TI_84PPSE := TIModel(next(it), features84p, "**TI83F*", 0x0A, "en"),
 
-    TI_82A := TIModel(next(it), flags82a, "**TI83F*", 0x0B, "fr"),
-    TI_84PT := TIModel(next(it), flags84p, "**TI83F*", 0x1B, "en"),
+    TI_82A := TIModel(next(it), features82a, "**TI83F*", 0x0B, "fr"),
+    TI_84PT := TIModel(next(it), features84p, "**TI83F*", 0x1B, "en"),
 
-    TI_84PCSE := TIModel(next(it), flags84pcse, "**TI83F*", 0x0F, "en"),
+    TI_84PCSE := TIModel(next(it), features84pcse, "**TI83F*", 0x0F, "en"),
 
-    TI_84PCE := TIModel(next(it), flags84pce, "**TI83F*", 0x13, "en"),
-    TI_84PCET := TIModel(next(it), flags84pce, "**TI83F*", 0x13, "en"),
-    TI_83PCE := TIModel(next(it), flags83pce, "**TI83F*", 0x13, "fr"),
-    TI_83PCEEP := TIModel(next(it), flags83pceep, "**TI83F*", 0x13, "fr"),
-    TI_84PCEPY := TIModel(next(it), flags84pcepy, "**TI83F*", 0x13, "en"),
-    TI_84PCETPE := TIModel(next(it), flags84pcepy, "**TI83F*", 0x13, "en"),
-    TI_82AEP := TIModel(next(it), flags82aep, "**TI83F*", 0x00, "fr"),
+    TI_84PCE := TIModel(next(it), features84pce, "**TI83F*", 0x13, "en"),
+    TI_84PCET := TIModel(next(it), features84pce, "**TI83F*", 0x13, "en"),
+    TI_83PCE := TIModel(next(it), features83pce, "**TI83F*", 0x13, "fr"),
+    TI_83PCEEP := TIModel(next(it), features83pceep, "**TI83F*", 0x13, "fr"),
+    TI_84PCEPY := TIModel(next(it), features84pcepy, "**TI83F*", 0x13, "en"),
+    TI_84PCETPE := TIModel(next(it), features84pcepy, "**TI83F*", 0x13, "en"),
+    TI_82AEP := TIModel(next(it), features82aep, "**TI83F*", 0x00, "fr"),
 ]
 
 __all__ = ["TI_82",
