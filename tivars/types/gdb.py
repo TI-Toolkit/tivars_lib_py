@@ -489,6 +489,9 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return equations
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return max(map(TIGraphedEquation.get_min_os, self.equations), default=OsVersions.INITIAL)
+
     def get_version(self, data: bytes = None) -> int:
         return max(map(TIGraphedEquation.get_version, self.equations), default=0x00)
 
