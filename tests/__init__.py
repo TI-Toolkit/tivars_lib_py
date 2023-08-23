@@ -3,8 +3,17 @@ import unittest
 
 from decimal import Decimal
 
+from tivars.models import *
 from tivars.types import *
 from tivars import TIHeader, TIVar
+
+
+class ModelTests(unittest.TestCase):
+    def test_all_models(self):
+        for model in TIModel.MODELS:
+            self.assertEqual(model, eval(model.name.translate({43: "P", 45: "_", 46: "_", 58: "_"})))
+
+        self.assertEqual(TIModel.MODELS, sorted(TIModel.MODELS))
 
 
 class VarTests(unittest.TestCase):
@@ -78,6 +87,7 @@ class VarTests(unittest.TestCase):
         test_var.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.extension, "8xp")
+        self.assertEqual(test_var.filename, "UNNAMED.8xp")
         test_var.save("tests/data/var/Program_new.8xp")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
@@ -104,6 +114,9 @@ class EntryTests(unittest.TestCase):
         test_header.open("tests/data/var/Program.8xp")
 
         test_program.save("tests/data/var/Program_new.8xp", header=test_header)
+
+        self.assertEqual(test_program.export().filename, "SETDATE.8xp")
+        self.assertEqual(test_program.export(model=TI_83).filename, "SETDATE.83p")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
             with open("tests/data/var/Program_new.8xp", 'rb') as new:

@@ -220,19 +220,8 @@ class TIMonoPicture(PictureEntry):
 
     extensions = {
         None: "8xi",
-        TI_82: "",
-        TI_83: "",
-        TI_82A: "8xi",
-        TI_82P: "8xi",
         TI_83P: "8xi",
-        TI_84P: "8xi",
-        TI_84T: "8xi",
-        TI_84PCSE: "",
-        TI_84PCE: "",
-        TI_84PCEPY: "",
-        TI_83PCE: "",
-        TI_83PCEEP: "",
-        TI_82AEP: ""
+        TI_84PCSE: ""
     }
 
     min_data_length = 758
@@ -286,19 +275,7 @@ class TIPicture(PictureEntry, register=True):
 
     extensions = {
         None: "8ci",
-        TI_82: "",
-        TI_83: "",
-        TI_82A: "",
-        TI_82P: "",
-        TI_83P: "",
-        TI_84P: "",
-        TI_84T: "",
-        TI_84PCSE: "8ci",
-        TI_84PCE: "8ci",
-        TI_84PCEPY: "8ci",
-        TI_83PCE: "8ci",
-        TI_83PCEEP: "8ci",
-        TI_82AEP: "8ci"
+        TI_84PCSE: "8ci"
     }
 
     min_data_length = 21947
@@ -365,19 +342,7 @@ class TIImage(PictureEntry, register=True):
 
     extensions = {
         None: "8ca",
-        TI_82: "",
-        TI_83: "",
-        TI_82A: "",
-        TI_82P: "",
-        TI_83P: "",
-        TI_84P: "",
-        TI_84T: "",
         TI_84PCSE: "8ca",
-        TI_84PCE: "8ca",
-        TI_84PCEPY: "8ca",
-        TI_83PCE: "8ca",
-        TI_83PCEEP: "8ca",
-        TI_82AEP: "8ca"
     }
 
     min_data_length = 22247

@@ -318,17 +318,7 @@ class TIMonoGDB(SizedEntry, register=True):
         None: "8xd",
         TI_82: "82d",
         TI_83: "83d",
-        TI_82A: "8xd",
-        TI_82P: "8xd",
-        TI_83P: "8xd",
-        TI_84P: "8xd",
-        TI_84T: "8xd",
-        TI_84PCSE: "8xd",
-        TI_84PCE: "8xd",
-        TI_84PCEPY: "8xd",
-        TI_83PCE: "8xd",
-        TI_83PCEEP: "8xd",
-        TI_82AEP: "8xd"
+        TI_83P: "8xd"
     }
 
     mode_byte = 0x00

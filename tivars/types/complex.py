@@ -98,19 +98,8 @@ class ComplexEntry(TIEntry):
 
     extensions = {
         None: "8xc",
-        TI_82: "",
         TI_83: "83c",
-        TI_82A: "8xc",
-        TI_82P: "8xc",
-        TI_83P: "8xc",
-        TI_84P: "8xc",
-        TI_84T: "8xc",
-        TI_84PCSE: "8xc",
-        TI_84PCE: "8xc",
-        TI_84PCEPY: "8xc",
-        TI_83PCE: "8xc",
-        TI_83PCEEP: "8xc",
-        TI_82AEP: "8xc"
+        TI_83P: "8xc"
     }
 
     min_data_length = 18

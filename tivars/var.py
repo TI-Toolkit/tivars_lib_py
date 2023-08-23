@@ -824,18 +824,34 @@ class TIVar:
             return "8xg"
 
         try:
-            extension = self.entries[0].extensions[self._model]
+            if self._model is None:
+                return self.entries[0].extensions[None]
+
+            extension = ""
+            for model in reversed(TIModel.MODELS):
+                if model in self.entries[0].extensions and model <= self._model:
+                    extension = self.entries[0].extensions[self._model]
+                    break
+
             if not extension:
                 raise TypeError(f"the {self._model} does not support this var type")
+
+            return extension
 
         except IndexError:
             raise ValueError("this var is empty")
 
-        except KeyError:
-            warn(f"Model {self._model} not recognized.")
-            extension = self.entries[0].extensions[None]
+    @property
+    def filename(self) -> str:
+        """
+        Determines the var's filename based on its name, entries, and targeted model.
 
-        return extension
+        The filename is the concatenation of the var name and extension (see `TIVar.extension`).
+
+        :return: The var's filename
+        """
+
+        return f"{self.name}.{self.extension}"
 
     @property
     def header(self) -> 'TIHeader':
@@ -965,7 +981,7 @@ class TIVar:
         :param filename: A filename to save to (defaults to the var's name and extension)
         """
 
-        with open(filename or f"{self.name}.{self.extension}", 'wb+') as file:
+        with open(filename or self.filename, 'wb+') as file:
             file.write(self.bytes())
 
 

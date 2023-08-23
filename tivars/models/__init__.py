@@ -92,44 +92,47 @@ flags83pceep = flags83pce | TIFeature.Python
 flags84pcepy = flags84pce | TIFeature.Python
 flags82aep = flags83pceep | {3: 0}
 
+it = iter(MODEL_ORDER)
+next(it)
+
 TIModel.MODELS = [
-    TI_82 := TIModel("TI-82", flags82, "**TI82**", 0x00, "en"),
+    TI_82 := TIModel(next(it), flags82, "**TI82**", 0x00, "en"),
 
-    TI_83 := TIModel("TI-83", flags83, "**TI83**", 0x00, "en"),
-    TI_82ST := TIModel("TI-82ST", flags83, "**TI83**", 0x00, "en"),
-    TI_82ST_fr := TIModel("TI-82ST.fr", flags83, "**TI83**", 0x00, "fr"),
-    TI_76_fr := TIModel("TI-76.fr", flags83, "**TI83**", 0x00, "fr"),
+    TI_83 := TIModel(next(it), flags83, "**TI83**", 0x00, "en"),
+    TI_82ST := TIModel(next(it), flags83, "**TI83**", 0x00, "en"),
+    TI_82ST_fr := TIModel(next(it), flags83, "**TI83**", 0x00, "fr"),
+    TI_76_fr := TIModel(next(it), flags83, "**TI83**", 0x00, "fr"),
 
-    TI_83P := TIModel("TI-83+", flags83p, "**TI83F*", 0x04, "en"),
-    TI_83PSE := TIModel("TI-83+SE", flags83p, "**TI83F*", 0x04, "en"),
-    TI_83P_fr := TIModel("TI-83+.fr", flags83p, "**TI83F*", 0x04, "fr"),
-    TI_82P := TIModel("TI-82+", flags83p, "**TI83F*", 0x04, "fr"),
+    TI_83P := TIModel(next(it), flags83p, "**TI83F*", 0x04, "en"),
+    TI_83PSE := TIModel(next(it), flags83p, "**TI83F*", 0x04, "en"),
+    TI_83P_fr := TIModel(next(it), flags83p, "**TI83F*", 0x04, "fr"),
+    TI_82P := TIModel(next(it), flags83p, "**TI83F*", 0x04, "fr"),
 
-    TI_84P := TIModel("TI-84+", flags84p, "**TI83F*", 0x0A, "en"),
-    TI_84PSE := TIModel("TI-84+SE", flags84p, "**TI83F*", 0x0A, "en"),
-    TI_83P_fr_USB := TIModel("TI-83+.fr:USB", flags84p, "**TI83F*", 0x0A, "fr"),
-    TI_84P_fr := TIModel("TI-84P.fr", flags84p, "**TI83F*", 0x0A, "fr"),
-    TI_84PPSE := TIModel("TI-84+PSE", flags84p, "**TI83F*", 0x0A, "en"),
+    TI_84P := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "en"),
+    TI_84PSE := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "en"),
+    TI_83P_fr_USB := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "fr"),
+    TI_84P_fr := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "fr"),
+    TI_84PPSE := TIModel(next(it), flags84p, "**TI83F*", 0x0A, "en"),
 
-    TI_82A := TIModel("TI-82A", flags82a, "**TI83F*", 0x0B, "fr"),
-    TI_84T := TIModel("TI-84+T", flags84p, "**TI83F*", 0x1B, "en"),
+    TI_82A := TIModel(next(it), flags82a, "**TI83F*", 0x0B, "fr"),
+    TI_84PT := TIModel(next(it), flags84p, "**TI83F*", 0x1B, "en"),
 
-    TI_84PCSE := TIModel("TI-84+CSE", flags84pcse, "**TI83F*", 0x0F, "en"),
+    TI_84PCSE := TIModel(next(it), flags84pcse, "**TI83F*", 0x0F, "en"),
 
-    TI_84PCE := TIModel("TI-84+CE", flags84pce, "**TI83F*", 0x13, "en"),
-    TI_84PCET := TIModel("TI-84+CET", flags84pce, "**TI83F*", 0x13, "en"),
-    TI_83PCE := TIModel("TI-83PCE", flags83pce, "**TI83F*", 0x13, "fr"),
-    TI_83PCEEP := TIModel("TI-83PCEEP", flags83pceep, "**TI83F*", 0x13, "fr"),
-    TI_84PCEPY := TIModel("TI-84+CEPY", flags84pcepy, "**TI83F*", 0x13, "en"),
-    TI_84PCETPE := TIModel("TI-84+CETPE", flags84pcepy, "**TI83F*", 0x13, "en"),
-    TI_82AEP := TIModel("TI-82AEP", flags82aep, "**TI83F*", 0x00, "fr"),
+    TI_84PCE := TIModel(next(it), flags84pce, "**TI83F*", 0x13, "en"),
+    TI_84PCET := TIModel(next(it), flags84pce, "**TI83F*", 0x13, "en"),
+    TI_83PCE := TIModel(next(it), flags83pce, "**TI83F*", 0x13, "fr"),
+    TI_83PCEEP := TIModel(next(it), flags83pceep, "**TI83F*", 0x13, "fr"),
+    TI_84PCEPY := TIModel(next(it), flags84pcepy, "**TI83F*", 0x13, "en"),
+    TI_84PCETPE := TIModel(next(it), flags84pcepy, "**TI83F*", 0x13, "en"),
+    TI_82AEP := TIModel(next(it), flags82aep, "**TI83F*", 0x00, "fr"),
 ]
 
 __all__ = ["TI_82",
            "TI_83", "TI_82ST", "TI_82ST_fr", "TI_76_fr",
            "TI_83P", "TI_83PSE", "TI_83P_fr", "TI_82P",
            "TI_84P", "TI_84PSE", "TI_83P_fr_USB", "TI_84P_fr", "TI_84PPSE",
-           "TI_84T", "TI_82A",
+           "TI_84PT", "TI_82A",
            "TI_84PCSE",
            "TI_84PCE", "TI_84PCET", "TI_83PCE", "TI_83PCEEP", "TI_84PCEPY", "TI_84PCETPE", "TI_82AEP",
            "TIFeature", "TIModel"]

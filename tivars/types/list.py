@@ -76,6 +76,13 @@ class ListEntry(TIEntry):
 
     _E = TIEntry
 
+    extensions = {
+        None: "8xl",
+        TI_82: "82l",
+        TI_83: "83l",
+        TI_83P: "8xl",
+    }
+
     versions = [0x10, 0x0B, 0x00]
 
     min_data_length = 2
@@ -189,45 +196,11 @@ class ListEntry(TIEntry):
 class TIRealList(ListEntry, register=True):
     _E = RealEntry
 
-    extensions = {
-        None: "8xl",
-        TI_82: "82l",
-        TI_83: "83l",
-        TI_82A: "8xl",
-        TI_82P: "8xl",
-        TI_83P: "8xl",
-        TI_84P: "8xl",
-        TI_84T: "8xl",
-        TI_84PCSE: "8xl",
-        TI_84PCE: "8xl",
-        TI_84PCEPY: "8xl",
-        TI_83PCE: "8xl",
-        TI_83PCEEP: "8xl",
-        TI_82AEP: "8xl"
-    }
-
     _type_id = 0x01
 
 
 class TIComplexList(ListEntry, register=True):
     _E = ComplexEntry
-
-    extensions = {
-        None: "8xl",
-        TI_82: "",
-        TI_83: "83l",
-        TI_82A: "8xl",
-        TI_82P: "8xl",
-        TI_83P: "8xl",
-        TI_84P: "8xl",
-        TI_84T: "8xl",
-        TI_84PCSE: "8xl",
-        TI_84PCE: "8xl",
-        TI_84PCEPY: "8xl",
-        TI_83PCE: "8xl",
-        TI_83PCEEP: "8xl",
-        TI_82AEP: "8xl"
-    }
 
     _type_id = 0x0D
 
