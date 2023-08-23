@@ -551,7 +551,7 @@ class TIEntry(Dock, Converter):
         :return: Whether `model` supports this entry
         """
 
-        return self.get_min_os() < model.OS()
+        return self.get_min_os() < model.OS("latest")
 
     def unarchive(self):
         """
@@ -936,7 +936,8 @@ class TIVar:
         if model is None:
             raise ValueError("no model was passed")
 
-        return model in self._header.targets() and all(entry.get_min_os() <= model.OS() for entry in self.entries)
+        return model in self._header.targets() and \
+            all(entry.get_min_os() < model.OS("latest") for entry in self.entries)
 
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -1020,7 +1021,7 @@ class TIVar:
 
         if self._model:
             for index, entry in enumerate(self.entries):
-                if entry.get_min_os() > self._model.OS():
+                if entry.get_min_os() > self._model.OS("latest"):
                     warn(f"Entry #{index} is not supported by {self._model}.",
                          UserWarning)
 

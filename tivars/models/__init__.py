@@ -17,7 +17,7 @@ class TIModel:
         self._lang = lang
 
         with open("tivars/tokenizer/tokens/8X.xml", encoding="UTF-8") as file:
-            self._tokens = Tokens.from_xml_string(file.read(), self.OS())
+            self._tokens = Tokens.from_xml_string(file.read(), self.OS("latest"))
             self._trie = TokenTrie.from_tokens(self._tokens, "en")
 
     def __eq__(self, other):
@@ -67,7 +67,7 @@ class TIModel:
     def has(self, feature: 'TIFeature'):
         return feature in self._flags
 
-    def OS(self, version: str = "latest") -> OsVersion:
+    def OS(self, version: str = "") -> OsVersion:
         return OsVersion(self.name, version)
 
 

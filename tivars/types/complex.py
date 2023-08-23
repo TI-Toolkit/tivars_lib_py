@@ -232,13 +232,13 @@ class ComplexEntry(TIEntry):
 
         match min(data[0], data[9]):
             case 0x0C:
-                return TI_83.OS("0.01013")
+                return TI_83.OS()
 
             case 0x1B:
                 return TI_84P.OS("2.55")
 
             case _:
-                return TI_83PCE("5.0.0.0089")
+                return TI_83PCE()
 
     def get_version(self, data: bytes = None) -> int:
         data = data or self.data
