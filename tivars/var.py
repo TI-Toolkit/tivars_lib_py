@@ -520,6 +520,16 @@ class TIEntry(Dock, Converter):
         self.raw.calc_data = bytearray(self.leading_bytes)
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        """
+        Determines the minimum OS that supports this entry's data
+
+        :param data: The data to find the minimum support for (defaults to this entry's data)
+        :return: The minimum `OsVersion` this entry supports
+        """
+
+        return OsVersions.INITIAL
+
     def get_version(self, data: bytes = None) -> int:
         """
         Determines the version byte corresponding to given data for this entry type
@@ -532,6 +542,16 @@ class TIEntry(Dock, Converter):
         """
 
         return self.versions[0]
+
+    def supported_by(self, model: TIModel) -> bool:
+        """
+        Determines whether a given model can support this entry
+
+        :param model: The model to check support for
+        :return: Whether `model` supports this entry
+        """
+
+        return self.get_min_os() < model.OS()
 
     def unarchive(self):
         """
@@ -834,7 +854,10 @@ class TIVar:
                     break
 
             if not extension:
-                raise TypeError(f"the {self._model} does not support this var type")
+                warn(f"The {self._model} does not support this var type.",
+                     UserWarning)
+
+                return self.entries[0].extensions[None]
 
             return extension
 
@@ -980,6 +1003,12 @@ class TIVar:
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         """
+
+        if self._model:
+            for index, entry in enumerate(self.entries):
+                if entry.get_min_os() > self._model.OS():
+                    warn(f"Entry #{index} is not supported by {self._model}.",
+                         UserWarning)
 
         with open(filename or self.filename, 'wb+') as file:
             file.write(self.bytes())

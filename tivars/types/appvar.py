@@ -20,5 +20,8 @@ class TIAppVar(SizedEntry, register=True):
 
     _type_id = 0x15
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return TI_83P.OS("0.103")
+
 
 __all__ = ["TIAppVar"]

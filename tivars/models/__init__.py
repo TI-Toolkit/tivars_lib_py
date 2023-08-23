@@ -1,7 +1,7 @@
 from functools import total_ordering
 
 from ..flags import *
-from ..tokenizer.tokens.scripts import OsVersion, Tokens, TokenTrie
+from ..tokenizer.tokens.scripts import OsVersion, OsVersions, Tokens, TokenTrie
 from ..tokenizer.tokens.scripts.parse import MODEL_ORDER
 
 
@@ -63,6 +63,9 @@ class TIModel:
     @property
     def trie(self) -> TokenTrie:
         return self._trie
+
+    def has(self, feature: 'TIFeature'):
+        return feature in self._flags
 
     def OS(self, version: str = "latest") -> OsVersion:
         return OsVersion(self.name, version)
@@ -135,4 +138,4 @@ __all__ = ["TI_82",
            "TI_84PT", "TI_82A",
            "TI_84PCSE",
            "TI_84PCE", "TI_84PCET", "TI_83PCE", "TI_83PCEEP", "TI_84PCEPY", "TI_84PCETPE", "TI_82AEP",
-           "TIFeature", "TIModel"]
+           "TIFeature", "TIModel", "OsVersion", "OsVersions"]

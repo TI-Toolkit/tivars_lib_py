@@ -227,6 +227,19 @@ class ComplexEntry(TIEntry):
 
         return self.real, self.imag
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        data = data or self.data
+
+        match min(data[0], data[9]):
+            case 0x0C:
+                return TI_83.OS("0.01013")
+
+            case 0x1B:
+                return TI_84P.OS("2.55")
+
+            case _:
+                return TI_83PCE("5.0.0.0089")
+
     def get_version(self, data: bytes = None) -> int:
         data = data or self.data
 
@@ -239,6 +252,9 @@ class ComplexEntry(TIEntry):
 
         else:
             return 0x10
+
+    def supported_by(self, model: TIModel) -> bool:
+        return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):

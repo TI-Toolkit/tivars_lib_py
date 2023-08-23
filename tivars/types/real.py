@@ -130,6 +130,19 @@ class RealEntry(TIEntry):
         if self._type_id is not None:
             self.subtype_id = self._type_id
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        data = data or self.data
+
+        match data[0]:
+            case 0x18 | 0x19:
+                return TI_84P.OS("2.53")
+
+            case _:
+                return OsVersions.INITIAL
+
+    def supported_by(self, model: TIModel) -> bool:
+        return super().supported_by(model) and (self.subtype_id <= 0x19 or model.has(TIFeature.ExactMath))
+
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
         """

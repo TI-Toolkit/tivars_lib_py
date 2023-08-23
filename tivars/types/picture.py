@@ -251,6 +251,9 @@ class TIMonoPicture(PictureEntry):
             for bit in L1.get(bytes([byte])):
                 yield bit
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return TI_83P.OS("0.103")
+
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
         self.data = b''.join(L1.set(entry) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
@@ -302,6 +305,9 @@ class TIPicture(PictureEntry, register=True):
         for byte in self.data:
             for rgb in RGBPalette.get(bytes([byte])):
                 yield rgb
+
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return TI_84PCSE.OS("4.0")
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):
@@ -395,6 +401,9 @@ class TIImage(PictureEntry, register=True):
     @View(calc_data, SizedData)[3:]
     def data(self) -> bytearray:
         pass
+
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return TI_84PCSE.OS("4.0")
 
     @Loader[list]
     def load_array(self, arr: list[list[pixel_type]]):

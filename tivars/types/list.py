@@ -76,13 +76,6 @@ class ListEntry(TIEntry):
 
     _E = TIEntry
 
-    extensions = {
-        None: "8xl",
-        TI_82: "82l",
-        TI_83: "83l",
-        TI_83P: "8xl",
-    }
-
     versions = [0x10, 0x0B, 0x00]
 
     min_data_length = 2
@@ -138,6 +131,10 @@ class ListEntry(TIEntry):
     def data(self) -> bytearray:
         pass
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+        return max(map(self._E().get_min_os, it), default=OsVersions.INITIAL)
+
     def get_version(self, data: bytes = None) -> int:
         it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
         version = max(map(self._E().get_version, it), default=0x00)
@@ -150,6 +147,9 @@ class ListEntry(TIEntry):
 
         else:
             return 0x00
+
+    def supported_by(self, model: TIModel) -> bool:
+        return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
@@ -196,11 +196,24 @@ class ListEntry(TIEntry):
 class TIRealList(ListEntry, register=True):
     _E = RealEntry
 
+    extensions = {
+        None: "8xl",
+        TI_82: "82l",
+        TI_83: "83l",
+        TI_83P: "8xl",
+    }
+
     _type_id = 0x01
 
 
 class TIComplexList(ListEntry, register=True):
     _E = ComplexEntry
+
+    extensions = {
+        None: "8xl",
+        TI_83: "83l",
+        TI_83P: "8xl",
+    }
 
     _type_id = 0x0D
 

@@ -95,6 +95,9 @@ class TokenizedEntry(SizedEntry):
             case _:
                 return encode(string, tokens=model.tokens, lang=lang)[0]
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return decode(data or self.data)[1]
+
     def get_version(self, data: bytes = None) -> int:
         match self.get_min_os(data):
             case os if os >= TI_84PCE.OS("5.3"):
@@ -134,16 +137,6 @@ class TokenizedEntry(SizedEntry):
             version += 0x20
 
         return version
-
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        """
-        Determines the minimum OS that supports this entry's tokens
-
-        :param data: The data to find the version of (defaults to this entry's data)
-        :return: The minimum `OsVersion` this entry supports
-        """
-
-        return decode(data or self.data)[1]
 
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
