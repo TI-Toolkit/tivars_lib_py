@@ -107,6 +107,10 @@ class TIMatrix(TIEntry, register=True):
 
         return self.width * self.height
 
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+        return max(map(RealEntry().get_min_os, it), default=OsVersions.INITIAL)
+
     def get_version(self, data: bytes = None) -> int:
         it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
         version = max(map(RealEntry().get_version, it), default=0x00)
@@ -119,6 +123,9 @@ class TIMatrix(TIEntry, register=True):
 
         else:
             return 0x00
+
+    def supported_by(self, model: TIModel) -> bool:
+        return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):

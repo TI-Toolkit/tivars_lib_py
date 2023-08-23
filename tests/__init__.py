@@ -180,6 +180,9 @@ class TokenizationTests(unittest.TestCase):
             file.seek(55)
             self.assertEqual(test_program.bytes(), file.read()[:-2])
 
+        self.assertEqual(test_program.supported_by(TI_83PCE), True)
+        self.assertEqual(test_program.supported_by(TI_83), False)
+
     def test_all_tokens(self):
         test_program = TIProgram()
 
