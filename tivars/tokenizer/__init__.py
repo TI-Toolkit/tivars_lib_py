@@ -2,16 +2,13 @@ from typing import ByteString
 
 from tivars.data import String
 from .tokens.scripts import *
-
-
-with open("tivars/tokenizer/tokens/8X.xml", encoding="UTF-8") as file:
-    ALL_8X = Tokens.from_xml_string(file.read())
+from ..models import *
 
 
 def decode(bytestream: ByteString, *,
            tokens: Tokens = None, lang: str = "en",
            mode: str = "display") -> tuple[str | bytes, OsVersion]:
-    tokens = tokens or ALL_8X
+    tokens = tokens or TI_84PCE.tokens
 
     out = []
     since = OsVersions.INITIAL
@@ -40,33 +37,22 @@ def decode(bytestream: ByteString, *,
     return b''.join(out) if mode == "ti_ascii" else "".join(out), since
 
 
-def encode(string: str, *, tokens: Tokens = None, lang: str = "en") -> tuple[bytes, OsVersion]:
-    tokens = tokens or ALL_8X
-
+def encode(string: str, trie: TokenTrie) -> tuple[bytes, OsVersion]:
     data = b''
     since = OsVersions.INITIAL
-    max_length = max(map(len, tokens.langs[lang].keys()))
-
     index = 0
-    while index < len(string):
-        length = min(len(string), max_length)
 
-        while length <= max_length:
-            substring = string[index:][:length]
-            if substring in tokens.langs[lang]:
-                data += tokens.langs[lang][substring]
+    while string:
+        token, remainder = trie.get_longest_token(string)
 
-                since = max(tokens.bytes[tokens.langs[lang][substring]].since, since)
+        if token is None:
+            raise ValueError(f"could not tokenize input at position {index}: '{string[:12]}'")
 
-                index += length - 1
-                break
+        data += token.bits
+        since = max(token.since, since)
 
-            length -= 1
-
-        else:
-            raise ValueError(f"could not tokenize input at position {index}: '{string[index:][:max_length]}'")
-
-        index += 1
+        index += len(string) - len(remainder)
+        string = remainder
 
     return data, since
 
@@ -80,9 +66,8 @@ class TokenizedString(String):
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
-        return encode(value)[0].rstrip(b'\x00')
+        return encode(value, TI_84PCE.get_trie())[0].rstrip(b'\x00')
 
 
 __all__ = ["decode", "encode", "TokenizedString",
-           "Tokens", "OsVersion", "OsVersions",
-           "ALL_8X"]
+           "Tokens", "OsVersion", "OsVersions"]

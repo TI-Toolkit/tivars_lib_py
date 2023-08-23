@@ -82,18 +82,8 @@ class TokenizedEntry(SizedEntry):
         :return: A stream of token bytes
         """
 
-        match model, lang:
-            case None, None:
-                return encode(string)[0]
-
-            case None, _:
-                return encode(string, lang=lang)[0]
-
-            case _, None:
-                return encode(string, tokens=model.tokens, lang=model.lang)[0]
-
-            case _:
-                return encode(string, tokens=model.tokens, lang=lang)[0]
+        model = model or TI_84PCE
+        return encode(string, model.get_trie(lang))[0]
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return decode(data or self.data)[1]
