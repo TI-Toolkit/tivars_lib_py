@@ -77,7 +77,7 @@ class Flags(Converter, dict, Mapping[int, int]):
             bitsets = {bit: 0 for bit in range(width)}
 
         else:
-            bitsets = {bit: 0 for bit in range(ceil((max(bitsets.keys()) + 1) / 8) * 8)} | bitsets
+            bitsets = {bit: 0 for bit in range(ceil((max(bitsets.keys(), default=0) + 1) / 8) * 8)} | bitsets
 
         super().__init__({bit: value % 2 for bit, value in bitsets.items()})
 

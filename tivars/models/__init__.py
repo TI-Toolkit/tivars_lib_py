@@ -11,7 +11,7 @@ class TIModel:
 
     def __init__(self, name: str, flags: 'TIFeature', magic: str, product_id: int, lang: str):
         self._name = name
-        self._flags = TIFeature(flags, width=9)
+        self._flags = TIFeature(flags)
         self._magic = magic
         self._product_id = product_id
         self._lang = lang
@@ -76,18 +76,17 @@ class TIModel:
 
 
 class TIFeature(Flags):
-    Default = {0: 1}
-    Complex = {1: 1}
-    Flash = {2: 1}
-    Apps = {3: 1}
-    Clock = {4: 1}
-    Color = {5: 1}
-    ez80 = {6: 1}
-    ExactMath = {7: 1}
-    Python = {8: 1}
+    Complex = {0: 1}
+    Flash = {1: 1}
+    Apps = {2: 1}
+    Clock = {3: 1}
+    Color = {4: 1}
+    ez80 = {5: 1}
+    ExactMath = {6: 1}
+    Python = {7: 1}
 
 
-flags82 = TIFeature.Default
+flags82 = {}
 flags83 = flags82 | TIFeature.Complex
 flags82a = flags83 | TIFeature.Flash
 flags83p = flags82a | TIFeature.Apps
@@ -97,7 +96,7 @@ flags84pce = flags84pcse | TIFeature.ez80
 flags83pce = flags84pce | TIFeature.ExactMath
 flags83pceep = flags83pce | TIFeature.Python
 flags84pcepy = flags84pce | TIFeature.Python
-flags82aep = flags83pceep | {3: 0}
+flags82aep = flags83pceep | {2: 0}
 
 it = iter(MODEL_ORDER)
 next(it)
