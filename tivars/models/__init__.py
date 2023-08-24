@@ -69,7 +69,7 @@ class TIModel:
         return self._trie[lang]
 
     def has(self, feature: 'TIFeature'):
-        return feature in self._flags
+        return feature in self._features
 
     def OS(self, version: str = "") -> OsVersion:
         return OsVersion(self.name, version)
