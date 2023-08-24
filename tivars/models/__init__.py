@@ -7,7 +7,19 @@ from ..tokenizer.tokens.scripts.parse import MODEL_ORDER
 
 @total_ordering
 class TIModel:
+    """
+    Data type for all model constants
+
+    Every 83-series model is included in this module as a constant to use in code.
+    Each model holds its (abbreviated) name, features, file magic, product ID, and native language.
+
+    Models can also be used to obtain token maps and tries for tokenization and OS versions for compatibility checks.
+    """
+
     MODELS = []
+    """
+    A list of all models
+    """
 
     def __init__(self, name: str, features: 'TIFeature', magic: str, product_id: int, lang: str):
         self._name = name
@@ -39,43 +51,96 @@ class TIModel:
 
     @property
     def features(self) -> 'TIFeature':
+        """
+        :return: This model's features
+        """
+
         return self._features
 
     @property
     def lang(self) -> str:
+        """
+        :return: This model's native language
+        """
+
         return self._lang
 
     @property
     def magic(self) -> str:
+        """
+        :return: This model's file magic
+        """
+
         return self._magic
 
     @property
     def name(self) -> str:
+        """
+        :return: This model's (abbreviated) name
+        """
+
         return self._name
 
     @property
     def order(self) -> int:
+        """
+        :return: This model's order within the chronology used by the token sheets
+        """
+
         return MODEL_ORDER[self._name]
 
     @property
     def product_id(self) -> int:
+        """
+        :return: This model's product ID
+        """
+
         return self._product_id
 
     @property
     def tokens(self) -> Tokens:
+        """
+        :return: The tokens supported by this model
+        """
+
         return self._tokens
 
     def get_trie(self, lang: str = None) -> TokenTrie:
+        """
+        Gets the token trie for this model corresponding to a given language
+
+        :param lang: A language code (defaults to English, `en`)
+        :return: The token trie corresponding to `lang`
+        """
+
         return self._trie[lang]
 
     def has(self, feature: 'TIFeature'):
+        """
+        Whether this model has a given feature
+
+        :param feature: The feature to check
+        :return: Whether this model has `feature`
+        """
+
         return feature in self._features
 
     def OS(self, version: str = "") -> OsVersion:
+        """
+        An `OsVersion` with this model as its model and a supplied version
+
+        :param version: An OS version number (defaults to the model's earliest OS)
+        :return: An `OsVersion` for this model and `version`
+        """
+
         return OsVersion(self.name, version)
 
 
 class TIFeature(Flags):
+    """
+    Flags representing all calculator features
+    """
+
     Complex = {0: 1}
     Flash = {1: 1}
     Apps = {2: 1}
