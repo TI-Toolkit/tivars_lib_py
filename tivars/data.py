@@ -327,17 +327,7 @@ class Section:
         return self._get(self._get_raw(instance), instance=instance)
 
     def __set__(self, instance, value: _T):
-        value = self._set(value, instance=instance, length=self._length, current=self._get_raw(instance))
-
-        if self._length is not None:
-            if len(value) > self._length:
-                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self._length]}.",
-                     BytesWarning)
-                value = value[:self._length]
-
-            value = value.ljust(self._length, b'\x00')
-
-        setattr(instance.raw, self._name, value)
+        setattr(instance.raw, self._name, self._set_raw(instance, value))
 
     def __call__(self, func) -> 'Section':
         new = copy.copy(self)
@@ -353,6 +343,19 @@ class Section:
 
     def _get_raw(self, instance) -> bytes:
         return getattr(instance.raw, self._name, None)
+
+    def _set_raw(self, instance, value: _T) -> _T:
+        value = self._set(value, instance=instance, length=self._length, current=self._get_raw(instance))
+
+        if self._length is not None:
+            if len(value) > self._length:
+                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self._length]}.",
+                     BytesWarning)
+                value = value[:self._length]
+
+            value = value.ljust(self._length, b'\x00')
+
+        return value
 
     @property
     def name(self) -> str:
@@ -420,24 +423,8 @@ class View(Section):
         else:
             self._length = len(range(*self._indices.indices(self._target.length)))
 
-    def __get__(self, instance, owner: type = None) -> _T:
-        if instance is None:
-            return self
-
-        return self._get(self._get_raw(instance), instance=instance)
-
     def __set__(self, instance, value: _T):
-        value = self._set(value, instance=instance, length=self._length, current=self._get_raw(instance))
-
-        if self._length is not None:
-            if len(value) > self._length:
-                warn(f"Value {value} is too wide for this buffer; truncating to {value[:self._length]}.",
-                     BytesWarning)
-                value = value[:self._length]
-
-            value = value.ljust(self._length, b'\x00')
-
-        getattr(instance.raw, self._target.name)[self._indices] = value
+        getattr(instance.raw, self._target.name)[self._indices] = self._set_raw(instance, value)
 
     def __getitem__(self, indices: slice) -> 'View':
         return self.__class__(self._target, self._converter, indices)
