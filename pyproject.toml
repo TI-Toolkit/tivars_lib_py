@@ -1,3 +1,26 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["tivars"]
+
+[tool.setuptools.package-data]
+tivars = ["*.default.json", "*.xml"]
+
+
+[project]
+name = "tivars"
+version = "0.7.0"
+description = "A library for interacting with TI-(e)z80 (82/83/84 series) calculator files"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+
+[project.urls]
+Repository = "https://github.com/TI-Toolkit/tivars_lib_py"
+Documentation = "https://ti-toolkit.github.io/tivars_lib_py/"
+
+[project.optional-dependencies]
+images = "pillow"
+arrays = "numpy"
