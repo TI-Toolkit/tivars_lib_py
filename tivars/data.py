@@ -2,7 +2,7 @@ import copy
 import inspect
 
 from math import ceil
-from typing import TypeVar
+from typing import Callable, TypeVar
 from warnings import warn
 
 
@@ -330,7 +330,7 @@ class Section:
     def __set__(self, instance, value: _T):
         setattr(instance.raw, self._name, self._set_raw(instance, value))
 
-    def __call__(self, func) -> 'Section':
+    def __call__(self, func: Callable) -> 'Section':
         new = copy.copy(self)
         new.__doc__ = func.__doc__
 
