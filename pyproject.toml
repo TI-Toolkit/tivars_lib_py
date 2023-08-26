@@ -22,5 +22,5 @@ Repository = "https://github.com/TI-Toolkit/tivars_lib_py"
 Documentation = "https://ti-toolkit.github.io/tivars_lib_py/"
 
 [project.optional-dependencies]
-images = "pillow"
-arrays = "numpy"
+images = ["pillow"]
+arrays = ["numpy"]
