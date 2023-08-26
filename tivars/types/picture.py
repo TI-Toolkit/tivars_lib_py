@@ -183,7 +183,9 @@ class PictureEntry(SizedEntry):
     """
 
     def __iter__(self) -> Iterator[pixel_type]:
-        raise NotImplementedError
+        for row in self.array():
+            for col in row:
+                yield col
 
     @Loader[list, ]
     def load_array(self, arr: list[list[pixel_type]]):
@@ -246,11 +248,6 @@ class TIMonoPicture(PictureEntry):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-    def __iter__(self) -> Iterator[pixel_type]:
-        for byte in self.data:
-            for bit in L1.get(bytes([byte])):
-                yield bit
-
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_83P.OS()
 
@@ -300,11 +297,6 @@ class TIPicture(PictureEntry, register=True):
                  data: ByteString = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-    def __iter__(self) -> Iterator[pixel_type]:
-        for byte in self.data:
-            for rgb in RGBPalette.get(bytes([byte])):
-                yield rgb
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_84PCSE.OS()
@@ -372,11 +364,6 @@ class TIImage(PictureEntry, register=True):
                  data: ByteString = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
-    def __iter__(self) -> Iterator[pixel_type]:
-        for row in range(self.data_height - 1, -1, -1):
-            for col in range(0, self.data_width - 2, 2):
-                yield RGB565.get(self.data[self.data_width * row + col:][:2])
 
     @Section(8, ImageName)
     def name(self) -> str:
