@@ -36,7 +36,7 @@ class TIHeader:
 
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
-                 comment: str = "Created with tivars_lib_py v0.6.1"):
+                 comment: str = "Created with tivars_lib_py v0.6.3"):
         """
         Create an empty header which targets a specified model
 
@@ -969,7 +969,7 @@ class TIVar:
         # Read checksum
         checksum = data.read(2)
 
-        # Discern model
+        # Check model
         if self._model and not self._model <= min(*self._header.targets()):
             warn(f"The loaded var file is incompatible with the {self._model}.",
                  BytesWarning)
@@ -1022,7 +1022,7 @@ class TIVar:
         if self._model:
             for index, entry in enumerate(self.entries):
                 if entry.get_min_os() > self._model.OS("latest"):
-                    warn(f"Entry #{index} is not supported by {self._model}.",
+                    warn(f"Entry #{index + 1} is not supported by {self._model}.",
                          UserWarning)
 
         with open(filename or self.filename, 'wb+') as file:

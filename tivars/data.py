@@ -208,9 +208,10 @@ class Bits:
     Sliceable converter to extract and package a slice of bits within a byte
 
     Use like `Bits[start:end:step]` to view a slice of a byte.
+    If the slice is empty, the entire byte will be targeted.
     """
 
-    def __class_getitem__(cls, item: slice = slice(None)):
+    def __class_getitem__(cls, item: slice):
         indices = range(*item.indices(8))
 
         class BitSlice(Converter):

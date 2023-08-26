@@ -1,8 +1,8 @@
 from typing import ByteString
 
 from tivars.data import String
-from .tokens.scripts import *
 from ..models import *
+from .tokens.scripts import *
 
 
 def decode(bytestream: ByteString, *,
