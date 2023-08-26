@@ -1,5 +1,6 @@
 import io
 import json
+import os
 
 from typing import ByteString, Iterator
 from warnings import warn
@@ -823,7 +824,7 @@ class TIMonoFuncGDB(TIMonoGDB):
     @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
-            with open("json/func.default.json") as file:
+            with open(os.path.join(os.path.dirname(__file__), "json/func.default.json")) as file:
                 dct = json.load(file)
 
         super().load_dict(dct)
@@ -983,7 +984,7 @@ class TIMonoParamGDB(TIMonoGDB):
     @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
-            with open("json/param.default.json") as file:
+            with open(os.path.join(os.path.dirname(__file__), "json/param.default.json")) as file:
                 dct = json.load(file)
 
         super().load_dict(dct)
@@ -1119,7 +1120,7 @@ class TIMonoPolarGDB(TIMonoGDB):
     @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
-            with open("json/polar.default.json") as file:
+            with open(os.path.join(os.path.dirname(__file__), "json/polar.default.json")) as file:
                 dct = json.load(file)
 
         super().load_dict(dct)
@@ -1307,7 +1308,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     @Loader[dict]
     def load_dict(self, dct: dict = None):
         if dct is None:
-            with open("json/seq.default.json") as file:
+            with open(os.path.join(os.path.dirname(__file__), "json/seq.default.json")) as file:
                 dct = json.load(file)
 
         super().load_dict(dct)
