@@ -83,6 +83,7 @@ class Data(Bytes):
 
         Certain metadata fields are updated automatically based on the entry's data.
         The following are set by this converter:
+
             - Version
             - Length (for sized data)
 
@@ -280,12 +281,7 @@ class Section:
     Distinct data sections are entirely independent, which is useful for sections which may vary in length.
     To construct sections which point to a portion of another section, see the `View` class.
 
-    Data sections can be declared by decorating methods:
-    ```py
-    @Section(length, Converter)
-    def data_section(self) -> _T:
-        ...
-    ```
+    Data sections can be declared by decorating methods.
 
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
@@ -385,12 +381,7 @@ class View(Section):
     Data views are effectively pointers to the data sections they view, converting data in and out as specified.
     Note that data views cannot target other data views; this is done for implementation simplicity.
 
-    Data views can be declared by decorating methods:
-    ```py
-    @View(section[slice], Converter)
-    def data_view(self) -> _T:
-        ...
-    ```
+    Data views can be declared by decorating methods.
 
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
@@ -470,12 +461,7 @@ class Loader:
     """
     Function decorator to identify methods as data loaders for `Dock` instances
 
-    Specify the loader's accepted type(s) using brackets:
-    ```py
-    @Loader[int]
-    def load_int(self, data: int):
-        ...
-    ```
+    Specify the loader's accepted type(s) using brackets.
     """
 
     types = ()
