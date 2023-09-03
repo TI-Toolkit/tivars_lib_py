@@ -34,6 +34,7 @@ jobs:
             --project-url=https://github.com/$GITHUB_REPOSITORY \
             --project-base-dir="$(pwd)" \
             --html-viewsource-base=https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_SHA \
+            --html-output ./docs \
             --make-html
 
     - name: Upload pages artifact
