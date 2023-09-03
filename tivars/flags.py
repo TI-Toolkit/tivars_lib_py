@@ -49,7 +49,7 @@ class Enum(Converter):
         Finds the first name in this enum with a given value
 
         :param value: The value to find
-        :return: A name in this enum
+        :return: A name in this enum with value ``value`` or ``None``
         """
 
         return next(filter(lambda attr: not attr.startswith("_") and getattr(cls, attr) == value, dir(cls)), None)
@@ -67,7 +67,7 @@ class Flags(Converter, dict, Mapping[int, int]):
 
     def __init__(self, bitsets: Mapping[int, int] | 'Flags' = None, *, width: int = 8):
         """
-        Create an empty `Flags` instance with a given initial state and width
+        Creates an empty `Flags` instance with a given initial state and width
 
         :param bitsets: The initial state of these flags
         :param width: The number of bitfields used for these flags (defaults to ``8``)
