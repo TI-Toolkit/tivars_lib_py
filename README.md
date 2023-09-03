@@ -192,7 +192,7 @@ For these reasons, it is _not_ recommended to instantiate your own models.
 
 ### Tokenization
 
-Functions to decode and encode strings from various token sheets can be found in `tivars.tokenizer`. Support currently exists for all forms of 82/83/84 series BASIC as well as custom token sheets; PR's concerning the sheets themselves should be directed upstream to [TI-Toolkit/tokens](https://github.com/TI-Toolkit/tokens).
+Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. Support currently exists for all models in the 82/83/84 series as well as the TI-73; PR's concerning the sheets themselves should be directed upstream to [TI-Toolkit/tokens](https://github.com/TI-Toolkit/tokens).
 
 ## Documentation
 
