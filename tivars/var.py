@@ -38,7 +38,7 @@ class TIHeader:
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
                  comment: str = "Created with tivars_lib_py v0.7.3"):
         """
-        Create an empty header which targets a specified model
+        Creates an empty header which targets a specified model
 
         :param model: A minimum `TIModel` to target (defaults to ``TI_83P``)
         :param magic: File magic at the start of the header (default to the model's magic)
@@ -114,10 +114,10 @@ class TIHeader:
 
     def targets(self) -> set[TIModel]:
         """
-        Determine which model(s) this header can target
+        Determines which model(s) this header can target
 
         The header contains no reference to a model to target, which permits sharing across models where possible.
-        This method derives a set of valid model from the header's file magic and product ID.
+        This method derives a set of valid models from the header's file magic and product ID.
 
         If the header contains malformed magic, an error will be raised.
         If the header contains a malformed product ID, it will be ignored.
@@ -700,7 +700,7 @@ class TIEntry(Dock, Converter):
 
     def open(self, filename: str):
         """
-        Loads this header from a file given a filename
+        Loads this entry from a file given a filename
 
         :param filename: A filename to open
         """
@@ -722,7 +722,7 @@ class TIEntry(Dock, Converter):
 
     def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
         """
-        Save this entry as a var file given a filename and optional header and targeted model
+        Saves this entry as a var file given a filename and optional header and targeted model
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         :param header: A `TIHeader` to attach (defaults to an empty header)
@@ -733,7 +733,7 @@ class TIEntry(Dock, Converter):
 
     def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = None) -> 'TIVar':
         """
-        Export this entry to a `TIVar` with a specified name, header, and target model
+        Exports this entry to a `TIVar` with a specified name, header, and target model
 
         :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
@@ -1014,7 +1014,7 @@ class TIVar:
 
     def save(self, filename: str = None):
         """
-        Save this var given a filename
+        Saves this var given a filename
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         """
