@@ -752,7 +752,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         """
         Xres: The pixel separation of points in a function plot
 
-        The value must be an integer between 1 and 8.
+        The value must be an integer in ``[1,8]``.
         """
 
         if int(value) != float(value) or not 1 <= int(value) <= 8:
@@ -852,7 +852,9 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     @View(calc_data, String)[-18:-15]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - ``84C``
+        Magic to identify the GDB as color-oriented
+
+        This value is always ``84C``.
         """
 
     def mono(self) -> TIMonoFuncGDB:
@@ -1024,7 +1026,9 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     @View(calc_data, String)[-14:-11]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - ``84C``
+        Magic to identify the GDB as color-oriented
+
+        This value is always ``84C``.
         """
 
     def mono(self) -> TIMonoParamGDB:
@@ -1150,7 +1154,9 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     @View(calc_data, String)[-14:-11]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - ``84C``
+        Magic to identify the GDB as color-oriented
+
+        This value is always ``84C``.
         """
 
     def mono(self) -> TIMonoPolarGDB:
@@ -1387,7 +1393,9 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     @View(calc_data, String)[-11:-8]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - ``84C``
+        Magic to identify the GDB as color-oriented
+
+        This value is always ``84C``.
         """
 
     def mono(self) -> TIMonoSeqGDB:
