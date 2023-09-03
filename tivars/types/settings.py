@@ -93,7 +93,11 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     @Section(8, String)
     def name(self) -> str:
-        pass
+        """
+        The name of the entry
+
+        This value is always ``Window``.
+        """
 
     @Section(min_data_length)
     def calc_data(self) -> bytes:
@@ -274,7 +278,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
         Xres: the pixel separation of points in a function plot
 
-        The value must be an integer in [1,8]
+        The value must be an integer in ``[1,8]``.
         """
 
         if int(value) != float(value) or not 1 <= int(value) <= 8:
@@ -349,7 +353,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
         The name of the entry
 
-        Always equal to RclWindw.
+        This value is always ``RclWindw``.
         """
 
     @Section(min_data_length)
@@ -531,7 +535,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
         Xres: the pixel separation of points in a function plot
 
-        The value must be an integer in [1,8]
+        The value must be an integer in ``[1,8]``.
         """
 
         if int(value) != float(value) or not 1 <= int(value) <= 8:
@@ -606,7 +610,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
         The name of the entry
 
-        Always equal to TblSet.
+        This value is always ``TblSet``.
         """
 
     @Section(min_data_length)
