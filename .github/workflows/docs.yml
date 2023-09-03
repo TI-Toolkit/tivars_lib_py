@@ -30,17 +30,11 @@ jobs:
 
     - name: Generate docs
       run: |
-        pydoctor \
-            --project-name=tivars_lib_py \
+        pydoctor ./tivars --config ./pyproject.toml \
             --project-url=https://github.com/$GITHUB_REPOSITORY \
-            --html-viewsource-base=https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_SHA \
-            --theme readthedocs \
-            --make-html \
-            --html-output=./docs \
             --project-base-dir="$(pwd)" \
-            --docformat=restructuredtext \
-            --intersphinx=https://docs.python.org/3/objects.inv \
-            ./tivars
+            --html-viewsource-base=https://github.com/$GITHUB_REPOSITORY/tree/$GITHUB_SHA \
+            --make-html
 
     - name: Upload pages artifact
       uses: actions/upload-pages-artifact@v1

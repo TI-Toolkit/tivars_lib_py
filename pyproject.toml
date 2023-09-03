@@ -24,3 +24,31 @@ Documentation = "https://ti-toolkit.github.io/tivars_lib_py/"
 [project.optional-dependencies]
 images = ["pillow"]
 arrays = ["numpy"]
+
+
+[tool.pydoctor]
+add-package = ["./tivars"]
+project-name = "tivars_lib_py"
+
+theme = "readthedocs"
+docformat = "restructuredtext"
+
+intersphinx = ["https://docs.python.org/3/objects.inv"]
+
+privacy = ["PRIVATE:**.__class_getitem__", "PRIVATE:**.__get__", "PRIVATE:**.__init_subclass__", "PRIVATE:**.__set__", "PRIVATE:**.__set_name__",
+           "HIDDEN:**.__class__",
+
+           "PRIVATE:tivars.data.Section.__*__",
+           "PUBLIC:tivars.data.Section.__init__", "PUBLIC:tivars.data.Section.__call__", "PUBLIC:tivars.data.Section.__copy__",
+
+           "PRIVATE:tivars.data.View.__*__",
+           "PUBLIC:tivars.data.View.__init__", "PUBLIC:tivars.data.View.__call__", "PUBLIC:tivars.data.View.__copy__", "PUBLIC:tivars.data.View.__getitem__",
+
+           "PRIVATE:tivars.models.model.*",
+           "PUBLIC:tivars.models.model.TIFeature", "PUBLIC:tivars.models.model.TIModel",
+
+           "PRIVATE:tivars.types.numeric.*",
+           "PUBLIC:tivars.types.numeric.BCD", "PUBLIC:tivars.types.numeric.LeftNibbleBCD", "PUBLIC:tivars.types.numeric.RightNibbleBCD",
+           "PUBLIC:tivars.types.numeric.replacer", "PUBLIC:tivars.types.numeric.sign", "PUBLIC:tivars.types.numeric.squash",
+           "PUBLIC:tivars.types.numeric.pi"
+]
