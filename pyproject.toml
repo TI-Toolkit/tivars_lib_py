@@ -39,10 +39,10 @@ privacy = ["PRIVATE:**.__class_getitem__", "PRIVATE:**.__get__", "PRIVATE:**.__i
            "HIDDEN:**.__class__",
 
            "PRIVATE:tivars.data.Section.__*__",
-           "PUBLIC:tivars.data.Section.__init__", "PUBLIC:tivars.data.Section.__call__", "PUBLIC:tivars.data.Section.__copy__",
+           "PUBLIC:tivars.data.Section.__init__", "PUBLIC:tivars.data.Section.__copy__",
 
            "PRIVATE:tivars.data.View.__*__",
-           "PUBLIC:tivars.data.View.__init__", "PUBLIC:tivars.data.View.__call__", "PUBLIC:tivars.data.View.__copy__", "PUBLIC:tivars.data.View.__getitem__",
+           "PUBLIC:tivars.data.View.__init__", "PUBLIC:tivars.data.View.__copy__", "PUBLIC:tivars.data.View.__getitem__",
 
            "PRIVATE:tivars.models.model.*",
            "PUBLIC:tivars.models.model.TIFeature", "PUBLIC:tivars.models.model.TIModel",
