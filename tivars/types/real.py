@@ -83,7 +83,7 @@ class RealEntry(TIEntry):
         return negated
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Bits[0:6])[0:1]
@@ -231,7 +231,7 @@ class TIReal(RealEntry, register=True):
     _type_id = 0x00
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[1:2]
@@ -396,7 +396,7 @@ class TIRealRadical(RealEntry, register=True):
     _type_id = 0x1C
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Bits[0:4])[1:2]

@@ -117,7 +117,7 @@ class ComplexEntry(TIEntry):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "A",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -139,7 +139,7 @@ class ComplexEntry(TIEntry):
                     return super().__format__(format_spec)
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         """
         The data section of the entry
 

@@ -32,7 +32,7 @@ class TIMatrix(TIEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "[A]",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -54,7 +54,7 @@ class TIMatrix(TIEntry, register=True):
                 yield entry
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[0:1]
@@ -96,7 +96,7 @@ class TIMatrix(TIEntry, register=True):
         return value
 
     @View(calc_data, Bytes)[2:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     @property

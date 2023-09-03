@@ -1,4 +1,4 @@
-from typing import ByteString, Iterator
+from typing import Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -244,7 +244,7 @@ class TIMonoPicture(PictureEntry):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -294,7 +294,7 @@ class TIPicture(PictureEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -361,7 +361,7 @@ class TIImage(PictureEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Image1",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -374,7 +374,7 @@ class TIImage(PictureEntry, register=True):
         """
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Bytes)[2:3]
@@ -386,7 +386,7 @@ class TIImage(PictureEntry, register=True):
         """
 
     @View(calc_data, SizedData)[3:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     def get_min_os(self, data: bytes = None) -> OsVersion:

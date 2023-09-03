@@ -2,7 +2,7 @@ import io
 import json
 import os
 
-from typing import ByteString, Iterator
+from typing import Iterator
 from warnings import warn
 
 from tivars.models import *
@@ -124,7 +124,7 @@ class TIGraphedEquation(TIEquation):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Y1",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.flags = EquationFlags({0: 1, 1: 1})
@@ -212,7 +212,7 @@ class TIGraphedEquation(TIEquation):
         """
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, EquationFlags)[0:1]
@@ -358,7 +358,7 @@ class TIMonoGDB(SizedEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "GDB1",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -366,7 +366,7 @@ class TIMonoGDB(SizedEntry, register=True):
         return iter(self.dict().items())
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -631,7 +631,7 @@ class TIGDB(TIMonoGDB):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "GDB1",
                  version: bytes = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -639,7 +639,7 @@ class TIGDB(TIMonoGDB):
         self.grid_color = GraphColor.MedGray
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, GraphColor)[-5:-4]
@@ -738,7 +738,7 @@ class TIMonoFuncGDB(TIMonoGDB):
     equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -846,7 +846,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     min_data_length = 128
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, String)[-18:-15]
@@ -882,7 +882,7 @@ class TIMonoParamGDB(TIMonoGDB):
     equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1018,7 +1018,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     min_data_length = 144
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, String)[-14:-11]
@@ -1054,7 +1054,7 @@ class TIMonoPolarGDB(TIMonoGDB):
     equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1144,7 +1144,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     min_data_length = 126
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, String)[-14:-11]
@@ -1180,7 +1180,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     equation_names = ["u", "v", "w"]
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1381,7 +1381,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     min_data_length = 174
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, String)[-11:-8]

@@ -110,7 +110,7 @@ class ListEntry(TIEntry):
         """
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[0:2]
@@ -128,7 +128,7 @@ class ListEntry(TIEntry):
         return value
 
     @View(calc_data, Bytes)[2:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     def get_min_os(self, data: bytes = None) -> OsVersion:

@@ -22,7 +22,7 @@ class SettingsEntry(TIEntry):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Window",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytes = None):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @Loader[ByteString, BytesIO]
@@ -87,7 +87,7 @@ class TIWindowSettings(SettingsEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Window",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -96,11 +96,11 @@ class TIWindowSettings(SettingsEntry, register=True):
         pass
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Bytes)[0:3]
-    def table_magic(self) -> bytearray:
+    def table_magic(self) -> bytes:
         """
         Magic identifying the file as window settings
 
@@ -108,7 +108,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
 
     @View(calc_data, Bytes)[3:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     @View(calc_data, GraphRealEntry)[3:12]
@@ -340,7 +340,7 @@ class TIRecallWindow(SettingsEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "RclWindw",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -353,7 +353,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Bytes)[0:2]
@@ -365,7 +365,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
 
     @View(calc_data, Bytes)[2:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     @View(calc_data, GraphRealEntry)[2:11]
@@ -597,7 +597,7 @@ class TITableSettings(SettingsEntry, register=True):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "TblSet",
                  version: bytes = None, archived: bool = None,
-                 data: bytearray = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -610,11 +610,11 @@ class TITableSettings(SettingsEntry, register=True):
         """
 
     @Section(min_data_length)
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Bytes)[0:2]
-    def table_magic(self) -> bytearray:
+    def table_magic(self) -> bytes:
         """
         Magic identifying the file as an image
 
@@ -622,7 +622,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
 
     @View(calc_data, Bytes)[2:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     @View(calc_data, GraphRealEntry)[2:11]
