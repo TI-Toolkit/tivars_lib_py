@@ -375,7 +375,7 @@ class TIRealRadical(RealEntry, register=True):
 
     .. math::
 
-    \frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e}
+        \frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e}
 
     where all values are non-negative integers. Additionally, ``b > d ≥ 0`` and ``e > 0``.
 
