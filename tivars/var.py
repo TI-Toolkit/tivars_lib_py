@@ -21,7 +21,7 @@ class TIHeader:
         Any class with a distinct byte format requires its own ``Raw`` class to contain its data sections.
         Each data section must have a corresponding slot in ``Raw`` in order to use `Converter` classes.
 
-        The ``Raw`` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
+        The ``Raw`` class must also contain a ``bytes()`` method specifying the order of the data sections.
         Additional methods can also be included, but should be callable from the outer class.
         """
 
@@ -237,7 +237,7 @@ class TIEntry(Dock, Converter):
         Any class with a distinct byte format requires its own ``Raw`` class to contain its data sections.
         Each data section must have a corresponding slot in ``Raw`` in order to use `Converter` classes.
 
-        The ``Raw`` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
+        The ``Raw`` class must also contain a ``bytes()`` method specifying the order of the data sections.
         Additional methods can also be included, but should be callable from the outer class.
 
         Most entry types do not require a new ``Raw`` class since only the entry's data changes between types.
