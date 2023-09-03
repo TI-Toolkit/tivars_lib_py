@@ -89,7 +89,7 @@ class Data(Bytes):
 
         :param value: The value to convert
         :param instance: The instance which contains the data section
-        :return: The bytes in `value`, unchanged
+        :return: The bytes in ``value``, unchanged
         """
 
         instance.version = instance.get_version(value)
@@ -391,7 +391,7 @@ class View(Section):
         Define a new data view given a data section to watch, a type converter, and the portion of the section to view
 
         :param target: The data section to view
-        :param converter: The type converter for the view (defaults to `Bytes)
+        :param converter: The type converter for the view (defaults to `Bytes`)
         :param indices: The slice of the data section to view (defaults to the entire section)
         """
 

@@ -19,10 +19,10 @@ class L1(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `tuple[int, ...]`
+        Converts ``bytes`` -> ``tuple[int, ...]``
 
         :param data: The raw bytes to convert
-        :return: A tuple of eight integers in {0, 255} corresponding to the bits of `data`
+        :return: A tuple of eight integers in {0, 255} corresponding to the bits of ``data``
         """
 
         return tuple(255 * (1 - int(bit)) for bit in f"{data[0]:08b}")
@@ -30,10 +30,10 @@ class L1(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts  `tuple[int, ...]` -> `bytes`
+        Converts  ``tuple[int, ...]`` -> ``bytes``
 
         :param value: The value to convert
-        :return: The values in `value` joined into a single byte
+        :return: The values in ``value`` joined into a single byte
         """
 
         return bytes([int("".join("0" if bit else "1" for bit in value), 2)])
@@ -86,10 +86,10 @@ class RGBPalette(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `tuple[RGB, RGB]`
+        Converts ``bytes`` -> ``tuple[RGB, RGB]``
 
         :param data: The raw bytes to convert
-        :return: The pair of RGB values from the palette indexed by the nibbles in `data`
+        :return: The pair of RGB values from the palette indexed by the nibbles in ``data``
         """
 
         return cls.palette[data[0] >> 4], cls.palette[data[0] & 15]
@@ -97,10 +97,10 @@ class RGBPalette(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts  `tuple[RGB, RBG]` -> `bytes`
+        Converts  ``tuple[RGB, RBG]`` -> ``bytes``
 
         :param value: The value to convert
-        :return: The byte formed by finding the indices of the colors nearest to the RGB values in `value`
+        :return: The byte formed by finding the indices of the colors nearest to the RGB values in ``value``
         """
 
         return bytes([(cls.palette.index(cls.nearest(*value[0])) << 4) + cls.palette.index(cls.nearest(*value[1]))])
@@ -116,10 +116,10 @@ class RGB565(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `RGB`
+        Converts ``bytes`` -> `RGB`
 
         :param data: The raw bytes to convert
-        :return: The RGB value stored in the two bytes of `data`
+        :return: The RGB value stored in the two bytes of ``data``
         """
 
         return (
@@ -131,10 +131,10 @@ class RGB565(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts  `RGB` -> `bytes`
+        Converts  `RGB` -> ``bytes``
 
         :param value: The value to convert
-        :return: The bytes formed by concatenating the RGB components of `value` in 565 format
+        :return: The bytes formed by concatenating the RGB components of ``value`` in 565 format
         """
 
         return bytes([((value[1] >> 2 & 7) << 5) | value[2] >> 3]) + bytes([(value[0] & ~7) | (value[1] >> 5)])

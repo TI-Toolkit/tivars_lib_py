@@ -122,7 +122,7 @@ class TIModel:
         Whether this model has a given feature
 
         :param feature: The feature to check
-        :return: Whether this model has `feature`
+        :return: Whether this model has ``feature``
         """
 
         return feature in self._features
@@ -132,7 +132,7 @@ class TIModel:
         An `OsVersion` with this model as its model and a supplied version
 
         :param version: An OS version number (defaults to the model's earliest OS)
-        :return: An `OsVersion` for this model and `version`
+        :return: An `OsVersion` for this model and ``version``
         """
 
         return OsVersion(self.name, version)
