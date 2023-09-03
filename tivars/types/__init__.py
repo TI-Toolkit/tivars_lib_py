@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from .appvar import *
 from .complex import *
 from .gdb import *
@@ -31,3 +33,6 @@ __all__ = ["TIEntry",
            "TIComplexPi", "TIComplexPiFraction",
            "TIRealPi", "TIRealPiFraction"
            ]
+
+if TYPE_CHECKING:
+    __all__ = []
