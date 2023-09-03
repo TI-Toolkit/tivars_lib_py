@@ -373,9 +373,11 @@ class TIRealRadical(RealEntry, register=True):
     A `TIRealRadical` is an exact sum of two square roots with rational scalars.
     Specifically, a `TIRealRadical` can represent numbers of the form
 
-    $$\frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e}$$
+    .. math::
 
-    where all values are non-negative integers. Additionally, $b > d \ge 0$ and $e > 0$.
+    \frac{\pm a\sqrt{b} \pm c\sqrt{d}}{e}
+
+    where all values are non-negative integers. Additionally, ``b > d ≥ 0`` and ``e > 0``.
 
     Each value is given three nibbles of storage in BCD format.
     Sign information for each radical is stored in an additional nibble.
