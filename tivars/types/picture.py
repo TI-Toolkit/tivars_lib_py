@@ -382,7 +382,7 @@ class TIImage(PictureEntry, register=True):
         """
         Magic identifying the file as an image
 
-        This value is always `0x81`.
+        This value is always ``0x81``.
         """
 
     @View(calc_data, SizedData)[3:]

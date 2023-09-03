@@ -144,7 +144,7 @@ class TIMatrix(TIEntry, register=True):
     @Loader[list]
     def load_matrix(self, matrix: list[list[RealEntry]]):
         """
-        Loads a two-dimensional `list` into this matrix
+        Loads a two-dimensional ``list`` into this matrix
 
         :param matrix: The matrix to load
         """
@@ -157,7 +157,7 @@ class TIMatrix(TIEntry, register=True):
 
     def matrix(self) -> list[list[RealEntry]]:
         """
-        :return: A two-dimensional `list` of the elements in this matrix
+        :return: A two-dimensional ``list`` of the elements in this matrix
         """
 
         it = zip(*[iter(self.data)] * RealEntry.min_data_length)

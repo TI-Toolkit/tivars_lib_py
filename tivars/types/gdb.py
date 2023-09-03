@@ -141,7 +141,7 @@ class TIGraphedEquation(TIEquation):
             Since equations are stored contiguously within a GDB, their exact location is not static.
             This converter interfaces with the nth equation by counting up from the start of the data section.
 
-            The `n`th equation in a GDB is interfaced by the converter `TIGraphedEquation[n]`.
+            The ``n``th equation in a GDB is interfaced by the converter ``TIGraphedEquation[n]``.
             """
 
             _T = TIGraphedEquation
@@ -149,11 +149,11 @@ class TIGraphedEquation(TIEquation):
             @classmethod
             def get(cls, data: bytes, *, instance: 'TIMonoGDB' = None, **kwargs) -> _T:
                 """
-                Converts `bytes` -> `TIGraphedEquation` by finding the equation at `index` within a GDB
+                Converts ``bytes`` -> `TIGraphedEquation` by finding the equation at ``index`` within a GDB
 
                 :param data: The raw bytes to convert
                 :param instance: The instance which contains the data section
-                :return: The bytes in `data`, unchanged
+                :return: The bytes in ``data``, unchanged
                 """
 
                 return instance.equations[index]
@@ -161,11 +161,11 @@ class TIGraphedEquation(TIEquation):
             @classmethod
             def set(cls, value: _T, *, instance: 'TIMonoGDB' = None, **kwargs) -> bytes:
                 """
-                Converts `bytes` -> `TIGraphedEquation` by modifying the equation at `index` within a GDB
+                Converts ``bytes`` -> `TIGraphedEquation` by modifying the equation at ``index`` within a GDB
 
                 :param value: The value to convert
                 :param instance: The instance which contains the data section
-                :return: The bytes in `value`, unchanged
+                :return: The bytes in ``value``, unchanged
                 """
 
                 # Set appropriate equation
@@ -237,7 +237,7 @@ class TIGraphedEquation(TIEquation):
     @Loader[dict]
     def load_dict(self, dct: dict):
         """
-        Loads a JSON `dict` into this GDB equation
+        Loads a JSON ``dict`` into this GDB equation
 
         :param dct: The dict to load
         """
@@ -257,7 +257,7 @@ class TIGraphedEquation(TIEquation):
 
     def dict(self) -> dict:
         """
-        :return: A `dict` representing this GDB equation in JSON format
+        :return: A ``dict`` representing this GDB equation in JSON format
         """
 
         dct = {"style": GraphStyle.get_name(self.style)}
@@ -374,7 +374,7 @@ class TIMonoGDB(SizedEntry, register=True):
         """
         The mode ID for the GDB
 
-        The ID is one of `0x10` (Function), `0x20` (Polar), `0x40` (Parametric), or `0x80` (Sequence).
+        The ID is one of ``0x10`` (Function), ``0x20`` (Polar), ``0x40`` (Parametric), or ``0x80`` (Sequence).
         """
 
     @View(calc_data, GraphMode)[4:5]
@@ -499,7 +499,7 @@ class TIMonoGDB(SizedEntry, register=True):
     @Loader[dict]
     def load_dict(self, dct: dict):
         """
-        Loads a JSON `dict` into this GDB
+        Loads a JSON ``dict`` into this GDB
 
         :param dct: The dict to load
         """
@@ -570,7 +570,7 @@ class TIMonoGDB(SizedEntry, register=True):
 
     def dict(self) -> dict:
         """
-        :return: A `dict` representing this GDB in JSON format
+        :return: A ``dict`` representing this GDB in JSON format
         """
 
         return {
@@ -744,7 +744,7 @@ class TIMonoFuncGDB(TIMonoGDB):
     @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB - `0x10`
+        The mode ID for the GDB - ``0x10``
         """
 
     @View(calc_data, GraphRealEntry)[61:70]
@@ -852,7 +852,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     @View(calc_data, String)[-18:-15]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - `84C`
+        Magic to identify the GDB as color-oriented - ``84C``
         """
 
     def mono(self) -> TIMonoFuncGDB:
@@ -888,7 +888,7 @@ class TIMonoParamGDB(TIMonoGDB):
     @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB - `0x40`
+        The mode ID for the GDB - ``0x40``
         """
 
     @View(calc_data, GraphRealEntry)[61:70]
@@ -1024,7 +1024,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     @View(calc_data, String)[-14:-11]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented -`84C`
+        Magic to identify the GDB as color-oriented - ``84C``
         """
 
     def mono(self) -> TIMonoParamGDB:
@@ -1060,7 +1060,7 @@ class TIMonoPolarGDB(TIMonoGDB):
     @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB - `0x20`
+        The mode ID for the GDB - ``0x20``
         """
 
     @View(calc_data, GraphRealEntry)[61:70]
@@ -1150,7 +1150,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     @View(calc_data, String)[-14:-11]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - `84C`
+        Magic to identify the GDB as color-oriented - ``84C``
         """
 
     def mono(self) -> TIMonoPolarGDB:
@@ -1186,7 +1186,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     @View(calc_data, Integer)[3:4]
     def mode_id(self) -> int:
         """
-        The mode ID for the GDB - `0x80`
+        The mode ID for the GDB - ``0x80``
         """
 
     @View(calc_data, GraphMode)[5:6]
@@ -1387,7 +1387,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     @View(calc_data, String)[-11:-8]
     def color_magic(self) -> str:
         """
-        Magic to identify the GDB as color-oriented - `84C`
+        Magic to identify the GDB as color-oriented - ``84C``
         """
 
     def mono(self) -> TIMonoSeqGDB:

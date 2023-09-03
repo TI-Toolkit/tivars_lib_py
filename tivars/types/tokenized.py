@@ -58,14 +58,14 @@ class TokenizedEntry(SizedEntry):
         """
         Decodes a byte stream into a string of tokens
 
-        Each token is represented using one of three different representations formats, dictated by `mode`:
-            - `display`: Represents the tokens with Unicode characters matching the calculator's display
-            - `accessible`: Represents the tokens with ASCII-only equivalents, often requiring multi-character glyphs
-            - `ti_ascii`: Represents the tokens with their internal font indices (returns a `bytes` object)
+        Each token is represented using one of three different representations formats, dictated by ``mode``:
+            - ``display``: Represents the tokens with Unicode characters matching the calculator's display
+            - ``accessible``: Represents the tokens with ASCII-only equivalents, often requiring multi-character glyphs
+            - ``ti_ascii``: Represents the tokens with their internal font indices (returns a ``bytes`` object)
 
         :param data: The bytes to decode
-        :param lang: The language used in `string` (defaults to English, `en`)
-        :param mode: The form of token representation to use for output (defaults to `display`)
+        :param lang: The language used in ``string`` (defaults to English, ``en``)
+        :param mode: The form of token representation to use for output (defaults to ``display``)
         :return: A string of token representations
         """
 
@@ -78,7 +78,7 @@ class TokenizedEntry(SizedEntry):
 
         :param string: The tokens to encode
         :param model: The model to target when encoding (defaults to no specific model)
-        :param lang: The language used in `string` (defaults to English, `en`)
+        :param lang: The language used in ``string`` (defaults to English, ``en``)
         :return: A stream of token bytes
         """
 
@@ -153,7 +153,13 @@ class EquationName(TokenizedString):
     """
     Converter for the name section of equations
 
-    Equation names can be any of `Y1` - `Y0`, `X1T` - `X6T`, `Y1T` - `Y6T`, `r1` - `r6`, `u`, `v`, or `w`.
+    Equation names can be any of the following:
+
+    - ``Y1`` - ``Y0``
+    - ``X1T`` - ``X6T``
+    - ``Y1T`` - ``Y6T``
+    - ``r1`` - ``r6``
+    - ``u``, ``v``, or ``w``.
     """
 
     _T = str
@@ -161,10 +167,10 @@ class EquationName(TokenizedString):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `str` as done by the memory viewer
+        Converts ``bytes`` -> ``str`` as done by the memory viewer
 
         :param data: The raw bytes to convert
-        :return: The equation name contained in `data`
+        :return: The equation name contained in ``data``
         """
 
         varname = super().get(data)
@@ -178,10 +184,10 @@ class EquationName(TokenizedString):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `str` -> `bytes` to match appearance in the memory viewer
+        Converts ``str`` -> ``bytes`` to match appearance in the memory viewer
 
         :param value: The value to convert
-        :return: The name encoding of `value`
+        :return: The name encoding of ``value``
         """
 
         varname = value[:8].lower()
@@ -223,7 +229,7 @@ class TIEquation(TokenizedEntry, register=True):
         """
         The name of the entry
 
-        Must be one of the equation names: `Y1` - `Y0`, `X1T` - `X6T`, `Y1T` - `Y6T`, `r1` - `r6`, `u`, `v`, or `w`
+        Must be one of the equation names
         """
 
 

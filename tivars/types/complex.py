@@ -20,11 +20,11 @@ class RealPart(Converter):
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
         """
-        Converts `bytes` -> `RealType`
+        Converts ``bytes`` -> `RealType`
 
         :param data: The raw bytes to convert
         :param instance: The instance containing the data section
-        :return: The real part of `data` converted to the appropriate type
+        :return: The real part of ``data`` converted to the appropriate type
         """
 
         return instance.real_type.get(data)
@@ -32,10 +32,10 @@ class RealPart(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `RealEntry` -> `bytes`
+        Converts `RealEntry` -> ``bytes``
 
         :param value: The value to convert
-        :return: The data of `value`
+        :return: The data of ``value``
         """
 
         value.subtype_id = value.imag_subtype_id
@@ -55,11 +55,11 @@ class ImaginaryPart(Converter):
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
         """
-        Converts `bytes` -> `RealType`
+        Converts ``bytes`` -> `RealType`
 
         :param data: The raw bytes to convert
         :param instance: The instance containing the data section
-        :return: The real part of `data` converted to the appropriate type
+        :return: The real part of ``data`` converted to the appropriate type
         """
 
         return instance.imag_type.get(data)
@@ -67,11 +67,11 @@ class ImaginaryPart(Converter):
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
         """
-        Converts `RealEntry` -> `bytes`
+        Converts `RealEntry` -> ``bytes``
 
         :param value: The value to convert
         :param instance: The instance containing the data section
-        :return: The data of `value`
+        :return: The data of ``value``
         """
 
         instance.imag_subtype_id = value.subtype_id = value.imag_subtype_id
@@ -259,7 +259,7 @@ class ComplexEntry(TIEntry):
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
         """
-        Loads this complex number from a `complex`, upcasting as necessary
+        Loads this complex number from a ``complex``, upcasting as necessary
 
         :param comp: The complex number to load
         """
@@ -384,7 +384,7 @@ class TIComplexFraction(TIComplex, register=True):
 
 
 class TIComplexRadical(ComplexEntry, register=True):
-    r"""
+    """
     Parser for complex entries with radical imaginary part
 
     A `TIComplexRadical` has a `TIRealRadical` as its imaginary part.

@@ -40,7 +40,7 @@ def sign(x: int):
     Computes the mathematical sign of a number
 
     :param x: The input number
-    :return: The sign of `x`
+    :return: The sign of ``x``
     """
 
     return (x > 0) - (x < 0)
@@ -69,10 +69,10 @@ class BCD(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `int` from 2-digit binary coded decimal
+        Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal
 
         :param data: The raw bytes to convert
-        :return: The number stored in `data`
+        :return: The number stored in ``data``
         """
 
         value = 0
@@ -86,10 +86,10 @@ class BCD(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `int` -> `bytes` as 2-digit binary coded decimal
+        Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal
 
         :param value: The value to convert
-        :return: The bytes representing `value` in BCD
+        :return: The bytes representing ``value`` in BCD
         """
 
         return int.to_bytes(int(str(value), 16), 7, 'big')
@@ -108,10 +108,10 @@ class LeftNibbleBCD(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `int` from 2-digit binary coded decimal with an extra nibble on the left
+        Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal with an extra nibble on the left
 
         :param data: The raw bytes to convert
-        :return: The number stored in `data`
+        :return: The number stored in ``data``
         """
 
         value = data[0] % 16
@@ -125,11 +125,11 @@ class LeftNibbleBCD(Converter):
     @classmethod
     def set(cls, value: _T, current: bytes = None, **kwargs) -> bytes:
         """
-        Converts `int` -> `bytes` as 2-digit binary coded decimal with an extra nibble on the left
+        Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the left
 
         :param value: The value to convert
         :param current: The current value of the data section
-        :return: The bytes representing `value` in BCD
+        :return: The bytes representing ``value`` in BCD
         """
 
         data = bytearray(int.to_bytes(int(str(value), 16), 2, 'big'))
@@ -151,10 +151,10 @@ class RightNibbleBCD(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `int` from 2-digit binary coded decimal with an extra nibble on the right
+        Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal with an extra nibble on the right
 
         :param data: The raw bytes to convert
-        :return: The number stored in `data`
+        :return: The number stored in ``data``
         """
 
         value = 0
@@ -168,11 +168,11 @@ class RightNibbleBCD(Converter):
     @classmethod
     def set(cls, value: _T, current: bytes = None, **kwargs) -> bytes:
         """
-        Converts `int` -> `bytes` as 2-digit binary coded decimal with an extra nibble on the right
+        Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the right
 
         :param value: The value to convert
         :param current: The current value of the data section
-        :return: The bytes representing `value` in BCD
+        :return: The bytes representing ``value`` in BCD
         """
 
         data = bytearray(int.to_bytes(int(str(10 * value), 16), 2, 'big'))

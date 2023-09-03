@@ -19,7 +19,7 @@ class Converter:
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
         """
-        Converts `bytes` -> `_T`
+        Converts ``bytes`` -> `_T`
 
         :param data: The raw bytes to convert
         :param instance: The instance which contains the data section
@@ -31,7 +31,7 @@ class Converter:
     @classmethod
     def set(cls, value: _T, *, instance=None, length: int = None, current: bytes = None) -> bytes:
         """
-        Converts  `_T` -> `bytes`
+        Converts  `_T` -> ``bytes``
 
         :param value: The value to convert
         :param instance: The instance which contains the data section
@@ -53,10 +53,10 @@ class Bytes(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `bytes` (no-op)
+        Converts ``bytes`` -> ``bytes`` (no-op)
 
         :param data: The raw bytes to convert
-        :return: The bytes in `data`, unchanged
+        :return: The bytes in ``data``, unchanged
         """
 
         return bytes(data)
@@ -64,10 +64,10 @@ class Bytes(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `bytes` -> `bytes` (no-op)
+        Converts ``bytes`` -> ``bytes`` (no-op)
 
         :param value: The value to convert
-        :return: The bytes in `value`, unchanged
+        :return: The bytes in ``value``, unchanged
         """
 
         return bytes(value)
@@ -77,9 +77,9 @@ class Data(Bytes):
     _T = bytes
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: _T, *, instance=None, **kwargs) -> _T:
         """
-        Converts `bytes` -> `bytes` and updates metadata fields
+        Converts ``bytes`` -> ``bytes`` and updates metadata fields
 
         Certain metadata fields are updated automatically based on the entry's data.
         The following are set by this converter:
@@ -100,7 +100,7 @@ class SizedData(Data):
     _T = bytes
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: _T, *, instance=None, **kwargs) -> _T:
         instance.length = len(value)
         return super().set(value, instance=instance)
 
@@ -117,10 +117,10 @@ class Boolean(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `bool`, where any nonzero value is truthy
+        Converts ``bytes`` -> ``bool``, where any nonzero value is truthy
 
         :param data: The raw bytes to convert
-        :return: Whether `data` is nonzero
+        :return: Whether ``data`` is nonzero
         """
 
         return data != b'\x00'
@@ -128,10 +128,10 @@ class Boolean(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `bool` -> `bytes`, where `b'\x80'` is truthy and `b'\x00'` is falsy
+        Converts ``bool`` -> ``bytes``, where ``b'\\x80'`` is truthy and ``b'\\x00'`` is falsy
 
         :param value: The value to convert
-        :return: `b'\x80'` if `value` is truthy else `b'\x00'`
+        :return: ``b'\\x80'`` if ``value` is truthy else ``b'\\x00'``
         """
 
         return b'\x80' if value else b'\x00'
@@ -149,10 +149,10 @@ class Integer(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `int`
+        Converts `bytes` -> ``int``
 
         :param data: The raw bytes to convert
-        :return: The little-endian integer given by `data`
+        :return: The little-endian integer given by ``data``
         """
 
         return int.from_bytes(data, 'little')
@@ -160,13 +160,13 @@ class Integer(Converter):
     @classmethod
     def set(cls, value: _T, *, length: int = None, **kwargs) -> bytes:
         """
-        Converts `int` -> `bytes`
+        Converts ``int`` -> ``bytes``
 
         For implementation reasons, the output of this converter is always two bytes wide
 
         :param value: The value to convert
         :param length: The length of the data section
-        :return: The little-endian representation of `value`
+        :return: The little-endian representation of ``value``
         """
 
         return int.to_bytes(value, length if length is not None else 2, 'little')
@@ -184,10 +184,10 @@ class String(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `str`
+        Converts ``bytes`` -> ``str``
 
         :param data: The raw bytes to convert
-        :return: The utf-8 decoding of `data` with trailing null bytes removed
+        :return: The utf-8 decoding of ``data`` with trailing null bytes removed
         """
 
         return data.decode('utf8').rstrip('\0')
@@ -195,10 +195,10 @@ class String(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `str` -> `bytes`
+        Converts ``str`` -> ``bytes``
 
         :param value: The value to convert
-        :return: The utf-8 encoding of `value`
+        :return: The utf-8 encoding of ``value``
         """
 
         return value.encode('utf8')
@@ -208,7 +208,7 @@ class Bits:
     """
     Sliceable converter to extract and package a slice of bits within a byte
 
-    Use like `Bits[start:end:step]` to view a slice of a byte.
+    Use like ``Bits[start:end:step]`` to view a slice of a byte.
     If the slice is empty, the entire byte will be targeted.
     """
 
@@ -229,10 +229,10 @@ class Bits:
             @classmethod
             def get(cls, data: bytes, **kwargs) -> _T:
                 """
-                Converts `bytes` -> `int` by concatenating bits in a slice
+                Converts ``bytes`` -> ``int`` by concatenating bits in a slice
 
                 :param data: The raw bytes to convert
-                :return: The sliced bits in `data` joined without gaps as an integer
+                :return: The sliced bits in ``data`` joined without gaps as an integer
                 """
 
                 value = ""
@@ -245,11 +245,11 @@ class Bits:
             @classmethod
             def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
                 """
-                Converts `int` -> `bytes` by setting bits in a slice
+                Converts ``int`` -> ``bytes`` by setting bits in a slice
 
                 :param value: The value to convert
                 :param current: The current value of the data section
-                :return: The bytes in `value` fit into the section
+                :return: The bytes in ``value`` fit into the section
                 """
 
                 data = 0
@@ -274,9 +274,9 @@ class Section:
     A data section is given by its length and type converter.
     Their primary function is to permit the user to read and write data sections as their natural data types.
 
-    The sections are stored in the `raw` attribute of their class, which is an instance of a `Raw` container.
+    The sections are stored in the ``raw`` attribute of their class, which is an instance of a ``Raw`` container.
     A priori, a data section does not correspond to any one part of a var file.
-    Individual sections are instead stitched together to yield a var file's contents via `raw.bytes()`.
+    Individual sections are instead stitched together to yield a var file's contents via ``raw.bytes()``.
 
     Distinct data sections are entirely independent, which is useful for sections which may vary in length.
     To construct sections which point to a portion of another section, see the `View` class.
@@ -290,7 +290,7 @@ class Section:
         """
         Define a new data section given a length and type converter
 
-        :param length: The length of the section (defaults to `None`, i.e. unbounded)
+        :param length: The length of the section (defaults to ``None``, i.e. unbounded)
         :param converter: The type converter for the section (defaults to `Bytes`)
         """
 
@@ -357,7 +357,7 @@ class Section:
     @property
     def name(self) -> str:
         """
-        :return: The `Raw` class attribute name that this section stores to
+        :return: The ``Raw`` class attribute name that this section stores to
         """
 
         return self._name
@@ -391,7 +391,7 @@ class View(Section):
         Define a new data view given a data section to watch, a type converter, and the portion of the section to view
 
         :param target: The data section to view
-        :param converter: The type converter for the view (defaults to `Bytes`)
+        :param converter: The type converter for the view (defaults to `Bytes)
         :param indices: The slice of the data section to view (defaults to the entire section)
         """
 

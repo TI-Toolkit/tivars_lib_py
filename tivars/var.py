@@ -18,10 +18,10 @@ class TIHeader:
         """
         Raw bytes container for `TIHeader`
 
-        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
-        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
+        Any class with a distinct byte format requires its own ``Raw`` class to contain its data sections.
+        Each data section must have a corresponding slot in ``Raw`` in order to use `Converter` classes.
 
-        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
+        The ``Raw`` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
         Additional methods can also be included, but should be callable from the outer class.
         """
 
@@ -40,10 +40,10 @@ class TIHeader:
         """
         Create an empty header which targets a specified model
 
-        :param model: A minimum `TIModel` to target (defaults to `TI_83P`)
+        :param model: A minimum `TIModel` to target (defaults to ``TI_83P``)
         :param magic: File magic at the start of the header (default to the model's magic)
-        :param extra: Extra export bytes for the header (defaults to `0x1a0a`)
-        :param product_id: The targeted model's product ID (defaults to `0x00`)
+        :param extra: Extra export bytes for the header (defaults to ``0x1a0a``)
+        :param product_id: The targeted model's product ID (defaults to ``0x00``)
         :param comment: A comment to include in the header (defaults to a simple lib message)
         """
 
@@ -234,13 +234,13 @@ class TIEntry(Dock, Converter):
         """
         Raw bytes container for `TIEntry`
 
-        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
-        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
+        Any class with a distinct byte format requires its own ``Raw`` class to contain its data sections.
+        Each data section must have a corresponding slot in ``Raw`` in order to use `Converter` classes.
 
-        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
+        The ``Raw`` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
         Additional methods can also be included, but should be callable from the outer class.
 
-        Most entry types do not require a new `Raw` class since only the entry's data changes between types.
+        Most entry types do not require a new ``Raw`` class since only the entry's data changes between types.
         """
 
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "calc_data"
@@ -286,11 +286,11 @@ class TIEntry(Dock, Converter):
         """
         Creates an empty entry with specified meta and data values
 
-        :param init: Values to initialize this entry's data (defaults to `None`)
-        :param for_flash: Whether this entry supports flash chips (defaults to `True`)
+        :param init: Values to initialize this entry's data (defaults to ``None``)
+        :param for_flash: Whether this entry supports flash chips (defaults to ``True``)
         :param name: The name of this entry (defaults to a valid default name)
-        :param version: This entry's version (defaults to `None`; not supported if `for_flash == False`)
-        :param archived: Whether this entry is archived (defaults to `False`; not supported if `for_flash == False`)
+        :param version: This entry's version (defaults to ``None``; not supported if ``for_flash == False``)
+        :param archived: Whether this entry is archived (defaults to ``False``; not supported if ``for_flash == False``)
         :param data: This entry's data (defaults to empty)
         """
 
@@ -409,13 +409,13 @@ class TIEntry(Dock, Converter):
         """
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         """
         The data section of the entry which is loaded on-calc
         """
 
     @View(calc_data, Bytes)[:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         """
         The entry's user data
         """
@@ -423,10 +423,10 @@ class TIEntry(Dock, Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `TIEntry`
+        Converts ``bytes`` -> `TIEntry`
 
         :param data: The raw bytes to convert
-        :return: A `TIEntry` instance with data equal to `data`
+        :return: A `TIEntry` instance with data equal to ``data``
         """
 
         return cls(data=data)
@@ -434,10 +434,10 @@ class TIEntry(Dock, Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `TIEntry` -> `bytes`
+        Converts `TIEntry` -> ``bytes``
 
         :param value: The value to convert
-        :return: The data of `value`
+        :return: The data of ``value``
         """
 
         return value.calc_data
@@ -472,7 +472,7 @@ class TIEntry(Dock, Converter):
         Gets the subclass corresponding to a type ID if one is registered
 
         :param type_id: The type ID to search by
-        :return: A subclass of `TIEntry` with corresponding type ID or `None`
+        :return: A subclass of `TIEntry` with corresponding type ID or ``None``
         """
 
         return cls._type_ids.get(type_id, None)
@@ -525,7 +525,7 @@ class TIEntry(Dock, Converter):
         Determines the minimum OS that supports this entry's data
 
         :param data: The data to find the minimum support for (defaults to this entry's data)
-        :return: The minimum `OsVersion` this entry supports
+        :return: The minimum ``OsVersion`` this entry supports
         """
 
         return OsVersions.INITIAL
@@ -538,7 +538,7 @@ class TIEntry(Dock, Converter):
         If an entry's version exceeds the "version" of a calculator, transfer to the calculator will fail.
 
         :param data: The data to find the version of (defaults to this entry's data)
-        :return: The version byte for `data`
+        :return: The version byte for ``data``
         """
 
         return self.versions[0]
@@ -548,7 +548,7 @@ class TIEntry(Dock, Converter):
         Determines whether a given model can support this entry
 
         :param model: The model to check support for
-        :return: Whether `model` supports this entry
+        :return: Whether ``model`` supports this entry
         """
 
         return self.get_min_os() < model.OS("latest")
@@ -726,7 +726,7 @@ class TIEntry(Dock, Converter):
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A `TIModel` to target (defaults to `None`)
+        :param model: A `TIModel` to target (defaults to ``None``)
         """
 
         self.export(header=header, model=model).save(filename)
@@ -737,7 +737,7 @@ class TIEntry(Dock, Converter):
 
         :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A `TIModel` to target (defaults to `None`)
+        :param model: A `TIModel` to target (defaults to ``None``)
         """
 
         var = TIVar(header=header, name=name or self.name, model=model)
@@ -772,9 +772,9 @@ class TIVar:
         """
         Creates an empty var with a specified name, header, and targeted model
 
-        :param name: The name of the var (defaults to `UNNAMED`)
+        :param name: The name of the var (defaults to ``UNNAMED``)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A minimum `TIModel` to target (defaults to `None`)
+        :param model: A minimum `TIModel` to target (defaults to ``None``)
         """
 
         self._header = header or TIHeader(model)
@@ -835,7 +835,7 @@ class TIVar:
         Determines the var's file extension based on its entries and targeted model.
 
         If there is only one entry, that entry's extension for the target model is used.
-        Otherwise, `.8xg` is used.
+        Otherwise, ``.8xg`` is used.
 
         :return: The var's file extension
         """
@@ -929,7 +929,7 @@ class TIVar:
         Determines whether a given model can support this var
 
         :param model: The model to check support for (defaults to this var's model, if it is set)
-        :return: Whether `model` supports this var
+        :return: Whether ``model`` supports this var
         """
 
         model = model or self._model
@@ -1034,13 +1034,13 @@ class SizedEntry(TIEntry):
     Base class for all sized entries
 
     A sized entry is an entry with variable-length data, where the length of the data is stored in the first two bytes.
-    This length is two less than the length stored in the `data_length` section(s).
+    This length is two less than the length stored in the ``data_length`` section(s).
     """
 
     min_data_length = 2
 
     @Section()
-    def calc_data(self) -> bytearray:
+    def calc_data(self) -> bytes:
         pass
 
     @View(calc_data, Integer)[0:2]
@@ -1050,7 +1050,7 @@ class SizedEntry(TIEntry):
         """
 
     @View(calc_data, SizedData)[2:]
-    def data(self) -> bytearray:
+    def data(self) -> bytes:
         pass
 
     def clear(self):

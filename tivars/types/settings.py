@@ -37,7 +37,7 @@ class SettingsEntry(TIEntry):
     @Loader[dict]
     def load_dict(self, dct: dict):
         """
-        Loads a JSON `dict` into this settings entry
+        Loads a JSON ``dict`` into this settings entry
 
         :param dct: The dict to load
         """
@@ -51,7 +51,7 @@ class SettingsEntry(TIEntry):
 
     def dict(self) -> dict:
         """
-        :return: A `dict` representing this settings entry in JSON format
+        :return: A ``dict`` representing this settings entry in JSON format
         """
 
         raise NotImplementedError
@@ -104,7 +104,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
         Magic identifying the file as window settings
 
-        This value is always `0xD00000`.
+        This value is always ``0xD00000``.
         """
 
     @View(calc_data, Bytes)[3:]
@@ -361,7 +361,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
         Magic identifying the file as a recalled window
 
-        This value is always `0xCF00`.
+        This value is always ``0xCF00``.
         """
 
     @View(calc_data, Bytes)[2:]
@@ -618,7 +618,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
         Magic identifying the file as an image
 
-        This value is always `0x1200`.
+        This value is always ``0x1200``.
         """
 
     @View(calc_data, Bytes)[2:]

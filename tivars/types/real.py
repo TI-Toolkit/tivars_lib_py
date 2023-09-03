@@ -146,7 +146,7 @@ class RealEntry(TIEntry):
     @Loader[dec.Decimal]
     def load_decimal(self, decimal: dec.Decimal):
         """
-        Loads a `dec.Decimal` into this real number
+        Loads a ``decimal`` into this real number
 
         :param decimal: The decimal to load
         """
@@ -155,7 +155,7 @@ class RealEntry(TIEntry):
 
     def decimal(self) -> dec.Decimal:
         """
-        :return: A `dec.Decimal` object corresponding to this real number
+        :return: A ``decimal`` object corresponding to this real number
         """
 
         raise NotImplementedError
@@ -163,7 +163,7 @@ class RealEntry(TIEntry):
     @Loader[float, int]
     def load_float(self, decimal: float):
         """
-        Loads a `float` into this real number, upcasting as necessary
+        Loads a ``float`` into this real number, upcasting as necessary
 
         :param decimal: The float to load
         """
@@ -174,7 +174,7 @@ class RealEntry(TIEntry):
         """
         Encoder for JSON implementations with potentially low precision
 
-        :return: A `float` or `str` depending on whether this real number can be contained in a single-precision float
+        :return: A ``float`` or ``str`` depending on whether this real number can be stored in a single-precision float
         """
 
         if len(str(number := self.float())) <= 6:
@@ -185,7 +185,7 @@ class RealEntry(TIEntry):
 
     def float(self) -> float:
         """
-        :return: The `float` corresponding to this real number
+        :return: The ``float`` corresponding to this real number
         """
 
         return float(self.decimal())

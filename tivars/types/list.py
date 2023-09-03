@@ -16,8 +16,8 @@ class ListName(TokenizedString):
     """
     Converter for the name section of lists
 
-    List names can be `L1` - `L6` or a string of five alphanumeric characters that do not start with a digit.
-    The special name and token `IDList` is also used (but is planned to be relegated to a separate type).
+    List names can be ``L1`` - ``L6`` or a string of five alphanumeric characters that do not start with a digit.
+    The special name and token ``IDList`` is also used (but is planned to be relegated to a separate type).
     """
 
     _T = str
@@ -45,10 +45,10 @@ class ListName(TokenizedString):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `str` -> `bytes` to match appearance in the memory viewer
+        Converts ``str`` -> ``bytes`` to match appearance in the memory viewer
 
         :param value: The value to convert
-        :return: The name encoding of `value`
+        :return: The name encoding of ``value``
         """
 
         varname = value[:7].upper()
@@ -106,7 +106,7 @@ class ListEntry(TIEntry):
 
         Names must be 1 to 5 characters in length.
         The name can include any characters A-Z, 0-9, or θ.
-        The name cannot start with a digit; for these lists, use `L1` - `L6` instead.
+        The name cannot start with a digit; for these lists, use ``L1`` - ``L6`` instead.
         """
 
     @Section()
@@ -163,7 +163,7 @@ class ListEntry(TIEntry):
     @Loader[list]
     def load_list(self, lst: list[_E]):
         """
-        Loads a `list` into this list
+        Loads a ``list`` into this list
 
         :param lst: The list to load
         """
@@ -172,7 +172,7 @@ class ListEntry(TIEntry):
 
     def list(self) -> list[_E]:
         """
-        :return: A `list` of the elements in this list
+        :return: A ``list`` of the elements in this list
         """
 
         it = zip(*[iter(self.data)] * self._E.min_data_length)

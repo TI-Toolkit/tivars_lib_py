@@ -111,8 +111,8 @@ class TIModel:
         """
         Gets the token trie for this model corresponding to a given language
 
-        :param lang: A language code (defaults to English, `en`)
-        :return: The token trie corresponding to `lang`
+        :param lang: A language code (defaults to English, ``en``)
+        :return: The token trie corresponding to ``lang``
         """
 
         return self._trie[lang]

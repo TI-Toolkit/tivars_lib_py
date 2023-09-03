@@ -20,10 +20,10 @@ class Enum(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `bytes`, returning the first byte
+        Converts ``bytes`` -> ``bytes``, returning the first byte
 
         :param data: The raw bytes to convert
-        :return: The first byte of `data`
+        :return: The first byte of ``data``
         """
 
         return bytes(data[0:1])
@@ -31,10 +31,10 @@ class Enum(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `bytes` -> `bytes`, enforcing that the input is a recognized enum value
+        Converts ``bytes`` -> ``bytes``, enforcing that the input is a recognized enum value
 
         :param value: The value to convert
-        :return: The byte in `value`, unchanged
+        :return: The byte in ``value``, unchanged
         """
 
         if value not in cls._all:
@@ -70,7 +70,7 @@ class Flags(Converter, dict, Mapping[int, int]):
         Create an empty `Flags` instance with a given initial state and width
 
         :param bitsets: The initial state of these flags
-        :param width: The number of bitfields used for these flags (defaults to `8`)
+        :param width: The number of bitfields used for these flags (defaults to ``8``)
         """
 
         if bitsets is None:
@@ -98,10 +98,10 @@ class Flags(Converter, dict, Mapping[int, int]):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `Flags`, splitting the byte into the corresponding bitfields
+        Converts ``bytes`` -> `Flags`, splitting the byte into the corresponding bitfields
 
         :param data: The raw bytes to convert
-        :return: A `Flags` instance with bitfields given by `data`
+        :return: A `Flags` instance with bitfields given by ``data``
         """
 
         return cls({bit: int(value) for bit, value in enumerate(f"{int.from_bytes(data, 'little'):b}"[::-1])})
@@ -109,10 +109,10 @@ class Flags(Converter, dict, Mapping[int, int]):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts `Flags` -> `bytes`, packing the bitfields into the appropriate number of bytes
+        Converts `Flags` -> ``bytes``, packing the bitfields into the appropriate number of bytes
 
         :param value: The value to convert
-        :return: The byte string composed of the bitfields in these flags
+        :return: The byte string composed of the bitfields given in ``value``
         """
 
         return int.to_bytes(int(value), len(value) // 8, 'little')
