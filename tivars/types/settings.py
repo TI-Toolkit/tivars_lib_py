@@ -49,13 +49,6 @@ class SettingsEntry(TIEntry):
             else:
                 setattr(self, var, GraphRealEntry(value))
 
-    def dict(self) -> dict:
-        """
-        :return: A ``dict`` representing this settings entry in JSON format
-        """
-
-        raise NotImplementedError
-
     @Loader[str]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))

@@ -659,6 +659,23 @@ class TIEntry(Dock, Converter):
 
         self.raw.calc_data = bytearray(data.read(type(self).calc_data.length))
 
+    @Loader[dict]
+    def load_dict(self, dct: dict):
+        """
+        Loads this entry from a JSON dictionary representation
+
+        :param dct: The dict to load
+        """
+
+        raise NotImplementedError
+
+    def dict(self) -> str:
+        """
+        :return: A JSON dictionary representation of this entry
+        """
+
+        raise NotImplementedError
+
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         """
