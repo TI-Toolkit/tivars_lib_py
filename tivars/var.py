@@ -57,21 +57,43 @@ class TIHeader:
         self.comment = comment
 
     def __bytes__(self) -> bytes:
+        """
+        :return: The bytes contained in this header
+        """
+
         return self.bytes()
 
     def __copy__(self) -> 'TIHeader':
+        """
+        :return: A copy of this header
+        """
+
         new = TIHeader()
         new.load_bytes(self.bytes())
         return new
 
     def __eq__(self, other: 'TIHeader') -> bool:
+        """
+        Determines if two headers have the same bytes
+
+        :param other: The header to check against
+        :return: Whether this header is equal to ``other``
+        """
+
         try:
             return self.__class__ == other.__class__ and self.bytes() == other.bytes()
 
         except AttributeError:
             return False
 
-    def __or__(self, other: list['TIEntry']):
+    def __or__(self, other: list['TIEntry']) -> 'TIVar':
+        """
+        Constructs a var by concatenating this header with a list of entries
+
+        :param other: A list of entries to place into the var
+        :return: A var with this header and ``other`` as its entries
+        """
+
         new = other[0].export(header=self, name=other[0].name, model=self.targets().pop())
 
         for entry in other[1:]:
@@ -80,6 +102,10 @@ class TIHeader:
         return new
 
     def __len__(self) -> int:
+        """
+        :return: The total length of this header's bytes
+        """
+
         return 53
 
     @Section(8, String)
@@ -163,7 +189,7 @@ class TIHeader:
 
     def bytes(self) -> bytes:
         """
-        :return: The byte string corresponding to this header
+        :return: The bytes contained in this header
         """
 
         return self.raw.bytes()
@@ -324,17 +350,36 @@ class TIEntry(Dock, Converter):
         self.version = self.get_version()
 
     def __bool__(self) -> bool:
+        """
+        :return: Whether this entry's data is empty
+        """
+
         return not self.is_empty
 
     def __bytes__(self) -> bytes:
+        """
+        :return: The bytes contained in this entry
+        """
+
         return self.bytes()
 
     def __copy__(self) -> 'TIEntry':
+        """
+        :return: A copy of this entry
+        """
+
         new = self.__class__()
         new.load_bytes(self.bytes())
         return new
 
     def __eq__(self, other: 'TIEntry') -> bool:
+        """
+        Determines if two entries are the same type and have the same bytes
+
+        :param other: The entry to check against
+        :return: Whether this entry is equal to ``other``
+        """
+
         try:
             return self.__class__ == other.__class__ and self.bytes() == other.bytes()
 
@@ -342,6 +387,13 @@ class TIEntry(Dock, Converter):
             return False
 
     def __format__(self, format_spec: str) -> str:
+        """
+        Formats this entry for string representations
+
+        :param format_spec: The format parameters
+        :return: A string representation of this entry
+        """
+
         raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
     def __init_subclass__(cls, /, register=False, **kwargs):
@@ -351,12 +403,24 @@ class TIEntry(Dock, Converter):
             TIEntry.register(cls)
 
     def __iter__(self) -> Iterator:
+        """
+        :return: If this entry is a container or collection, an iterator over its elements
+        """
+
         raise NotImplementedError
 
     def __len__(self) -> int:
+        """
+        :return: The total length of this entry's bytes
+        """
+
         return 2 + self.meta_length + 2 + self.data_length
 
     def __str__(self) -> str:
+        """
+        :return: A string representation of this entry
+        """
+
         return self.string()
 
     @Section(2, Integer)
@@ -645,7 +709,7 @@ class TIEntry(Dock, Converter):
 
     def bytes(self) -> bytes:
         """
-        :return: The byte string corresponding to this entry
+        :return: The bytes contained in this entry
         """
 
         return self.raw.bytes()
@@ -805,17 +869,36 @@ class TIVar:
                  UserWarning)
 
     def __bool__(self) -> bool:
+        """
+        :return: Whether this var contains no entries
+        """
+
         return not self.is_empty
 
     def __bytes__(self) -> bytes:
+        """
+        :return: The bytes contained in this var
+        """
+
         return self.bytes()
 
     def __copy__(self) -> 'TIVar':
+        """
+        :return: A copy of this var
+        """
+
         new = TIVar()
         new.load_bytes(self.bytes())
         return new
 
     def __eq__(self, other: 'TIVar'):
+        """
+        Determines if two vars contain the same entries
+
+        :param other: The var to check against
+        :return: Whether this var is equal to ``other``
+        """
+
         try:
             eq = self.__class__ == other.__class__ and len(self.entries) == len(other.entries)
             return eq and all(entry == other_entry for entry, other_entry in zip(self.entries, other.entries))
@@ -824,6 +907,10 @@ class TIVar:
             return False
 
     def __len__(self):
+        """
+        :return: The total length of this var's bytes
+        """
+
         return len(self._header) + self.entry_length + 2
 
     @property
@@ -998,7 +1085,7 @@ class TIVar:
 
     def bytes(self):
         """
-        :return: The byte string corresponding to this var
+        :return: The bytes contained in this var
         """
 
         dump = self._header.bytes()
