@@ -230,7 +230,7 @@ class ComplexEntry(TIEntry):
     def get_min_os(self, data: bytes = None) -> OsVersion:
         data = data or self.data
 
-        match min(data[0], data[9]):
+        match max(data[0], data[9]):
             case 0x0C:
                 return TI_83.OS()
 
@@ -243,15 +243,15 @@ class ComplexEntry(TIEntry):
     def get_version(self, data: bytes = None) -> int:
         data = data or self.data
 
-        subtype_ids = data[0], data[9]
-        if subtype_ids == (0x0C, 0x0C):
-            return 0x00
+        match max(data[0], data[9]):
+            case 0x0C:
+                return 0x00
 
-        elif 0x1B in subtype_ids:
-            return 0x0B
+            case 0x1B:
+                return 0x0B
 
-        else:
-            return 0x10
+            case _:
+                return 0x10
 
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
