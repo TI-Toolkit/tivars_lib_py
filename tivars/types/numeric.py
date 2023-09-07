@@ -35,7 +35,7 @@ def replacer(string: str, replacements: dict[str, str]) -> str:
     return string
 
 
-def sign(x: int):
+def sign(x: int) -> int:
     """
     Computes the mathematical sign of a number
 
