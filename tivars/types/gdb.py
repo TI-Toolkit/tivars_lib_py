@@ -300,8 +300,9 @@ class TIGraphedEquation(TIEquation):
 
 def color_data(gdb: 'TIMonoGDB') -> bytes:
     data = io.BytesIO(gdb.calc_data[gdb.offset + gdb.num_styles:])
+    temp = TIGraphedEquation()
     for i in range(gdb.num_equations):
-        TIGraphedEquation().load_data_section(data)
+        temp.load_data_section(data)
 
     return data.read()
 
