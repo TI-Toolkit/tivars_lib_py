@@ -272,7 +272,7 @@ class TIEntry(Dock, Converter):
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "calc_data"
 
         @property
-        def data_length(self) -> bytes:
+        def calc_data_length(self) -> bytes:
             """
             :return: The length of this entry's data portion
             """
@@ -301,9 +301,9 @@ class TIEntry(Dock, Converter):
             :return: The bytes contained in this entry
             """
 
-            return self.meta_length + self.data_length + \
+            return self.meta_length + self.calc_data_length + \
                 self.type_id + self.name + self.version + self.archived + \
-                self.data_length + self.calc_data
+                self.calc_data_length + self.calc_data
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
@@ -414,7 +414,7 @@ class TIEntry(Dock, Converter):
         :return: The total length of this entry's bytes
         """
 
-        return 2 + self.meta_length + 2 + self.data_length
+        return 2 + self.meta_length + 2 + self.calc_data_length
 
     def __str__(self) -> str:
         """
@@ -432,7 +432,7 @@ class TIEntry(Dock, Converter):
         """
 
     @property
-    def data_length(self) -> int:
+    def calc_data_length(self) -> int:
         """
         The length of the data section of the entry
         """
@@ -520,7 +520,7 @@ class TIEntry(Dock, Converter):
         :return: Whether this entry's data is empty
         """
 
-        return self.data_length == 0
+        return self.calc_data_length == 0
 
     @property
     def meta(self) -> bytes:
@@ -528,7 +528,7 @@ class TIEntry(Dock, Converter):
         :return: The meta section of this entry
         """
 
-        return self.raw.data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
+        return self.raw.calc_data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @classmethod
     def get_type(cls, type_id: int) -> Type['TIEntry']:
@@ -582,7 +582,7 @@ class TIEntry(Dock, Converter):
         """
 
         self.raw.calc_data = bytearray(self.leading_bytes)
-        self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
+        self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         """
@@ -1159,7 +1159,7 @@ class SizedEntry(TIEntry):
 
     def clear(self):
         self.raw.calc_data = bytearray([0, 0, *self.leading_bytes])
-        self.raw.calc_data.extend(bytearray(self.min_data_length - self.data_length))
+        self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
         self.length = len(self.leading_bytes) + len(self.data)
 
     def load_bytes(self, data: ByteString):

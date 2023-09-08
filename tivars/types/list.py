@@ -155,9 +155,9 @@ class ListEntry(TIEntry):
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.data_length // self._E.min_data_length != self.length:
+        if self.calc_data_length // self._E.min_data_length != self.length:
             warn(f"The list has an unexpected length "
-                 f"(expected {self.data_length // self._E.min_data_length}, got {self.length}).",
+                 f"(expected {self.calc_data_length // self._E.min_data_length}, got {self.length}).",
                  BytesWarning)
 
     @Loader[list]

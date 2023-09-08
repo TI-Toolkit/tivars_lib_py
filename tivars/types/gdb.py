@@ -289,7 +289,7 @@ class TIGraphedEquation(TIEquation):
         :return: The `TIEquation` component of this GDB equation
         """
 
-        return TIEquation(self.bytes()[:-self.data_length] + self.bytes()[-self.data_length + 1:])
+        return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
