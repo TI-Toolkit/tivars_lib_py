@@ -243,7 +243,7 @@ class TIMonoPicture(PictureEntry):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
-                 version: int = None, archived: bool = None,
+                 version: int = None, archived: bool = True,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
@@ -293,7 +293,7 @@ class TIPicture(PictureEntry, register=True):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Pic1",
-                 version: int = None, archived: bool = None,
+                 version: int = None, archived: bool = True,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
@@ -360,7 +360,7 @@ class TIImage(PictureEntry, register=True):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Image1",
-                 version: int = None, archived: bool = None,
+                 version: int = None, archived: bool = True,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)

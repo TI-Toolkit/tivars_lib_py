@@ -19,6 +19,13 @@ class TIAppVar(SizedEntry, register=True):
 
     _type_id = 0x15
 
+    def __init__(self, init=None, *,
+                 for_flash: bool = True, name: str = "UNNAMED",
+                 version: int = None, archived: bool = True,
+                 data: bytes = None):
+
+        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_83P.OS()
 
