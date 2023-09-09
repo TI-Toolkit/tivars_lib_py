@@ -312,11 +312,13 @@ class TIEntry(Dock, Converter):
         """
         Creates an empty entry with specified meta and data values
 
+        The entry ``version`` and ``archived`` flag are invalid if ``for_flash == False``.
+
         :param init: Values to initialize this entry's data (defaults to ``None``)
         :param for_flash: Whether this entry supports flash chips (defaults to ``True``)
         :param name: The name of this entry (defaults to a valid default name)
-        :param version: This entry's version (defaults to ``None``; not supported if ``for_flash == False``)
-        :param archived: Whether this entry is archived (defaults to ``False``; not supported if ``for_flash == False``)
+        :param version: This entry's version (defaults to ``None``)
+        :param archived: Whether this entry is archived (defaults to entry's default state on-calc)
         :param data: This entry's data (defaults to empty)
         """
 
