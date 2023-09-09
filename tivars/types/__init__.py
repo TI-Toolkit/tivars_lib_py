@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from .appvar import *
 from .complex import *
 from .gdb import *
+from .group import *
 from .list import *
 from .matrix import *
 from .real import *
@@ -30,6 +31,7 @@ else:
                "TIUndefinedReal",
                "TIWindowSettings", "TIRecallWindow", "TITableSettings",
                "TIAppVar",
+               "TIGroup",
                "TIRealFraction",
                "TIImage",
                "TIComplexFraction",
