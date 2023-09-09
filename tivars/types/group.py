@@ -44,7 +44,7 @@ class TIGroup(SizedEntry, register=True):
 
                     name = data.read(length)
 
-                case 0x01:
+                case 0x01 | 0x0D:
                     *_, page, length = data.read(4)
 
                     if length > 6:
