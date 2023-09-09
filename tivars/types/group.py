@@ -3,6 +3,7 @@ import io
 from warnings import warn
 
 from tivars.models import *
+from ..data import *
 from ..var import TIEntry, SizedEntry
 from .gdb import TIGraphedEquation
 
@@ -26,7 +27,40 @@ class TIGroup(SizedEntry, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-    def ungroup(self) -> list[TIEntry]:
+    @staticmethod
+    def group(entries: list[TIEntry], *, name: str = "GROUP1") -> 'TIGroup':
+        if not entries:
+            return TIGroup(name=name)
+
+        group = TIGroup(for_flash=entries[0].meta_length > TIEntry.base_meta_length, name=name)
+
+        for entry in entries:
+            name = entry.raw.name.rstrip(b'\x00')
+            vat = bytearray([entry.type_id, 0, entry.version, 0, 0, entry.archived])
+
+            if isinstance(entry, TIGraphedEquation):
+                vat[0] |= entry.raw.flags
+
+            match entry.type_id:
+                case 0x05 | 0x06 | 0x15 | 0x17:
+                    vat += [len(name), *name]
+
+                case 0x01 | 0x0D:
+                    vat += [len(name) + 1, *name, 0]
+
+                case _:
+                    vat += name.ljust(3, b'\x00')
+
+            group.data += vat
+            group.data += entry.calc_data
+
+        return group
+
+    @Loader[list]
+    def load_from_entries(self, entries: list[TIEntry]):
+        self.data = self.group(entries).data
+
+    def ungroup(self, *, model: TIModel = None) -> list[TIEntry]:
         data = io.BytesIO(self.data[:])
         entries = []
 
@@ -58,7 +92,8 @@ class TIGroup(SizedEntry, register=True):
                     *_, page = data.read(3)
                     name = data.read(3)
 
-            entry = TIEntry(version=version, archived=page > 0)
+            model = model or TI_84PCE
+            entry = TIEntry(for_flash=model.has(TIFeature.Flash), version=version, archived=page > 0)
             entry.type_id = type_id
             entry.coerce()
 
