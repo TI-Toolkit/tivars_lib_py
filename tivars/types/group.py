@@ -47,13 +47,20 @@ class TIGroup(SizedEntry, register=True):
         """
 
         if not entries:
+            warn("Groups are expected to be non-empty.",
+                 UserWarning)
+
             return TIGroup(name=name)
 
         group = TIGroup(for_flash=entries[0].meta_length > TIEntry.base_meta_length, name=name)
 
-        for entry in entries:
+        for index, entry in enumerate(entries):
             name = entry.raw.name.rstrip(b'\x00')
             vat = bytearray([entry.type_id, 0, entry.version, 0, 0, entry.archived])
+
+            if entry.archived:
+                warn(f"Entry #{index} is archived, which may lead to unexpected behavior on-calc.",
+                     UserWarning)
 
             if isinstance(entry, TIGraphedEquation):
                 vat[0] |= entry.raw.flags
@@ -70,6 +77,10 @@ class TIGroup(SizedEntry, register=True):
 
             group.data += vat
             group.data += entry.calc_data
+
+        if len(entries) < 2:
+            warn("Groups are expected to have at least two entries.",
+                 UserWarning)
 
         return group
 
