@@ -21,14 +21,14 @@ class TIGroup(SizedEntry, register=True):
     _type_id = 0x17
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GROUP1",
+                 for_flash: bool = True, name: str = "GROUP",
                  version: int = None, archived: bool = True,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @staticmethod
-    def group(entries: list[TIEntry], *, name: str = "GROUP1") -> 'TIGroup':
+    def group(entries: list[TIEntry], *, name: str = "GROUP") -> 'TIGroup':
         if not entries:
             return TIGroup(name=name)
 
@@ -56,9 +56,11 @@ class TIGroup(SizedEntry, register=True):
 
         return group
 
-    @Loader[list]
-    def load_from_entries(self, entries: list[TIEntry]):
-        self.data = self.group(entries).data
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return max([entry.get_min_os() for entry in self.ungroup()], default=OsVersions.INITIAL)
+
+    def get_version(self, data: bytes = None) -> int:
+        return max([entry.get_version() for entry in self.ungroup()], default=0x00)
 
     def ungroup(self, *, model: TIModel = None) -> list[TIEntry]:
         data = io.BytesIO(self.data[:])
@@ -106,3 +108,7 @@ class TIGroup(SizedEntry, register=True):
             entries.append(entry)
 
         return entries
+
+    @Loader[list]
+    def load_from_entries(self, entries: list[TIEntry]):
+        self.data = self.group(entries).data
