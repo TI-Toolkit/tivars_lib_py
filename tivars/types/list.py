@@ -82,7 +82,7 @@ class ListEntry(TIEntry):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "L1",
-                 version: bytes = None, archived: bool = None,
+                 version: int = None, archived: bool = None,
                  data: ByteString = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)

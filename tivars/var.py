@@ -307,7 +307,7 @@ class TIEntry(Dock, Converter):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "UNNAMED",
-                 version: bytes = None, archived: bool = None,
+                 version: int = None, archived: bool = None,
                  data: bytes = None):
         """
         Creates an empty entry with specified meta and data values
@@ -456,7 +456,7 @@ class TIEntry(Dock, Converter):
         """
 
     @Section(1, Bits[:])
-    def version(self) -> bytes:
+    def version(self) -> int:
         """
         The version number of the entry
 

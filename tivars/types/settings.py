@@ -17,12 +17,6 @@ class SettingsEntry(SizedEntry):
 
     min_data_length = 2
 
-    def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Window",
-                 version: bytes = None, archived: bool = None,
-                 data: bytes = None):
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
-
     @Loader[dict]
     def load_dict(self, dct: dict):
         """
@@ -66,7 +60,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "Window",
-                 version: bytes = None, archived: bool = None,
+                 version: int = None, archived: bool = None,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
@@ -309,7 +303,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "RclWindw",
-                 version: bytes = None, archived: bool = None,
+                 version: int = None, archived: bool = None,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
@@ -552,7 +546,7 @@ class TITableSettings(SettingsEntry, register=True):
 
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "TblSet",
-                 version: bytes = None, archived: bool = None,
+                 version: int = None, archived: bool = None,
                  data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
