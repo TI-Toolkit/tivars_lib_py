@@ -47,11 +47,11 @@ class TIGroup(SizedEntry, register=True):
                 case 0x01 | 0x0D:
                     *_, page, length = data.read(4)
 
-                    if length > 6:
-                        warn(f"The name length of entry #{index} ({length}), a list, exceeds six.",
+                    if length > 7:
+                        warn(f"The name length of entry #{index} ({length - 2}), a list, exceeds five.",
                              BytesWarning)
 
-                    name = data.read(length)
+                    name = data.read(length - 1)
                     data.read(1)
 
                 case _:
