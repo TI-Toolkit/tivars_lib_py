@@ -3,7 +3,7 @@ import tivars.tokenizer.tokens.scripts.parse as parse
 from .model import *
 
 
-class OsVersions(parse.OsVersion):
+class OsVersions(parse.OsVersions):
     MATHPRINT = TI_84P.OS("2.53")
 
     ASMPRGM_DISABLED = TI_84PCE.OS("5.3.1")
