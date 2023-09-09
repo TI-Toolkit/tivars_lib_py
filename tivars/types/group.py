@@ -9,6 +9,15 @@ from .gdb import TIGraphedEquation
 
 
 class TIGroup(SizedEntry, register=True):
+    """
+    Parser for group objects
+
+    A group is a collection of entries packaged together for easy transfer and saving in the archive.
+    Each entry is stored with its entry in the VAT followed by its regular data.
+
+    The VAT information can be safely ignored since it is redetermined when importing back onto a calculator.
+    """
+
     _T = 'TIGroup'
 
     extensions = {
@@ -29,6 +38,14 @@ class TIGroup(SizedEntry, register=True):
 
     @staticmethod
     def group(entries: list[TIEntry], *, name: str = "GROUP") -> 'TIGroup':
+        """
+        Creates a new `TIGroup` by packaging a ``list`` of entries using defaulted VAT data
+
+        :param entries: The entries to group
+        :param name: The name of the group (defaults to ``GROUP``)
+        :return: A group containing ``entries``
+        """
+
         if not entries:
             return TIGroup(name=name)
 
@@ -62,7 +79,11 @@ class TIGroup(SizedEntry, register=True):
     def get_version(self, data: bytes = None) -> int:
         return max([entry.get_version() for entry in self.ungroup()], default=0x00)
 
-    def ungroup(self, *, model: TIModel = None) -> list[TIEntry]:
+    def ungroup(self) -> list[TIEntry]:
+        """
+        :return: A ``list`` of entries stored in this group
+        """
+
         data = io.BytesIO(self.data[:])
         entries = []
 
@@ -94,8 +115,7 @@ class TIGroup(SizedEntry, register=True):
                     *_, page = data.read(3)
                     name = data.read(3)
 
-            model = model or TI_84PCE
-            entry = TIEntry(for_flash=model.has(TIFeature.Flash), version=version, archived=page > 0)
+            entry = TIEntry(for_flash=self.meta_length > TIEntry.base_meta_length, version=version, archived=page > 0)
             entry.type_id = type_id
             entry.coerce()
 
@@ -111,4 +131,12 @@ class TIGroup(SizedEntry, register=True):
 
     @Loader[list]
     def load_from_entries(self, entries: list[TIEntry]):
+        """
+        Loads a ``list`` of entries into this group
+
+        All VAT data is cleared.
+
+        :param entries: The entries to group
+        """
+
         self.data = self.group(entries).data
