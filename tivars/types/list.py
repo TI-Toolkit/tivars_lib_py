@@ -25,7 +25,7 @@ class ListName(TokenizedString):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts `bytes` -> `str` as done by the memory viewer
+        Converts ``bytes`` -> ``str`` as done by the memory viewer
 
         :param data: The raw bytes to convert
         :return: The list name contained in `data`
