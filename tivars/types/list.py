@@ -176,7 +176,7 @@ class ListEntry(TIEntry):
         """
 
         it = zip(*[iter(self.data)] * self._E.min_data_length)
-        return [self._E(for_flash=self.meta_length > TIEntry.base_meta_length, data=bytes(data)) for data in it]
+        return [self._E(for_flash=self.meta_length > TIEntry.base_meta_length, data=data) for data in it]
 
     @Loader[str]
     def load_string(self, string: str):

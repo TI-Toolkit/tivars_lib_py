@@ -149,10 +149,10 @@ class TIMatrix(TIEntry, register=True):
         :param matrix: The matrix to load
         """
 
-        if len({len(row) for row in matrix}) != 1:
+        if len({len(row) for row in matrix}) > 1:
             raise IndexError("matrix has uneven rows")
 
-        self.load_bytes(bytes([len(matrix[0])]) + bytes([len(matrix)]) +
+        self.load_bytes(bytes([len(matrix[0]), len(matrix)]) +
                         b''.join(entry.calc_data for row in matrix for entry in row))
 
     def matrix(self) -> list[list[RealEntry]]:
@@ -161,7 +161,7 @@ class TIMatrix(TIEntry, register=True):
         """
 
         it = zip(*[iter(self.data)] * RealEntry.min_data_length)
-        return [[RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length, data=bytes(data))
+        return [[RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length, data=data)
                  for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]
