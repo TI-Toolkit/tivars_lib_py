@@ -147,7 +147,7 @@ class TIGraphedEquation(TIEquation):
             _T = TIGraphedEquation
 
             @classmethod
-            def get(cls, data: bytes, *, instance: 'TIMonoGDB' = None, **kwargs) -> _T:
+            def get(cls, data: bytes, *, instance=None, **kwargs) -> _T:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by finding the equation at ``index`` within a GDB
 
@@ -159,7 +159,7 @@ class TIGraphedEquation(TIEquation):
                 return instance.equations[index]
 
             @classmethod
-            def set(cls, value: _T, *, instance: 'TIMonoGDB' = None, **kwargs) -> bytes:
+            def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by modifying the equation at ``index`` within a GDB
 
@@ -181,7 +181,7 @@ class TIGraphedEquation(TIEquation):
                 data += b''.join(equation.raw.calc_data for equation in equations)
 
                 # Set colors (if they exist)
-                if color := color_data(instance):
+                if color := instance.get_color_data():
                     data += b'84C'
                     for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                         data += equations[i].color
@@ -296,15 +296,6 @@ class TIGraphedEquation(TIEquation):
         equation = TIEquation()
         equation.load_string(string, model=model)
         self.load_equation(equation)
-
-
-def color_data(gdb: 'TIMonoGDB') -> bytes:
-    data = io.BytesIO(gdb.calc_data[gdb.offset + gdb.num_styles:])
-    temp = TIGraphedEquation()
-    for i in range(gdb.num_equations):
-        temp.load_data_section(data)
-
-    return data.read()
 
 
 class TIMonoGDB(SizedEntry, register=True):
@@ -466,7 +457,32 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: This GDB's stored equations
         """
 
-        data = io.BytesIO(self.calc_data[self.offset:])
+        return self.get_equations()
+
+    def get_color_data(self, data: bytes = None) -> bytes:
+        """
+        Finds the color portion of a GDB if it exists
+
+        :param data: The data to find the color portion of (defaults to this GDB's data)
+        :return: The color portion of ``data``, which may be empty
+        """
+
+        data = io.BytesIO(data or self.calc_data[self.offset + self.num_styles:])
+        temp = TIGraphedEquation()
+        for i in range(self.num_equations):
+            temp.load_data_section(data)
+
+        return data.read()
+
+    def get_equations(self, data: bytes = None) -> tuple[TIGraphedEquation, ...]:
+        """
+        Extracts the equations stored in a GDB into a ``tuple``
+
+        :param data: The data to extract equations from (defaults to this GDB's data)
+        :return: A ``tuple`` of equations stored in ``data``
+        """
+
+        data = io.BytesIO(data or self.calc_data[self.offset:])
         equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
         # Load styles
@@ -492,10 +508,10 @@ class TIMonoGDB(SizedEntry, register=True):
         return equations
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
-        return max(map(TIGraphedEquation.get_min_os, self.equations), default=OsVersions.INITIAL)
+        return max([TIGraphedEquation.get_min_os(eq) for eq in self.get_equations(data)], default=OsVersions.INITIAL)
 
     def get_version(self, data: bytes = None) -> int:
-        return max(map(TIGraphedEquation.get_version, self.equations), default=0x00)
+        return max([TIGraphedEquation.get_version(eq) for eq in self.get_equations(data)], default=0x00)
 
     @Loader[dict]
     def load_dict(self, dct: dict):
@@ -606,7 +622,7 @@ class TIMonoGDB(SizedEntry, register=True):
         return json.dumps(self.dict())
 
     def coerce(self):
-        if color_data(self):
+        if self.get_color_data():
             self.__class__ = TIGDB
             self.coerce()
         else:
