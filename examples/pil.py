@@ -2,9 +2,15 @@ import numpy as np
 
 from PIL import Image
 from tivars import *
+from tivars.PIL import *
 
 
-# Load an image into PIL
+# Load an image using a PIL decoder
+img = Image.open("../tests/data/var/Image1.8ca")
+img.show()
+
+
+# Alternatively, load the image manually
 ti_img = TIImage()
 ti_img.open("../tests/data/var/Image1.8ca")
 
