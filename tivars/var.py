@@ -153,7 +153,7 @@ class TIHeader:
 
         models = {m for m in TIModel.MODELS if m.magic == self.magic}
 
-        if self.product_id != b'\x00':
+        if self.product_id != 0x00:
             if filtered := {m for m in models if m.product_id == self.product_id}:
                 return filtered
 
