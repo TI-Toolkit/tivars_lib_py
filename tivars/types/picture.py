@@ -131,7 +131,7 @@ class RGB565(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts  `RGB` -> ``bytes``
+        Converts `RGB` -> ``bytes``
 
         :param value: The value to convert
         :return: The bytes formed by concatenating the RGB components of ``value`` in 565 format
@@ -190,7 +190,7 @@ class PictureEntry(SizedEntry):
     @Loader[list, ]
     def load_array(self, arr: list[list[pixel_type]]):
         """
-        Loads a two-dimensional `list` of pixels into this picture
+        Loads a two-dimensional ``list`` of pixels into this picture
 
         :param arr: The array to load
         """
@@ -199,7 +199,7 @@ class PictureEntry(SizedEntry):
 
     def array(self) -> list[list[pixel_type]]:
         """
-        :return: A two-dimensional `list` of the pixels in this picture
+        :return: A two-dimensional ``list`` of the pixels in this picture
         """
 
         raise NotImplementedError
@@ -329,7 +329,7 @@ class TIImage(PictureEntry, register=True):
     Parser for color images
 
     A `TIImage` is a 133 x 83 grid of pixels which can take on any value in the full color space.
-    Each pixel comprises two bytes, stored in RGB565 format.
+    Each pixel comprises two bytes, stored in RGB565 format; rows are stored backward.
 
     On-calc, each pixel is duplicated in both directions to fill the screen.
     """
@@ -370,7 +370,7 @@ class TIImage(PictureEntry, register=True):
         """
         The name of the entry
 
-        Must be one of the image names: Image1 - Image0
+        Must be one of the image names: ``Image1`` - ``Image0``
         """
 
     @Section()
