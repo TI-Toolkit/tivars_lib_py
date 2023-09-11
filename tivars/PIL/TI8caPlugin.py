@@ -10,7 +10,7 @@ class TI8caImageFile(TIImageFile):
     format_description = "TI (e)Z80 Image Format"
 
 
-class TI8caiEncoder(ImageFile.PyEncoder):
+class TI8caEncoder(ImageFile.PyEncoder):
     _pushes_fd = True
 
     def encode(self, bufsize):
