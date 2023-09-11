@@ -3,6 +3,10 @@ from .common import *
 
 
 class TI8caImageFile(TIImageFile):
+    """
+    `ImageFile` handler for 8ca files (`TIImage`)
+    """
+
     _T = TIImage
 
     format = "8ca"
@@ -10,7 +14,13 @@ class TI8caImageFile(TIImageFile):
 
 
 class TI8caEncoder(TIEncoder):
+    """
+    Encoder for 8ca files (`TIImage`)
+    """
+
     _T = TIImage
 
 
 register(TI8caImageFile, TI8caEncoder)
+
+__all__ = ["TI8caEncoder", "TI8caImageFile"]

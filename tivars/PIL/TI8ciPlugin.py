@@ -3,6 +3,10 @@ from .common import *
 
 
 class TI8ciImageFile(TIImageFile):
+    """
+    `ImageFile` handler for 8ci files (`TIPicture`)
+    """
+
     _T = TIPicture
 
     format = "8ci"
@@ -10,7 +14,13 @@ class TI8ciImageFile(TIImageFile):
 
 
 class TI8ciEncoder(TIEncoder):
+    """
+    Encoder for 8ci files (`TIPicture`)
+    """
+
     _T = TIPicture
 
 
 register(TI8ciImageFile, TI8ciEncoder)
+
+__all__ = ["TI8ciEncoder", "TI8ciImageFile"]

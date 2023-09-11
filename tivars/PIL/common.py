@@ -20,11 +20,19 @@ def register(file, encoder):
 
 
 class TIImageFile(ImageFile.ImageFile):
+    """
+    Base class for PIL plugin `ImageFile` types
+    """
+
     _T = PictureEntry
 
     format = "8??"
 
     def _open(self):
+        """
+        Loads necessary image information from an opened file
+        """
+
         with warnings.catch_warnings():
             warnings.simplefilter("error")
 
@@ -42,11 +50,33 @@ class TIImageFile(ImageFile.ImageFile):
 
     @classmethod
     def _save(cls, im, fp, format=None, **params):
+        """
+        Saves an image to a file pointer
+
+        This function is used to register formats with PIL and should not be called manually.
+
+        :param im: The image to save
+        :param fp: The file pointer
+        :param format: The format to save with (defaults to the image's known format)
+        :param params: Additional encoder parameters (empty)
+        """
+
         ImageFile._save(im, fp, format, [(cls.format, (0, 0) + im.size, 0, im.mode)])
 
 
 class TIDecoder(ImageFile.PyDecoder):
+    """
+    Base class for PIL plugin decoders
+    """
+
     def decode(self, buffer):
+        """
+        Decodes an input buffer and sets the image to its contents
+
+        :param buffer: The input bytestream
+        :return: The number of bytes consumed and the error code (``-1, 0`` on success)
+        """
+
         var = TIVar()
         var.load_bytes(buffer)
         self.set_as_raw(np.asarray(var.entries[0].array(), dtype=np.uint8))
@@ -55,11 +85,22 @@ class TIDecoder(ImageFile.PyDecoder):
 
 
 class TIEncoder(ImageFile.PyEncoder):
+    """
+    Base class for PIL plugin encoders
+    """
+
     _pushes_fd = True
 
     _T = PictureEntry
 
     def encode(self, bufsize):
+        """
+        Encodes the image to an output bytestream
+
+        :param bufsize: The size of the output buffer (unused)
+        :return: The length of the output, the error code (``0`` on success), and the output
+        """
+
         img = self._T()
         img.load_array(np.asarray(self.im).reshape((img.height, img.width)).tolist())
         data = img.export().bytes()
