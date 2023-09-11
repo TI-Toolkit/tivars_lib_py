@@ -190,6 +190,18 @@ For these reasons, it is _not_ recommended to instantiate your own models.
 
 ## Other Functionalities
 
+### PIL
+
+The `tivars.PIL` package can be used to interface with PIL, the Python Imaging Library. Simply import the package to register codecs for each of the TI image types. You can then open such images directly into a PIL `Image`:
+
+```python
+from PIL import Image
+from tivars.PIL import *
+
+img = Image.open("Pic1.8ci")
+img.show()
+```
+
 ### Tokenization
 
 Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. Support currently exists for all models in the 82/83/84 series as well as the TI-73; PR's concerning the sheets themselves should be directed upstream to [TI-Toolkit/tokens](https://github.com/TI-Toolkit/tokens).
