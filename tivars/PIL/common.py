@@ -13,7 +13,7 @@ def accept(prefix):
 class TIImageFile(ImageFile.ImageFile):
     _T = PictureEntry
 
-    extension = _T.extensions[None]
+    format = "8??"
 
     def _open(self):
         with warnings.catch_warnings():
@@ -24,7 +24,7 @@ class TIImageFile(ImageFile.ImageFile):
 
             img = var.entries[0]
             if not isinstance(img, self._T):
-                raise TypeError(f"image is not in {self.extension} format")
+                raise TypeError(f"image is not in .{self.format} format")
 
             self._size = (img.width, img.height)
             self.mode = img.pil_mode
