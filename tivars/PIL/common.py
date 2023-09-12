@@ -61,7 +61,7 @@ class TIImageFile(ImageFile.ImageFile):
         :param params: Additional encoder parameters (empty)
         """
 
-        ImageFile._save(im, fp, format, [(cls.format, (0, 0) + im.size, 0, im.mode)])
+        ImageFile._save(im, fp, [(cls.format, (0, 0) + im.size, 0, im.mode)])
 
 
 class TIDecoder(ImageFile.PyDecoder):
@@ -102,7 +102,12 @@ class TIEncoder(ImageFile.PyEncoder):
         """
 
         img = self._T()
-        img.load_array(np.asarray(self.im).reshape((img.height, img.width)).tolist())
+        shape = img.height, img.width
+
+        if img.pixel_type != int:
+            shape += 3,
+
+        img.load_array(np.asarray(self.im).reshape(shape).tolist())
         data = img.export().bytes()
 
         return len(data), 0, data
