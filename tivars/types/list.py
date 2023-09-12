@@ -132,11 +132,11 @@ class ListEntry(TIEntry):
         pass
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
-        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+        it = zip(*[iter(data or self.data)] * self._E.min_data_length)
         return max(map(self._E().get_min_os, it), default=OsVersions.INITIAL)
 
     def get_version(self, data: bytes = None) -> int:
-        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+        it = zip(*[iter(data or self.data)] * self._E.min_data_length)
         version = max(map(self._E().get_version, it), default=0x00)
 
         if version > 0x1B:

@@ -503,4 +503,4 @@ class Loader:
 
 
 __all__ = ["Section", "View", "Dock", "Loader",
-           "Converter", "Bytes", "SizedData", "Boolean", "Integer", "String", "Bits"]
+           "Converter", "Bytes", "Data", "SizedData", "Boolean", "Integer", "String", "Bits"]

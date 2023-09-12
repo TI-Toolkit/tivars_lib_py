@@ -18,8 +18,7 @@ class ModelTests(unittest.TestCase):
 
 class VarTests(unittest.TestCase):
     def test_all_attributes(self):
-        test_var = TIVar()
-        test_var.open("tests/data/var/Program.8xp")
+        test_var = TIVar.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.header.magic, "**TI83F*")
         self.assertEqual(test_var.header.extra, b'\x1A\x0A')
@@ -36,8 +35,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.checksum, b'M\x03')
 
     def test_all_sections(self):
-        test_var = TIVar()
-        test_var.open("tests/data/var/Program.8xp")
+        test_var = TIVar.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.header.raw.magic, b'**TI83F*')
         self.assertEqual(test_var.header.raw.extra, b'\x1A\x0A')
@@ -70,8 +68,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.checksum, b'M\x03')
 
     def test_multiple_entries(self):
-        clibs = TIVar()
-        clibs.open("tests/data/var/clibs.8xg")
+        clibs = TIVar.open("tests/data/var/clibs.8xg")
 
         self.assertEqual(len(clibs.entries), 9)
         self.assertTrue(all(entry.type_id == 0x15 for entry in clibs.entries))
@@ -83,8 +80,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(second, clibs.entries[1])
 
     def test_save_to_file(self):
-        test_var = TIVar()
-        test_var.open("tests/data/var/Program.8xp")
+        test_var = TIVar.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.extension, "8xp")
         self.assertEqual(test_var.filename, "UNNAMED.8xp")
@@ -98,10 +94,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.supported_by(TI_83), False)
 
     def test_truthiness(self):
-        test_var = TIVar()
-        self.assertEqual(bool(test_var), False)
-
-        test_var.open("tests/data/var/clibs.8xg")
+        test_var = TIVar.open("tests/data/var/clibs.8xg")
         self.assertEqual(bool(test_var), True)
 
         test_var.clear()
@@ -110,11 +103,8 @@ class VarTests(unittest.TestCase):
 
 class EntryTests(unittest.TestCase):
     def test_save_to_file(self):
-        test_program = TIEntry()
-        test_header = TIHeader()
-
-        test_program.open("tests/data/var/Program.8xp")
-        test_header.open("tests/data/var/Program.8xp")
+        test_program = TIEntry.open("tests/data/var/Program.8xp")
+        test_header = TIHeader.open("tests/data/var/Program.8xp")
 
         test_program.save("tests/data/var/Program_new.8xp", header=test_header)
 
@@ -141,20 +131,18 @@ class EntryTests(unittest.TestCase):
             self.assertEqual(test_header | [test_program], test_var)
 
     def test_truthiness(self):
-        test_program = TIEntry()
-        self.assertEqual(bool(test_program), False)
+        test_program = TIEntry.open("tests/data/var/Program.8xp")
+        self.assertEqual(bool(test_program), True)
 
-        test_program.open("tests/data/var/Program.8xp")
+        test_program.clear()
         self.assertEqual(bool(test_program), True)
 
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
-        test_var = TIVar()
-        test_var.open("tests/data/var/Program.8xp")
+        test_var = TIVar.open("tests/data/var/Program.8xp")
 
-        test_program = TIProgram()
-        test_program.open("tests/data/var/Program.8xp")
+        test_program = TIProgram.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_program, test_var.entries[0])
 
@@ -209,8 +197,7 @@ class TokenizationTests(unittest.TestCase):
 
 class NumericTests(unittest.TestCase):
     def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):
-        test_num = real_type()
-        test_num.open(f"tests/data/var/{filename}.8xn")
+        test_num = real_type.open(f"tests/data/var/{filename}.8xn")
 
         self.assertEqual(test_num.name, name)
         self.assertEqual(test_num.sign, sign)
@@ -242,8 +229,7 @@ class NumericTests(unittest.TestCase):
                              Decimal("0.89759790102567"))
 
     def test_real_radical(self):
-        test_radical = TIRealRadical()
-        test_radical.open("tests/data/var/Exact_RealRadical.8xn")
+        test_radical = TIRealRadical.open("tests/data/var/Exact_RealRadical.8xn")
 
         self.assertEqual(test_radical.sign_type, 2)
         self.assertEqual(test_radical.left_scalar, 41)
@@ -255,8 +241,7 @@ class NumericTests(unittest.TestCase):
     def complex_float_test(self, comp_type, filename, name, real_sign, real_exponent, real_mantissa,
                            imag_sign, imag_exponent, imag_mantissa, string, comp):
 
-        test_num = comp_type()
-        test_num.open(f"tests/data/var/{filename}.8xc")
+        test_num = comp_type.open(f"tests/data/var/{filename}.8xc")
 
         self.assertEqual(test_num.real.sign, real_sign)
         self.assertEqual(test_num.real.exponent, real_exponent)
@@ -315,8 +300,7 @@ class NumericTests(unittest.TestCase):
 
 class ArrayTests(unittest.TestCase):
     def test_real_list(self):
-        test_real_list = TIRealList()
-        test_real_list.open("tests/data/var/RealList.8xl")
+        test_real_list = TIRealList.open("tests/data/var/RealList.8xl")
 
         test_list = [TIReal("-1.0"), TIReal("2.0"), TIReal("999")]
 
@@ -328,8 +312,7 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(f"{test_real_list:t}", "{~1,2,999}")
 
     def test_complex_list(self):
-        test_comp_list = TIComplexList()
-        test_comp_list.open("tests/data/var/ComplexList.8xl")
+        test_comp_list = TIComplexList.open("tests/data/var/ComplexList.8xl")
 
         test_list = [TIComplex(1 + 1j), TIComplex("-3 + 2i"), TIComplex(4 + 0j)]
 
@@ -341,8 +324,7 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(f"{test_comp_list:t}", "{1+[i],~3+2[i],4}")
 
     def test_matrix(self):
-        test_matrix = TIMatrix()
-        test_matrix.open("tests/data/var/Matrix_3x3_standard.8xm")
+        test_matrix = TIMatrix.open("tests/data/var/Matrix_3x3_standard.8xm")
 
         test_array = [[TIReal(0.5), TIReal(-1.0), TIReal("2.6457513110646")],
                       [TIReal("2.7386127875258"), TIReal("0.5"), TIReal("3.1415926535898")],
@@ -362,8 +344,7 @@ class ArrayTests(unittest.TestCase):
                                              "[1,99999999,0]]")
 
     def test_exact_matrix(self):
-        test_matrix = TIMatrix()
-        test_matrix.open("tests/data/var/Matrix_2x2_exact.8xm")
+        test_matrix = TIMatrix.open("tests/data/var/Matrix_2x2_exact.8xm")
 
         test_array = [[TIRealPi("3π"), TIRealRadical("3√10")],
                       [TIRealFraction("1/2"), TIRealRadical("(4√5 + 2√3) / 7")]]
@@ -377,8 +358,7 @@ class ArrayTests(unittest.TestCase):
 
 class SettingsTests(unittest.TestCase):
     def test_window(self):
-        test_window = TIWindowSettings()
-        test_window.open("tests/data/var/Window.8xw")
+        test_window = TIWindowSettings.open("tests/data/var/Window.8xw")
 
         zero, one, undef = TIReal(0), TIReal(1), TIUndefinedReal(1)
         tau, pi_twenty_fourths = TIReal("6.283185307"), TIReal("0.13089969389957")
@@ -412,8 +392,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(test_window.Yscl, TIReal("2"))
 
     def test_recall(self):
-        test_recall = TIRecallWindow()
-        test_recall.open("tests/data/var/RecallWindow.8xz")
+        test_recall = TIRecallWindow.open("tests/data/var/RecallWindow.8xz")
 
         zero, one, undef = TIReal("0"), TIReal("1"), TIUndefinedReal("1")
         tau, pi_twenty_fourths = TIReal(6.283185307), TIReal("0.13089969389957")
@@ -447,8 +426,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(test_recall.Yscl, TIReal(1))
 
     def test_table(self):
-        test_table = TITableSettings()
-        test_table.open("tests/data/var/TableRange.8xt")
+        test_table = TITableSettings.open("tests/data/var/TableRange.8xt")
 
         self.assertEqual(test_table.name, "TblSet")
         self.assertEqual(test_table.TblMin, TIReal(0.0))
@@ -457,8 +435,7 @@ class SettingsTests(unittest.TestCase):
 
 class GDBTests(unittest.TestCase):
     def test_func_gdb(self):
-        test_gdb = TIMonoGDB()
-        test_gdb.open("tests/data/var/GraphDataBase.8xd")
+        test_gdb = TIMonoGDB.open("tests/data/var/GraphDataBase.8xd")
 
         self.assertEqual(type(test_gdb), TIFuncGDB)
         self.assertEqual(test_gdb.name, "GDB1")

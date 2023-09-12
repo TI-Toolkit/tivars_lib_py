@@ -36,7 +36,8 @@ class TIHeader:
 
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
-                 comment: str = "Created with tivars_lib_py v0.7.3"):
+                 comment: str = "Created with tivars_lib_py v0.7.3",
+                 data: bytes = None):
         """
         Creates an empty header which targets a specified model
 
@@ -45,6 +46,7 @@ class TIHeader:
         :param extra: Extra export bytes for the header (defaults to ``0x1a0a``)
         :param product_id: The targeted model's product ID (defaults to ``0x00``)
         :param comment: A comment to include in the header (defaults to a simple lib message)
+        :param data: This header's data (defaults to empty)
         """
 
         self.raw = self.Raw()
@@ -55,6 +57,9 @@ class TIHeader:
         self.extra = extra
         self.product_id = product_id if product_id is not None else model.product_id
         self.comment = comment
+
+        if data:
+            self.load_bytes(data)
 
     def __bytes__(self) -> bytes:
         """
@@ -203,7 +208,8 @@ class TIHeader:
 
         self.load_bytes(file.read(len(self)))
 
-    def open(self, filename: str):
+    @classmethod
+    def open(cls, filename: str) -> 'TIHeader':
         """
         Loads this header from a file given a filename
 
@@ -211,7 +217,7 @@ class TIHeader:
         """
 
         with open(filename, 'rb') as file:
-            self.load_bytes(file.read())
+            return cls(data=file.read())
 
 
 class TIEntry(Dock, Converter):
@@ -480,7 +486,7 @@ class TIEntry(Dock, Converter):
         The data section of the entry which is loaded on-calc
         """
 
-    @View(calc_data, Bytes)[:]
+    @View(calc_data, Data)[:]
     def data(self) -> bytes:
         """
         The entry's user data
@@ -751,10 +757,8 @@ class TIEntry(Dock, Converter):
         :param offset: The offset of the entry to read
         """
 
-        # Load header
-        header = TIHeader()
-        header.load_from_file(file)
-        file.seek(2, 1)
+        # Skip header
+        file.seek(55)
 
         # Seek to offset
         while offset:
@@ -781,27 +785,33 @@ class TIEntry(Dock, Converter):
 
         raise NotImplementedError
 
-    def open(self, filename: str):
+    @classmethod
+    def open(cls, filename: str) -> 'TIEntry':
         """
         Loads this entry from a file given a filename
 
         :param filename: A filename to open
         """
 
-        if self._type_id is not None and \
-                not any(filename.endswith(extension) for extension in self.extensions.values()):
-            warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {type(self)}; "
+        if cls._type_id is not None and \
+                not any(filename.endswith(extension) for extension in cls.extensions.values()):
+            warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
                  f"attempting to read anyway.")
 
         with open(filename, 'rb') as file:
             file.seek(55)
-            self.load_bytes(file.read(self.next_entry_length(file)))
+
+            entry = cls()
+            entry.load_bytes(file.read(cls.next_entry_length(file)))
+
             file.seek(2, 1)
 
             if file.read():
                 warn("The selected var file contains multiple entries; only the first will be loaded. "
                      "Use load_from_file to select a particular entry, or load the entire file in a TIVar object.",
                      UserWarning)
+
+        return entry
 
     def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
         """
@@ -851,13 +861,14 @@ class TIVar:
     A var file is composed of a header and any number of entries (though most have only one).
     """
 
-    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, model: TIModel = None):
+    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, model: TIModel = None, data: bytes = None):
         """
         Creates an empty var with a specified name, header, and targeted model
 
         :param name: The name of the var (defaults to ``UNNAMED``)
         :param header: A `TIHeader` to attach (defaults to an empty header)
         :param model: A minimum `TIModel` to target (defaults to ``None``)
+        :param data: This var's data (defaults to empty)
         """
 
         self._header = header or TIHeader(model)
@@ -869,6 +880,9 @@ class TIVar:
         if self._model and self._model not in self._header.targets():
             warn(f"The var's model ({self._model}) is incompatible with the given header.",
                  UserWarning)
+
+        if data:
+            self.load_bytes(data)
 
     def __bool__(self) -> bool:
         """
@@ -1108,7 +1122,8 @@ class TIVar:
 
         self.load_bytes(file.read())
 
-    def open(self, filename: str):
+    @classmethod
+    def open(cls, filename: str) -> 'TIVar':
         """
         Loads this var from a file given a filename
 
@@ -1116,7 +1131,7 @@ class TIVar:
         """
 
         with open(filename, 'rb') as file:
-            self.load_bytes(file.read())
+            return cls(data=file.read())
 
     def save(self, filename: str = None):
         """

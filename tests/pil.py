@@ -20,8 +20,7 @@ except ImportError:
 
 class PILTests(unittest.TestCase):
     def test_8xi(self):
-        ti_img = TIMonoPicture()
-        ti_img.open("tests/data/var/BartSimpson.8xi")
+        ti_img = TIMonoPicture.open("tests/data/var/BartSimpson.8xi")
 
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/BartSimpson.8xi")
@@ -43,8 +42,7 @@ class PILTests(unittest.TestCase):
 
             return bytes([16 * high + low])
 
-        ti_img = TIPicture()
-        ti_img.open("tests/data/var/Pic1.8ci")
+        ti_img = TIPicture.open("tests/data/var/Pic1.8ci")
 
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/Pic1.8ci")
@@ -59,8 +57,7 @@ class PILTests(unittest.TestCase):
         self.assertEqual(buf.read()[72:-2].translate(trans), ti_img.calc_data.translate(trans))
 
     def test_8ca(self):
-        ti_img = TIImage()
-        ti_img.open("tests/data/var/Image1.8ca")
+        ti_img = TIImage.open("tests/data/var/Image1.8ca")
 
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/Image1.8ca")

@@ -81,7 +81,7 @@ my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
 Vars can be loaded from files or raw bytes:
 
 ```python
-my_var.open("HELLO.8xp")
+my_var = TIVar.open("HELLO.8xp")
 
 # Note binary mode!
 with open("HELLO.8xp", 'rb') as file:
@@ -95,7 +95,7 @@ Entries can be loaded from files or raw bytes. When loading from a file, you may
 
 ```python
 # Raises an error if the var has multiple entries; use load_from_file instead
-my_program.open("HELLO.8xp")
+my_program = TIProgram.open("HELLO.8xp")
 
 with open("HELLO.8xp", 'rb') as file:
     # Offset counts the number of entries to skip; defaults to zero
@@ -118,7 +118,7 @@ my_real.load_float(1.23)
 Base `TIEntry` objects, as well other parent types like `TIGDB`, will be automatically coerced to the correct type:
 ```python
 # Coerces to a TIProgram
-my_entry.open("HELLO.8xp")
+my_entry = TIEntry.open("HELLO.8xp")
 ```
 
 Export a var as bytes or straight to a file:
