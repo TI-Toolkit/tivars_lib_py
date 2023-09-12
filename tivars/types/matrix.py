@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import ByteString, Iterator
+from typing import ByteString, Iterator, Sequence
 from warnings import warn
 
 from tivars.models import *
@@ -141,10 +141,10 @@ class TIMatrix(TIEntry, register=True):
         height = int.from_bytes(height_byte := data.read(1), 'little')
         self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height))
 
-    @Loader[list]
-    def load_matrix(self, matrix: list[list[RealEntry]]):
+    @Loader[Sequence]
+    def load_matrix(self, matrix: Sequence[Sequence[RealEntry]]):
         """
-        Loads a two-dimensional ``list`` into this matrix
+        Loads a two-dimensional sequence into this matrix
 
         :param matrix: The matrix to load
         """

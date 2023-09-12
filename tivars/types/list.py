@@ -1,7 +1,7 @@
 import re
 
 from io import BytesIO
-from typing import ByteString, Iterator
+from typing import ByteString, Iterator, Sequence
 from warnings import warn
 
 from tivars.models import *
@@ -160,10 +160,10 @@ class ListEntry(TIEntry):
                  f"(expected {self.calc_data_length // self._E.min_data_length}, got {self.length}).",
                  BytesWarning)
 
-    @Loader[list]
-    def load_list(self, lst: list[_E]):
+    @Loader[Sequence]
+    def load_list(self, lst: Sequence[_E]):
         """
-        Loads a ``list`` into this list
+        Loads a sequence into this list
 
         :param lst: The list to load
         """

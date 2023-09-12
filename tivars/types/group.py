@@ -1,5 +1,6 @@
 import io
 
+from typing import Sequence
 from warnings import warn
 
 from tivars.models import *
@@ -37,9 +38,9 @@ class TIGroup(SizedEntry, register=True):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     @staticmethod
-    def group(entries: list[TIEntry], *, name: str = "GROUP") -> 'TIGroup':
+    def group(entries: Sequence[TIEntry], *, name: str = "GROUP") -> 'TIGroup':
         """
-        Creates a new `TIGroup` by packaging a ``list`` of entries using defaulted VAT data
+        Creates a new `TIGroup` by packaging a sequence of entries using defaulted VAT data
 
         :param entries: The entries to group
         :param name: The name of the group (defaults to ``GROUP``)
@@ -145,10 +146,10 @@ class TIGroup(SizedEntry, register=True):
 
         return entries
 
-    @Loader[list]
-    def load_from_entries(self, entries: list[TIEntry]):
+    @Loader[Sequence]
+    def load_from_entries(self, entries: Sequence[TIEntry]):
         """
-        Loads a ``list`` of entries into this group
+        Loads a sequence of entries into this group
 
         All VAT data is cleared.
 

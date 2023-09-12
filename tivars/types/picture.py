@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Iterator, Sequence
 from warnings import warn
 
 from tivars.models import *
@@ -192,10 +192,10 @@ class PictureEntry(SizedEntry):
             for col in row:
                 yield col
 
-    @Loader[list, ]
-    def load_array(self, arr: list[list[pixel_type]]):
+    @Loader[Sequence]
+    def load_array(self, arr: Sequence[Sequence[pixel_type]]):
         """
-        Loads a two-dimensional ``list`` of pixels into this picture
+        Loads a two-dimensional sequence of pixels into this picture
 
         :param arr: The array to load
         """
@@ -257,8 +257,8 @@ class TIMonoPicture(PictureEntry):
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_83P.OS()
 
-    @Loader[list]
-    def load_array(self, arr: list[list[pixel_type]]):
+    @Loader[Sequence]
+    def load_array(self, arr: Sequence[Sequence[pixel_type]]):
         self.data = b''.join(L1.set(entry) for row in arr for entry in zip(*[iter(row)] * 8, strict=True))
 
     def array(self) -> list[list[pixel_type]]:
@@ -308,8 +308,8 @@ class TIPicture(PictureEntry, register=True):
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_84PCSE.OS()
 
-    @Loader[list]
-    def load_array(self, arr: list[list[pixel_type]]):
+    @Loader[Sequence]
+    def load_array(self, arr: Sequence[Sequence[pixel_type]]):
         self.data = b''.join(RGBPalette.set(entry) for row in arr for entry in zip(row[::2], row[1::2]))
 
     def array(self) -> list[list[pixel_type]]:
@@ -400,8 +400,8 @@ class TIImage(PictureEntry, register=True):
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_84PCSE.OS()
 
-    @Loader[list]
-    def load_array(self, arr: list[list[pixel_type]]):
+    @Loader[Sequence]
+    def load_array(self, arr: Sequence[Sequence[pixel_type]]):
         self.data = b''.join(RGB565.set(entry) for row in arr[::-1] for entry in row + [(0, 0, 0)])
 
     def array(self) -> list[list[pixel_type]]:
