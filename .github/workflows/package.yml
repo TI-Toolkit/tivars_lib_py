@@ -33,4 +33,4 @@ jobs:
         pip install numpy
     - name: Test with unittest
       run: |
-        python -m unittest tests\__init__.py
+        python -m unittest tests
