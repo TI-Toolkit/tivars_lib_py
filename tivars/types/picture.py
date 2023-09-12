@@ -177,6 +177,11 @@ class PictureEntry(SizedEntry):
     The type of a single pixel
     """
 
+    np_shape = (height, width, 3)
+    """
+    The shape of this image as a NumPy array
+    """
+
     has_color = True
     """
     Whether this picture has color
@@ -233,10 +238,11 @@ class TIMonoPicture(PictureEntry):
 
     data_width = width // 8
     data_height = height
-    data_offset = 0
 
     pil_mode = "L"
     pixel_type = int
+    np_shape = (height, width)
+
     has_color = False
 
     _type_id = 0x07
@@ -288,6 +294,7 @@ class TIPicture(PictureEntry, register=True):
 
     pil_mode = "RGB"
     pixel_type = RGB
+    np_shape = (height, width, 3)
 
     _type_id = 0x07
 
@@ -353,6 +360,7 @@ class TIImage(PictureEntry, register=True):
 
     pil_mode = "RGB"
     pixel_type = RGB
+    np_shape = (height, width, 3)
 
     leading_bytes = b'\x81'
 

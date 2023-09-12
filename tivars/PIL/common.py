@@ -102,12 +102,7 @@ class TIEncoder(ImageFile.PyEncoder):
         """
 
         img = self._T()
-        shape = img.height, img.width
-
-        if img.pixel_type != int:
-            shape += 3,
-
-        img.load_array(np.asarray(self.im).reshape(shape).tolist())
+        img.load_array(np.asarray(self.im).reshape(img.np_shape).tolist())
         data = img.export().bytes()
 
         return len(data), 0, data
