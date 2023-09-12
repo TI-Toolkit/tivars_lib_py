@@ -39,7 +39,7 @@ Check out [this tool](https://github.com/TI-Toolkit/token_translation_extractor)
 
 ### Unit Testing
 
-You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`.
+You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`. Tests for optional package extensions (e.g. PIL) will be skipped if the package cannot be found.
 
 Note that the PyPI distribution does _not_ include the test suite.
 
