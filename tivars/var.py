@@ -211,9 +211,10 @@ class TIHeader:
     @classmethod
     def open(cls, filename: str) -> 'TIHeader':
         """
-        Loads this header from a file given a filename
+        Creates a new header from a file given a filename
 
         :param filename: A filename to open
+        :return: The header stored in the file
         """
 
         with open(filename, 'rb') as file:
@@ -788,9 +789,10 @@ class TIEntry(Dock, Converter):
     @classmethod
     def open(cls, filename: str) -> 'TIEntry':
         """
-        Loads this entry from a file given a filename
+        Creates a new entry from a file given a filename
 
         :param filename: A filename to open
+        :return: The (first) entry stored in the file
         """
 
         if cls._type_id is not None and \
@@ -1125,9 +1127,10 @@ class TIVar:
     @classmethod
     def open(cls, filename: str) -> 'TIVar':
         """
-        Loads this var from a file given a filename
+        Creates a new var from a file given a filename
 
         :param filename: A filename to open
+        :return: The var stored in the file
         """
 
         with open(filename, 'rb') as file:
