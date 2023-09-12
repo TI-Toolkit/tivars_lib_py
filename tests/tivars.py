@@ -196,6 +196,16 @@ class TokenizationTests(unittest.TestCase):
             self.assertEqual(test_program.bytes(), file.read()[:-2])
             self.assertEqual(test_program.is_protected, False)
 
+    def test_protection(self):
+        test_program = TIProtectedProgram(name="SETDATE")
+        test_program.load_string("setDate(1")
+        test_program.unprotect()
+
+        test_program.version = 0x04
+        with open("tests/data/var/Program.8xp", 'rb') as file:
+            file.seek(55)
+            self.assertEqual(test_program.bytes(), file.read()[:-2])
+
 
 class NumericTests(unittest.TestCase):
     def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):

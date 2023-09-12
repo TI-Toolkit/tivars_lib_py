@@ -315,6 +315,22 @@ class TIProgram(TokenizedEntry, register=True):
 
         return varname
 
+    def protect(self):
+        """
+        Cast this program to a protected program
+        """
+
+        self.type_id = 0x06
+        self.coerce()
+
+    def unprotect(self):
+        """
+        Cast this program to an unprotected program
+        """
+
+        self.type_id = 0x05
+        self.coerce()
+
 
 class TIProtectedProgram(TIProgram, register=True):
     """
