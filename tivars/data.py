@@ -74,18 +74,20 @@ class Bytes(Converter):
 
 
 class Data(Bytes):
+    """
+    No-op converter for data sections with associated metadata
+
+    The following metadata fields are automatically set by this converter:
+
+            - Version
+    """
+
     _T = bytes
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> _T:
         """
         Converts ``bytes`` -> ``bytes`` and updates metadata fields
-
-        Certain metadata fields are updated automatically based on the entry's data.
-        The following are set by this converter:
-
-            - Version
-            - Length (for sized data)
 
         :param value: The value to convert
         :param instance: The instance which contains the data section
@@ -97,6 +99,15 @@ class Data(Bytes):
 
 
 class SizedData(Data):
+    """
+    No-op converter for sized data sections with associated metadata
+
+    The following metadata fields are automatically set by this converter:
+
+            - Version
+            - Length
+    """
+
     _T = bytes
 
     @classmethod
