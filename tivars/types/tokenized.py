@@ -398,7 +398,7 @@ class TIAsmProgram(TIProgram):
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return max([model.OS() for token, model in self.asm_tokens.items() if token in (data or self.data)],
-                   default=super().get_min_os(data))
+                   default=OsVersions.INITIAL)
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
