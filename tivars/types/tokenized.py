@@ -375,6 +375,8 @@ class TIAsmProgram(TIProgram):
 
     A `TIAsmProgram` is a stream of raw bytes that is run as assembly code.
     A single valid token at the start of the data section identifies the program as using assembly.
+
+    A consistent method of ASM identification for the TI-83 is not yet implemented.
     """
 
     is_tokenized = False
@@ -419,8 +421,7 @@ class TIProtectedAsmProgram(TIAsmProgram, TIProtectedProgram):
     """
     Parser for protected programs
 
-    A `TIProtectedAsmProgram` is a stream of raw bytes that is run as assembly code with protection against editing.
-    A single valid token at the start of the data section identifies the program as using assembly.
+    A `TIProtectedAsmProgram` is a `TIAsmProgram` with protection against editing.
     """
 
     is_protected = True
