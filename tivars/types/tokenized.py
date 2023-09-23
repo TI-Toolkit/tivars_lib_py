@@ -385,13 +385,13 @@ class TIAsmProgram(TIProgram):
         try:
             match [*format_spec]:
                 case sep, *width if width:
-                    return self.data[2:].hex(sep, int(''.join(width)))
+                    return self.data.hex(sep, int(''.join(width)))
 
                 case sep, *_:
-                    return self.data[2:].hex(sep)
+                    return self.data.hex(sep)
 
                 case _:
-                    return self.data[2:].hex()
+                    return self.data.hex()
 
         except TypeError:
             return super().__format__(format_spec)
