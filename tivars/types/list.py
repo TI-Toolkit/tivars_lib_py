@@ -194,6 +194,10 @@ class ListEntry(TIEntry):
 
 
 class TIRealList(ListEntry, register=True):
+    """
+    Parser for lists of real numbers
+    """
+
     _E = RealEntry
 
     extensions = {
@@ -207,6 +211,10 @@ class TIRealList(ListEntry, register=True):
 
 
 class TIComplexList(ListEntry, register=True):
+    """
+    Parser for lists of complex numbers
+    """
+
     _E = ComplexEntry
 
     extensions = {

@@ -237,7 +237,7 @@ class TINewEquation(TIEquation, register=True):
     """
     Parser for internal equations
 
-    A `TINewEquation` is simply a `TIEquation` with certain internal uses
+    A `TINewEquation` is simply a `TIEquation` with certain internal uses.
     """
 
     _type_id = 0x0B
