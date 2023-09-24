@@ -419,7 +419,7 @@ class TIProtectedProgram(TIProgram, register=True):
 
 class TIProtectedAsmProgram(TIAsmProgram, TIProtectedProgram):
     """
-    Parser for protected programs
+    Parser for protected assembly programs
 
     A `TIProtectedAsmProgram` is a `TIAsmProgram` with protection against editing.
     """
