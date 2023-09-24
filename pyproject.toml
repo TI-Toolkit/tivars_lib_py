@@ -33,7 +33,8 @@ project-name = "tivars_lib_py"
 theme = "readthedocs"
 docformat = "restructuredtext"
 
-intersphinx = ["https://docs.python.org/3/objects.inv"]
+intersphinx = ["https://docs.python.org/3/objects.inv",
+               "https://pillow.readthedocs.io/en/stable/objects.inv"]
 
 privacy = ["PRIVATE:**.__class_getitem__", "PRIVATE:**.__get__", "PRIVATE:**.__init_subclass__", "PRIVATE:**.__set__", "PRIVATE:**.__set_name__",
            "HIDDEN:**.__class__", "HIDDEN:**.__slots__",
