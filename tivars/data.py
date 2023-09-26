@@ -1,3 +1,27 @@
+"""
+Standalone module implementing the data interfaces for var objects
+
+This module implements two primary means of data interface:
+
+    -   The `Converter` system, which uses the descriptor protocol to treat var data sections as their canonical types.
+
+        Each data section of a var, while stored as raw bytes, can be interpreted as some other useful type.
+        Each `Converter` class implements a conversion to such a type, such as ``bytes`` <-> ``str`` using utf-8.
+        A data section is declared as either a base `Section` or a `View` into another section and assigned a converter.
+        The system allows a user to access data sections as regular variables without cumbersome getters or setters.
+
+        See the `Converter` class and its children, and the `Section` and `View` classes for implementation details.
+
+    -   The `Loader` system, which implements convenient object initialization using existing mutation methods.
+
+        A `Dock` instance can declare `Loader` methods which accept some sets of input types, such as ``load_string``.
+        Each loader is called by a generic ``load`` method should the input type be permissible for that loader.
+        Var types call the generic loader during initialization should an initializer be passed.
+
+        See the `Dock` and `Loader` classes for implementation details.
+"""
+
+
 import copy
 import inspect
 
