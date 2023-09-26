@@ -154,6 +154,13 @@ class TIGraphedEquation(TIEquation):
     min_data_length = 3
 
     class Raw(TIEntry.Raw):
+        """
+        Raw bytes container for `TIGraphedEquation`
+
+        The ``Raw`` container adds ``style`` and ``color`` fields for convenient manipulation of graphed equations.
+        These fields are stored in the container but do not contribute to the equation data section of a GDB.
+        """
+
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "style", "color", "calc_data"
 
     def __init__(self, init=None, *,
@@ -786,6 +793,10 @@ class TIGDB(TIMonoGDB):
 
 
 class TIMonoFuncGDB(TIMonoGDB):
+    """
+    Parser for function GDBs
+    """
+
     mode_byte = 0x10
 
     min_data_length = 110
@@ -902,6 +913,10 @@ class TIMonoFuncGDB(TIMonoGDB):
 
 
 class TIFuncGDB(TIGDB, TIMonoFuncGDB):
+    """
+    Parser for function color GDBs
+    """
+
     min_data_length = 128
 
     @Section()
@@ -932,6 +947,10 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
 
 
 class TIMonoParamGDB(TIMonoGDB):
+    """
+    Parser for parametric GDBs
+    """
+
     mode_byte = 0x40
 
     min_data_length = 130
@@ -1076,6 +1095,10 @@ class TIMonoParamGDB(TIMonoGDB):
 
 
 class TIParamGDB(TIGDB, TIMonoParamGDB):
+    """
+    Parser for parametric color GDBs
+    """
+
     min_data_length = 144
 
     @Section()
@@ -1106,6 +1129,10 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
 
 
 class TIMonoPolarGDB(TIMonoGDB):
+    """
+    Parser for polar GDBs
+    """
+
     mode_byte = 0x20
 
     min_data_length = 112
@@ -1204,6 +1231,10 @@ class TIMonoPolarGDB(TIMonoGDB):
 
 
 class TIPolarGDB(TIGDB, TIMonoPolarGDB):
+    """
+    Parser for polar color GDBs
+    """
+
     min_data_length = 126
 
     @Section()
@@ -1234,6 +1265,10 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
 
 
 class TIMonoSeqGDB(TIMonoGDB):
+    """
+    Parser for sequential GDBs
+    """
+
     mode_byte = 0x80
 
     min_data_length = 163
@@ -1443,6 +1478,10 @@ class TIMonoSeqGDB(TIMonoGDB):
 
 
 class TISeqGDB(TIGDB, TIMonoSeqGDB):
+    """
+    Parser for sequential color GDBs
+    """
+
     min_data_length = 174
 
     @Section()

@@ -4,6 +4,12 @@ from .model import *
 
 
 class OsVersions(parse.OsVersions):
+    """
+    Namespace containing useful OS versions
+
+    The maximal elements `OsVersions.INITIAL` and `OsVersions.LATEST` can be accessed via this namespace.
+    """
+
     MATHPRINT = TI_84P.OS("2.53")
 
     ASMPRGM_DISABLED = TI_84PCE.OS("5.3.1")

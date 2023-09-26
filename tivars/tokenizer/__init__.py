@@ -58,6 +58,12 @@ def encode(string: str, trie: TokenTrie) -> tuple[bytes, OsVersion]:
 
 
 class TokenizedString(String):
+    """
+    Converter for data sections best interpreted as strings of tokens
+
+    Tokenization uses the TI-84+CE token sheet, which is backwards compatible for all var name tokens.
+    """
+
     _T = str
 
     @classmethod
