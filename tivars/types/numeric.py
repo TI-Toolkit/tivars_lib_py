@@ -1,3 +1,8 @@
+"""
+Numeric helper functions and converters
+"""
+
+
 import decimal as dec
 
 from ..data import *

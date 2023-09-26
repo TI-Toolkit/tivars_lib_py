@@ -1,5 +1,5 @@
 """
-Standalone module implementing the data interfaces for var objects
+Data interfaces for var objects
 
 This module implements two primary means of data interface:
 

@@ -1,3 +1,8 @@
+"""
+Matrices
+"""
+
+
 from io import BytesIO
 from typing import ByteString, Iterator, Sequence
 from warnings import warn

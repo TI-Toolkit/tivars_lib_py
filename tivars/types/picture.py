@@ -1,3 +1,8 @@
+"""
+Pictures and images
+"""
+
+
 from typing import Iterator, Sequence
 from warnings import warn
 
