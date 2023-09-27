@@ -197,8 +197,6 @@ class Integer(Converter):
         """
         Converts ``int`` -> ``bytes``
 
-        For implementation reasons, the output of this converter is always two bytes wide
-
         :param value: The value to convert
         :param length: The length of the data section
         :return: The little-endian representation of ``value``
