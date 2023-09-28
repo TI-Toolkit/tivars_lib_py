@@ -1,3 +1,9 @@
+"""
+Parsers for the TI var types
+"""
+
+
+# Makes pydoctor happy
 from typing import TYPE_CHECKING
 
 from .appvar import *

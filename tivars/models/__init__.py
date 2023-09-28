@@ -1,3 +1,8 @@
+"""
+Utilities for managing calc models and OS versions
+"""
+
+
 from .model import *
 from .versions import *
 

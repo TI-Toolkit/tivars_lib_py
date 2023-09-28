@@ -1,3 +1,8 @@
+"""
+Plugin for `.8xi` files (`TIMonoPicture`)
+"""
+
+
 from tivars import TIMonoPicture
 from .common import *
 

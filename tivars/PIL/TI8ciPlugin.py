@@ -1,3 +1,8 @@
+"""
+Plugin for `.8ci` files (`TIPicture`)
+"""
+
+
 from tivars import TIPicture
 from .common import *
 

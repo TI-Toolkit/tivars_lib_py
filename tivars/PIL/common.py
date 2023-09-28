@@ -1,3 +1,8 @@
+"""
+Common import for PIL plugins
+"""
+
+
 import numpy as np
 import warnings
 
@@ -57,7 +62,7 @@ class TIImageFile(ImageFile.ImageFile):
 
         :param im: The image to save
         :param fp: The file pointer
-        :param format: The format to save with (defaults to the image's known format)
+        :param format: The format to save with (defaults to the image's known format) (unused)
         :param params: Additional encoder parameters (empty)
         """
 

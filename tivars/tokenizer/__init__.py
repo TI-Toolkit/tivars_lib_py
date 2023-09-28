@@ -1,3 +1,8 @@
+"""
+Tokenization utilities derived from the token sheets
+"""
+
+
 from typing import ByteString
 
 from tivars.data import String
