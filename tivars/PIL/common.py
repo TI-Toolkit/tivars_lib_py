@@ -49,7 +49,7 @@ class TIImageFile(ImageFile.ImageFile):
                 raise TypeError(f"image is not in .{self.format} format")
 
             self._size = (img.width, img.height)
-            self.mode = img.pil_mode
+            self._mode = img.pil_mode
 
             self.tile = [(self.format, (0, 0) + self.size, 0, None)]
 
