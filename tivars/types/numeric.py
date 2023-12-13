@@ -84,15 +84,16 @@ class BCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: _T, *, length: int = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal
 
         :param value: The value to convert
+        :param length: The length of the data section
         :return: The bytes representing ``value`` in BCD
         """
 
-        return int.to_bytes(int(str(value), 16), 7, 'big')
+        return int.to_bytes(int(str(value), 16), length if length is not None else 7, 'big')
 
 
 class LeftNibbleBCD(Converter):

@@ -942,7 +942,7 @@ class TIVar:
         return sum(len(entry) for entry in self.entries)
 
     @property
-    def checksum(self):
+    def checksum(self) -> bytes:
         """
         The checksum for the var
 

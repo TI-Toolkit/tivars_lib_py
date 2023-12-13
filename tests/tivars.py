@@ -3,6 +3,7 @@ import unittest
 
 from decimal import Decimal
 
+from tivars.flash import *
 from tivars.models import *
 from tivars.types import *
 from tivars import TIHeader, TIVar
@@ -567,3 +568,14 @@ class GroupTests(unittest.TestCase):
 
         self.assertEqual(TIGroup.group(ungrouped).ungroup(), ungrouped)
         self.assertEqual(TIGroup(ungrouped).ungroup(), ungrouped)
+
+
+class FlashTests(unittest.TestCase):
+    def test_app(self):
+        test_app = TIFlashHeader()
+
+        with open("tests/data/var/CelSheet_CE_5.1.1.0017.8ek", 'rb') as file:
+            test_app.load_bytes(file.read())
+            file.seek(0)
+
+            self.assertEqual(test_app.bytes(), file.read())
