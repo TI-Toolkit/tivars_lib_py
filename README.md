@@ -41,13 +41,18 @@ Check out [this tool](https://github.com/TI-Toolkit/token_translation_extractor)
 
 You can run the test suite via `__main__.py`, or run individual tests found in `tests/` with `unittest`. Tests for optional package extensions (e.g. PIL) will be skipped if the package cannot be found.
 
-Note that the PyPI distribution does _not_ include the test suite.
+> [!WARNING]
+> The PyPI distribution does _not_ include the test suite.
 
 ## How to Use
 
-### Creating vars
+### Creating objects
+
+### Var basics
 
 Every var file has two parts: a _header_ and a number of _entries_, where an entry contains the data for a single variable. Usually, var files contain just one entry; in these cases, there's not much distinction between a var and an entry for the purposes of messing with its data.
+
+### Entries
 
 To create an empty entry, instantiate its corresponding type from `tivars.types`. You can specify additional parameters as you like:
 
@@ -58,11 +63,10 @@ from tivars.types import *
 my_program = TIProgram(name="HELLO")
 ```
 
-If you're not sure of an entry's type, instantiate a base `TIEntry`:
+> [!TIP]
+> If you're not sure of an entry's type, you can instantiate a base `TIEntry`.
 
-```python
-my_entry = TIEntry()
-```
+### Vars and Headers
 
 If you want to create an entire var or just a header, use `TIVar` or `TIHeader` instead:
 
@@ -76,7 +80,9 @@ my_header = TIHeader()
 my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
 ```
 
-### Reading and writing
+### Reading files
+
+#### Vars
 
 Vars can be loaded from files or raw bytes:
 
@@ -91,10 +97,15 @@ with open("HELLO.8xp", 'rb') as file:
     my_var.load_bytes(file.read())
 ```
 
+> [!IMPORTANT]
+> When loading from a file object, make sure the file is opened in binary mode.
+
+#### Entries
+
 Entries can be loaded from files or raw bytes. When loading from a file, you may specify which entry to load if there are multiple:
 
 ```python
-# Raises an error if the var has multiple entries; use load_from_file instead
+# Raises an error if the var has multiple entries
 my_program = TIProgram.open("HELLO.8xp")
 
 with open("HELLO.8xp", 'rb') as file:
@@ -116,10 +127,18 @@ my_real.load_float(1.23)
 ```
 
 Base `TIEntry` objects, as well other parent types like `TIGDB`, will be automatically coerced to the correct type:
+
 ```python
 # Coerces to a TIProgram
 my_entry = TIEntry.open("HELLO.8xp")
 ```
+
+> [!TIP]
+> Any entry type can be cast to any other by setting the object's `__class__`.
+
+### Exporting objects
+
+#### Vars
 
 Export a var as bytes or straight to a file:
 
@@ -133,7 +152,13 @@ with open("HELLO.8xp", 'wb+') as file:
     file.write(my_var.bytes())
 ```
 
+> [!IMPORTANT]
+> `.save()` uses the var's name as the filename, saving to the current working directory.
+
+#### Entries
+
 Entries can be passed an explicit header to attach or model to target when exporting:
+
 ```python
 my_program.save("HELLO.8xp")
 my_program.save()
@@ -150,15 +175,12 @@ assert my_program.string() == "Disp \"HELLO WORLD!\""
 assert my_real.float() == 1.23
 ```
 
-Data types corresponding to built-in Python types can be obtained from the built-in constructors:
+> [!TIP]
+> Built-in types can be exported to using the standard constructors, e.g. `str(my_program)`.
 
-```python
-assert str(my_program) == "Disp \"HELLO WORLD!\""
+### Data Manipulation
 
-assert float(my_real) == 1.23
-```
-
-### Data Sections
+#### Data sections
 
 Vars are comprised of individual _sections_ which represent different forms of data, split across the header and entries. The var itself also contains the total entry length and checksum sections, but these are read-only to prevent file corruption.
 
@@ -182,11 +204,26 @@ assert my_gdb.Xmax == TIReal(10)
 
 Each section is annotated with the expected type.
 
+> [!TIP]
+> Data sections can accept any subtype of their expected type.
+
+#### Raw containers
+
+All vars store their data sections as raw bytes in the format interpreted by the calculator. Access any data section as a member of the `.raw` attribute to view and edit these bytes directly.
+
+```python
+my_header.raw.comment = "This is my (even rawer) comment!".encode('utf-8')
+my_program.raw.archived = b'\x80'
+
+assert my_program.raw.type_id == b'\x05'
+```
+
+> [!CAUTION]
+> Edits to read-only bytes like the checksum are reset whenever any other data in the var is updated.
+
 ### Models
 
 All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
-
-For these reasons, it is _not_ recommended to instantiate your own models.
 
 ## Other Functionalities
 
@@ -206,11 +243,17 @@ img.show()
 
 Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. Support currently exists for all models in the 82/83/84 series as well as the TI-73; PR's concerning the sheets themselves should be directed upstream to [TI-Toolkit/tokens](https://github.com/TI-Toolkit/tokens).
 
+> [!IMPORTANT]
+> In contrast to some other tokenizers like SourceCoder, tokenization does _not_ depend on whether the content appears inside a BASIC string literal. Text is always assigned to the _longest_ permissible token.
+
 ## Documentation
 
 Library documentation can be found on [GitHub Pages](https://ti-toolkit.github.io/tivars_lib_py/).
 
 The var file format(s) and data sections can be found in a readable format on the [repository wiki](https://github.com/TI-Toolkit/tivars_lib_py/wiki). Much of the information is copied from the [TI-83 Link Guide](http://merthsoft.com/linkguide/ti83+/vars.html), though has been updated to account for color models.
+
+> [!NOTE]
+> The wiki is still a work-in-progress. Why not [contribute a page](https://github.com/TI-Toolkit/tivars_lib_py/wiki)?
 
 ## Examples
 
