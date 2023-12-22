@@ -19,15 +19,7 @@ Alternatively, you can clone this repository or [download a release](https://git
 
 ### As a Submodule
 
-Include this repository in your next project as a submodule using `git submodule` or manually cloning and writing the following in `.gitmodules`:
-
-```
-[submodule "tivars_lib_py"]
-	path = path/to/tivars_lib_py
-	url = https://github.com/TI-Toolkit/tivars_lib_py.git
-```
-
-Then, add the following to any file which imports `tivars`:
+Include this repository in your next project as a submodule using the `git submodule` command. Then, add the following to any file which imports `tivars`:
 
 ```py
 import sys
