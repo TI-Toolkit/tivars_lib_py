@@ -124,7 +124,7 @@ class LeftNibbleBCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the left
 
@@ -167,7 +167,7 @@ class RightNibbleBCD(Converter):
         return 10 * value + data[-1] // 16
 
     @classmethod
-    def set(cls, value: _T, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the right
 

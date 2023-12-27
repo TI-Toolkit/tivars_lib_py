@@ -574,8 +574,8 @@ class FlashTests(unittest.TestCase):
     def test_app(self):
         test_app = TIFlashHeader()
 
-        with open("tests/data/var/CelSheet_CE_5.1.1.0017.8ek", 'rb') as file:
-            test_app.load_bytes(file.read())
+        with open("tests/data/var/smartpad.8xk", 'rb') as file:
+            test_app.load_from_file(file)
             file.seek(0)
 
             self.assertEqual(test_app.bytes(), file.read())

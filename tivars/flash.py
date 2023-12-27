@@ -1,7 +1,7 @@
 import datetime
 
 from io import BytesIO
-from typing import ByteString
+from typing import ByteString, BinaryIO
 from warnings import warn
 
 from .data import *
@@ -12,32 +12,32 @@ class BCDDate(Converter):
     """
     Converter for dates stored in four byte BCD
 
-    A date mm/dd/yyyy is stored in BCD as ddmmyyyy
+    A date (dd, mm, yyyy) is stored in BCD as ddmmyyyy
     """
 
-    _T = datetime.date
+    _T = tuple[int, int, int]
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``datetime.date``
+        Converts ``bytes`` -> ``tuple``
 
         :param data: The raw bytes to convert
         :return: The date stored in ``data``
         """
 
-        return datetime.date(BCD.get(data[2:4]), BCD.get(data[1:2]), BCD.get(data[0:1]))
+        return BCD.get(data[0:1]), BCD.get(data[1:2]), BCD.get(data[2:4])
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts ``datetime.date`` -> ``bytes``
+        Converts ``tuple`` -> ``bytes``
 
         :param value: The value to convert
         :return: The BCD encoding of the date in ``value``
         """
 
-        return BCD.set(value.day * 100 ** 3 + value.month * 100 ** 2 + value.year, **kwargs)
+        return BCD.set(value[0] * 100 ** 3 + value[1] * 100 ** 2 + value[2], **kwargs)
 
 
 class BCDRevision(Converter):
@@ -198,7 +198,7 @@ class TIFlashBlock(Dock):
             warn(f"The block type ({self.block_type}) is not recognized.",
                  BytesWarning)
 
-        self.raw.data = data.read(2 * int(size.decode('utf8')))
+        self.raw.data = data.read(2 * int(size.decode('utf8'), 16))
 
         # Check² sum
         checksum = data.read(2)
@@ -271,12 +271,12 @@ class TIFlashHeader(Dock):
             The length of the data stored in this header, measured in chars
             """
 
-            return int.to_bytes(len(self.data) // 2, 4, 'little')
+            return int.to_bytes(len(self.data), 4, 'little')
 
         @property
         def checksum(self) -> bytes:
             """
-            The checksum for this header
+            The checksum for this header, which may not exist
 
             This is equal to the lower 2 bytes of the sum of all bytes in this header.
             """
@@ -304,7 +304,7 @@ class TIFlashHeader(Dock):
                  magic: str = "**TIFL**", revision: str = "0.0", flags: int = 0, object_type: int = 0,
                  date: datetime.date = datetime.date.fromtimestamp(0), name: str = "UNNAMED",
                  device_type: int = 0x73, data_type: int = 0x24,
-                 data: bytes = b':00000001FF'):
+                 data: bytes = b':00000001FF', has_checksum: bool = True):
         self.raw = self.Raw()
 
         self.magic = magic
@@ -312,7 +312,7 @@ class TIFlashHeader(Dock):
         self.flags = flags
         self.object_type = object_type
 
-        self.date = date
+        self.date = date.strftime("%d%m%Y").encode()
         self.name = name
 
         self.device_type = device_type
@@ -326,6 +326,8 @@ class TIFlashHeader(Dock):
                 self.load_bytes(init.bytes())
             except AttributeError:
                 self.load(init)
+
+        self.has_checksum = has_checksum
 
     def __len__(self) -> int:
         """
@@ -347,9 +349,9 @@ class TIFlashHeader(Dock):
         """
 
     @Section(1, Bits[:])
-    def flags(self) -> int:
+    def binary_flag(self) -> int:
         """
-        The flags for the flash header
+        Whether this flash header's data is in binary (0x00) or Intel (0x01) format
         """
 
     @Section(1, Bits[:])
@@ -359,9 +361,9 @@ class TIFlashHeader(Dock):
         """
 
     @Section(4, BCDDate)
-    def date(self) -> datetime.date:
+    def date(self) -> tuple[int, int, int]:
         """
-        The date attached to the flash header
+        The date attached to the flash header as a 3-tuple
         """
 
     @property
@@ -420,6 +422,34 @@ class TIFlashHeader(Dock):
 
         return self.raw.checksum
 
+    @staticmethod
+    def next_header_length(stream: BinaryIO) -> int:
+        """
+        Helper function to determine the length of the next flash header in a bytestream
+
+        :param stream: A bytestream
+        :return: The length of the next header in the bytestream
+        """
+
+        stream.seek(74, 1)
+        data_size = int.from_bytes(stream.read(4), 'little')
+
+        stream.seek(data_size, 1)
+        match remaining := stream.read(8):
+            case b"":
+                entry_length = 78 + data_size
+
+            case b"**TIFL**":
+                entry_length = 78 + data_size
+                stream.seek(-8, 1)
+
+            case _:
+                entry_length = 78 + data_size + 2
+                stream.seek(-len(remaining), 1)
+
+        stream.seek(-78 - data_size, 1)
+        return entry_length
+
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -474,22 +504,42 @@ class TIFlashHeader(Dock):
         data.seek(24, 1)
 
         # Read data
-        data_size = data.read(4)
-        self.raw.data = data.read(2 * int.from_bytes(data_size, 'little'))
+        data_size = int.from_bytes(data.read(4), 'little')
+        self.raw.data = data.read()
 
         # Check² sum
         checksum = data.read(2)
 
-        if checksum != self.checksum:
-            warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
-                 BytesWarning)
+        if checksum:
+            if checksum != self.checksum:
+                warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
+                     BytesWarning)
+
+        else:
+            self.has_checksum = False
 
     def bytes(self) -> bytes:
         """
         :return: The bytes contained in this header
         """
 
-        return self.raw.bytes()
+        return self.raw.bytes() if self.has_checksum else self.raw.bytes()[:-2]
+
+    @Loader[BinaryIO]
+    def load_from_file(self, file: BinaryIO, *, offset: int = 0):
+        """
+        Loads this header from a file given a file pointer and offset
+
+        :param file: A binary file to read from
+        :param offset: The offset of the header to read
+        """
+
+        # Seek to offset
+        while offset:
+            file.seek(self.next_header_length(file), 1)
+            offset -= 1
+
+        self.load_bytes(file.read(self.next_header_length(file)))
 
     @classmethod
     def open(cls, filename: str) -> 'TIFlashHeader':
@@ -500,22 +550,15 @@ class TIFlashHeader(Dock):
         :return: The (first) header stored in the file
         """
 
-        if cls._type_id is not None and \
-                not any(filename.endswith(extension) for extension in cls.extensions.values()):
-            warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
-                 f"attempting to read anyway.")
-
         with open(filename, 'rb') as file:
             file.seek(55)
 
             entry = cls()
-            entry.load_bytes(file.read(cls.next_entry_length(file)))
-
-            file.seek(2, 1)
+            entry.load_bytes(file.read(cls.next_header_length(file)))
 
             if file.read():
-                warn("The selected var file contains multiple entries; only the first will be loaded. "
-                     "Use load_from_file to select a particular entry, or load the entire file in a TIVar object.",
+                warn("The selected flash file contains multiple headers; only the first will be loaded. "
+                     "Use load_from_file to select a particular header.",
                      UserWarning)
 
         return entry

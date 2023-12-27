@@ -798,7 +798,8 @@ class TIEntry(Dock, Converter):
         if cls._type_id is not None and \
                 not any(filename.endswith(extension) for extension in cls.extensions.values()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
-                 f"attempting to read anyway.")
+                 f"attempting to read anyway.",
+                 UserWarning)
 
         with open(filename, 'rb') as file:
             file.seek(55)
@@ -810,7 +811,7 @@ class TIEntry(Dock, Converter):
 
             if file.read():
                 warn("The selected var file contains multiple entries; only the first will be loaded. "
-                     "Use load_from_file to select a particular entry, or load the entire file in a TIVar object.",
+                     "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
                      UserWarning)
 
         return entry
