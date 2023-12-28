@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from .appvar import *
 from .complex import *
+from .flash import *
 from .gdb import *
 from .group import *
 from .list import *
@@ -17,6 +18,7 @@ from .picture import *
 from .settings import *
 from .tokenized import *
 
+from ..flash import TIFlashHeader
 from ..var import TIEntry
 
 
@@ -24,7 +26,7 @@ if TYPE_CHECKING:
     __all__ = []
 
 else:
-    __all__ = ["TIEntry",
+    __all__ = ["TIEntry", "TIFlashHeader",
                "TIReal",
                "TIRealList", "TIMatrix",
                "TIEquation", "TIString",
@@ -44,5 +46,6 @@ else:
                "TIComplexFraction",
                "TIRealRadical", "TIComplexRadical",
                "TIComplexPi", "TIComplexPiFraction",
-               "TIRealPi", "TIRealPiFraction"
+               "TIRealPi", "TIRealPiFraction",
+               "TIOS", "TIApp", "TICertificate"
                ]

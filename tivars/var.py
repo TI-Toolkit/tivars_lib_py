@@ -7,9 +7,9 @@ from io import BytesIO
 from typing import BinaryIO, ByteString, Iterator, Type
 from warnings import warn
 
-from tivars.models import *
-from tivars.tokenizer import TokenizedString
 from .data import *
+from .models import *
+from .tokenizer import TokenizedString
 
 
 class TIHeader:
@@ -571,7 +571,7 @@ class TIEntry(Dock, Converter):
         return 2 + meta_length + 2 + data_length
 
     @classmethod
-    def register(cls, var_type: type['TIEntry']):
+    def register(cls, var_type: Type['TIEntry']):
         """
         Registers a subtype with this class for coercion
 
@@ -803,7 +803,8 @@ class TIEntry(Dock, Converter):
         if cls._type_id is not None and \
                 not any(filename.endswith(extension) for extension in cls.extensions.values()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
-                 f"attempting to read anyway.")
+                 f"attempting to read anyway.",
+                 UserWarning)
 
         with open(filename, 'rb') as file:
             file.seek(55)
@@ -815,7 +816,7 @@ class TIEntry(Dock, Converter):
 
             if file.read():
                 warn("The selected var file contains multiple entries; only the first will be loaded. "
-                     "Use load_from_file to select a particular entry, or load the entire file in a TIVar object.",
+                     "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
                      UserWarning)
 
         return entry
@@ -947,7 +948,7 @@ class TIVar:
         return sum(len(entry) for entry in self.entries)
 
     @property
-    def checksum(self):
+    def checksum(self) -> bytes:
         """
         The checksum for the var
 
@@ -959,7 +960,7 @@ class TIVar:
     @property
     def extension(self) -> str:
         """
-        Determines the var's file extension based on its entries and targeted model.
+        Determines the var's file extension based on its entries and targeted model
 
         If there is only one entry, that entry's extension for the target model is used.
         Otherwise, ``.8xg`` is used.
@@ -994,7 +995,7 @@ class TIVar:
     @property
     def filename(self) -> str:
         """
-        Determines the var's filename based on its name, entries, and targeted model.
+        Determines the var's filename based on its name, entries, and targeted model
 
         The filename is the concatenation of the var name and extension (see `TIVar.extension`).
 

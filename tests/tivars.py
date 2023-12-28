@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from tivars.models import *
 from tivars.types import *
-from tivars import TIHeader, TIVar
+from tivars import TIHeader, TIVar, TIFlashHeader
 
 
 class ModelTests(unittest.TestCase):
@@ -568,3 +568,20 @@ class GroupTests(unittest.TestCase):
 
         self.assertEqual(TIGroup.group(ungrouped).ungroup(), ungrouped)
         self.assertEqual(TIGroup(ungrouped).ungroup(), ungrouped)
+
+
+class FlashTests(unittest.TestCase):
+    def test_app(self):
+        test_app = TIFlashHeader()
+
+        with open("tests/data/var/smartpad.8xk", 'rb') as file:
+            test_app.load_from_file(file)
+            file.seek(0)
+
+            self.assertEqual(test_app.bytes(), file.read())
+
+        self.assertEqual(type(test_app), TIApp)
+
+    def test_os(self):
+        test_os = TIFlashHeader.open("tests/data/var/TI-84_Plus_CE-Python-OS-5.8.0.0022.8eu")
+        self.assertEqual(type(test_os), TIOS)

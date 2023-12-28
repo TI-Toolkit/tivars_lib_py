@@ -3,8 +3,7 @@ OS version definitions
 """
 
 
-import tivars.tokenizer.tokens.scripts.parse as parse
-
+import tivars.tokens.scripts.parse as parse
 from .model import *
 
 
