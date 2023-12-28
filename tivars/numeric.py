@@ -1,6 +1,6 @@
 import decimal as dec
 
-from tivars.data import *
+from .data import *
 
 
 with dec.localcontext() as ctx:

@@ -3,8 +3,8 @@ import os
 from functools import total_ordering
 
 from ..flags import *
-from ..tokenizer.tokens.scripts import OsVersion, Tokens, TokenTrie
-from ..tokenizer.tokens.scripts.parse import MODEL_ORDER
+from ..tokens.scripts import OsVersion, Tokens, TokenTrie
+from ..tokens.scripts.parse import MODEL_ORDER
 
 
 @total_ordering
@@ -30,7 +30,7 @@ class TIModel:
         self._product_id = product_id
         self._lang = lang
 
-        with open(os.path.join(os.path.dirname(__file__), "../tokenizer/tokens/8X.xml"), encoding="UTF-8") as file:
+        with open(os.path.join(os.path.dirname(__file__), "../tokens/8X.xml"), encoding="UTF-8") as file:
             self._tokens = Tokens.from_xml_string(file.read(), self.OS("latest"))
 
         self._trie = {}

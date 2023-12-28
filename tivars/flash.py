@@ -2,8 +2,8 @@ from io import BytesIO
 from typing import ByteString, BinaryIO, Type
 from warnings import warn
 
-from tivars.numeric import BCD
 from .data import *
+from .numeric import BCD
 
 
 class BCDDate(Converter):

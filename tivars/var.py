@@ -2,9 +2,9 @@ from io import BytesIO
 from typing import BinaryIO, ByteString, Iterator, Type
 from warnings import warn
 
-from tivars.models import *
-from tivars.tokenizer import TokenizedString
 from .data import *
+from .models import *
+from .tokenizer import TokenizedString
 
 
 class TIHeader:

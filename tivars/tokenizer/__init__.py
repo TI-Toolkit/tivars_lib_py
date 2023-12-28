@@ -2,7 +2,7 @@ from typing import ByteString
 
 from tivars.data import String
 from ..models import *
-from .tokens.scripts import *
+from ..tokens.scripts import *
 
 
 def decode(bytestream: ByteString, *,
