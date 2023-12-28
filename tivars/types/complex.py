@@ -2,9 +2,9 @@ from typing import Type
 from warnings import warn
 
 from tivars.models import *
+from tivars.numeric import *
 from ..data import *
 from ..var import TIEntry
-from .numeric import *
 from .real import *
 
 

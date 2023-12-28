@@ -3,10 +3,9 @@ import unittest
 
 from decimal import Decimal
 
-from tivars.flash import *
 from tivars.models import *
 from tivars.types import *
-from tivars import TIHeader, TIVar
+from tivars import TIHeader, TIVar, TIFlashHeader
 
 
 class ModelTests(unittest.TestCase):
@@ -579,3 +578,5 @@ class FlashTests(unittest.TestCase):
             file.seek(0)
 
             self.assertEqual(test_app.bytes(), file.read())
+
+        self.assertEqual(type(test_app), TIApp)

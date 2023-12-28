@@ -566,7 +566,7 @@ class TIEntry(Dock, Converter):
         return 2 + meta_length + 2 + data_length
 
     @classmethod
-    def register(cls, var_type: type['TIEntry']):
+    def register(cls, var_type: Type['TIEntry']):
         """
         Registers a subtype with this class for coercion
 

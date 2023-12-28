@@ -1,11 +1,9 @@
-import datetime
-
 from io import BytesIO
-from typing import ByteString, BinaryIO
+from typing import ByteString, BinaryIO, Type
 from warnings import warn
 
 from .data import *
-from .types.numeric import BCD
+from tivars.numeric import BCD
 
 
 class BCDDate(Converter):
@@ -252,6 +250,14 @@ class TIFlashHeader(Dock):
     A flash file can contain up to three headers, though usually only one.
     """
 
+    extensions = {None: "8ek"}
+    """
+    The file extension used for this header per-model
+    """
+
+    _type_id = None
+    _type_ids = {}
+
     class Raw:
         """
         Raw bytes container for `TIFlashHeader`
@@ -263,7 +269,7 @@ class TIFlashHeader(Dock):
         Additional methods can also be included, but should be callable from the outer class.
         """
 
-        __slots__ = "magic", "revision", "flags", "object_type", "date", "name", "device_type", "data_type", "data"
+        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "device_type", "type_id", "data"
 
         @property
         def data_size(self) -> bytes:
@@ -296,27 +302,26 @@ class TIFlashHeader(Dock):
             :return: The bytes contained in this header
             """
 
-            return self.magic + self.revision + self.flags + self.object_type + self.date + \
-                self.name_length + self.name + bytes(23) + self.device_type + self.data_type + bytes(24) + \
+            return self.magic + self.revision + self.binary_flag + self.object_type + self.date + \
+                self.name_length + self.name + bytes(23) + self.device_type + self.type_id + bytes(24) + \
                 self.data_size + self.data + self.checksum
 
     def __init__(self, init=None, *,
-                 magic: str = "**TIFL**", revision: str = "0.0", flags: int = 0, object_type: int = 0,
-                 date: datetime.date = datetime.date.fromtimestamp(0), name: str = "UNNAMED",
-                 device_type: int = 0x73, data_type: int = 0x24,
-                 data: bytes = b':00000001FF', has_checksum: bool = True):
+                 magic: str = "**TIFL**", revision: str = "0.0", binary_flag: int = 0x00, object_type: int = 0x88,
+                 date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED", device_type: int = 0x73,
+                 data: bytes = b':00000001FF'):
         self.raw = self.Raw()
 
         self.magic = magic
         self.revision = revision
-        self.flags = flags
+        self.binary_flag = binary_flag
         self.object_type = object_type
 
-        self.date = date.strftime("%d%m%Y").encode()
+        self.date = date
         self.name = name
 
         self.device_type = device_type
-        self.data_type = data_type
+        self.type_id = self._type_id if self._type_id is not None else 0xFF
 
         if data:
             self.data = bytearray(data)
@@ -327,14 +332,20 @@ class TIFlashHeader(Dock):
             except AttributeError:
                 self.load(init)
 
-        self.has_checksum = has_checksum
+        self._has_checksum = True
+
+    def __init_subclass__(cls, /, register=False, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if register:
+            TIFlashHeader.register(cls)
 
     def __len__(self) -> int:
         """
         :return: The total length of this header's bytes
         """
 
-        return 78 + 2 * self.data_size + 2
+        return 78 + self.data_size + 2 * self._has_checksum
 
     @Section(8, String)
     def magic(self) -> str:
@@ -387,9 +398,9 @@ class TIFlashHeader(Dock):
         """
 
     @Section(1, Bits[:])
-    def data_type(self) -> int:
+    def type_id(self) -> int:
         """
-        The type of data stored in the flash header
+        The type ID of the flash header
         """
 
     @property
@@ -422,6 +433,17 @@ class TIFlashHeader(Dock):
 
         return self.raw.checksum
 
+    @classmethod
+    def get_type(cls, type_id: int) -> Type['TIFlashHeader']:
+        """
+        Gets the subclass corresponding to a type ID if one is registered
+
+        :param type_id: The type ID to search by
+        :return: A subclass of `TIFlashHeader` with corresponding type ID or ``None``
+        """
+
+        return cls._type_ids.get(type_id, None)
+
     @staticmethod
     def next_header_length(stream: BinaryIO) -> int:
         """
@@ -450,6 +472,16 @@ class TIFlashHeader(Dock):
         stream.seek(-78 - data_size, 1)
         return entry_length
 
+    @classmethod
+    def register(cls, var_type: Type['TIFlashHeader']):
+        """
+        Registers a subtype with this class for coercion
+
+        :param var_type: The `TIFlashHeader` subtype to register
+        """
+
+        cls._type_ids[var_type._type_id] = var_type
+
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -472,7 +504,7 @@ class TIFlashHeader(Dock):
                  BytesWarning)
 
         self.raw.revision = data.read(2)
-        self.raw.flags = data.read(1)
+        self.raw.binary_flag = data.read(1)
         self.raw.object_type = data.read(1)
 
         self.raw.date = data.read(4)
@@ -495,17 +527,24 @@ class TIFlashHeader(Dock):
             warn(f"The device type ({self.device_type}) is not recognized.",
                  BytesWarning)
 
-        self.raw.data_type = data.read(1)
+        # Read and check type ID
+        self.raw.type_id = data.read(1)
 
-        if self.data_type not in [0x23, 0x24, 0x25, 0x3E]:
-            warn(f"The data type ({self.data_type}) is not recognized.",
-                 BytesWarning)
+        if self._type_id is not None and self.type_id != self._type_id:
+            if subclass := TIFlashHeader.get_type(self.type_id):
+                warn(f"The header type is incorrect (expected {type(self)}, got {subclass}).",
+                     BytesWarning)
+
+            else:
+                warn(f"The header type is incorrect (expected {type(self)}, got an unknown type). "
+                     f"Load the flash file into a TIFlashHeader instance if you don't know the entry type(s).",
+                     BytesWarning)
 
         data.seek(24, 1)
 
         # Read data
         data_size = int.from_bytes(data.read(4), 'little')
-        self.raw.data = data.read()
+        self.raw.data = data.read(data_size)
 
         # Check² sum
         checksum = data.read(2)
@@ -516,14 +555,16 @@ class TIFlashHeader(Dock):
                      BytesWarning)
 
         else:
-            self.has_checksum = False
+            self._has_checksum = False
+
+        self.coerce()
 
     def bytes(self) -> bytes:
         """
         :return: The bytes contained in this header
         """
 
-        return self.raw.bytes() if self.has_checksum else self.raw.bytes()[:-2]
+        return self.raw.bytes() if self._has_checksum else self.raw.bytes()[:-2]
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
@@ -562,3 +603,22 @@ class TIFlashHeader(Dock):
                      UserWarning)
 
         return entry
+
+    def coerce(self):
+        """
+        Coerces this header to a subclass if possible using the header's type ID
+
+        Valid types must be registered to be considered for coercion.
+        """
+
+        if self._type_id is None:
+            if subclass := self.get_type(self.type_id):
+                self.__class__ = subclass
+                self.coerce()
+
+            elif self.type_id != 0xFF:
+                warn(f"Type ID 0x{self.type_id:02x} is not recognized; header will not be coerced to a subclass.",
+                     BytesWarning)
+
+
+__all__ = ["BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader"]
