@@ -592,17 +592,15 @@ class TIFlashHeader(Dock):
         """
 
         with open(filename, 'rb') as file:
-            file.seek(55)
-
-            entry = cls()
-            entry.load_bytes(file.read(cls.next_header_length(file)))
+            header = cls()
+            header.load_bytes(file.read(cls.next_header_length(file)))
 
             if file.read():
                 warn("The selected flash file contains multiple headers; only the first will be loaded. "
                      "Use load_from_file to select a particular header.",
                      UserWarning)
 
-        return entry
+        return header
 
     def coerce(self):
         """
