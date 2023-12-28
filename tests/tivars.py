@@ -183,6 +183,7 @@ class TokenizationTests(unittest.TestCase):
 
             self.assertEqual(test_program.bytes(), file.read()[:-2])
             self.assertEqual(test_program.is_protected, False)
+            self.assertEqual(test_program.is_tokenized, True)
 
     def test_protection(self):
         test_program = TIProtectedProgram(name="SETDATE")

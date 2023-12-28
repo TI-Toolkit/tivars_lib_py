@@ -1,3 +1,8 @@
+"""
+Real numeric types
+"""
+
+
 import copy
 import decimal as dec
 import fractions as frac

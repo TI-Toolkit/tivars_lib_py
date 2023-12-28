@@ -1,3 +1,8 @@
+"""
+Pictures and images
+"""
+
+
 from typing import Iterator, Sequence
 from warnings import warn
 
@@ -320,6 +325,12 @@ class TIPicture(PictureEntry, register=True):
 
 # Workaround until the token sheets are updated
 class ImageName(TokenizedString):
+    """
+    Converter for the name section of images
+
+    Image names can be ``Image1`` - ``Image0``, but are stored using a font offset rather than tokens.
+    """
+
     _T = str
 
     @classmethod

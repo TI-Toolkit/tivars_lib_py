@@ -1,3 +1,8 @@
+"""
+Model and feature definitions
+"""
+
+
 import os
 
 from functools import total_ordering

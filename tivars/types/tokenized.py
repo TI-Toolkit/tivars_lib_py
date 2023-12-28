@@ -1,3 +1,8 @@
+"""
+Tokenized types
+"""
+
+
 import re
 
 from io import BytesIO
@@ -237,7 +242,7 @@ class TINewEquation(TIEquation, register=True):
     """
     Parser for internal equations
 
-    A `TINewEquation` is simply a `TIEquation` with certain internal uses
+    A `TINewEquation` is simply a `TIEquation` with certain internal uses.
     """
 
     _type_id = 0x0B
@@ -293,6 +298,18 @@ class TIProgram(TokenizedEntry, register=True):
     Whether this program type is protected
     """
 
+    is_tokenized = True
+    """
+    Whether this program is tokenized
+    """
+
+    asm_tokens = {b'\xBB\x6D': TI_83P,
+                  b'\xEF\x69': TI_84PCSE,
+                  b'\xEF\x7B': TI_84PCE}
+    """
+    Tokens which identify the program as containing assembly code
+    """
+
     _type_id = 0x05
 
     @Section(8, TokenizedString)
@@ -331,6 +348,67 @@ class TIProgram(TokenizedEntry, register=True):
         self.type_id = 0x05
         self.coerce()
 
+    @Loader[ByteString, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
+        super(TokenizedEntry, self).load_bytes(data)
+
+        try:
+            if self.version != (version := self.get_version()):
+                warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
+                     BytesWarning)
+
+        except ValueError as e:
+            if self.is_tokenized:
+                warn(f"The file contains an invalid token {' '.join(str(e).split()[2:])}.",
+                     BytesWarning)
+
+    def coerce(self):
+        match self.type_id, any(token in self.data for token in self.asm_tokens):
+            case 0x05, False:
+                self.__class__ = TIProgram
+            case 0x05, True:
+                self.__class__ = TIAsmProgram
+            case 0x06, False:
+                self.__class__ = TIProtectedProgram
+            case 0x06, True:
+                self.__class__ = TIProtectedAsmProgram
+
+
+class TIAsmProgram(TIProgram):
+    """
+    Parser for assembly programs
+
+    A `TIAsmProgram` is a stream of raw bytes that is run as assembly code.
+    A single valid token at the start of the data section identifies the program as using assembly.
+
+    A consistent method of ASM identification for the TI-83 is not yet implemented.
+    """
+
+    is_tokenized = False
+
+    def __format__(self, format_spec: str) -> str:
+        try:
+            match [*format_spec]:
+                case sep, *width if width:
+                    return self.data.hex(sep, int(''.join(width)))
+
+                case sep, *_:
+                    return self.data.hex(sep)
+
+                case _:
+                    return self.data.hex()
+
+        except TypeError:
+            return super().__format__(format_spec)
+
+    def get_min_os(self, data: bytes = None) -> OsVersion:
+        return max([model.OS() for token, model in self.asm_tokens.items() if token in (data or self.data)],
+                   default=OsVersions.INITIAL)
+
+    @Loader[str]
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
+        raise NotImplementedError
+
 
 class TIProtectedProgram(TIProgram, register=True):
     """
@@ -344,4 +422,17 @@ class TIProtectedProgram(TIProgram, register=True):
     _type_id = 0x06
 
 
-__all__ = ["TIEquation", "TINewEquation", "TIString", "TIProgram", "TIProtectedProgram"]
+class TIProtectedAsmProgram(TIAsmProgram, TIProtectedProgram):
+    """
+    Parser for protected assembly programs
+
+    A `TIProtectedAsmProgram` is a `TIAsmProgram` with protection against editing.
+    """
+
+    is_protected = True
+
+    _type_id = 0x06
+
+
+__all__ = ["TIEquation", "TINewEquation", "TIString",
+           "TIProgram", "TIAsmProgram", "TIProtectedProgram", "TIProtectedAsmProgram"]

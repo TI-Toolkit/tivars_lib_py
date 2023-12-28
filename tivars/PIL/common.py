@@ -1,3 +1,8 @@
+"""
+Common import for PIL plugins
+"""
+
+
 import numpy as np
 import warnings
 
@@ -44,7 +49,7 @@ class TIImageFile(ImageFile.ImageFile):
                 raise TypeError(f"image is not in .{self.format} format")
 
             self._size = (img.width, img.height)
-            self.mode = img.pil_mode
+            self._mode = img.pil_mode
 
             self.tile = [(self.format, (0, 0) + self.size, 0, None)]
 
@@ -57,7 +62,7 @@ class TIImageFile(ImageFile.ImageFile):
 
         :param im: The image to save
         :param fp: The file pointer
-        :param format: The format to save with (defaults to the image's known format)
+        :param format: The format to save with (defaults to the image's known format) (unused)
         :param params: Additional encoder parameters (empty)
         """
 

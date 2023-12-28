@@ -1,3 +1,9 @@
+"""
+Parsers for the TI var types
+"""
+
+
+# Makes pydoctor happy
 from typing import TYPE_CHECKING
 
 from .appvar import *
@@ -23,7 +29,8 @@ else:
     __all__ = ["TIEntry", "TIFlashHeader",
                "TIReal",
                "TIRealList", "TIMatrix",
-               "TIEquation", "TIString", "TIProgram", "TIProtectedProgram",
+               "TIEquation", "TIString",
+               "TIProgram", "TIAsmProgram", "TIProtectedProgram", "TIProtectedAsmProgram",
                "TIPicture", "TIMonoPicture",
                "TIMonoGDB", "TIGDB", "TIGraphedEquation",
                "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",

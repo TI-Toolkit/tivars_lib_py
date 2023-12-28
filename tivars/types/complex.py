@@ -1,3 +1,8 @@
+"""
+Complex numeric types
+"""
+
+
 from typing import Type
 from warnings import warn
 

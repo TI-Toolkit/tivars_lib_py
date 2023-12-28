@@ -1,3 +1,8 @@
+"""
+GDBs and their settings
+"""
+
+
 import io
 import json
 import os
@@ -14,6 +19,10 @@ from .tokenized import TIEquation
 
 
 class GraphMode(Flags):
+    """
+    Flags for GDB graph modes
+    """
+
     Dot = {0: 1}
     Connected = {0: 0}
     Simul = {1: 1}
@@ -42,6 +51,10 @@ class GraphMode(Flags):
 
 
 class SeqMode(Flags):
+    """
+    Flags for sequential GDB plot modes
+    """
+
     Time = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     Web = {0: 1, 1: 0, 2: 0, 3: 0, 4: 0}
     VertWeb = {0: 0, 1: 1, 2: 0, 3: 0, 4: 0}
@@ -51,6 +64,10 @@ class SeqMode(Flags):
 
 
 class GraphStyle(Enum):
+    """
+    Enum of GDB graph styles
+    """
+
     SolidLine = b'\x00'
     ThickLine = b'\x01'
     ShadeAbove = b'\x02'
@@ -64,6 +81,10 @@ class GraphStyle(Enum):
 
 
 class GraphColor(Enum):
+    """
+    Enum of GDB graph colors
+    """
+
     Mono = b'\x00'
     Blue = b'\x01'
     Red = b'\x02'
@@ -87,6 +108,10 @@ class GraphColor(Enum):
 
 
 class GlobalLineStyle(Enum):
+    """
+    Enum of global GDB line styles
+    """
+
     Thick = b'\x00'
     DotThick = b'\x01'
     Thin = b'\x02'
@@ -97,6 +122,10 @@ class GlobalLineStyle(Enum):
 
 
 class BorderColor(Enum):
+    """
+    Enum of GDB graph border colors
+    """
+
     LtGray = b'\x01'
     Teal = b'\x02'
     LtBlue = b'\x03'
@@ -107,6 +136,10 @@ class BorderColor(Enum):
 
 
 class EquationFlags(Flags):
+    """
+    Flags for equations stored in GDBs
+    """
+
     Selected = {5: 1}
     Deselected = {5: 0}
     UsedForGraph = {6: 1}
@@ -116,9 +149,23 @@ class EquationFlags(Flags):
 
 
 class TIGraphedEquation(TIEquation):
+    """
+    Parser for equations stored in GDBs
+
+    A `TIGraphedEquation` is a `TIEquation` with an extra leading flag byte.
+    The equation's style and color in its GDB is bundled for convenience.
+    """
+
     min_data_length = 3
 
     class Raw(TIEntry.Raw):
+        """
+        Raw bytes container for `TIGraphedEquation`
+
+        The ``Raw`` container adds ``style`` and ``color`` fields for convenient manipulation of graphed equations.
+        These fields are stored in the container but do not contribute to the equation data section of a GDB.
+        """
+
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "style", "color", "calc_data"
 
     def __init__(self, init=None, *,
@@ -642,6 +689,13 @@ class TIMonoGDB(SizedEntry, register=True):
 
 
 class TIGDB(TIMonoGDB):
+    """
+    Base class for all color GDB entries
+
+    A GDB is a collection of equations and graph settings representing the state of one of the equation plotters.
+    A GDB can correspond to one of the Function, Parametric, Polar, or Sequence plotting modes.
+    """
+
     min_data_length = 66
     has_color = True
 
@@ -744,6 +798,10 @@ class TIGDB(TIMonoGDB):
 
 
 class TIMonoFuncGDB(TIMonoGDB):
+    """
+    Parser for function GDBs
+    """
+
     mode_byte = 0x10
 
     min_data_length = 110
@@ -860,6 +918,10 @@ class TIMonoFuncGDB(TIMonoGDB):
 
 
 class TIFuncGDB(TIGDB, TIMonoFuncGDB):
+    """
+    Parser for function color GDBs
+    """
+
     min_data_length = 128
 
     @Section()
@@ -890,6 +952,10 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
 
 
 class TIMonoParamGDB(TIMonoGDB):
+    """
+    Parser for parametric GDBs
+    """
+
     mode_byte = 0x40
 
     min_data_length = 130
@@ -1034,6 +1100,10 @@ class TIMonoParamGDB(TIMonoGDB):
 
 
 class TIParamGDB(TIGDB, TIMonoParamGDB):
+    """
+    Parser for parametric color GDBs
+    """
+
     min_data_length = 144
 
     @Section()
@@ -1064,6 +1134,10 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
 
 
 class TIMonoPolarGDB(TIMonoGDB):
+    """
+    Parser for polar GDBs
+    """
+
     mode_byte = 0x20
 
     min_data_length = 112
@@ -1162,6 +1236,10 @@ class TIMonoPolarGDB(TIMonoGDB):
 
 
 class TIPolarGDB(TIGDB, TIMonoPolarGDB):
+    """
+    Parser for polar color GDBs
+    """
+
     min_data_length = 126
 
     @Section()
@@ -1192,6 +1270,10 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
 
 
 class TIMonoSeqGDB(TIMonoGDB):
+    """
+    Parser for sequential GDBs
+    """
+
     mode_byte = 0x80
 
     min_data_length = 163
@@ -1401,6 +1483,10 @@ class TIMonoSeqGDB(TIMonoGDB):
 
 
 class TISeqGDB(TIGDB, TIMonoSeqGDB):
+    """
+    Parser for sequential color GDBs
+    """
+
     min_data_length = 174
 
     @Section()

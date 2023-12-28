@@ -1,3 +1,8 @@
+"""
+A library for interacting with TI-(e)z80 (82/83/84 series) calculator files
+"""
+
+
 from .flash import *
 from .tokenizer import *
 from .types import *

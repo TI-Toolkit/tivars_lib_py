@@ -1,3 +1,8 @@
+"""
+Plugin for `.8ca` files (`TIImage`)
+"""
+
+
 from tivars import TIImage
 from .common import *
 

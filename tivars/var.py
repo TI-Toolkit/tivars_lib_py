@@ -1,3 +1,8 @@
+"""
+The fundamental var components
+"""
+
+
 from io import BytesIO
 from typing import BinaryIO, ByteString, Iterator, Type
 from warnings import warn
@@ -36,7 +41,7 @@ class TIHeader:
 
     def __init__(self, model: TIModel = None, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
-                 comment: str = "Created with tivars_lib_py v0.8.0",
+                 comment: str = "Created with tivars_lib_py v0.8.2",
                  data: bytes = None):
         """
         Creates an empty header which targets a specified model

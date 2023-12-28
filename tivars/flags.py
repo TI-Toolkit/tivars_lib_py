@@ -1,3 +1,18 @@
+"""
+Flag and enum converters
+
+This module implements two general-use converters:
+
+    -   `Enum`, which provides conversion for a set of constants.
+
+        Each element of an enum is assigned a literal that represents its value in a data section.
+
+    -   `Flags`, which converts between a bitfield and a ``dict`` of bitsets.
+
+        The ``dict`` representation permits the use of ``dict`` update notation to set flags with a single operation.
+"""
+
+
 from functools import total_ordering
 from math import ceil
 from typing import Mapping

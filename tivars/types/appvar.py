@@ -1,3 +1,8 @@
+"""
+Appvars
+"""
+
+
 from tivars.models import *
 from ..var import SizedEntry
 

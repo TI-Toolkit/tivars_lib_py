@@ -1,3 +1,8 @@
+"""
+Graph window and table settings
+"""
+
+
 import json
 
 from warnings import warn
