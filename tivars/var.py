@@ -326,12 +326,12 @@ class TIEntry(Dock, Converter):
 
         The entry ``version`` and ``archived`` flag are invalid if ``for_flash == False``.
 
-        :param init: Values to initialize this entry's data (defaults to ``None``)
-        :param for_flash: Whether this entry supports flash chips (defaults to ``True``)
-        :param name: The name of this entry (defaults to a valid default name)
-        :param version: This entry's version (defaults to ``None``)
-        :param archived: Whether this entry is archived (defaults to entry's default state on-calc)
-        :param data: This entry's data (defaults to empty)
+        :param init: Values to initialize the entry's data (defaults to ``None``)
+        :param for_flash: Whether the entry supports flash chips (defaults to ``True``)
+        :param name: The name of the entry (defaults to a valid default name)
+        :param version: The entry's version (defaults to ``None``)
+        :param archived: Whether the entry is archived (defaults to entry's default state on-calc)
+        :param data: The entry's data (defaults to empty)
         """
 
         self.raw = self.Raw()
@@ -876,7 +876,7 @@ class TIVar:
         :param name: The name of the var (defaults to ``UNNAMED``)
         :param header: A `TIHeader` to attach (defaults to an empty header)
         :param model: A minimum `TIModel` to target (defaults to ``None``)
-        :param data: This var's data (defaults to empty)
+        :param data: The var's data (defaults to empty)
         """
 
         self._header = header or TIHeader(model)

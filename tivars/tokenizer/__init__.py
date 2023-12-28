@@ -1,11 +1,11 @@
 """
-Tokenization utilities derived from the token sheets
+Tokenization utilities derived from the token sheets (see tokens directory)
 """
 
 
 from typing import ByteString
 
-from tivars.data import String
+from ..data import String
 from ..models import *
 from ..tokens.scripts import *
 

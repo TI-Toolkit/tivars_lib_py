@@ -1,3 +1,8 @@
+"""
+The fundamental flash file components
+"""
+
+
 from io import BytesIO
 from typing import ByteString, BinaryIO, Type
 from warnings import warn
@@ -72,6 +77,13 @@ class BCDRevision(Converter):
 
 
 class TIFlashBlock(Dock):
+    """
+    Parser for flash blocks
+
+    The data section of a flash header is composed of blocks separated by newlines.
+    Each block contains some segment of data stored at an address, which may be relative or absolute.
+    """
+
     class Raw:
         """
         Raw bytes container for `TIFlashBlock`
@@ -120,6 +132,15 @@ class TIFlashBlock(Dock):
     def __init__(self, init=None, *,
                  address: bytes = b'0000', block_type: bytes = b'00',
                  data: bytes = b''):
+        """
+        Creates an empty flash data block
+
+        :param init: Values to initialize this block's data (defaults to ``None``)
+        :param address: The address of this block (defaults to ``$0000``)
+        :param block_type: The type of this block (defaults to ``$00``, data)
+        :param data: This block's data (defaults to empty)
+        """
+
         self.raw = self.Raw()
 
         self.address = address
@@ -310,6 +331,20 @@ class TIFlashHeader(Dock):
                  magic: str = "**TIFL**", revision: str = "0.0", binary_flag: int = 0x00, object_type: int = 0x88,
                  date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED", device_type: int = 0x73,
                  data: bytes = b':00000001FF'):
+        """
+        Creates an empty flash header with specified meta and data values
+
+        :param init: Values to initialize the header's data (defaults to ``None``)
+        :param magic: File magic at the start of the header (defaults to ``**TIFL**``)
+        :param revision: The header's revision number (defaults to ``0.0``)
+        :param binary_flag: Whether the header's data is stored in Intel format (defaults to ``True``)
+        :param object_type: The header's object type (defaults to ``$88``)
+        :param date: The header's stored date as a tuple (dd, mm, yyyy) (defaults to null)
+        :param name: The name of the headers (defaults to ``UNNAMED``)
+        :param device_type: The device type of the header (defaults to ``$73``, the 83+ series)
+        :param data: The header's data (defaults to empty)
+        """
+
         self.raw = self.Raw()
 
         self.magic = magic
