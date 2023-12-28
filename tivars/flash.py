@@ -2,8 +2,8 @@ from io import BytesIO
 from typing import ByteString, BinaryIO, Type
 from warnings import warn
 
-from .data import *
 from tivars.numeric import BCD
+from .data import *
 
 
 class BCDDate(Converter):
@@ -537,7 +537,7 @@ class TIFlashHeader(Dock):
 
             else:
                 warn(f"The header type is incorrect (expected {type(self)}, got an unknown type). "
-                     f"Load the flash file into a TIFlashHeader instance if you don't know the entry type(s).",
+                     f"Load the header into a TIFlashHeader instance if you don't know the header type.",
                      BytesWarning)
 
         data.seek(24, 1)

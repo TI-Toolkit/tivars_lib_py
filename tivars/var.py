@@ -955,7 +955,7 @@ class TIVar:
     @property
     def extension(self) -> str:
         """
-        Determines the var's file extension based on its entries and targeted model.
+        Determines the var's file extension based on its entries and targeted model
 
         If there is only one entry, that entry's extension for the target model is used.
         Otherwise, ``.8xg`` is used.
@@ -990,7 +990,7 @@ class TIVar:
     @property
     def filename(self) -> str:
         """
-        Determines the var's filename based on its name, entries, and targeted model.
+        Determines the var's filename based on its name, entries, and targeted model
 
         The filename is the concatenation of the var name and extension (see `TIVar.extension`).
 
