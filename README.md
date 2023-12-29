@@ -210,12 +210,19 @@ my_program.raw.archived = b'\x80'
 assert my_program.raw.type_id == b'\x05'
 ```
 
-> [!CAUTION]
+> [!WARNING]
 > Edits to read-only bytes like the checksum are reset whenever any other data in the var is updated.
 
 ### Models
 
 All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
+
+### Flash Files
+
+Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers. A flash header does _not_ need to be "packaged" into a larger file format like an entry in a regular var; see `TIFlashHeader.open` and `TIFlashHeader.save`.
+
+> [!TIP]
+> Loading flash files into a `TIEntry` probably won't work very well.
 
 ## Other Functionalities
 
