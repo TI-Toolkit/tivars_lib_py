@@ -48,8 +48,8 @@ class TIHeader:
 
         :param model: A minimum `TIModel` to target (defaults to ``TI_83P``)
         :param magic: File magic at the start of the header (default to the model's magic)
-        :param extra: Extra export bytes for the header (defaults to ``0x1a0a``)
-        :param product_id: The targeted model's product ID (defaults to ``0x00``)
+        :param extra: Extra export bytes for the header (defaults to ``$1a0a``)
+        :param product_id: The targeted model's product ID (defaults to ``$00``)
         :param comment: A comment to include in the header (defaults to a simple lib message)
         :param data: This header's data (defaults to empty)
         """
