@@ -48,8 +48,8 @@ privacy = ["PRIVATE:**.__class_getitem__", "PRIVATE:**.__get__", "PRIVATE:**.__i
            "PRIVATE:tivars.models.model.*",
            "PUBLIC:tivars.models.model.TIFeature", "PUBLIC:tivars.models.model.TIModel",
 
-           "PRIVATE:tivars.types.numeric.*",
-           "PUBLIC:tivars.types.numeric.BCD", "PUBLIC:tivars.types.numeric.LeftNibbleBCD", "PUBLIC:tivars.types.numeric.RightNibbleBCD",
-           "PUBLIC:tivars.types.numeric.replacer", "PUBLIC:tivars.types.numeric.sign", "PUBLIC:tivars.types.numeric.squash",
-           "PUBLIC:tivars.types.numeric.pi"
+           "PRIVATE:tivars.numeric.*",
+           "PUBLIC:tivars.numeric.BCD", "PUBLIC:tivars.numeric.LeftNibbleBCD", "PUBLIC:tivars.numeric.RightNibbleBCD",
+           "PUBLIC:tivars.numeric.replacer", "PUBLIC:tivars.numeric.sign", "PUBLIC:tivars.numeric.squash",
+           "PUBLIC:tivars.numeric.pi"
 ]
