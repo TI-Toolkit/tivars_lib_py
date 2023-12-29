@@ -8,6 +8,7 @@ from typing import ByteString, BinaryIO, Type
 from warnings import warn
 
 from .data import *
+from .models import *
 from .numeric import BCD
 
 
@@ -517,6 +518,40 @@ class TIFlashHeader(Dock):
 
         cls._type_ids[var_type._type_id] = var_type
 
+    def extension(self, model: TIModel = TI_83P) -> str:
+        """
+        Determines the header's file extension given a targeted model
+
+        :param model: A model to target (defaults to ``TI_83P``)
+        :return: The header's file extension for that model
+        """
+
+        extension = ""
+        for min_model in reversed(TIModel.MODELS):
+            if model in self.extensions and min_model <= model:
+                extension = self.extensions[model]
+                break
+
+        if not extension:
+            warn(f"The {model} does not support this var type.",
+                 UserWarning)
+
+            return self.extensions[None]
+
+        return extension
+
+    def filename(self, model: TIModel = TI_83P) -> str:
+        """
+        Determines the header's filename given a targeted model
+
+        The filename is the concatenation of the header name and extension (see `TIFlashHeader.extension`).
+
+        :param model: A model to target (defaults to ``TI_83P``)
+        :return: The header's filename
+        """
+
+        return f"{self.name}.{self.extension(model)}"
+
     @Loader[ByteString, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -636,6 +671,17 @@ class TIFlashHeader(Dock):
                      UserWarning)
 
         return header
+
+    def save(self, filename: str = None, model: TIModel = TI_83P):
+        """
+        Saves this header given a filename and targeted model
+
+        :param filename: A filename to save to (defaults to the header's name and extension)
+        :param model: A model to target (defaults to ``TI_83P``)
+        """
+
+        with open(filename or self.filename(model), 'wb+') as file:
+            file.write(self.bytes())
 
     def coerce(self):
         """
