@@ -345,7 +345,7 @@ class TIFlashHeader(Dock):
         :param date: The header's stored date as a tuple (dd, mm, yyyy) (defaults to null)
         :param name: The name of the headers (defaults to ``UNNAMED``)
         :param device_type: The device type of the header (defaults to ``$73``, the 83+ series)
-        :param product_id: The targeted model's product ID (defaults to ``0x00``)
+        :param product_id: The targeted model's product ID (defaults to ``$00``)
         :param data: The header's data (defaults to empty)
         """
 
@@ -353,7 +353,7 @@ class TIFlashHeader(Dock):
 
         self.magic = magic
         self.revision = revision
-        self.binary_flag = binary_flag
+        self.binary_flag = 0x01 if binary_flag else 0x00
         self.object_type = object_type
 
         self.date = date
