@@ -166,7 +166,7 @@ class Boolean(Converter):
         Converts ``bool`` -> ``bytes``, where ``b'\\x80'`` is truthy and ``b'\\x00'`` is falsy
 
         :param value: The value to convert
-        :return: ``b'\\x80'`` if ``value` is truthy else ``b'\\x00'``
+        :return: ``b'\\x80'`` if ``value`` is truthy else ``b'\\x00'``
         """
 
         return b'\x80' if value else b'\x00'
@@ -294,6 +294,15 @@ class Bits:
 
                     else:
                         data += current[0] & (1 << index)
+
+                try:
+                    while 1:
+                        if next(bits) == "1":
+                            warn(f"Value {value} has too many bits for this buffer.",
+                                 BytesWarning)
+
+                except StopIteration:
+                    pass
 
                 return bytes([data])
 
