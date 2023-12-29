@@ -580,8 +580,11 @@ class FlashTests(unittest.TestCase):
 
             self.assertEqual(test_app.bytes(), file.read())
 
+        self.assertEqual(test_app.object_type, 0x88)
+        self.assertEqual(test_app.device_type, 0x73)
+        self.assertEqual(test_app.product_id, 0x00)
         self.assertEqual(type(test_app), TIApp)
 
     def test_os(self):
         test_os = TIFlashHeader.open("tests/data/var/TI-84_Plus_CE-Python-OS-5.8.0.0022.8eu")
-        self.assertEqual(type(test_os), TIOS)
+        self.assertEqual(type(test_os), TIOperatingSystem)

@@ -47,5 +47,5 @@ else:
                "TIRealRadical", "TIComplexRadical",
                "TIComplexPi", "TIComplexPiFraction",
                "TIRealPi", "TIRealPiFraction",
-               "TIOS", "TIApp", "TICertificate"
+               "TIOperatingSystem", "TIApp", "TICertificate", "TIFlashLicense"
                ]

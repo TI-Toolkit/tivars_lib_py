@@ -291,7 +291,8 @@ class TIFlashHeader(Dock):
         Additional methods can also be included, but should be callable from the outer class.
         """
 
-        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "device_type", "type_id", "data"
+        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "device_type", "type_id", \
+            "product_id", "data"
 
         @property
         def data_size(self) -> bytes:
@@ -325,12 +326,13 @@ class TIFlashHeader(Dock):
             """
 
             return self.magic + self.revision + self.binary_flag + self.object_type + self.date + \
-                self.name_length + self.name + bytes(23) + self.device_type + self.type_id + bytes(24) + \
-                self.data_size + self.data + self.checksum
+                self.name_length + self.name + bytes(23) + self.device_type + self.type_id + bytes(23) + \
+                self.product_id + self.data_size + self.data + self.checksum
 
     def __init__(self, init=None, *,
                  magic: str = "**TIFL**", revision: str = "0.0", binary_flag: int = 0x00, object_type: int = 0x88,
-                 date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED", device_type: int = 0x73,
+                 date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED",
+                 device_type: int = 0x73, product_id: int = 0x00,
                  data: bytes = b':00000001FF'):
         """
         Creates an empty flash header with specified meta and data values
@@ -343,6 +345,7 @@ class TIFlashHeader(Dock):
         :param date: The header's stored date as a tuple (dd, mm, yyyy) (defaults to null)
         :param name: The name of the headers (defaults to ``UNNAMED``)
         :param device_type: The device type of the header (defaults to ``$73``, the 83+ series)
+        :param product_id: The targeted model's product ID (defaults to ``0x00``)
         :param data: The header's data (defaults to empty)
         """
 
@@ -357,6 +360,7 @@ class TIFlashHeader(Dock):
         self.name = name
 
         self.device_type = device_type
+        self.product_id = product_id
         self.type_id = self._type_id if self._type_id is not None else 0xFF
 
         if data:
@@ -437,6 +441,15 @@ class TIFlashHeader(Dock):
     def type_id(self) -> int:
         """
         The type ID of the flash header
+        """
+
+    @Section(1, Bits[:])
+    def product_id(self) -> int:
+        """
+        The product ID for the header
+
+        While used to identify the model the var was created on, it has no actual functional ramifications.
+        Furthermore, it does not constitute a 1-to-1 mapping to distinct models.
         """
 
     @property
@@ -526,6 +539,10 @@ class TIFlashHeader(Dock):
         :return: The header's file extension for that model
         """
 
+        if not model.has(TIFeature.Flash):
+            warn(f"The {model} does not support flash files.",
+                 UserWarning)
+
         extension = ""
         for min_model in reversed(TIModel.MODELS):
             if model in self.extensions and min_model <= model:
@@ -610,7 +627,8 @@ class TIFlashHeader(Dock):
                      f"Load the header into a TIFlashHeader instance if you don't know the header type.",
                      BytesWarning)
 
-        data.seek(24, 1)
+        data.seek(23, 1)
+        self.raw.product_id = data.read(1)
 
         # Read data
         data_size = int.from_bytes(data.read(4), 'little')

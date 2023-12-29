@@ -2,7 +2,7 @@ from tivars.models import *
 from ..flash import TIFlashHeader
 
 
-class TIOS(TIFlashHeader, register=True):
+class TIOperatingSystem(TIFlashHeader, register=True):
     extensions = {
         None: "8eu",
         TI_82A: "82u",
@@ -37,4 +37,8 @@ class TICertificate(TIFlashHeader, register=True):
     _type_id = 0x25
 
 
-__all__ = ["TIOS", "TIApp", "TICertificate"]
+class TIFlashLicense(TIFlashHeader, register=True):
+    _type_id = 0x3E
+
+
+__all__ = ["TIOperatingSystem", "TIApp", "TICertificate", "TIFlashLicense"]
