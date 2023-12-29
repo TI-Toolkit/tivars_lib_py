@@ -518,11 +518,11 @@ class TIFlashHeader(Dock):
 
         cls._type_ids[var_type._type_id] = var_type
 
-    def extension(self, model: TIModel = TI_83P) -> str:
+    def extension(self, model: TIModel = TI_84PCE) -> str:
         """
         Determines the header's file extension given a targeted model
 
-        :param model: A model to target (defaults to ``TI_83P``)
+        :param model: A model to target (defaults to ``TI_84PCE``)
         :return: The header's file extension for that model
         """
 
@@ -540,13 +540,13 @@ class TIFlashHeader(Dock):
 
         return extension
 
-    def filename(self, model: TIModel = TI_83P) -> str:
+    def filename(self, model: TIModel = TI_84PCE) -> str:
         """
         Determines the header's filename given a targeted model
 
         The filename is the concatenation of the header name and extension (see `TIFlashHeader.extension`).
 
-        :param model: A model to target (defaults to ``TI_83P``)
+        :param model: A model to target (defaults to ``TI_84PCE``)
         :return: The header's filename
         """
 
@@ -672,12 +672,12 @@ class TIFlashHeader(Dock):
 
         return header
 
-    def save(self, filename: str = None, model: TIModel = TI_83P):
+    def save(self, filename: str = None, model: TIModel = TI_84PCE):
         """
         Saves this header given a filename and targeted model
 
         :param filename: A filename to save to (defaults to the header's name and extension)
-        :param model: A model to target (defaults to ``TI_83P``)
+        :param model: A model to target (defaults to ``TI_84PCE``)
         """
 
         with open(filename or self.filename(model), 'wb+') as file:
