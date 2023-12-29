@@ -223,7 +223,7 @@ class ComplexEntry(TIEntry):
         super().clear()
 
         self.real_subtype_id = 0x0C
-        self.imag_subtype_id = self.type_id
+        self.imag_subtype_id = self._type_id if self._type_id is not None else 0x0C
 
     def components(self) -> (RealEntry, RealEntry):
         """
