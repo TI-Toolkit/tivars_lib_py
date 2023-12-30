@@ -588,4 +588,11 @@ class FlashTests(unittest.TestCase):
 
     def test_os(self):
         test_os = TIFlashHeader.open("tests/data/var/TI-84_Plus_CE-Python-OS-5.8.0.0022.8eu")
+
         self.assertEqual(type(test_os), TIOperatingSystem)
+
+    def test_license(self):
+        test_license = TILicense.open("tests/data/var/ti89_2.01_10-13-1999.89u")
+
+        self.assertEqual(test_license.devices, [(0x74, 0x3E), (0x73, 0x3E), (0x98, 0x3E), (0x88, 0x3E)])
+        self.assertEqual(test_license.license.split("\r\n")[1], "Texas Instruments License Agreement")

@@ -6,7 +6,7 @@ This module implements two primary means of data interface:
     -   The `Converter` system, which uses the descriptor protocol to treat var data sections as their canonical types.
 
         Each data section of a var, while stored as raw bytes, can be interpreted as some other useful type.
-        Each `Converter` class implements a conversion to such a type, such as ``bytes`` <-> ``str`` using utf-8.
+        Each `Converter` class implements a conversion to such a type, such as ``bytes`` <-> ``str`` using latin-1.
         A data section is declared as either a base `Section` or a `View` into another section and assigned a converter.
         The system allows a user to access data sections as regular variables without cumbersome getters or setters.
 
@@ -209,7 +209,7 @@ class String(Converter):
     """
     Converter for data sections best interpreted as strings
 
-    Strings are encoded in utf-8.
+    Strings are encoded in latin-1.
     """
 
     _T = str
@@ -220,10 +220,10 @@ class String(Converter):
         Converts ``bytes`` -> ``str``
 
         :param data: The raw bytes to convert
-        :return: The utf-8 decoding of ``data`` with trailing null bytes removed
+        :return: The latin-1 decoding of ``data`` with trailing null bytes removed
         """
 
-        return data.decode('utf8').rstrip('\0')
+        return data.decode('latin-1').rstrip('\0')
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
@@ -231,10 +231,10 @@ class String(Converter):
         Converts ``str`` -> ``bytes``
 
         :param value: The value to convert
-        :return: The utf-8 encoding of ``value``
+        :return: The latin-1 encoding of ``value``
         """
 
-        return value.encode('utf8')
+        return value.encode('latin-1')
 
 
 class Bits:

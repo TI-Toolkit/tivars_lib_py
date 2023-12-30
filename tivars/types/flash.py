@@ -1,5 +1,6 @@
-from tivars.models import *
+from ..data import *
 from ..flash import TIFlashHeader
+from ..models import *
 
 
 class TIOperatingSystem(TIFlashHeader, register=True):
@@ -37,8 +38,29 @@ class TICertificate(TIFlashHeader, register=True):
     _type_id = 0x25
 
 
-class TIFlashLicense(TIFlashHeader, register=True):
+class TILicense(TIFlashHeader, register=True):
+    extensions = {
+        None: "8eu",
+        TI_82A: "82u",
+        TI_84PCSE: "8cu",
+        TI_84PCE: "8eu",
+        TI_83PCE: "8pu",
+        TI_82AEP: "8yu"
+    }
+
     _type_id = 0x3E
 
+    @Section()
+    def data(self) -> bytes:
+        """
+        The data stored in the flash header
+        """
 
-__all__ = ["TIOperatingSystem", "TIApp", "TICertificate", "TIFlashLicense"]
+    @View(data, String)[:]
+    def license(self) -> str:
+        """
+        The license stored in this header
+        """
+
+
+__all__ = ["TIOperatingSystem", "TIApp", "TICertificate", "TILicense"]

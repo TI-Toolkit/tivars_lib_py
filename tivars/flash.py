@@ -77,6 +77,32 @@ class BCDRevision(Converter):
         return BCD.set(100 * int(major) + int(minor), **kwargs)
 
 
+class FlashDevices(Converter):
+    _T = list[tuple[int, int]]
+
+    @classmethod
+    def get(cls, data: bytes, **kwargs) -> _T:
+        """
+        Converts ``bytes`` -> ``list[tuple]``
+
+        :param data: The raw bytes to convert
+        :return: The device tuples stored in ``data``
+        """
+
+        return [*zip(*[iter(data)] * 2)]
+
+    @classmethod
+    def set(cls, value: _T, **kwargs) -> bytes:
+        """
+        Converts ``list[tuple]`` -> ``bytes``
+
+        :param value: The value to convert
+        :return: The device field derived from ``value``
+        """
+
+        return bytes([item for pair in value for item in pair])
+
+
 class TIFlashBlock(Dock):
     """
     Parser for flash blocks
@@ -118,7 +144,7 @@ class TIFlashBlock(Dock):
             The size of this block's data in characters
             """
 
-            return f"{len(self.data) // 2:X}".encode('utf8')[:2]
+            return f"{len(self.data) // 2:X}".encode()[:2]
 
         def bytes(self) -> bytes:
             """
@@ -162,7 +188,7 @@ class TIFlashBlock(Dock):
         The size of the block data in characters
         """
 
-        return int(self.raw.size.decode('utf8'), 16)
+        return int(self.raw.size.decode(), 16)
 
     @Section(4, Bytes)
     def address(self) -> bytes:
@@ -218,7 +244,7 @@ class TIFlashBlock(Dock):
             warn(f"The block type ({self.block_type}) is not recognized.",
                  BytesWarning)
 
-        self.raw.data = data.read(2 * int(size.decode('utf8'), 16))
+        self.raw.data = data.read(2 * int(size.decode(), 16))
 
         # Check² sum
         checksum = data.read(2)
@@ -291,8 +317,7 @@ class TIFlashHeader(Dock):
         Additional methods can also be included, but should be callable from the outer class.
         """
 
-        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "device_type", "type_id", \
-            "product_id", "data"
+        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id", "data"
 
         @property
         def data_size(self) -> bytes:
@@ -326,8 +351,8 @@ class TIFlashHeader(Dock):
             """
 
             return self.magic + self.revision + self.binary_flag + self.object_type + self.date + \
-                self.name_length + self.name + bytes(23) + self.device_type + self.type_id + bytes(23) + \
-                self.product_id + self.data_size + self.data + self.checksum
+                self.name_length + self.name + bytes(23) + self.devices+ bytes(23) + self.product_id + \
+                self.data_size + self.data + self.checksum
 
     def __init__(self, init=None, *,
                  magic: str = "**TIFL**", revision: str = "0.0", binary_flag: int = 0x00, object_type: int = 0x88,
@@ -359,9 +384,8 @@ class TIFlashHeader(Dock):
         self.date = date
         self.name = name
 
-        self.device_type = device_type
+        self.devices = [(device_type, self._type_id if self._type_id is not None else 0xFF)]
         self.product_id = product_id
-        self.type_id = self._type_id if self._type_id is not None else 0xFF
 
         if data:
             self.data = bytearray(data)
@@ -431,16 +455,25 @@ class TIFlashHeader(Dock):
         The name or basecode attached to the flash header
         """
 
-    @Section(1, Bits[:])
-    def device_type(self) -> int:
+    @Section(None, FlashDevices)
+    def devices(self) -> list[tuple[int, int]]:
         """
-        The device targeted by the flash header
+        The devices targeted by the flash header
+
+        Each device is a (device_type, type_id) tuple. The type_id should be constant throughout.
+        Only licenses may be expected to have more than one device.
         """
 
-    @Section(1, Bits[:])
+    @View(devices, Bits[:])[0:1]
+    def device_type(self) -> int:
+        """
+        The (first) device targeted by the flash header
+        """
+
+    @View(devices, Bits[:])[1:2]
     def type_id(self) -> int:
         """
-        The type ID of the flash header
+        The (first) type ID of the flash header
         """
 
     @Section(1, Bits[:])
@@ -469,7 +502,7 @@ class TIFlashHeader(Dock):
     @View(data, FlashBlocks)[:]
     def blocks(self) -> list[TIFlashBlock]:
         """
-        The data stored in the flash header as blocks
+        The data stored in the flash header as Intel blocks
         """
 
     @property
@@ -608,14 +641,14 @@ class TIFlashHeader(Dock):
         data.seek(23, 1)
 
         # Read types
-        self.raw.device_type = data.read(1)
+        self.raw.devices = data.read(1)
 
         if self.device_type not in [0x73, 0x74, 0x88, 0x98]:
             warn(f"The device type ({self.device_type}) is not recognized.",
                  BytesWarning)
 
         # Read and check type ID
-        self.raw.type_id = data.read(1)
+        self.raw.devices += data.read(1)
 
         if self._type_id is not None and self.type_id != self._type_id:
             if subclass := TIFlashHeader.get_type(self.type_id):
@@ -627,7 +660,10 @@ class TIFlashHeader(Dock):
                      f"Load the header into a TIFlashHeader instance if you don't know the header type.",
                      BytesWarning)
 
-        data.seek(23, 1)
+        while (device_byte := data.read(1)) != b'\x00':
+            self.raw.devices += device_byte
+
+        data.seek(22, 1)
         self.raw.product_id = data.read(1)
 
         # Read data
