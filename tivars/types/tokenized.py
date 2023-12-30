@@ -6,7 +6,6 @@ Tokenized types
 import re
 
 from io import BytesIO
-from typing import ByteString
 from warnings import warn
 
 from tivars.data import *
@@ -133,7 +132,7 @@ class TokenizedEntry(SizedEntry):
 
         return version
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
@@ -348,7 +347,7 @@ class TIProgram(TokenizedEntry, register=True):
         self.type_id = 0x05
         self.coerce()
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super(TokenizedEntry, self).load_bytes(data)
 

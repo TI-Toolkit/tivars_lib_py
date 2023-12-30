@@ -4,7 +4,7 @@ Matrices
 
 
 from io import BytesIO
-from typing import ByteString, Iterator, Sequence
+from typing import Iterator, Sequence
 from warnings import warn
 
 from tivars.data import *
@@ -132,7 +132,7 @@ class TIMatrix(TIEntry, register=True):
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 

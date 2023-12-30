@@ -6,7 +6,7 @@ Lists
 import re
 
 from io import BytesIO
-from typing import ByteString, Iterator, Sequence
+from typing import Iterator, Sequence
 from warnings import warn
 
 from tivars.data import *
@@ -88,7 +88,7 @@ class ListEntry(TIEntry):
     def __init__(self, init=None, *,
                  for_flash: bool = True, name: str = "L1",
                  version: int = None, archived: bool = None,
-                 data: ByteString = None):
+                 data: bytes = None):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
@@ -156,7 +156,7 @@ class ListEntry(TIEntry):
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 

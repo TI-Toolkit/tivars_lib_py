@@ -4,7 +4,7 @@ The fundamental var components
 
 
 from io import BytesIO
-from typing import BinaryIO, ByteString, Iterator, Type
+from typing import BinaryIO, Iterator, Type
 from warnings import warn
 
 from .data import *
@@ -641,7 +641,7 @@ class TIEntry(Dock, Converter):
         else:
             raise TypeError("entry does not support archiving.")
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this entry
@@ -1192,7 +1192,8 @@ class SizedEntry(TIEntry):
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
         self.length = len(self.leading_bytes) + len(self.data)
 
-    def load_bytes(self, data: ByteString):
+    @Loader[bytes, bytearray, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self.length != (data_length := len(self.leading_bytes) + len(self.data)):

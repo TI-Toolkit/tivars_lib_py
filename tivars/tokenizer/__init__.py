@@ -3,14 +3,12 @@ Tokenization utilities derived from the token sheets (see tokens directory)
 """
 
 
-from typing import ByteString
-
 from tivars.data import String
 from tivars.models import *
 from tivars.tokens.scripts import *
 
 
-def decode(bytestream: ByteString, *,
+def decode(bytestream: bytes, *,
            tokens: Tokens = None, lang: str = "en",
            mode: str = "display") -> tuple[str | bytes, OsVersion]:
     tokens = tokens or TI_84PCE.tokens
