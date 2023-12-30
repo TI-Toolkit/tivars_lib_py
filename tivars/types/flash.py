@@ -51,12 +51,12 @@ class TILicense(TIFlashHeader, register=True):
     _type_id = 0x3E
 
     @Section()
-    def data(self) -> bytes:
+    def calc_data(self) -> bytes:
         """
         The data stored in the flash header
         """
 
-    @View(data, String)[:]
+    @View(calc_data, String)[:]
     def license(self) -> str:
         """
         The license stored in this header

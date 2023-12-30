@@ -317,15 +317,16 @@ class TIFlashHeader(Dock):
         Additional methods can also be included, but should be callable from the outer class.
         """
 
-        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id", "data"
+        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id",\
+            "calc_data"
 
         @property
-        def data_size(self) -> bytes:
+        def calc_data_size(self) -> bytes:
             """
             The length of the data stored in this header, measured in chars
             """
 
-            return int.to_bytes(len(self.data), 4, 'little')
+            return int.to_bytes(len(self.calc_data), 4, 'little')
 
         @property
         def checksum(self) -> bytes:
@@ -335,7 +336,7 @@ class TIFlashHeader(Dock):
             This is equal to the lower 2 bytes of the sum of all bytes in this header.
             """
 
-            return int.to_bytes(sum(self.data) & 0xFFFF, 2, 'little')
+            return int.to_bytes(sum(self.calc_data) & 0xFFFF, 2, 'little')
 
         @property
         def name_length(self) -> bytes:
@@ -351,8 +352,8 @@ class TIFlashHeader(Dock):
             """
 
             return self.magic + self.revision + self.binary_flag + self.object_type + self.date + \
-                self.name_length + self.name + bytes(23) + self.devices+ bytes(23) + self.product_id + \
-                self.data_size + self.data + self.checksum
+                self.name_length + self.name + bytes(23) + self.devices + bytes(23) + self.product_id + \
+                self.calc_data_size + self.calc_data + self.checksum
 
     def __init__(self, init=None, *,
                  magic: str = "**TIFL**", revision: str = "0.0", binary_flag: int = 0x00, object_type: int = 0x88,
@@ -388,7 +389,7 @@ class TIFlashHeader(Dock):
         self.product_id = product_id
 
         if data:
-            self.data = bytearray(data)
+            self.calc_data = bytearray(data)
 
         elif init is not None:
             try:
@@ -409,7 +410,7 @@ class TIFlashHeader(Dock):
         :return: The total length of this header's bytes
         """
 
-        return 78 + self.data_size + 2 * self._has_checksum
+        return 78 + self.calc_data_size + 2 * self._has_checksum
 
     @Section(8, String)
     def magic(self) -> str:
@@ -486,20 +487,20 @@ class TIFlashHeader(Dock):
         """
 
     @property
-    def data_size(self) -> int:
+    def calc_data_size(self) -> int:
         """
         The length of the data stored in the flash header, measured in chars
         """
 
-        return int.from_bytes(self.raw.data_size, 'little')
+        return int.from_bytes(self.raw.calc_data_size, 'little')
 
     @Section()
-    def data(self) -> bytes:
+    def calc_data(self) -> bytes:
         """
         The data stored in the flash header
         """
 
-    @View(data, FlashBlocks)[:]
+    @View(calc_data, FlashBlocks)[:]
     def blocks(self) -> list[TIFlashBlock]:
         """
         The data stored in the flash header as Intel blocks
@@ -660,15 +661,17 @@ class TIFlashHeader(Dock):
                      f"Load the header into a TIFlashHeader instance if you don't know the header type.",
                      BytesWarning)
 
-        while (device_byte := data.read(1)) != b'\x00':
-            self.raw.devices += device_byte
-
-        data.seek(22, 1)
+        device_bytes = data.read(23)
+        self.raw.devices += device_bytes.rstrip(b'\x00')
         self.raw.product_id = data.read(1)
 
         # Read data
         data_size = int.from_bytes(data.read(4), 'little')
-        self.raw.data = data.read(data_size)
+        self.raw.calc_data = data.read(data_size)
+
+        if len(self.calc_data) != data_size:
+            warn(f"The data section has an unexpected length (expected {data_size}, got {len(self.calc_data)}).",
+                 BytesWarning)
 
         # Check² sum
         checksum = data.read(2)

@@ -595,4 +595,4 @@ class FlashTests(unittest.TestCase):
         test_license = TILicense.open("tests/data/var/ti89_2.01_10-13-1999.89u")
 
         self.assertEqual(test_license.devices, [(0x74, 0x3E), (0x73, 0x3E), (0x98, 0x3E), (0x88, 0x3E)])
-        self.assertEqual(test_license.license.split("\r\n")[1], "Texas Instruments License Agreement")
+        self.assertEqual(test_license.license.split("\r\n")[2], "Texas Instruments License Agreement")
