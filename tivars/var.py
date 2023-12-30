@@ -713,7 +713,11 @@ class TIEntry(Dock, Converter):
                  f"using {data_length2} to read the data section.",
                  BytesWarning)
 
-        self.raw.calc_data = bytearray(data.read(int.from_bytes(data_length2, 'little')))
+        self.raw.calc_data = bytearray(data.read(length := int.from_bytes(data_length2, 'little')))
+
+        if len(self.calc_data) != length:
+            warn(f"The data section has an unexpected length (expected {length}, got {len(self.calc_data)}).",
+                 BytesWarning)
 
         self.coerce()
 

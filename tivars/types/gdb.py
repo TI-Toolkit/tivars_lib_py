@@ -8,7 +8,7 @@ import json
 import os
 
 from typing import Iterator
-from warnings import warn
+from warnings import catch_warnings, filterwarnings, warn
 
 from tivars.models import *
 from ..flags import *
@@ -336,7 +336,10 @@ class TIGraphedEquation(TIEquation):
         :return: The `TIEquation` component of this GDB equation
         """
 
-        return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
+        # Kinda yucky ngl
+        with catch_warnings():
+            filterwarnings("ignore", "The data section has an unexpected length")
+            return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
