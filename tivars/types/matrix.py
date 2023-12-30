@@ -7,9 +7,9 @@ from io import BytesIO
 from typing import ByteString, Iterator, Sequence
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
-from ..data import *
-from ..var import TIEntry
+from tivars.var import TIEntry
 from .real import RealEntry
 
 

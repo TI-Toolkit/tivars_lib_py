@@ -6,10 +6,10 @@ Pictures and images
 from typing import Iterator, Sequence
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
 from tivars.tokenizer import TokenizedString
-from ..data import *
-from ..var import SizedEntry
+from tivars.var import SizedEntry
 
 RGB = tuple[int, int, int]
 

@@ -7,9 +7,9 @@ import os
 
 from functools import total_ordering
 
-from ..flags import *
-from ..tokens.scripts import OsVersion, Tokens, TokenTrie
-from ..tokens.scripts.parse import MODEL_ORDER
+from tivars.flags import *
+from tivars.tokens.scripts import OsVersion, Tokens, TokenTrie
+from tivars.tokens.scripts.parse import MODEL_ORDER
 
 
 @total_ordering

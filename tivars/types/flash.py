@@ -1,6 +1,6 @@
-from ..data import *
-from ..flash import TIFlashHeader
-from ..models import *
+from tivars.data import *
+from tivars.flash import TIFlashHeader
+from tivars.models import *
 
 
 class TIOperatingSystem(TIFlashHeader, register=True):
@@ -59,7 +59,7 @@ class TILicense(TIFlashHeader, register=True):
     @View(calc_data, String)[:]
     def license(self) -> str:
         """
-        The license stored in this header
+        The license stored in the header as a string
         """
 
 

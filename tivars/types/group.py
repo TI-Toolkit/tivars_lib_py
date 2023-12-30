@@ -8,9 +8,9 @@ import io
 from typing import Sequence
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
-from ..data import *
-from ..var import TIEntry, SizedEntry
+from tivars.var import TIEntry, SizedEntry
 from .gdb import TIGraphedEquation
 
 

@@ -7,9 +7,9 @@ import json
 
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
-from ..data import *
-from ..var import SizedEntry
+from tivars.var import SizedEntry
 from .real import GraphRealEntry
 
 

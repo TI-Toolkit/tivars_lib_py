@@ -10,10 +10,10 @@ import os
 from typing import Iterator
 from warnings import catch_warnings, filterwarnings, warn
 
+from tivars.flags import *
+from tivars.data import *
 from tivars.models import *
-from ..flags import *
-from ..data import *
-from ..var import TIEntry, SizedEntry
+from tivars.var import TIEntry, SizedEntry
 from .real import *
 from .tokenized import TIEquation
 

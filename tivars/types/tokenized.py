@@ -9,10 +9,10 @@ from io import BytesIO
 from typing import ByteString
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
 from tivars.tokenizer import *
-from ..data import *
-from ..var import SizedEntry
+from tivars.var import SizedEntry
 
 
 class TokenizedEntry(SizedEntry):

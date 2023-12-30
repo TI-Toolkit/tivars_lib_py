@@ -11,10 +11,10 @@ import re
 from typing import Type
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
 from tivars.numeric import *
-from ..data import *
-from ..var import TIEntry
+from tivars.var import TIEntry
 
 
 class RealEntry(TIEntry):

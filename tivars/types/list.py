@@ -9,10 +9,10 @@ from io import BytesIO
 from typing import ByteString, Iterator, Sequence
 from warnings import warn
 
+from tivars.data import *
 from tivars.models import *
-from tivars.tokenizer import TokenizedString
-from ..data import *
-from ..var import TIEntry
+from tivars.tokenizer import *
+from tivars.var import TIEntry
 from .complex import ComplexEntry
 from .real import RealEntry
 

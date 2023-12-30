@@ -4,7 +4,7 @@ Appvars
 
 
 from tivars.models import *
-from ..var import SizedEntry
+from tivars.var import SizedEntry
 
 
 class TIAppVar(SizedEntry, register=True):

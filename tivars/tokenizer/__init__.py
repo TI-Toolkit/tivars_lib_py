@@ -5,9 +5,9 @@ Tokenization utilities derived from the token sheets (see tokens directory)
 
 from typing import ByteString
 
-from ..data import String
-from ..models import *
-from ..tokens.scripts import *
+from tivars.data import String
+from tivars.models import *
+from tivars.tokens.scripts import *
 
 
 def decode(bytestream: ByteString, *,
