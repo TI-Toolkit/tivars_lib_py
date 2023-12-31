@@ -4,7 +4,7 @@ The fundamental flash file components
 
 
 from io import BytesIO
-from typing import ByteString, BinaryIO, Type
+from typing import BinaryIO, Type
 from warnings import warn
 
 from .data import *
@@ -105,9 +105,9 @@ class FlashDevices(Converter):
 
 class TIFlashBlock(Dock):
     """
-    Parser for flash blocks
+    Parser for Intel blocks
 
-    The data section of a flash header is composed of blocks separated by newlines.
+    The data section of a flash header with ``binary_flag == $00`` is composed of blocks stored in the Intel format.
     Each block contains some segment of data stored at an address, which may be relative or absolute.
     """
 
@@ -219,7 +219,7 @@ class TIFlashBlock(Dock):
 
         return int.from_bytes(self.raw.checksum, 'little')
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this block
@@ -366,7 +366,7 @@ class TIFlashHeader(Dock):
         :param init: Values to initialize the header's data (defaults to ``None``)
         :param magic: File magic at the start of the header (defaults to ``**TIFL**``)
         :param revision: The header's revision number (defaults to ``0.0``)
-        :param binary_flag: Whether the header's data is stored in Intel format (defaults to ``True``)
+        :param binary_flag: Whether the header's data is stored in binary format (defaults to ``True``)
         :param object_type: The header's object type (defaults to ``$88``)
         :param date: The header's stored date as a tuple (dd, mm, yyyy) (defaults to null)
         :param name: The name of the headers (defaults to ``UNNAMED``)
@@ -450,7 +450,7 @@ class TIFlashHeader(Dock):
 
         return int.from_bytes(self.raw.name_length, 'little')
 
-    @Section(8, String)
+    @Section(31, String)
     def name(self) -> str:
         """
         The name or basecode attached to the flash header
@@ -603,7 +603,7 @@ class TIFlashHeader(Dock):
 
         return f"{self.name}.{self.extension(model)}"
 
-    @Loader[ByteString, BytesIO]
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this header
@@ -632,14 +632,12 @@ class TIFlashHeader(Dock):
 
         # Read name
         name_length = data.read(1)[0]
-        self.raw.name = data.read(8)
+        self.raw.name = data.read(31).rstrip(b'\x00')
 
         if name_length != self.name_length:
             warn(f"The header name length ({name_length}) doesn't match the length of the name "
                  f"(|{self.name}| = {self.name_length}).",
                  BytesWarning)
-
-        data.seek(23, 1)
 
         # Read types
         self.raw.devices = data.read(1)
