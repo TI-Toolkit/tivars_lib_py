@@ -18,10 +18,10 @@ class DeviceType(Enum):
     Enum of flash device types
     """
 
-    TI_83P = b'\x73'
-    TI_73 = b'\x74'
-    TI_92 = b'\x88'
-    TI_89 = b'\x98'
+    TI_83P = 0x73
+    TI_73 = 0x74
+    TI_92 = 0x88
+    TI_89 = 0x98
 
     _all = [TI_83P, TI_73, TI_92, TI_89]
     DEVICES = _all

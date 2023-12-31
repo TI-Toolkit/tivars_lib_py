@@ -68,13 +68,13 @@ class GraphStyle(Enum):
     Enum of GDB graph styles
     """
 
-    SolidLine = b'\x00'
-    ThickLine = b'\x01'
-    ShadeAbove = b'\x02'
-    ShadeBelow = b'\x03'
-    Trace = b'\x04'
-    Animate = b'\x05'
-    DottedLine = b'\x06'
+    SolidLine = 0x00
+    ThickLine = 0x01
+    ShadeAbove = 0x02
+    ShadeBelow = 0x03
+    Trace = 0x04
+    Animate = 0x05
+    DottedLine = 0x06
 
     _all = [SolidLine, ThickLine, ShadeAbove, ShadeBelow, Trace, Animate, DottedLine]
     STYLES = _all[:7]
@@ -85,22 +85,22 @@ class GraphColor(Enum):
     Enum of GDB graph colors
     """
 
-    Mono = b'\x00'
-    Blue = b'\x01'
-    Red = b'\x02'
-    Black = b'\x03'
-    Magenta = b'\x04'
-    Green = b'\x05'
-    Orange = b'\x06'
-    Brown = b'\x07'
-    Navy = b'\x08'
-    LtBlue = b'\x09'
-    Yellow = b'\x0A'
-    White = b'\x0B'
-    LtGray = b'\x0C'
-    MedGray = b'\x0D'
-    Gray = b'\x0E'
-    DarkGray = b'\x0F'
+    Mono = 0x00
+    Blue = 0x01
+    Red = 0x02
+    Black = 0x03
+    Magenta = 0x04
+    Green = 0x05
+    Orange = 0x06
+    Brown = 0x07
+    Navy = 0x08
+    LtBlue = 0x09
+    Yellow = 0x0A
+    White = 0x0B
+    LtGray = 0x0C
+    MedGray = 0x0D
+    Gray = 0x0E
+    DarkGray = 0x0F
 
     _all = [Mono, Blue, Red, Black, Magenta, Green, Orange, Brown, Navy,
             LtBlue, Yellow, White, LtGray, MedGray, Gray, DarkGray]
@@ -112,10 +112,10 @@ class GlobalLineStyle(Enum):
     Enum of global GDB line styles
     """
 
-    Thick = b'\x00'
-    DotThick = b'\x01'
-    Thin = b'\x02'
-    DotThin = b'\x03'
+    Thick = 0x00
+    DotThick = 0x01
+    Thin = 0x02
+    DotThin = 0x03
 
     _all = [Thick, Thin, DotThick, DotThin]
     STYLES = _all
@@ -126,10 +126,10 @@ class BorderColor(Enum):
     Enum of GDB graph border colors
     """
 
-    LtGray = b'\x01'
-    Teal = b'\x02'
-    LtBlue = b'\x03'
-    White = b'\x04'
+    LtGray = 0x01
+    Teal = 0x02
+    LtBlue = 0x03
+    White = 0x04
 
     _all = [LtGray, Teal, LtBlue, White]
     COLORS = _all
@@ -175,8 +175,8 @@ class TIGraphedEquation(TIEquation):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
         self.flags = EquationFlags({0: 1, 1: 1})
-        self.style = b'\x00'
-        self.color = b'\x00'
+        self.style = 0x00
+        self.color = 0x00
 
     def __class_getitem__(cls, index: int):
         index -= 1
@@ -222,7 +222,7 @@ class TIGraphedEquation(TIEquation):
                 # Set styles
                 data = instance.raw.calc_data[:instance.offset]
                 for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
-                    data += equations[i].style
+                    data += equations[i].raw.style
 
                 # Set data
                 data += b''.join(equation.raw.calc_data for equation in equations)
@@ -231,7 +231,7 @@ class TIGraphedEquation(TIEquation):
                 if color := instance.get_color_data():
                     data += b'84C'
                     for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
-                        data += equations[i].color
+                        data += equations[i].raw.color
 
                     data += color[-5:]
 
@@ -539,7 +539,7 @@ class TIMonoGDB(SizedEntry, register=True):
         for i in range(self.num_styles):
             style = data.read(1)
             for j in range(r := self.num_equations // self.num_styles):
-                equations[r * i + j].style = style
+                equations[r * i + j].raw.style = style
 
         # Load data sections
         for i in range(self.num_equations):
@@ -553,7 +553,7 @@ class TIMonoGDB(SizedEntry, register=True):
             for i in range(self.num_styles):
                 color = data.read(1)
                 for j in range(r := self.num_equations // self.num_styles):
-                    equations[r * i + j].color = color
+                    equations[r * i + j].raw.color = color
 
         return equations
 
@@ -775,7 +775,7 @@ class TIGDB(TIMonoGDB):
                 "colors": {
                     "grid": GraphColor.get_name(self.grid_color),
                     "axes": GraphColor.get_name(self.axes_color),
-                    "border": self.border_color[0]
+                    "border": self.border_color
                 },
                 "other": {
                     "globalLineStyle": GlobalLineStyle.get_name(self.global_line_style),

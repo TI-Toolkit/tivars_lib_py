@@ -28,25 +28,25 @@ class Enum(Converter):
     This implementation is used over Python's builtin solutions to permit interface with the `Converter` system.
     """
 
-    _T = bytes
+    _T = int
 
     _all = []
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``bytes``, returning the first byte
+        Converts ``bytes`` -> ``int``, returning the first byte
 
         :param data: The raw bytes to convert
         :return: The first byte of ``data``
         """
 
-        return bytes(data[0:1])
+        return data[0]
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts ``bytes`` -> ``bytes``, enforcing that the input is a recognized enum value
+        Converts ``int`` -> ``bytes``, enforcing that the input is a recognized enum value
 
         :param value: The value to convert
         :return: The byte in ``value``, unchanged
@@ -56,7 +56,7 @@ class Enum(Converter):
             warn(f"{value} is not recognized.",
                  BytesWarning)
 
-        return value
+        return bytes([value])
 
     @classmethod
     def get_name(cls, value: _T) -> str:
