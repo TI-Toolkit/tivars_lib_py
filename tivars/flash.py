@@ -24,7 +24,7 @@ class BCDDate(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``tuple``
+        Converts ``bytes`` -> ``tuple[int, int, int]``
 
         :param data: The raw bytes to convert
         :return: The date stored in ``data``
@@ -35,7 +35,7 @@ class BCDDate(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts ``tuple`` -> ``bytes``
+        Converts ``tuple[int, int, int]`` -> ``bytes``
 
         :param value: The value to convert
         :return: The BCD encoding of the date in ``value``
@@ -83,7 +83,7 @@ class FlashDevices(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``list[tuple]``
+        Converts ``bytes`` -> ``list[tuple[int, int]]``
 
         :param data: The raw bytes to convert
         :return: The device tuples stored in ``data``
@@ -94,7 +94,7 @@ class FlashDevices(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts ``list[tuple]`` -> ``bytes``
+        Converts ``list[tuple[int, int]]`` -> ``bytes``
 
         :param value: The value to convert
         :return: The device field derived from ``value``
