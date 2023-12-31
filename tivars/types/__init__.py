@@ -18,7 +18,7 @@ from .picture import *
 from .settings import *
 from .tokenized import *
 
-from ..flash import TIFlashHeader
+from ..flash import TIFlashHeader, DeviceType
 from ..var import TIEntry
 
 
@@ -47,5 +47,6 @@ else:
                "TIRealRadical", "TIComplexRadical",
                "TIComplexPi", "TIComplexPiFraction",
                "TIRealPi", "TIRealPiFraction",
-               "TIOperatingSystem", "TIApp", "TICertificate", "TILicense"
+               "TIOperatingSystem", "TIApp", "TICertificate", "TILicense",
+               "DeviceType"
                ]

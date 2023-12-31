@@ -581,7 +581,7 @@ class FlashTests(unittest.TestCase):
             self.assertEqual(test_app.bytes(), file.read())
 
         self.assertEqual(test_app.object_type, 0x88)
-        self.assertEqual(test_app.device_type, 0x73)
+        self.assertEqual(test_app.device_type, DeviceType.TI_83P)
         self.assertEqual(test_app.product_id, 0x00)
         self.assertEqual(type(test_app), TIApp)
 

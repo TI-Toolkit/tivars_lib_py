@@ -8,8 +8,23 @@ from typing import BinaryIO, Type
 from warnings import warn
 
 from .data import *
+from .flags import *
 from .models import *
 from .numeric import BCD
+
+
+class DeviceType(Enum):
+    """
+    Enum of flash device types
+    """
+
+    TI_83P = b'\x73'
+    TI_73 = b'\x74'
+    TI_92 = b'\x88'
+    TI_89 = b'\x98'
+
+    _all = [TI_83P, TI_73, TI_92, TI_89]
+    DEVICES = _all
 
 
 class BCDDate(Converter):
@@ -464,7 +479,7 @@ class TIFlashHeader(Dock):
         Only licenses may be expected to have more than one device.
         """
 
-    @View(devices, Bits[:])[0:1]
+    @View(devices, DeviceType)[0:1]
     def device_type(self) -> int:
         """
         The (first) device targeted by the flash header
@@ -644,7 +659,7 @@ class TIFlashHeader(Dock):
         # Read types
         self.raw.devices = data.read(1)
 
-        if self.device_type not in [0x73, 0x74, 0x88, 0x98]:
+        if self.device_type not in DeviceType.DEVICES:
             warn(f"The device type ({self.device_type}) is not recognized.",
                  BytesWarning)
 
@@ -757,4 +772,4 @@ class TIFlashHeader(Dock):
                      BytesWarning)
 
 
-__all__ = ["BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader"]
+__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader"]
