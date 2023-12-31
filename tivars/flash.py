@@ -107,7 +107,7 @@ class TIFlashBlock(Dock):
     """
     Parser for Intel blocks
 
-    The data section of a flash header with ``binary_flag == $00`` is composed of blocks stored in the Intel format.
+    The data section of a flash header with ``binary_flag == $01`` is composed of blocks stored in the Intel format.
     Each block contains some segment of data stored at an address, which may be relative or absolute.
     """
 
@@ -129,14 +129,11 @@ class TIFlashBlock(Dock):
             """
             The checksum for this block
 
-            This is equal to the lower 2 bytes of the sum of all bytes in this block.
+            This is equal to the lower byte of the sum of all bytes in this block.
             """
 
-            if self.block_type == b'01':
-                return b''
-
-            return int.to_bytes(~sum(b':' + self.size + self.address + self.block_type + self.data) & 0xFFFF,
-                                2, 'little')
+            record = self.size + self.address + self.block_type + self.data
+            return f"{-sum(bytes.fromhex(record.decode())) & 0xFF:02X}".encode()
 
         @property
         def size(self) -> bytes:
@@ -144,15 +141,12 @@ class TIFlashBlock(Dock):
             The size of this block's data in characters
             """
 
-            return f"{len(self.data) // 2:X}".encode()[:2]
+            return f"{len(self.data) // 2:02X}".encode()
 
         def bytes(self) -> bytes:
             """
             :return: The bytes contained in this block
             """
-
-            if self.block_type == b'01':
-                return b':' + self.size + self.address + self.block_type + b'FF'
 
             return b':' + self.size + self.address + self.block_type + self.data + self.checksum
 
@@ -209,15 +203,15 @@ class TIFlashBlock(Dock):
         """
 
     @property
-    def checksum(self) -> int:
+    def checksum(self) -> bytes:
         """
         The checksum for the flash block
 
-        This is equal to the lower 2 bytes of the sum of all bytes in the block.
+        This is equal to the lower byte of the sum of all bytes in the block.
         The checksum is not present in end blocks.
         """
 
-        return int.from_bytes(self.raw.checksum, 'little')
+        return self.raw.checksum
 
     @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
@@ -261,34 +255,39 @@ class TIFlashBlock(Dock):
         return self.raw.bytes()
 
 
-class FlashBlocks(Converter):
+class FlashData(Converter):
     """
-    Converter to split flash data into blocks
+    Converter to split flash data into blocks if stored in Intel format
+
+    If ``binary_flag == $01``, this converter manipulates ``list[TIFlashBlock]``.
+    Otherwise, this converter is a no-op on ``bytes``.
     """
 
-    _T = list[TIFlashBlock]
+    _T = bytes | list[TIFlashBlock]
 
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, *, instance=None, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``list[TIFlashBlock]``
+        Converts ``bytes`` -> ``bytes | list[TIFlashBlock]``
 
         :param data: The raw bytes to convert
+        :param instance: The instance which contains the data section
         :return: The blocks stored in ``data``
         """
 
-        return list(map(TIFlashBlock, data.split(b'\r\n')))
+        return list(map(TIFlashBlock, data.split(b'\r\n'))) if instance.binary_flag == 0x01 else data
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
         """
-        Converts ``list[TIFlashBlock]`` -> ``bytes``
+        Converts ``bytes | list[TIFlashBlock]`` -> ``bytes``
 
         :param value: The value to convert
+        :param instance: The instance which contains the data section
         :return: The concatenation of the blocks in ``value``
         """
 
-        return b'\r\n'.join(block.bytes() for block in value)
+        return b'\r\n'.join(block.bytes() for block in value) if instance.binary_flag == 0x01 else value
 
 
 class TIFlashHeader(Dock):
@@ -317,7 +316,7 @@ class TIFlashHeader(Dock):
         Additional methods can also be included, but should be callable from the outer class.
         """
 
-        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id",\
+        __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id", \
             "calc_data"
 
         @property
@@ -356,7 +355,7 @@ class TIFlashHeader(Dock):
                 self.calc_data_size + self.calc_data + self.checksum
 
     def __init__(self, init=None, *,
-                 magic: str = "**TIFL**", revision: str = "0.0", binary_flag: int = 0x00, object_type: int = 0x88,
+                 magic: str = "**TIFL**", revision: str = "0.0", binary_format: bool = False, object_type: int = 0x88,
                  date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED",
                  device_type: int = 0x73, product_id: int = 0x00,
                  data: bytes = b':00000001FF'):
@@ -366,7 +365,7 @@ class TIFlashHeader(Dock):
         :param init: Values to initialize the header's data (defaults to ``None``)
         :param magic: File magic at the start of the header (defaults to ``**TIFL**``)
         :param revision: The header's revision number (defaults to ``0.0``)
-        :param binary_flag: Whether the header's data is stored in binary format (defaults to ``True``)
+        :param binary_format: Whether the header's data is stored in binary format (defaults to ``False``)
         :param object_type: The header's object type (defaults to ``$88``)
         :param date: The header's stored date as a tuple (dd, mm, yyyy) (defaults to null)
         :param name: The name of the headers (defaults to ``UNNAMED``)
@@ -379,7 +378,7 @@ class TIFlashHeader(Dock):
 
         self.magic = magic
         self.revision = revision
-        self.binary_flag = 0x01 if binary_flag else 0x00
+        self.binary_flag = 0x00 if binary_format else 0x01
         self.object_type = object_type
 
         self.date = date
@@ -500,10 +499,13 @@ class TIFlashHeader(Dock):
         The data stored in the flash header
         """
 
-    @View(calc_data, FlashBlocks)[:]
-    def blocks(self) -> list[TIFlashBlock]:
+    @View(calc_data, FlashData)[:]
+    def data(self) -> bytes | list[TIFlashBlock]:
         """
-        The data stored in the flash header as Intel blocks
+        The data stored in the flash header as either raw binary or Intel blocks
+
+        If ``binary_flag == $01``, the data is returned as ``list[TIFlashBlock]``.
+        Otherwise, the data is returned as ``bytes``.
         """
 
     @property

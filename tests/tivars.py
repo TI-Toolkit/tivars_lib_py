@@ -580,20 +580,24 @@ class FlashTests(unittest.TestCase):
 
             self.assertEqual(test_app.bytes(), file.read())
 
-        self.assertEqual(test_app.binary_flag, 0x01)
         self.assertEqual(test_app.object_type, 0x88)
         self.assertEqual(test_app.device_type, 0x73)
         self.assertEqual(test_app.product_id, 0x00)
         self.assertEqual(type(test_app), TIApp)
 
+        self.assertEqual(test_app.binary_flag, 0x01)
+        self.assertEqual(type(test_app.data), list)
+
     def test_os(self):
         test_os = TIFlashHeader.open("tests/data/var/TI-84_Plus_CE-Python-OS-5.8.0.0022.8eu")
 
         self.assertEqual(test_os.magic, "**TIFL**")
-        self.assertEqual(test_os.binary_flag, 0x00)
         self.assertEqual(test_os.object_type, 0x00)
         self.assertEqual(test_os.product_id, 0x13)
         self.assertEqual(type(test_os), TIOperatingSystem)
+
+        self.assertEqual(test_os.binary_flag, 0x00)
+        self.assertEqual(type(test_os.data), bytes)
 
     def test_license(self):
         test_license = TILicense.open("tests/data/var/ti89_2.01_10-13-1999.89u")
