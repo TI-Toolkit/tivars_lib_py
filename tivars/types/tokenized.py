@@ -406,7 +406,16 @@ class TIAsmProgram(TIProgram):
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
-        raise NotImplementedError
+        warn("ASM programs may not have tokenized data.",
+             UserWarning)
+
+        super().load_string(string, model=model, lang=lang)
+
+    def string(self) -> str:
+        warn("ASM programs may not have tokenized data.",
+             UserWarning)
+        
+        return super().string()
 
 
 class TIProtectedProgram(TIProgram, register=True):
