@@ -195,6 +195,12 @@ class TokenizationTests(unittest.TestCase):
             file.seek(55)
             self.assertEqual(test_program.bytes(), file.read()[:-2])
 
+    def test_doors(self):
+        test_program = TIProgram.open("tests/data/var/COLORZ.8xp")
+        self.assertEqual(type(test_program), TIProtectedAsmProgram)
+
+        self.assertEqual(test_program.decode(test_program.data[:26]), "Disp \"Needs Doors CSE\"")
+
 
 class NumericTests(unittest.TestCase):
     def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):

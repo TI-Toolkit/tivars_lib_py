@@ -35,8 +35,8 @@ def decode(bytestream: bytes, *,
                 else:
                     raise ValueError(f"unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}")
 
-        else:
-            curr_bytes = b''
+        elif any(curr_bytes):
+            raise ValueError(f"unexpected null byte at position {index}")
 
         index += 1
 

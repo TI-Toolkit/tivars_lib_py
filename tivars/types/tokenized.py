@@ -361,8 +361,34 @@ class TIProgram(TokenizedEntry, register=True):
                 warn(f"The file contains an invalid token {' '.join(str(e).split()[2:])}.",
                      BytesWarning)
 
+    @Loader[str]
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
+        super().load_string(string, model=model, lang=lang)
+
+        if not self.is_tokenized:
+            warn("ASM programs may not have tokenized data.",
+                 UserWarning)
+
+    def string(self) -> str:
+        string = super().string()
+
+        if not self.is_tokenized:
+            warn("ASM programs may not have tokenized data.",
+                 UserWarning)
+
+        return string
+
     def coerce(self):
-        match self.type_id, any(token in self.data for token in self.asm_tokens):
+        try:
+            self.string()
+            doors = False
+
+        except ValueError:
+            doors = True
+
+        doors &= b"\xEF\x68" in self.data and self.data.index(b"\xEF\x68") > 0
+
+        match self.type_id, any(token in self.data for token in self.asm_tokens) | doors:
             case 0x05, False:
                 self.__class__ = TIProgram
             case 0x05, True:
@@ -403,19 +429,6 @@ class TIAsmProgram(TIProgram):
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return max([model.OS() for token, model in self.asm_tokens.items() if token in (data or self.data)],
                    default=OsVersions.INITIAL)
-
-    @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
-        warn("ASM programs may not have tokenized data.",
-             UserWarning)
-
-        super().load_string(string, model=model, lang=lang)
-
-    def string(self) -> str:
-        warn("ASM programs may not have tokenized data.",
-             UserWarning)
-        
-        return super().string()
 
 
 class TIProtectedProgram(TIProgram, register=True):
