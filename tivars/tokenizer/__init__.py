@@ -35,6 +35,9 @@ def decode(bytestream: bytes, *,
                 else:
                     raise ValueError(f"unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}")
 
+        else:
+            curr_bytes = b''
+
         index += 1
 
     return b''.join(out) if mode == "ti_ascii" else "".join(out), since
