@@ -270,6 +270,20 @@ class TIString(TokenizedEntry, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
+    @Section(8, TokenizedString)
+    def name(self, value) -> str:
+        """
+        The name of the entry
+
+        Must be one of the string names: ``Str1`` - ``Str0``
+        """
+
+        if not re.fullmatch(r"Str\d", varname := value[:4].capitalize()):
+            warn(f"String has an invalid name: {varname}.",
+                 BytesWarning)
+
+        return varname
+
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
         super().load_string(string.strip("\"'"))
@@ -326,7 +340,7 @@ class TIProgram(TokenizedEntry, register=True):
         varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
-            warn(f"Var has invalid name: {varname}.",
+            warn(f"Program has invalid an name: {varname}.",
                  BytesWarning)
 
         return varname
