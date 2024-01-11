@@ -340,7 +340,7 @@ class TIProgram(TokenizedEntry, register=True):
         varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
 
         if not varname or varname[0].isnumeric():
-            warn(f"Program has invalid an name: {varname}.",
+            warn(f"Program has an invalid name: {varname}.",
                  BytesWarning)
 
         return varname
