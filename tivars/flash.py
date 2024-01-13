@@ -77,7 +77,7 @@ class BCDRevision(Converter):
         :return: The revision number stored in ``data``
         """
 
-        return f"{BCD.get(data[0:1])}.{BCD.get(data[1:2]):02}"
+        return f"{BCD.get(data[0:1])}.{BCD.get(data[1:2])}"
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
