@@ -31,7 +31,7 @@ class BCDDate(Converter):
     """
     Converter for dates stored in four byte BCD
 
-    A date (dd, mm, yyyy) is stored in BCD as ddmmyyyy
+    A date (dd, mm, yyyy) is stored in BCD as ``ddmmyyyy``.
     """
 
     _T = tuple[int, int, int]
@@ -63,7 +63,7 @@ class BCDRevision(Converter):
     """
     Converter for revision numbers stored in two byte BCD
 
-    A revision xx.yy is stored in BCD as xxyy
+    A revision xx.yy is stored in BCD as ``xxyy``.
     """
 
     _T = str
@@ -93,6 +93,14 @@ class BCDRevision(Converter):
 
 
 class FlashDevices(Converter):
+    """
+    Converter for the device field of a flash header
+
+    The device field contains at least one device type and type ID pair (xx, yy), stored as ``xxyy`.
+    A flash header usually contains only has one pair in this field; the remainder of the field is null-padded.
+    The exception is a `TILicense`, which can hold licenses for multiple devices.
+    """
+
     _T = list[tuple[int, int]]
 
     @classmethod

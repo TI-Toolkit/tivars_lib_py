@@ -1,9 +1,18 @@
+"""
+Flash types
+"""
+
+
 from tivars.data import *
 from tivars.flash import TIFlashHeader
 from tivars.models import *
 
 
 class TIOperatingSystem(TIFlashHeader, register=True):
+    """
+    Parser for operating systems (OSes)
+    """
+
     extensions = {
         None: "8eu",
         TI_82A: "82u",
@@ -17,6 +26,10 @@ class TIOperatingSystem(TIFlashHeader, register=True):
 
 
 class TIApp(TIFlashHeader, register=True):
+    """
+    Parser for apps
+    """
+
     extensions = {
         None: "8ek",
         TI_83P: "8xk",
@@ -28,6 +41,12 @@ class TIApp(TIFlashHeader, register=True):
 
 
 class TICertificate(TIFlashHeader, register=True):
+    """
+    Parser for certificate files
+
+    To date, no external certificate files have been found in the wild.
+    """
+
     extensions = {
         None: "8eq",
         TI_83P: "8xq",
@@ -39,6 +58,12 @@ class TICertificate(TIFlashHeader, register=True):
 
 
 class TILicense(TIFlashHeader, register=True):
+    """
+    Parser for licenses
+
+    A license is simply a string containing the TI license agreement, possibly spanning multiple devices and languages.
+    """
+
     extensions = {
         None: "8eu",
         TI_82A: "82u",
