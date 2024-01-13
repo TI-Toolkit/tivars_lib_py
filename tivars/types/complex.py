@@ -25,7 +25,7 @@ class RealPart(Converter):
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
         """
-        Converts ``bytes`` -> `RealType`
+        Converts ``bytes`` -> `RealEntry`
 
         :param data: The raw bytes to convert
         :param instance: The instance containing the data section
@@ -60,7 +60,7 @@ class ImaginaryPart(Converter):
     @classmethod
     def get(cls, data: bytes, *, instance=None) -> _T:
         """
-        Converts ``bytes`` -> `RealType`
+        Converts ``bytes`` -> `RealEntry`
 
         :param data: The raw bytes to convert
         :param instance: The instance containing the data section

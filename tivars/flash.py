@@ -96,7 +96,7 @@ class FlashDevices(Converter):
     """
     Converter for the device field of a flash header
 
-    The device field contains at least one device type and type ID pair (xx, yy), stored as ``xxyy`.
+    The device field contains at least one device type and type ID pair (xx, yy), stored as ``xxyy``.
     A flash header usually contains only has one pair in this field; the remainder of the field is null-padded.
     The exception is a `TILicense`, which can hold licenses for multiple devices.
     """
