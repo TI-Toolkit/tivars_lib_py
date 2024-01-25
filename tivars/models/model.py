@@ -149,13 +149,44 @@ class TIFeature(Flags):
     """
 
     Complex = {0: 1}
+    """
+    Whether the model supports complex numbers
+    """
+
     Flash = {1: 1}
+    """
+    Whether the model has a flash chip
+    """
+
     Apps = {2: 1}
+    """
+    Whether the model supports apps
+    """
+
     Clock = {3: 1}
+    """
+    Whether the model has a real-time clock
+    """
+
     Color = {4: 1}
-    ez80 = {5: 1}
+    """
+    Whether the model has a color display
+    """
+
+    eZ80 = {5: 1}
+    """
+    Whether the model has an eZ80 chip
+    """
+
     ExactMath = {6: 1}
+    """
+    Whether the model supports exact math for fractions and radicals
+    """
+
     Python = {7: 1}
+    """
+    Whether the model supports Python
+    """
 
 
 features82 = {}
@@ -164,7 +195,7 @@ features82a = features83 | TIFeature.Flash
 features83p = features82a | TIFeature.Apps
 features84p = features83p | TIFeature.Clock
 features84pcse = features84p | TIFeature.Color
-features84pce = features84pcse | TIFeature.ez80
+features84pce = features84pcse | TIFeature.eZ80
 features83pce = features84pce | TIFeature.ExactMath
 features83pceep = features83pce | TIFeature.Python
 features84pcepy = features84pce | TIFeature.Python
