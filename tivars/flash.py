@@ -251,7 +251,7 @@ class TIFlashBlock(Dock):
             data = BytesIO(data)
 
         data.seek(1)
-        size = data.read(2)
+        size = 2 * int(data.read(2).decode(), 16)
         self.raw.address = data.read(4)
 
         # Read type
@@ -261,7 +261,10 @@ class TIFlashBlock(Dock):
             warn(f"The block type ({self.block_type}) is not recognized.",
                  BytesWarning)
 
-        self.raw.data = data.read(2 * int(size.decode(), 16))
+        self.raw.data = data.read(size)
+        if len(self.raw.data) != size:
+            warn(f"The block data size is incorrect (expected {size}, got {len(self.raw.data)}.",
+                 BytesWarning)
 
         # Check² sum
         checksum = data.read(2)

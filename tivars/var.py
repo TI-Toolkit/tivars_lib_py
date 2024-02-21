@@ -717,7 +717,7 @@ class TIEntry(Dock, Converter):
         self.raw.calc_data = bytearray(data.read(length := int.from_bytes(data_length2, 'little')))
 
         if len(self.calc_data) != length:
-            warn(f"The data section has an unexpected length (expected {length}, got {len(self.calc_data)}).",
+            warn(f"The data section length is incorrect (expected {length}, got {len(self.calc_data)}).",
                  BytesWarning)
 
         self.coerce()
@@ -1091,13 +1091,23 @@ class TIVar:
 
         # Read entries
         self.clear()
-        while entry_length:
+        while entry_length > 0:
             self.add_entry()
 
             length = TIEntry.next_entry_length(data)
-            self.entries[-1].load_bytes(data.read(length))
+            self.entries[-1].load_bytes(entry_data := data.read(length))
+
+            if len(entry_data) != length:
+                warn(f"The data length of entry #{len(self.entries) - 1} ({type(self.entries[-1])}) is incorrect "
+                     f"(expected {length}, got {len(entry_data)}).",
+                     BytesWarning)
 
             entry_length -= length
+
+        if entry_length < 0:
+            warn(f"The total length of entries is incorrect (expected {self.entry_length + entry_length}, "
+                 f"got {self.entry_length}).",
+                 BytesWarning)
 
         # Read checksum
         checksum = data.read(2)

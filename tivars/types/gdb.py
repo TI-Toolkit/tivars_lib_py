@@ -338,7 +338,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
 
         # Kinda yucky ngl
         with catch_warnings():
-            filterwarnings("ignore", "The data section has an unexpected length")
+            filterwarnings("ignore", "The data section length is incorrect")
             return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
 
     @Loader[str]

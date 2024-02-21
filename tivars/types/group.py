@@ -65,7 +65,7 @@ class TIGroup(SizedEntry, register=True):
             vat = bytearray([entry.type_id, 0, entry.version, 0, 0, entry.archived])
 
             if entry.archived:
-                warn(f"Entry #{index} is archived, which may lead to unexpected behavior on-calc.",
+                warn(f"Entry #{index} ({type(entry)}) is archived, which may lead to unexpected behavior on-calc.",
                      UserWarning)
 
             if isinstance(entry, TIGraphedEquation):

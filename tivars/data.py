@@ -207,7 +207,7 @@ class Integer(Converter):
             return int.to_bytes(value, length, 'little')
 
         except OverflowError:
-            raise OverflowError(f"{value} cannot fit in a field of width {length}")
+            raise OverflowError(f"{value} cannot fit in a section of width {length}")
 
 
 class String(Converter):
