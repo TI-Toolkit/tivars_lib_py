@@ -81,7 +81,6 @@ Vars can be loaded from files or raw bytes:
 ```python
 my_var = TIVar.open("HELLO.8xp")
 
-# Note binary mode!
 with open("HELLO.8xp", 'rb') as file:
     my_var.load_var_file(file)
     
