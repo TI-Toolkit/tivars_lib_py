@@ -73,10 +73,10 @@ class TIGroup(SizedEntry, register=True):
 
             match entry.type_id:
                 case 0x05 | 0x06 | 0x15 | 0x17:
-                    vat += [len(name), *name]
+                    vat += bytearray([len(name), *name])
 
                 case 0x01 | 0x0D:
-                    vat += [len(name) + 1, *name, 0]
+                    vat += bytearray([len(name) + 1, *name, 0])
 
                 case _:
                     vat += name.ljust(3, b'\x00')
