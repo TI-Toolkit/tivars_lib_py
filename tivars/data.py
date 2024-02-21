@@ -202,7 +202,12 @@ class Integer(Converter):
         :return: The little-endian representation of ``value``
         """
 
-        return int.to_bytes(value, length if length is not None else 2, 'little')
+        length = length if length is not None else 2
+        try:
+            return int.to_bytes(value, length, 'little')
+
+        except OverflowError:
+            raise OverflowError(f"{value} cannot fit in a field of width {length}")
 
 
 class String(Converter):
