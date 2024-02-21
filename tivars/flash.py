@@ -421,11 +421,11 @@ class TIFlashHeader(Dock):
 
         self._has_checksum = True
 
-    def __init_subclass__(cls, /, register=False, **kwargs):
+    def __init_subclass__(cls, /, register=False, override=None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if register:
-            TIFlashHeader.register(cls)
+            TIFlashHeader.register(cls, override)
 
     def __len__(self) -> int:
         """
@@ -581,14 +581,15 @@ class TIFlashHeader(Dock):
         return entry_length
 
     @classmethod
-    def register(cls, var_type: Type['TIFlashHeader']):
+    def register(cls, var_type: Type['TIFlashHeader'], override: int = None):
         """
         Registers a subtype with this class for coercion
 
         :param var_type: The `TIFlashHeader` subtype to register
+        :param override: A type ID to use for registry that differs from that of the var type
         """
 
-        cls._type_ids[var_type._type_id] = var_type
+        cls._type_ids[var_type._type_id if override is None else override] = var_type
 
     def extension(self, model: TIModel = TI_84PCE) -> str:
         """

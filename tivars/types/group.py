@@ -113,7 +113,7 @@ class TIGroup(SizedEntry, register=True):
         while type_byte := data.read(1):
             _, version = data.read(2)
 
-            match type_id := type_byte[0] & 15:
+            match type_id := type_byte[0] & 63:
                 case 0x05 | 0x06 | 0x15 | 0x17:
                     *_, page, length = data.read(4)
 

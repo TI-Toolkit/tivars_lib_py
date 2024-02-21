@@ -148,7 +148,7 @@ class EquationFlags(Flags):
     LinkTransferClear = {7: 0}
 
 
-class TIGraphedEquation(TIEquation):
+class TIGraphedEquation(TIEquation, register=True, override=0x23):
     """
     Parser for equations stored in GDBs
 
@@ -346,6 +346,11 @@ class TIGraphedEquation(TIEquation):
         equation = TIEquation()
         equation.load_string(string, model=model)
         self.load_equation(equation)
+
+    def coerce(self):
+        if self.type_id == 0x23:
+            self.flags |= EquationFlags.Selected
+            self.type_id = 0x03
 
 
 class TIMonoGDB(SizedEntry, register=True):

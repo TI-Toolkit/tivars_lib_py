@@ -410,11 +410,11 @@ class TIEntry(Dock, Converter):
 
         raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
-    def __init_subclass__(cls, /, register=False, **kwargs):
+    def __init_subclass__(cls, /, register=False, override=None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if register:
-            TIEntry.register(cls)
+            TIEntry.register(cls, override)
 
     def __iter__(self) -> Iterator:
         """
@@ -571,14 +571,15 @@ class TIEntry(Dock, Converter):
         return 2 + meta_length + 2 + data_length
 
     @classmethod
-    def register(cls, var_type: Type['TIEntry']):
+    def register(cls, var_type: Type['TIEntry'], override: int = None):
         """
         Registers a subtype with this class for coercion
 
         :param var_type: The `TIEntry` subtype to register
+        :param override: A type ID to use for registry that differs from that of the var type
         """
 
-        cls._type_ids[var_type._type_id] = var_type
+        cls._type_ids[var_type._type_id if override is None else override] = var_type
 
     def archive(self):
         """
