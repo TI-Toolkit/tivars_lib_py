@@ -375,6 +375,9 @@ class TIProgram(TokenizedEntry, register=True):
                 warn(f"The file contains an invalid token {' '.join(str(e).split()[2:])}.",
                      BytesWarning)
 
+            else:
+                raise e
+
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
         super().load_string(string, model=model, lang=lang)

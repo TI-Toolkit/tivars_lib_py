@@ -9,6 +9,7 @@ from warnings import warn
 
 from .data import *
 from .flags import *
+from .header import *
 from .models import *
 from .numeric import BCD
 
@@ -316,7 +317,7 @@ class FlashData(Converter):
         return b'\r\n'.join(block.bytes() for block in value) if instance.binary_flag == 0x01 else value
 
 
-class TIFlashHeader(Dock):
+class TIFlashHeader(Header):
     """
     Parser for flash headers
 
@@ -328,20 +329,12 @@ class TIFlashHeader(Dock):
     The file extension used for this header per-model
     """
 
+    magics = {"**TIFL**"}
+
     _type_id = None
     _type_ids = {}
 
-    class Raw:
-        """
-        Raw bytes container for `TIFlashHeader`
-
-        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
-        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
-
-        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
-        Additional methods can also be included, but should be callable from the outer class.
-        """
-
+    class Raw(Header.Raw):
         __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id", \
             "calc_data"
 
@@ -383,7 +376,7 @@ class TIFlashHeader(Dock):
     def __init__(self, init=None, *,
                  magic: str = "**TIFL**", revision: str = "0.0", binary_format: bool = False, object_type: int = 0x88,
                  date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED",
-                 device_type: int = 0x73, product_id: int = 0x00,
+                 device_type: int = DeviceType.TI_83P, product_id: int = 0x00,
                  data: bytes = b':00000001FF'):
         """
         Creates an empty flash header with specified meta and data values
@@ -400,7 +393,7 @@ class TIFlashHeader(Dock):
         :param data: The header's data (defaults to empty)
         """
 
-        self.raw = self.Raw()
+        super().__init__()
 
         self.magic = magic
         self.revision = revision
@@ -429,19 +422,6 @@ class TIFlashHeader(Dock):
 
         if register:
             TIFlashHeader.register(cls, override)
-
-    def __len__(self) -> int:
-        """
-        :return: The total length of this header's bytes
-        """
-
-        return 78 + self.calc_data_size + 2 * self._has_checksum
-
-    @Section(8, String)
-    def magic(self) -> str:
-        """
-        The file magic for the flash header
-        """
 
     @Section(2, BCDRevision)
     def revision(self) -> int:
@@ -680,11 +660,11 @@ class TIFlashHeader(Dock):
 
         if self._type_id is not None and self.type_id != self._type_id:
             if subclass := TIFlashHeader.get_type(self.type_id):
-                warn(f"The header type is incorrect (expected {type(self)}, got {subclass}).",
+                warn(f"The header type is incorrect (expected {type(self).__name__}, got {subclass.__name__}).",
                      BytesWarning)
 
             else:
-                warn(f"The header type is incorrect (expected {type(self)}, got an unknown type). "
+                warn(f"The header type is incorrect (expected {type(self).__name__}, got an unknown type). "
                      f"Load the header into a TIFlashHeader instance if you don't know the header type.",
                      BytesWarning)
 

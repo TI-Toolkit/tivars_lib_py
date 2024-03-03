@@ -82,8 +82,8 @@ class VarTests(unittest.TestCase):
     def test_save_to_file(self):
         test_var = TIVar.open("tests/data/var/Program.8xp")
 
-        self.assertEqual(test_var.extension, "8xp")
-        self.assertEqual(test_var.filename, "UNNAMED.8xp")
+        self.assertEqual(test_var.get_extension(), "8xp")
+        self.assertEqual(test_var.get_filename(), "UNNAMED.8xp")
         test_var.save("tests/data/var/Program_new.8xp")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
@@ -91,7 +91,7 @@ class VarTests(unittest.TestCase):
                 self.assertEqual(new.read(), orig.read())
 
         self.assertEqual(test_var.supported_by(TI_84P), True)
-        self.assertEqual(test_var.supported_by(TI_83), False)
+        self.assertEqual(test_var.supported_by(TI_83P), False)
 
     def test_truthiness(self):
         test_var = TIVar.open("tests/data/var/clibs.8xg")
@@ -108,8 +108,8 @@ class EntryTests(unittest.TestCase):
 
         test_program.save("tests/data/var/Program_new.8xp", header=test_header)
 
-        self.assertEqual(test_program.export().filename, "SETDATE.8xp")
-        self.assertEqual(test_program.export(model=TI_83).filename, "SETDATE.83p")
+        self.assertEqual(test_program.export().get_filename(), "SETDATE.8xp")
+        self.assertEqual(test_program.export().get_filename(model=TI_83), "SETDATE.83p")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
             with open("tests/data/var/Program_new.8xp", 'rb') as new:
