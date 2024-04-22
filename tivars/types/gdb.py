@@ -588,6 +588,7 @@ class TIMonoGDB(SizedEntry, register=True):
         for setting in dct.get("formatSettings", []):
             try:
                 self.mode_flags |= getattr(GraphMode, setting)
+
             except AttributeError:
                 warn(f"Unrecognized format setting ({setting}).",
                      UserWarning)
@@ -1440,6 +1441,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         if "seqSettings" in dct:
             try:
                 self.sequence_flags |= getattr(SeqMode, dct["seqMode"])
+
             except AttributeError:
                 warn(f"Unrecognized sequence mode ({dct['seqMode']}).",
                      UserWarning)

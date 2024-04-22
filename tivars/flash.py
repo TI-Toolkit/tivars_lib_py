@@ -194,9 +194,10 @@ class TIFlashBlock(Dock):
             self.data = bytearray(data)
 
         elif init is not None:
-            try:
+            if hasattr(init, "bytes"):
                 self.load_bytes(init.bytes())
-            except AttributeError:
+
+            else:
                 self.load(init)
 
     @property
@@ -244,10 +245,10 @@ class TIFlashBlock(Dock):
         :param data: The bytes to load
         """
 
-        try:
+        if hasattr(data, "read"):
             data = BytesIO(data.read())
 
-        except AttributeError:
+        else:
             data = BytesIO(data)
 
         data.seek(1)
@@ -417,9 +418,10 @@ class TIFlashHeader(Dock):
             self.calc_data = bytearray(data)
 
         elif init is not None:
-            try:
+            if hasattr(init, "bytes"):
                 self.load_bytes(init.bytes())
-            except AttributeError:
+
+            else:
                 self.load(init)
 
         self._has_checksum = True
@@ -640,10 +642,10 @@ class TIFlashHeader(Dock):
         :param data: The bytes to load
         """
 
-        try:
+        if hasattr(data, "read"):
             data = BytesIO(data.read())
 
-        except AttributeError:
+        else:
             data = BytesIO(data)
 
         # Read magic

@@ -179,10 +179,10 @@ class TIHeader:
         :param data: The source bytes
         """
 
-        try:
+        if hasattr(data, "read"):
             data = BytesIO(data.read())
 
-        except AttributeError:
+        else:
             data = BytesIO(data)
 
         # Read magic
@@ -356,9 +356,10 @@ class TIEntry(Dock, Converter):
             self.coerce()
 
         elif init is not None:
-            try:
+            if hasattr(init, "bytes"):
                 self.load_bytes(init.bytes())
-            except AttributeError:
+
+            else:
                 self.load(init)
 
         self.version = self.get_version()
@@ -650,10 +651,10 @@ class TIEntry(Dock, Converter):
         :param data: The bytes to load
         """
 
-        try:
+        if hasattr(data, "read"):
             data = BytesIO(data.read())
 
-        except AttributeError:
+        else:
             data = BytesIO(data)
 
         # Read meta length
@@ -1079,10 +1080,10 @@ class TIVar:
         :param data: The bytes to load
         """
 
-        try:
+        if hasattr(data, "read"):
             data = BytesIO(data.read())
 
-        except AttributeError:
+        else:
             data = BytesIO(data)
 
         # Read header
