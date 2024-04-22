@@ -791,7 +791,7 @@ class TIFlashHeader(Dock):
                      BytesWarning)
 
             else:
-                warn("Type ID is 0xFF, no coercion will occur.",
+                warn("Type ID is 0xFF; no coercion will occur.",
                      UserWarning)
 
 

@@ -868,7 +868,7 @@ class TIEntry(Dock, Converter):
                      BytesWarning)
 
             else:
-                warn("Type ID is 0xFF, no coercion will occur.",
+                warn("Type ID is 0xFF; no coercion will occur.",
                      UserWarning)
 
 
