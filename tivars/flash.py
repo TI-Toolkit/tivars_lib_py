@@ -790,5 +790,9 @@ class TIFlashHeader(Dock):
                 warn(f"Type ID 0x{self.type_id:02x} is not recognized; header will not be coerced to a subclass.",
                      BytesWarning)
 
+            else:
+                warn("Type ID is 0xFF, no coercion will occur.",
+                     UserWarning)
+
 
 __all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader"]

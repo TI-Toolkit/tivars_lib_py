@@ -867,6 +867,10 @@ class TIEntry(Dock, Converter):
                 warn(f"Type ID 0x{self.type_id:02x} is not recognized; entry will not be coerced to a subclass.",
                      BytesWarning)
 
+            else:
+                warn("Type ID is 0xFF, no coercion will occur.",
+                     UserWarning)
+
 
 class TIVar:
     """
