@@ -749,10 +749,15 @@ class TIFlashHeader(Dock):
             header = cls()
             header.load_bytes(file.read(cls.next_header_length(file)))
 
-            if file.read():
-                warn("The selected flash file contains multiple headers; only the first will be loaded. "
-                     "Use load_from_file to select a particular header.",
-                     UserWarning)
+            if remaining := file.read():
+                if remaining.startswith(b"**TIFL**"):
+                    warn("The selected flash file contains multiple headers; only the first will be loaded. "
+                         "Use load_from_file to select a particular header.",
+                         UserWarning)
+
+                else:
+                    warn(f"The selected flash file contains unexpected additional data: {remaining}.",
+                         BytesWarning)
 
         return header
 
