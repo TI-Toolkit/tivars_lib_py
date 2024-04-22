@@ -19,11 +19,9 @@ class ModelTests(unittest.TestCase):
 class VarTests(unittest.TestCase):
     def test_all_attributes(self):
         test_var = TIVar.open("tests/data/var/Program.8xp")
+        test_header = TIHeader.open("tests/data/var/Program.8xp")
 
-        self.assertEqual(test_var.header.magic, "**TI83F*")
-        self.assertEqual(test_var.header.extra, b'\x1A\x0A')
-        self.assertEqual(test_var.header.product_id, 0x0A)
-        self.assertEqual(test_var.header.comment, "Created by TI Connect CE 5.1.0.68")
+        self.assertEqual(test_var.header, test_header)
 
         self.assertEqual(test_var.entries[0].meta_length, TIEntry.flash_meta_length)
         self.assertEqual(test_var.entries[0].type_id, 0x05)
