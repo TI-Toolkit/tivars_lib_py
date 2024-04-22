@@ -33,3 +33,7 @@ my_string = TIString("αβγ")
 # Convert an exact number into a real number
 my_exact = TIRealRadical.open("EXAMPLE.8xn")
 real = TIReal(my_exact.float())
+
+
+# Open a flash app
+my_flash = TIApp.open("EXAMPLE.8ek")
