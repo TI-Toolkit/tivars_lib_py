@@ -442,3 +442,7 @@ class TIComplexPiFraction(TIComplexPi, TIComplexFraction, register=True):
     real_analogue = TIRealPiFraction
 
     _type_id = 0x1F
+
+
+__all__ = ["TIComplex", "TIComplexFraction", "TIComplexRadical", "TIComplexPi", "TIComplexPiFraction",
+           "ComplexEntry", "RealPart", "ImaginaryPart"]
