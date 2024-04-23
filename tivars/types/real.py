@@ -4,10 +4,10 @@ Real numeric types
 
 
 import copy
-import decimal as dec
-import fractions as frac
 import re
 
+from decimal import Decimal, localcontext
+from fractions import Fraction
 from typing import Type
 from warnings import warn
 
@@ -148,8 +148,8 @@ class RealEntry(TIEntry):
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.subtype_id <= 0x19 or model.has(TIFeature.ExactMath))
 
-    @Loader[dec.Decimal]
-    def load_decimal(self, decimal: dec.Decimal):
+    @Loader[Decimal]
+    def load_decimal(self, decimal: Decimal):
         """
         Loads a ``decimal`` into this real number
 
@@ -158,7 +158,7 @@ class RealEntry(TIEntry):
 
         raise NotImplementedError
 
-    def decimal(self) -> dec.Decimal:
+    def decimal(self) -> Decimal:
         """
         :return: A ``decimal`` object corresponding to this real number
         """
@@ -173,7 +173,7 @@ class RealEntry(TIEntry):
         :param decimal: The float to load
         """
 
-        self.load_decimal(dec.Decimal(decimal))
+        self.load_decimal(Decimal(decimal))
 
     def json_number(self) -> float | str:
         """
@@ -255,15 +255,15 @@ class TIReal(RealEntry, register=True):
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
 
-    @Loader[dec.Decimal]
-    def load_decimal(self, decimal: dec.Decimal):
+    @Loader[Decimal]
+    def load_decimal(self, decimal: Decimal):
         self.load_string(str(decimal))
 
-    def decimal(self) -> dec.Decimal:
-        with dec.localcontext() as ctx:
+    def decimal(self) -> Decimal:
+        with localcontext() as ctx:
             ctx.prec = 14
-            decimal = dec.Decimal(self.sign * self.mantissa)
-            decimal *= dec.Decimal(10) ** (self.exponent - 0x80 - 13)
+            decimal = Decimal(self.sign * self.mantissa)
+            decimal *= Decimal(10) ** (self.exponent - 0x80 - 13)
 
         return decimal
 
@@ -348,20 +348,20 @@ class TIRealFraction(TIReal, register=True):
 
     _type_id = 0x18
 
-    @Loader[frac.Fraction]
-    def load_fraction(self, fraction: frac.Fraction):
-        with dec.localcontext() as ctx:
+    @Loader[Fraction]
+    def load_fraction(self, fraction: Fraction):
+        with localcontext() as ctx:
             ctx.prec = 14
-            decimal = dec.Decimal(fraction.numerator) / fraction.denominator
+            decimal = Decimal(fraction.numerator) / fraction.denominator
 
         super().load_string(str(decimal))
 
-    def fraction(self) -> frac.Fraction:
-        return frac.Fraction(self.decimal()).limit_denominator(10000)
+    def fraction(self) -> Fraction:
+        return Fraction(self.decimal()).limit_denominator(10000)
 
     @Loader[str]
     def load_string(self, string: str):
-        self.load_fraction(frac.Fraction(squash(string)))
+        self.load_fraction(Fraction(squash(string)))
 
     def string(self) -> str:
         if self.fraction():
@@ -444,13 +444,13 @@ class TIRealRadical(RealEntry, register=True):
     def sign(self) -> int:
         return -1 if self.decimal() < 0 else 1
 
-    @Loader[dec.Decimal]
-    def load_decimal(self, decimal: dec.Decimal):
+    @Loader[Decimal]
+    def load_decimal(self, decimal: Decimal):
         raise NotImplementedError
 
-    def decimal(self) -> dec.Decimal:
-        return (self.left_scalar * (-1 if self.sign_type % 2 else 1) * dec.Decimal(self.left_radicand).sqrt() +
-                self.right_scalar * (-1 if self.sign_type > 1 else 1) * dec.Decimal(self.right_radicand).sqrt()) \
+    def decimal(self) -> Decimal:
+        return (self.left_scalar * (-1 if self.sign_type % 2 else 1) * Decimal(self.left_radicand).sqrt() +
+                self.right_scalar * (-1 if self.sign_type > 1 else 1) * Decimal(self.right_radicand).sqrt()) \
             / self.denominator
 
     @Loader[str]
@@ -595,12 +595,12 @@ class TIRealPi(TIReal, register=True):
 
     _type_id = 0x20
 
-    @Loader[dec.Decimal]
-    def load_decimal(self, decimal: dec.Decimal):
+    @Loader[Decimal]
+    def load_decimal(self, decimal: Decimal):
         raise NotImplementedError
 
-    def decimal(self) -> dec.Decimal:
-        with dec.localcontext() as ctx:
+    def decimal(self) -> Decimal:
+        with localcontext() as ctx:
             ctx.prec = 14
 
             return super().decimal() * pi
@@ -638,8 +638,8 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
 
     _type_id = 0x21
 
-    def fraction(self) -> frac.Fraction:
-        return frac.Fraction(self.decimal() / pi).limit_denominator(10000)
+    def fraction(self) -> Fraction:
+        return Fraction(self.decimal() / pi).limit_denominator(10000)
 
     @Loader[str]
     def load_string(self, string: str):

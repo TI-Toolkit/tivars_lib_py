@@ -3,8 +3,7 @@ Groups
 """
 
 
-import io
-
+from io import BytesIO
 from typing import Sequence
 from warnings import warn
 
@@ -58,6 +57,10 @@ class TIGroup(SizedEntry, register=True):
 
             return TIGroup(name=name)
 
+        elif len(entries) < 2:
+            warn("Groups are expected to have at least two entries.",
+                 UserWarning)
+
         group = TIGroup(for_flash=entries[0].meta_length > TIEntry.base_meta_length, name=name)
 
         for index, entry in enumerate(entries):
@@ -84,10 +87,6 @@ class TIGroup(SizedEntry, register=True):
             group.data += vat
             group.data += entry.calc_data
 
-        if len(entries) < 2:
-            warn("Groups are expected to have at least two entries.",
-                 UserWarning)
-
         return group
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
@@ -106,7 +105,7 @@ class TIGroup(SizedEntry, register=True):
         :return: A ``list`` of entries stored in ``data``
         """
 
-        data = io.BytesIO(data or self.data[:])
+        data = BytesIO(data or self.data[:])
         entries = []
 
         index = 1

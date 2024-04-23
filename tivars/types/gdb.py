@@ -3,10 +3,10 @@ GDBs and their settings
 """
 
 
-import io
 import json
 import os
 
+from io import BytesIO
 from typing import Iterator
 from warnings import catch_warnings, filterwarnings, warn
 
@@ -276,7 +276,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         The length of this entry's user data section
         """
 
-    def load_data_section(self, data: io.BytesIO):
+    def load_data_section(self, data: BytesIO):
         flag_byte = data.read(1)
         data_length = int.from_bytes(length_bytes := data.read(2), 'little')
         self.raw.calc_data = bytearray(flag_byte + length_bytes + data.read(data_length))
@@ -522,7 +522,7 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: The color portion of ``data``, which may be empty
         """
 
-        data = io.BytesIO(data or self.calc_data[self.offset + self.num_styles:])
+        data = BytesIO(data or self.calc_data[self.offset + self.num_styles:])
         temp = TIGraphedEquation()
         for i in range(self.num_equations):
             temp.load_data_section(data)
@@ -537,7 +537,7 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: A ``tuple`` of equations stored in ``data``
         """
 
-        data = io.BytesIO(data or self.calc_data[self.offset:])
+        data = BytesIO(data or self.calc_data[self.offset:])
         equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
         # Load styles
@@ -552,7 +552,7 @@ class TIMonoGDB(SizedEntry, register=True):
 
         # Load colors (if they exist)
         if rest := data.read():
-            data = io.BytesIO(rest)
+            data = BytesIO(rest)
             data.seek(3, 1)
 
             for i in range(self.num_styles):
