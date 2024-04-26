@@ -765,7 +765,7 @@ class TIFlashHeader(Dock):
 
     def save(self, filename: str = None, model: TIModel = TI_84PCE):
         """
-        Saves this header given a filename and targeted model
+        Saves this header to the current directory given a filename and targeted model
 
         :param filename: A filename to save to (defaults to the header's name and extension)
         :param model: A model to target (defaults to ``TI_84PCE``)

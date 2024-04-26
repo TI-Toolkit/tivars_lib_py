@@ -231,6 +231,12 @@ class TIEntry(Dock, Converter):
     Base class for all var entries
 
     A var file is made of one or more entries, each of which contain the data of the familiar var types.
+
+    **Even though most var files have just one entry, an entry does NOT constitute a complete var file.**
+    **All var files require an attached header and other metadata.**
+
+    **Use `TIEntry.export` to create a new `TIVar` containing the entry, with an optional custom header.**
+    **Use `TIEntry.save` to export and save the entry in a var file in the current directory.**
     """
 
     _T = 'TIEntry'
@@ -729,6 +735,8 @@ class TIEntry(Dock, Converter):
 
     def bytes(self) -> bytes:
         """
+        **Note: These bytes do NOT constitute a complete var file. Use `.export` or `.save` when saving a var file.**
+
         :return: The bytes contained in this entry
         """
 
@@ -829,7 +837,7 @@ class TIEntry(Dock, Converter):
 
     def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
         """
-        Saves this entry as a var file given a filename and optional header and targeted model
+        Saves this entry as a var file in the current directory given a filename and optional header and targeted model
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         :param header: A `TIHeader` to attach (defaults to an empty header)
