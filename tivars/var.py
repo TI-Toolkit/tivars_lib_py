@@ -235,8 +235,8 @@ class TIEntry(Dock, Converter):
     **Even though most var files have just one entry, an entry does NOT constitute a complete var file.**
     **All var files require an attached header and other metadata.**
 
-    **Use **`TIEntry.export`** to create a new **`TIVar`** containing the entry, with an optional custom header.**
-    **Use **`TIEntry.save`** to export and save the entry in a var file in the current directory.**
+    **Use** `TIEntry.export` **to create a new** `TIVar` **containing the entry, with an optional custom header.**
+    **Use** `TIEntry.save` **to export and save the entry in a var file in the current directory.**
     """
 
     _T = 'TIEntry'
@@ -737,7 +737,7 @@ class TIEntry(Dock, Converter):
         """
         The bytes contained in this entry, without any var file header or metadata.
 
-        **These bytes do NOT constitute a complete var file. Use **`.export`** and **`.save`** to save a var file.**
+        **These bytes do NOT constitute a complete var file. Use** `.export` **and** `.save` **to save a var file.**
 
         :return: The bytes contained in this entry
         """
