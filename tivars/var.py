@@ -821,17 +821,25 @@ class TIEntry(Dock, Converter):
                  UserWarning)
 
         with open(filename, 'rb') as file:
-            file.seek(55)
+            # Use header for sanity check
+            header = TIHeader()
+            header.load_from_file(file)
+            file.seek(2, 1)
 
             entry = cls()
             entry.load_bytes(file.read(cls.next_entry_length(file)))
 
             file.seek(2, 1)
 
-            if file.read():
-                warn("The selected var file contains multiple entries; only the first will be loaded. "
-                     "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
-                     UserWarning)
+            if remaining := file.read():
+                if remaining.startswith(b"\x0B\x00") or remaining.startswith(b"\x0D\x00"):
+                    warn("The selected var file contains multiple entries; only the first will be loaded. "
+                         "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
+                         UserWarning)
+
+                else:
+                    warn(f"The selected var file contains unexpected additional data: {remaining}.",
+                         BytesWarning)
 
         return entry
 
