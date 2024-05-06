@@ -4,12 +4,21 @@ The fundamental var components
 
 
 from io import BytesIO
-from typing import BinaryIO, Iterator, Self, Type
+from sys import version_info
+from typing import BinaryIO, Iterator, Type
 from warnings import warn
 
 from .data import *
 from .models import *
 from .tokenizer import TokenizedString
+
+
+match version_info[:2]:
+    case 3, 10:
+        Self = 'TIEntry'
+
+    case _:
+        from typing import Self
 
 
 class TIHeader:
@@ -552,7 +561,7 @@ class TIEntry(Dock, Converter):
         return self.raw.calc_data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @classmethod
-    def get_type(cls, type_id: int) -> Type['TIEntry']:
+    def get_type(cls, type_id: int) -> Type['TIEntry'] | None:
         """
         Gets the subclass corresponding to a type ID if one is registered
 

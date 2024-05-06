@@ -4,13 +4,22 @@ The fundamental flash file components
 
 
 from io import BytesIO
-from typing import BinaryIO, Self, Type
+from sys import version_info
+from typing import BinaryIO, Type
 from warnings import warn
 
 from .data import *
 from .flags import *
 from .models import *
 from .numeric import BCD
+
+
+match version_info[:2]:
+    case 3, 10:
+        Self = 'TIFlashHeader'
+
+    case _:
+        from typing import Self
 
 
 class DeviceType(Enum):
@@ -547,7 +556,7 @@ class TIFlashHeader(Dock):
         return self.raw.checksum
 
     @classmethod
-    def get_type(cls, type_id: int) -> Type['TIFlashHeader']:
+    def get_type(cls, type_id: int) -> Type['TIFlashHeader'] | None:
         """
         Gets the subclass corresponding to a type ID if one is registered
 
