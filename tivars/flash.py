@@ -4,7 +4,7 @@ The fundamental flash file components
 
 
 from io import BytesIO
-from typing import BinaryIO, Type
+from typing import BinaryIO, Self, Type
 from warnings import warn
 
 from .data import *
@@ -739,7 +739,7 @@ class TIFlashHeader(Dock):
         self.load_bytes(file.read(self.next_header_length(file)))
 
     @classmethod
-    def open(cls, filename: str) -> 'TIFlashHeader':
+    def open(cls, filename: str) -> Self:
         """
         Creates a new header from a file given a filename
 

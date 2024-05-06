@@ -4,7 +4,7 @@ The fundamental var components
 
 
 from io import BytesIO
-from typing import BinaryIO, Iterator, Type
+from typing import BinaryIO, Iterator, Self, Type
 from warnings import warn
 
 from .data import *
@@ -384,7 +384,7 @@ class TIEntry(Dock, Converter):
 
         return self.bytes()
 
-    def __copy__(self) -> 'TIEntry':
+    def __copy__(self) -> Self:
         """
         :return: A copy of this entry
         """
@@ -808,7 +808,7 @@ class TIEntry(Dock, Converter):
         raise NotImplementedError
 
     @classmethod
-    def open(cls, filename: str) -> 'TIEntry':
+    def open(cls, filename: str) -> Self:
         """
         Creates a new entry from a file given a filename
 
