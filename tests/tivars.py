@@ -203,9 +203,11 @@ class TokenizationTests(unittest.TestCase):
         sneaky_prog = "Disp \"RIGHT\nLEFT"
 
         test_max = TIProgram.encode(sneaky_prog, mode="max")
+        test_min = TIProgram.encode(sneaky_prog, mode="min")
         test_minmax = TIProgram.encode(sneaky_prog, mode="minmax")
 
         self.assertEqual(test_max, b'\xDE\x2A\xEF\x94\x3F\xEF\x92')
+        self.assertEqual(test_min, b'D\xbb\xb8\xbb\xc3\xbb\xc0\x29\x2ARIGHT\x3FLEFT')
         self.assertEqual(test_minmax, b'\xDE\x2ARIGHT\x3F\xEF\x92')
 
 
