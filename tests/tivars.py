@@ -199,6 +199,15 @@ class TokenizationTests(unittest.TestCase):
 
         self.assertEqual(test_program.decode(test_program.data[:26]), "Disp \"Needs Doors CSE\"")
 
+    def test_modes(self):
+        sneaky_prog = "Disp \"RIGHT\nLEFT"
+
+        test_max = TIProgram.encode(sneaky_prog, mode="max")
+        test_minmax = TIProgram.encode(sneaky_prog, mode="minmax")
+
+        self.assertEqual(test_max, b'\xDE\x2A\xEF\x94\x3F\xEF\x92')
+        self.assertEqual(test_minmax, b'\xDE\x2ARIGHT\x3F\xEF\x92')
+
 
 class NumericTests(unittest.TestCase):
     def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):

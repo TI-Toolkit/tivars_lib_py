@@ -76,18 +76,30 @@ class TokenizedEntry(SizedEntry):
         return decode(data, lang=lang, mode=mode)[0]
 
     @staticmethod
-    def encode(string: str, *, model: TIModel = None, lang: str = None) -> bytes:
+    def encode(string: str, *, model: TIModel = None, lang: str = None, mode: str = "max") -> bytes:
         """
         Encodes a string of token represented in text into a byte stream
+
+        Tokenization is performed using one of three procedures, dictated by ``mode``:
+            - ``max``: Always munch maximally, i.e. consume the *longest* possible string to produce a token
+            - ``min``: Always munch minimally, i.e. consume the *shortest* possible string to produce a token
+            - ``minmax``: Munch maximally outside strings and minimally inside strings
+
+        For reference, here are the tokenization modes utilized by popular IDEs and other software:
+            - SourceCoder: ``max``
+            - TokenIDE: ``max``
+            - TI-Planet Project Builder: ``minmax``
+            - tivars_lib_cpp: ``minmax``
 
         :param string: The tokens to encode
         :param model: The model to target when encoding (defaults to no specific model)
         :param lang: The language used in ``string`` (defaults to English, ``en``)
+        :param mode: The tokenization mode to use (defaults to ``max``)
         :return: A stream of token bytes
         """
 
         model = model or TI_84PCE
-        return encode(string, model.get_trie(lang))[0]
+        return encode(string, model.get_trie(lang), mode)[0]
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return decode(data or self.data)[1]
