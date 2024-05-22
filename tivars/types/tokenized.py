@@ -81,8 +81,8 @@ class TokenizedEntry(SizedEntry):
         Encodes a string of token represented in text into a byte stream
 
         Tokenization is performed using one of three procedures, dictated by ``mode``:
-            - ``max``: Always munch maximally, i.e. consume the *longest* possible string to produce a token
-            - ``min``: Always munch minimally, i.e. consume the *shortest* possible string to produce a token
+            - ``max``: Always munch maximally, i.e. consume the *most* input possible to produce a token
+            - ``min``: Always munch minimally, i.e. consume the *least* input possible to produce a token
             - ``minmax``: Munch maximally outside strings and minimally inside strings
 
         For reference, here are the tokenization modes utilized by popular IDEs and other software:
