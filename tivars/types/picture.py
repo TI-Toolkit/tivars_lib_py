@@ -3,6 +3,7 @@ Pictures and images
 """
 
 
+import re
 from typing import Iterator, Sequence
 from warnings import warn
 
@@ -339,6 +340,10 @@ class ImageName(TokenizedString):
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
+        if not re.fullmatch(r"(Image)?\d", value):
+            warn(f"'{value}' is not a valid image name; defaulting to 'Image1'.")
+            value = "Image1"
+
         return b"\x3C" + bytes([int(value[-1], 16) - 1])
 
 

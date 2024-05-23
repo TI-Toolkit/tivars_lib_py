@@ -61,6 +61,10 @@ class ListName(TokenizedString):
         varname = re.sub(r"]", "|L", varname)
         varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
 
+        if varname != value:
+            warn(f"List name '{value}' was transformed to '{varname}'.",
+                 UserWarning)
+
         if "IDList" in varname:
             return b']@'
 
