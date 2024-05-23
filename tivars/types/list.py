@@ -173,7 +173,8 @@ class ListEntry(TIEntry):
         :param lst: The list to load
         """
 
-        self.load_bytes(int.to_bytes(len(lst), 2, 'little') + b''.join(entry.calc_data for entry in lst))
+        self.length = len(lst)
+        self.data = b''.join(entry.calc_data for entry in lst)
 
     def list(self) -> list[_E]:
         """

@@ -157,8 +157,9 @@ class TIMatrix(TIEntry, register=True):
         if len({len(row) for row in matrix}) > 1:
             raise IndexError("matrix has uneven rows")
 
-        self.load_bytes(bytes([len(matrix[0]), len(matrix)]) +
-                        b''.join(entry.calc_data for row in matrix for entry in row))
+        self.width = len(matrix[0] if matrix else [])
+        self.height = len(matrix)
+        self.data = b''.join(entry.calc_data for row in matrix for entry in row)
 
     def matrix(self) -> list[list[RealEntry]]:
         """

@@ -386,7 +386,8 @@ class Section:
         signature = inspect.signature(func)
         match len(signature.parameters):
             case 1: pass
-            case 2: new._set = lambda value, _set=new._set, **kwargs: _set(func(self, value), **kwargs)
+            case 2: new._set = lambda value, _set=new._set, *, instance=None, **kwargs:\
+                _set(func(instance, value), instance=instance, **kwargs)
             case _: raise TypeError("Section and View function definitions can only take 1 or 2 parameters.")
 
         return new
