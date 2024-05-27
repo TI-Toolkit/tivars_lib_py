@@ -34,7 +34,7 @@ class EncoderState:
 
         :param string: The text string to tokenize
         :param trie: The `TokenTrie` object to use for tokenization
-        :return: A tuple of the output `Token`, the remainder of ``string``, and a list of states to push to the stack
+        :return: A tuple of the output `Token`, the remainder of ``string``, and a list of states to add to the stack
         """
 
         tokens = trie.get_tokens(string)
@@ -55,10 +55,17 @@ class EncoderState:
 
     def next(self, token: Token) -> list['EncoderState']:
         """
-        Determines the next encode states given a token.
+        Determines the next encode state given a token
+
+        The current state is popped from the stack, and the states returned by this method are pushed.
+
+        If the list of returned states is...
+            - empty, then the encoder is exiting the current state.
+            - length one, then the encoder's current state is being replaced by a new state.
+            - length two, then the encoder is entering a new state, able to exit back to this one.
 
         :param token: The current token
-        :return: A list of encoder states to push to the stack; the list may be empty, indicating a pop from the stack
+        :return: A list of encoder states to add to the stack
         """
         raise NotImplementedError
 
@@ -198,7 +205,7 @@ class SmartMode(EncoderState):
                 return [self, ListName()]
 
             case _:
-                return [SmartMode()]
+                return [SmartMode(self.length + 1)]
 
 
 __all__ = ["EncoderState", "MaxMode", "MinMode", "SmartMode",
