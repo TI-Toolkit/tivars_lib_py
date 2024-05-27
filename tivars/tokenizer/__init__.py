@@ -25,7 +25,7 @@ class TokenizedString(String):
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
-        return encode(value)[0].rstrip(b'\x00')
+        return encode(value, mode="string")[0].rstrip(b'\x00')
 
 
 __all__ = ["decode", "encode", "TokenizedString",
