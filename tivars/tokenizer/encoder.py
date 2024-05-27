@@ -19,7 +19,7 @@ def encode(string: str, *,
         - ``string``: Always munch minimally (equivalent to ``smart`` string context)
 
     The ``smart`` tokenization mode uses the following contexts, munching maximally otherwise:
-        - Strings: munch minimally, except when interpolating using ``Get(``/``Send(``
+        - Strings: munch minimally, except when interpolating using ``Send(``
         - Program names: munch minimally up to 8 tokens
         - List names: munch minimally up to 5 tokens
 

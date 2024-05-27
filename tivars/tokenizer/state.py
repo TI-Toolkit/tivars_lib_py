@@ -156,7 +156,7 @@ class String(Line):
 
 class InterpolatedString(String):
     """
-    Strings interpolated via ``Get(`` or ``Send(``
+    Strings interpolated via ``Send(``
     """
 
     mode = 0
@@ -196,8 +196,8 @@ class SmartMode(EncoderState):
             case b'\x5F':
                 return [self, ProgramName()]
 
-            #    Send(     Get(
-            case b'\xE7' | b'\xE8':
+            #    Send(
+            case b'\xE7':
                 return [self, InterpolationStart()]
 
             #    |L
