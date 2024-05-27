@@ -62,12 +62,9 @@ class TokenizedEntry(SizedEntry):
         """
         Decodes a byte stream into a string of tokens
 
-        Each token is represented using one of three different representations formats, dictated by ``mode``:
-            - ``display``: Represents the tokens with Unicode characters matching the calculator's display
-            - ``accessible``: Represents the tokens with ASCII-only equivalents, often requiring multi-character glyphs
-            - ``ti_ascii``: Represents the tokens with their internal font indices (returns a ``bytes`` object)
+        For detailed information on tokenization modes, see `tivars.tokenizer.decode`.
 
-        :param data: The bytes to decode
+        :param data: The token bytes to decode
         :param lang: The language used in ``string`` (defaults to English, ``en``)
         :param mode: The form of token representation to use for output (defaults to ``display``)
         :return: A string of token representations
@@ -80,18 +77,9 @@ class TokenizedEntry(SizedEntry):
         """
         Encodes a string of token represented in text into a byte stream
 
-        Tokenization is performed using one of three procedures, dictated by ``mode``:
-            - ``max``: Always munch maximally, i.e. consume the *most* input possible to produce a token
-            - ``min``: Always munch minimally, i.e. consume the *least* input possible to produce a token
-            - ``minmax``: Munch maximally outside strings and minimally inside strings
+        For detailed information on tokenization modes, see `tivars.tokenizer.encode`.
 
-        For reference, here are the tokenization modes utilized by popular IDEs and other software:
-            - SourceCoder: ``max``
-            - TokenIDE: ``max``
-            - TI-Planet Project Builder: ``minmax``
-            - tivars_lib_cpp: ``minmax``
-
-        :param string: The tokens to encode
+        :param string: The text string to encode
         :param model: The model to target when encoding (defaults to no specific model)
         :param lang: The language used in ``string`` (defaults to English, ``en``)
         :param mode: The tokenization mode to use (defaults to ``max``)
@@ -99,7 +87,7 @@ class TokenizedEntry(SizedEntry):
         """
 
         model = model or TI_84PCE
-        return encode(string, model.get_trie(lang), mode)[0]
+        return encode(string, trie=model.get_trie(lang), mode=mode)[0]
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return decode(data or self.data)[1]

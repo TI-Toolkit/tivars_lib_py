@@ -200,15 +200,26 @@ class TokenizationTests(unittest.TestCase):
         self.assertEqual(test_program.decode(test_program.data[:26]), "Disp \"Needs Doors CSE\"")
 
     def test_modes(self):
-        sneaky_prog = "Disp \"RIGHT\nLEFT"
+        interpolation = "A and B:Disp \"A and B\":Send(\"SET SOUND eval(A and B) TIME 2"
+        names = "Disp \"WHITE,|LWHITE,prgmWHITE\",WHITE,|LWHITE:prgmWHITE:prgmABCDEF"
 
-        test_max = TIProgram.encode(sneaky_prog, mode="max")
-        test_min = TIProgram.encode(sneaky_prog, mode="min")
-        test_minmax = TIProgram.encode(sneaky_prog, mode="minmax")
+        self.assertEqual(TIProgram.encode(interpolation, mode="max"),
+                         b'A@B>\xde*A@B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
+        self.assertEqual(TIProgram.encode(interpolation, mode="smart"),
+                         b'A@B>\xde*A)\xbb\xb0\xbb\xbe\xbb\xb3)B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
+        self.assertEqual(TIProgram.encode(interpolation, mode="string"),
+                         b'A)\xbb\xb0\xbb\xbe\xbb\xb3)B>D\xbb\xb8\xbb\xc3\xbb\xc0)*A)\xbb\xb0'
+                         b'\xbb\xbe\xbb\xb3)B*>S\xbb\xb4\xbb\xbe\xbb\xb3\x10*SET)SOUND)\xbb'
+                         b'\xb4\xbb\xc6\xbb\xb0\xbb\xbc\x10A)\xbb\xb0\xbb\xbe\xbb\xb3)B\x11)TIME)2')
 
-        self.assertEqual(test_max, b'\xDE\x2A\xEF\x94\x3F\xEF\x92')
-        self.assertEqual(test_min, b'D\xbb\xb8\xbb\xc3\xbb\xc0\x29\x2ARIGHT\x3FLEFT')
-        self.assertEqual(test_minmax, b'\xDE\x2ARIGHT\x3F\xEF\x92')
+        self.assertEqual(TIProgram.encode(names, mode="max"),
+                         b'\xde*\xefK+\xeb\xefK+_\xefK*+\xefK+\xeb\xefK>_\xefK>_ABCDEF')
+        self.assertEqual(TIProgram.encode(names, mode="smart"),
+                         b'\xde*WHITE+\xebWHITE+\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdWHITE*+\xefK+\xebWHITE>_WHITE>_ABCDEF')
+        self.assertEqual(TIProgram.encode(names, mode="string"),
+                         b'D\xbb\xb8\xbb\xc3\xbb\xc0)*WHITE+\xebWHITE+\xbb\xc0\xbb\xc2\xbb\xb6'
+                         b'\xbb\xbdWHITE*+WHITE+\xebWHITE>\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdWHITE>'
+                         b'\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdABCDEF')
 
 
 class NumericTests(unittest.TestCase):
