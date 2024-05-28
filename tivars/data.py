@@ -119,7 +119,9 @@ class Data(Bytes):
         :return: The bytes in ``value``, unchanged
         """
 
-        instance.version = instance.get_version(value)
+        if instance is not None:
+            instance.version = instance.get_version(value)
+
         return super().set(value)
 
 
@@ -137,7 +139,9 @@ class SizedData(Data):
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> _T:
-        instance.length = len(value)
+        if instance is not None:
+            instance.length = len(value)
+
         return super().set(value, instance=instance)
 
 

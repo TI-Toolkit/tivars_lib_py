@@ -295,14 +295,14 @@ class FlashData(Converter):
     """
     Converter to split flash data into blocks if stored in Intel format
 
-    If ``binary_flag == $01``, this converter manipulates ``list[TIFlashBlock]``.
-    Otherwise, this converter is a no-op on ``bytes``.
+    If ``binary_flag != $01``, this converter is a no-op on ``bytes``.
+    Otherwise, this converter manipulates ``list[TIFlashBlock]``.
     """
 
     _T = bytes | list[TIFlashBlock]
 
     @classmethod
-    def get(cls, data: bytes, *, instance=None, **kwargs) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> _T:
         """
         Converts ``bytes`` -> ``bytes | list[TIFlashBlock]``
 
@@ -311,7 +311,11 @@ class FlashData(Converter):
         :return: The blocks stored in ``data``
         """
 
-        return list(map(TIFlashBlock, data.split(b'\r\n'))) if instance.binary_flag == 0x01 else data
+        if instance is None or instance.binary_flag == 0x01:
+            return list(map(TIFlashBlock, data.split(b'\r\n')))
+
+        else:
+            return data
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
@@ -323,7 +327,11 @@ class FlashData(Converter):
         :return: The concatenation of the blocks in ``value``
         """
 
-        return b'\r\n'.join(block.bytes() for block in value) if instance.binary_flag == 0x01 else value
+        if instance is None or instance.binary_flag == 0x01:
+            return b'\r\n'.join(block.bytes() for block in value)
+
+        else:
+            return value
 
 
 class TIFlashHeader(Dock):

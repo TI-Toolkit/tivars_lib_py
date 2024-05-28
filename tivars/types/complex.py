@@ -78,8 +78,9 @@ class ImaginaryPart(Converter):
         :return: The data of ``value``
         """
 
-        instance.imag_subtype_id = value.subtype_id = value.imag_subtype_id
-        instance.coerce()
+        if instance is not None:
+            instance.imag_subtype_id = value.subtype_id = value.imag_subtype_id
+            instance.coerce()
 
         return type(value).set(value)
 
