@@ -3,6 +3,7 @@ Context-aware text encoder
 """
 
 
+import re
 import unicodedata
 
 from tivars.models import *
@@ -83,13 +84,13 @@ def encode(string: str, *,
 
 def normalize(string: str):
     """
-    Applies NFKC normalization to a given string to ensure recognition of certain Unicode characters used as token names
+    Applies NFC normalization to a given string to ensure recognition of certain Unicode characters used as token names
 
     :param string: The text to normalize
     :return: The text in ``string`` normalized
     """
 
-    return unicodedata.normalize("NFKC", string).replace("Θ", "θ")
+    return re.sub("[\u0398\u03F4\u1DBF]", "θ", unicodedata.normalize("NFC", string))
 
 
 # Yucky scope nonsense to avoid a globals() call
