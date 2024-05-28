@@ -28,7 +28,8 @@ class TokenizedString(String):
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
-        data = encode(re.sub(r"[\u0398\u03F4\u1DBF]", "θ", value), mode="string")[0].rstrip(b'\x00')
+        mode = "max" if instance is not None and instance.leading_name_byte else "string"
+        data = encode(re.sub(r"[\u0398\u03F4\u1DBF]", "θ", value), mode=mode)[0].rstrip(b'\x00')
 
         if instance is not None and not data.startswith(instance.leading_name_byte):
             warn(f"Entry has an invalid name: '{value}'.",
