@@ -41,7 +41,7 @@ def encode(string: str, *,
     :return: A tuple of a stream of token bytes and a minimum `OsVersion`
     """
 
-    string = unicodedata.normalize("NFKC", string) if normalize else string
+    string = _normalize(string) if normalize else string
     trie = trie or TI_84PCE.get_trie()
 
     data = b''
@@ -89,7 +89,11 @@ def normalize(string: str):
     :return: The text in ``string`` normalized
     """
 
-    return unicodedata.normalize("NFKC", string)
+    return unicodedata.normalize("NFKC", string).replace("Θ", "θ")
+
+
+# Yucky scope nonsense to avoid a globals() call
+_normalize = normalize
 
 
 __all__ = ["encode", "normalize"]
