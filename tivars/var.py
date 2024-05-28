@@ -275,9 +275,14 @@ class TIEntry(Dock, Converter):
     If an entry's data is fixed in size, this value is necessarily the length of the data
     """
 
-    leading_bytes = b''
+    leading_name_byte = b''
     """
-    Bytes that always occur at the start of this entry's data
+    Byte that always begins the name of this entry
+    """
+
+    leading_data_bytes = b''
+    """
+    Bytes that always begin this entry's data
     """
 
     _type_id = None
@@ -612,7 +617,7 @@ class TIEntry(Dock, Converter):
         Clears this entry's data
         """
 
-        self.raw.calc_data = bytearray(self.leading_bytes)
+        self.raw.calc_data = bytearray(self.leading_data_bytes)
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
@@ -1231,15 +1236,15 @@ class SizedEntry(TIEntry):
         pass
 
     def clear(self):
-        self.raw.calc_data = bytearray([0, 0, *self.leading_bytes])
+        self.raw.calc_data = bytearray([0, 0, *self.leading_data_bytes])
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
-        self.length = len(self.leading_bytes) + len(self.data)
+        self.length = len(self.leading_data_bytes) + len(self.data)
 
     @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.length != (data_length := len(self.leading_bytes) + len(self.data)):
+        if self.length != (data_length := len(self.leading_data_bytes) + len(self.data)):
             warn(f"The entry has an unexpected data length (expected {self.length}, got {data_length}).",
                  BytesWarning)
 

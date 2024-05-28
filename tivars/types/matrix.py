@@ -32,6 +32,8 @@ class TIMatrix(TIEntry, register=True):
 
     min_data_length = 2
 
+    leading_name_byte = b'\x5C'
+
     _type_id = 0x02
 
     def __init__(self, init=None, *,

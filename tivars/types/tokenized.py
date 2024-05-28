@@ -153,58 +153,6 @@ class TokenizedEntry(SizedEntry):
         return format(self, "")
 
 
-class EquationName(TokenizedString):
-    """
-    Converter for the name section of equations
-
-    Equation names can be any of the following:
-
-    - ``Y1`` - ``Y0``
-    - ``X1T`` - ``X6T``
-    - ``Y1T`` - ``Y6T``
-    - ``r1`` - ``r6``
-    - ``u``, ``v``, or ``w``.
-    """
-
-    _T = str
-
-    @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
-        """
-        Converts ``bytes`` -> ``str`` as done by the memory viewer
-
-        :param data: The raw bytes to convert
-        :return: The equation name contained in ``data``
-        """
-
-        varname = super().get(data)
-
-        if varname.startswith("|"):
-            return varname[1:]
-
-        else:
-            return varname.upper().strip("{}")
-
-    @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
-        """
-        Converts ``str`` -> ``bytes`` to match appearance in the memory viewer
-
-        :param value: The value to convert
-        :return: The name encoding of ``value``
-        """
-
-        varname = value[:8].lower()
-
-        if varname.startswith("|") or varname in ("u", "v", "w"):
-            varname = "|" + varname[-1]
-
-        elif varname[0] != "{" and varname[-1] != "}":
-            varname = "{" + varname + "}"
-
-        return super().set(varname)
-
-
 class TIEquation(TokenizedEntry, register=True):
     """
     Parser for equations
@@ -219,6 +167,8 @@ class TIEquation(TokenizedEntry, register=True):
         TI_83P: "8xy"
     }
 
+    leading_name_byte = b'\x5E'
+
     _type_id = 0x03
 
     def __init__(self, init=None, *,
@@ -228,13 +178,23 @@ class TIEquation(TokenizedEntry, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-    @Section(8, EquationName)
-    def name(self) -> str:
+    @Section(8, TokenizedString)
+    def name(self, value) -> str:
         """
         The name of the entry
 
-        Must be one of the equation names
+        Must be an equation name used in function, parametric, polar, or sequence mode.
+        (See https://ti-toolkit.github.io/tokens-wiki/categories/Y%3D%20Functions.html)
         """
+
+        varname = value
+        if varname in ("u", "v", "w"):
+            varname = "|" + varname
+
+        elif match := re.fullmatch(r"\{?([XYr]\dT?)}?", varname):
+            varname = "{" + match[1] + "}"
+
+        return varname
 
 
 class TINewEquation(TIEquation, register=True):
@@ -261,6 +221,8 @@ class TIString(TokenizedEntry, register=True):
         TI_83P: "8xs"
     }
 
+    leading_name_byte = b'\xAA'
+
     _type_id = 0x04
 
     def __init__(self, init=None, *,
@@ -275,11 +237,11 @@ class TIString(TokenizedEntry, register=True):
         """
         The name of the entry
 
-        Must be one of the string names: ``Str1`` - ``Str0``
+        Must be one of the string names: ``Str1`` - ``Str0``.
         """
 
-        if not re.fullmatch(r"Str\d", varname := value[:4].capitalize()):
-            warn(f"String has an invalid name: {varname}.",
+        if not re.fullmatch(r"Str\d", varname := value.capitalize()):
+            warn(f"String has an invalid name: '{varname}'.",
                  BytesWarning)
 
         return varname
@@ -335,12 +297,9 @@ class TIProgram(TokenizedEntry, register=True):
         The name cannot start with a digit.
         """
 
-        varname = value[:8].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
-        varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
-
-        if not varname or varname[0].isnumeric():
-            warn(f"Program has an invalid name: {varname}.",
+        varname = re.sub(r"[\u0398\u03F4\u1DBF]", "θ", value.upper())
+        if not re.fullmatch(r"([A-Z]|\u03b8)([0-9A-Z]|\u03b8){,7}", varname):
+            warn(f"Program has an invalid name: '{varname}'.",
                  BytesWarning)
 
         return varname

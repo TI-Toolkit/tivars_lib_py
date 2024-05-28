@@ -13,6 +13,7 @@ from warnings import catch_warnings, filterwarnings, warn
 from tivars.flags import *
 from tivars.data import *
 from tivars.models import *
+from tivars.tokenizer import decode
 from tivars.var import TIEntry, SizedEntry
 from .real import *
 from .tokenized import TIEquation
@@ -194,7 +195,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
             _T = TIGraphedEquation
 
             @classmethod
-            def get(cls, data: bytes, *, instance=None, **kwargs) -> _T:
+            def get(cls, data: bytes, *, instance=None) -> _T:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by finding the equation at ``index`` within a GDB
 
@@ -275,6 +276,14 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         """
         The length of this entry's user data section
         """
+
+    @property
+    def json_name(self) -> str:
+        """
+        :return: The name of this equation used in the GDB JSON format
+        """
+
+        return decode(self.raw.name, mode="accessible")[0].strip("{}|")
 
     def load_data_section(self, data: BytesIO):
         flag_byte = data.read(1)
@@ -369,12 +378,15 @@ class TIMonoGDB(SizedEntry, register=True):
         TI_83P: "8xd"
     }
 
+    min_data_length = 61
+
+    leading_name_byte = b'\x61'
+
     mode_byte = 0x00
     """
     The byte which identifies the GDB type
     """
 
-    min_data_length = 61
     has_color = False
     """
     Whether this GDB type carries color information
@@ -920,7 +932,7 @@ class TIMonoFuncGDB(TIMonoGDB):
                     "Xres": int(self.Xres)
                 },
                 "equations": {
-                    equation.name: equation.dict() for equation in self.equations
+                    equation.json_name: equation.dict() for equation in self.equations
                 }
             }
         }
@@ -1102,7 +1114,7 @@ class TIMonoParamGDB(TIMonoGDB):
                     "Tstep": self.Tstep.json_number(),
                 },
                 "equations": {
-                    equation.name: equation.dict() for equation in self.equations
+                    equation.json_name: equation.dict() for equation in self.equations
                 }
             }
         }
@@ -1238,7 +1250,7 @@ class TIMonoPolarGDB(TIMonoGDB):
                     "Thetastep": self.Thetastep.json_number(),
                 },
                 "equations": {
-                    equation.name: equation.dict() for equation in self.equations
+                    equation.json_name: equation.dict() for equation in self.equations
                 }
             }
         }
@@ -1486,7 +1498,7 @@ class TIMonoSeqGDB(TIMonoGDB):
                     "wnMinp1": self.wnMinp1.json_number()
                 },
                 "equations": {
-                    equation.name: equation.dict() for equation in self.equations
+                    equation.json_name: equation.dict() for equation in self.equations
                 }
             }
         }

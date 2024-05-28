@@ -56,23 +56,22 @@ class ListName(TokenizedString):
         :return: The name encoding of ``value``
         """
 
-        varname = value[:7].upper()
-        varname = re.sub(r"(\u03b8|\u0398|\u03F4|\u1DBF)", "θ", varname)
+        varname = value.upper()
+        varname = re.sub(r"[\u0398\u03F4\u1DBF]", "θ", varname)
         varname = re.sub(r"]", "|L", varname)
-        varname = re.sub(r"[^θa-zA-Z0-9]", "", varname)
 
-        if varname != value:
-            warn(f"List name '{value}' was transformed to '{varname}'.",
-                 UserWarning)
+        if not re.fullmatch(r"(L\d)|(\|L|.)?([A-Z]|\u03b8)([0-9A-Z]|\u03b8){,4}|IDList", varname):
+            warn(f"List has an invalid name: '{varname}'.",
+                 BytesWarning)
 
         if "IDList" in varname:
-            return b']@'
+            return b'\x5D\x40'
 
-        elif varname.startswith("|L"):
-            return super().set(varname[-5:])
+        elif re.fullmatch(r"L\d", varname):
+            return super().set(varname[:2])
 
         else:
-            return super().set(varname[:2])
+            return super().set(varname[-5:])
 
 
 class ListEntry(TIEntry):

@@ -3,6 +3,9 @@ Tokenization utilities derived from the token sheets (see tokens directory)
 """
 
 
+import re
+from warnings import warn
+
 from tivars.data import String
 from tivars.models import *
 from tivars.tokens.scripts import *
@@ -24,8 +27,14 @@ class TokenizedString(String):
         return decode(data.ljust(8, b'\x00'))[0]
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
-        return encode(value, mode="string")[0].rstrip(b'\x00')
+    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+        data = encode(re.sub(r"[\u0398\u03F4\u1DBF]", "θ", value), mode="string")[0].rstrip(b'\x00')
+
+        if instance is None or not data.startswith(instance.leading_name_byte):
+            warn(f"Entry has an invalid name: '{value}'.",
+                 BytesWarning)
+
+        return data
 
 
 __all__ = ["decode", "encode", "TokenizedString",

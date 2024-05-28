@@ -601,7 +601,7 @@ class GroupTests(unittest.TestCase):
 
         ungrouped = test_group.ungroup()
 
-        self.assertEqual(ungrouped[0], TIEquation("10sin(theta", name="R1"))
+        self.assertEqual(ungrouped[0], TIEquation("10sin(theta", name="r1"))
         self.assertEqual(type(ungrouped[1]), TIWindowSettings)
 
         self.assertEqual(TIGroup.group(ungrouped).ungroup(), ungrouped)

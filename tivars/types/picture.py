@@ -251,6 +251,8 @@ class TIMonoPicture(PictureEntry):
 
     has_color = False
 
+    leading_name_byte = b'\x60'
+
     _type_id = 0x07
 
     def __init__(self, init=None, *,
@@ -302,6 +304,8 @@ class TIPicture(PictureEntry, register=True):
     pixel_type = RGB
     np_shape = (height, width, 3)
 
+    leading_name_byte = b'\x60'
+
     _type_id = 0x07
 
     def __init__(self, init=None, *,
@@ -341,7 +345,8 @@ class ImageName(TokenizedString):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         if not re.fullmatch(r"(Image)?\d", value):
-            warn(f"'{value}' is not a valid image name; defaulting to 'Image1'.")
+            warn(f"'{value}' is not a valid image name; defaulting to 'Image1'.",
+                 BytesWarning)
             value = "Image1"
 
         return b"\x3C" + bytes([int(value[-1], 16) - 1])
@@ -378,7 +383,8 @@ class TIImage(PictureEntry, register=True):
     pixel_type = RGB
     np_shape = (height, width, 3)
 
-    leading_bytes = b'\x81'
+    leading_name_byte = b'\x3C'
+    leading_data_bytes = b'\x81'
 
     _type_id = 0x1A
 
