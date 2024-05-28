@@ -4,7 +4,9 @@ Pictures and images
 
 
 import re
-from typing import Iterator, Sequence
+
+
+from collections.abc import Iterator, Sequence
 from warnings import warn
 
 from tivars.data import *

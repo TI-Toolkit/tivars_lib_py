@@ -3,7 +3,6 @@ Complex numeric types
 """
 
 
-from typing import Type
 from warnings import warn
 
 from tivars.data import *
@@ -204,7 +203,7 @@ class ComplexEntry(TIEntry):
         """
 
     @property
-    def real_type(self) -> Type['RealEntry']:
+    def real_type(self) -> type['RealEntry']:
         """
         :return: The subclass of `RealEntry` corresponding to this entry's `real_subtype_id`.
         """
@@ -212,7 +211,7 @@ class ComplexEntry(TIEntry):
         return self.get_type(self.real_subtype_id).real_analogue
 
     @property
-    def imag_type(self) -> Type['RealEntry']:
+    def imag_type(self) -> type['RealEntry']:
         """
         :return: The subclass of `RealEntry` corresponding to this entry's `imag_subtype_id`.
         """

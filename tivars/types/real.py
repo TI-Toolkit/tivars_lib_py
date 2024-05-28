@@ -8,7 +8,6 @@ import re
 
 from decimal import Decimal, localcontext
 from fractions import Fraction
-from typing import Type
 from warnings import warn
 
 from tivars.data import *
@@ -114,7 +113,7 @@ class RealEntry(TIEntry):
         """
 
     @property
-    def subtype(self) -> Type['RealEntry']:
+    def subtype(self) -> type['RealEntry']:
         """
         :return: The subtype of this real number
         """

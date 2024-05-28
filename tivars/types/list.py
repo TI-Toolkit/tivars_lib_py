@@ -5,8 +5,8 @@ Lists
 
 import re
 
+from collections.abc import Iterator, Sequence
 from io import BytesIO
-from typing import Iterator, Sequence
 from warnings import warn
 
 from tivars.data import *

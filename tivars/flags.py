@@ -13,9 +13,9 @@ This module implements two general-use converters:
 """
 
 
+from collections.abc import Mapping
 from functools import total_ordering
 from math import ceil
-from typing import Mapping
 from warnings import warn
 
 from .data import *
@@ -80,7 +80,7 @@ class Flags(Converter, dict, Mapping[int, int]):
 
     _T = 'Flags'
 
-    def __init__(self, bitsets: Mapping[int, int] | 'Flags' = None, *, width: int = 8):
+    def __init__(self, bitsets: Mapping[int, int] = None, *, width: int = 8):
         """
         Creates an empty `Flags` instance with a given initial state and width
 
@@ -105,7 +105,7 @@ class Flags(Converter, dict, Mapping[int, int]):
     def __str__(self) -> str:
         return ''.join([str(bit) for bit in self.values()][::-1])
 
-    def __contains__(self, bitsets: Mapping[int, int] | 'Flags') -> bool:
+    def __contains__(self, bitsets: Mapping[int, int]) -> bool:
         return all(self[bit] == int(bool(bitsets[bit])) for bit in bitsets)
 
     has = __contains__

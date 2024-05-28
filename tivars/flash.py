@@ -5,7 +5,7 @@ The fundamental flash file components
 
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO, Type
+from typing import BinaryIO
 from warnings import warn
 
 from .data import *
@@ -556,7 +556,7 @@ class TIFlashHeader(Dock):
         return self.raw.checksum
 
     @classmethod
-    def get_type(cls, type_id: int) -> Type['TIFlashHeader'] | None:
+    def get_type(cls, type_id: int) -> type['TIFlashHeader'] | None:
         """
         Gets the subclass corresponding to a type ID if one is registered
 
@@ -595,7 +595,7 @@ class TIFlashHeader(Dock):
         return entry_length
 
     @classmethod
-    def register(cls, var_type: Type['TIFlashHeader'], override: int = None):
+    def register(cls, var_type: type['TIFlashHeader'], override: int = None):
         """
         Registers a subtype with this class for coercion
 

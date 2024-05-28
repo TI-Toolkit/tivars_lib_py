@@ -3,9 +3,10 @@ The fundamental var components
 """
 
 
+from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO, Iterator, Type
+from typing import BinaryIO
 from warnings import warn
 
 from .data import *
@@ -566,7 +567,7 @@ class TIEntry(Dock, Converter):
         return self.raw.calc_data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
 
     @classmethod
-    def get_type(cls, type_id: int) -> Type['TIEntry'] | None:
+    def get_type(cls, type_id: int) -> type['TIEntry'] | None:
         """
         Gets the subclass corresponding to a type ID if one is registered
 
@@ -592,7 +593,7 @@ class TIEntry(Dock, Converter):
         return 2 + meta_length + 2 + data_length
 
     @classmethod
-    def register(cls, var_type: Type['TIEntry'], override: int = None):
+    def register(cls, var_type: type['TIEntry'], override: int = None):
         """
         Registers a subtype with this class for coercion
 

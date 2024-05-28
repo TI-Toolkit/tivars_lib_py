@@ -25,8 +25,9 @@ This module implements two primary means of data interface:
 import copy
 import inspect
 
+from collections.abc import Callable
 from math import ceil
-from typing import Callable, TypeVar
+from typing import TypeVar
 from warnings import warn
 
 

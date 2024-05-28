@@ -6,8 +6,8 @@ GDBs and their settings
 import json
 import os
 
+from collections.abc import Iterator
 from io import BytesIO
-from typing import Iterator
 from warnings import catch_warnings, filterwarnings, warn
 
 from tivars.flags import *

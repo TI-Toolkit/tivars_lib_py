@@ -3,8 +3,8 @@ Groups
 """
 
 
+from collections.abc import Sequence
 from io import BytesIO
-from typing import Sequence
 from warnings import warn
 
 from tivars.data import *
