@@ -3,7 +3,6 @@ Tokenization utilities derived from the token sheets (see tokens directory)
 """
 
 
-import re
 from warnings import warn
 
 from tivars.data import String
@@ -29,7 +28,7 @@ class TokenizedString(String):
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
         mode = "max" if instance is not None and instance.leading_name_byte else "string"
-        data = encode(re.sub(r"[\u0398\u03F4\u1DBF]", "θ", value), mode=mode)[0].rstrip(b'\x00')
+        data = encode(value, mode=mode)[0].rstrip(b'\x00')
 
         if instance is not None and not data.startswith(instance.leading_name_byte):
             warn(f"Entry has an invalid name: '{value}'.",
@@ -38,5 +37,5 @@ class TokenizedString(String):
         return data
 
 
-__all__ = ["decode", "encode", "TokenizedString",
+__all__ = ["decode", "encode", "normalize", "TokenizedString",
            "Tokens", "OsVersion", "OsVersions"]

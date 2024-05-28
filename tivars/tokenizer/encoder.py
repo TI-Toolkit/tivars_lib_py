@@ -3,13 +3,15 @@ Context-aware text encoder
 """
 
 
+import unicodedata
+
 from tivars.models import *
 from tivars.tokens.scripts import *
 from .state import *
 
 
 def encode(string: str, *,
-           trie: TokenTrie = None, mode: str = "smart") -> tuple[bytes, OsVersion]:
+           trie: TokenTrie = None, mode: str = "smart", normalize: bool = True) -> tuple[bytes, OsVersion]:
     """
     Encodes a string of token represented in text into a byte stream and its minimum supported OS version
 
@@ -35,9 +37,11 @@ def encode(string: str, *,
     :param string: The text string to encode
     :param trie: The `TokenTrie` object to use for tokenization
     :param mode: The tokenization mode to use (defaults to ``smart``)
+    :param normalize: Whether to apply NFKC normalization to the input before encoding (defaults to ``true``)
     :return: A tuple of a stream of token bytes and a minimum `OsVersion`
     """
 
+    string = unicodedata.normalize("NFKC", string) if normalize else string
     trie = trie or TI_84PCE.get_trie()
 
     data = b''
@@ -77,4 +81,15 @@ def encode(string: str, *,
     return data, since
 
 
-__all__ = ["encode"]
+def normalize(string: str):
+    """
+    Applies NFKC normalization to a given string to ensure recognition of certain Unicode characters used as token names
+
+    :param string: The text to normalize
+    :return: The text in ``string`` normalized
+    """
+
+    return unicodedata.normalize("NFKC", string)
+
+
+__all__ = ["encode", "normalize"]

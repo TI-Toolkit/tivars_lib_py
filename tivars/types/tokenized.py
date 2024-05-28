@@ -240,11 +240,7 @@ class TIString(TokenizedEntry, register=True):
         Must be one of the string names: ``Str1`` - ``Str0``.
         """
 
-        if not re.fullmatch(r"Str\d", varname := value.capitalize()):
-            warn(f"String has an invalid name: '{varname}'.",
-                 BytesWarning)
-
-        return varname
+        return value.capitalize()
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
@@ -286,23 +282,6 @@ class TIProgram(TokenizedEntry, register=True):
     """
 
     _type_id = 0x05
-
-    @Section(8, TokenizedString)
-    def name(self, value) -> str:
-        """
-        The name of the entry
-
-        Names must 1 to 8 characters in length.
-        The name can include any characters A-Z, 0-9, or θ.
-        The name cannot start with a digit.
-        """
-
-        varname = re.sub(r"[\u0398\u03F4\u1DBF]", "θ", value.upper())
-        if not re.fullmatch(r"([A-Z]|\u03b8)([0-9A-Z]|\u03b8){,7}", varname):
-            warn(f"Program has an invalid name: '{varname}'.",
-                 BytesWarning)
-
-        return varname
 
     def protect(self):
         """
