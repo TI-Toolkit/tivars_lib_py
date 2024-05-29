@@ -38,7 +38,7 @@ def encode(string: str, *,
     :param string: The text string to encode
     :param trie: The `TokenTrie` object to use for tokenization
     :param mode: The tokenization mode to use (defaults to ``smart``)
-    :param normalize: Whether to apply NFKC normalization to the input before encoding (defaults to ``true``)
+    :param normalize: Whether to apply NFC normalization to the input before encoding (defaults to ``true``)
     :return: A tuple of a stream of token bytes and a minimum `OsVersion`
     """
 
