@@ -56,7 +56,7 @@ def encode(string: str, *,
         case "smart":
             stack = [SmartMode()]
 
-        case "string":
+        case "string" | "min":
             stack = [MinMode()]
 
         case _:
