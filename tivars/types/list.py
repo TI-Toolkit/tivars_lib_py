@@ -3,8 +3,6 @@ Lists
 """
 
 
-import re
-
 from collections.abc import Iterator, Sequence
 from io import BytesIO
 from warnings import warn
@@ -56,18 +54,13 @@ class ListName(TokenizedString):
         :return: The name encoding of ``value``
         """
 
-        varname = value.upper()
-        varname = re.sub(r"[\u0398\u03F4\u1DBF]", "θ", varname)
-        varname = re.sub(r"]", "|L", varname)
-
-        if not re.fullmatch(r"(L\d)|(\|L|.)?([A-Z]|\u03b8)([0-9A-Z]|\u03b8){,4}|IDList", varname):
-            warn(f"List has an invalid name: '{varname}'.",
-                 BytesWarning)
+        # TI-ASCII hack
+        varname = value.upper().replace("]", "|L")
 
         if "IDList" in varname:
             return b'\x5D\x40'
 
-        elif re.fullmatch(r"L\d", varname):
+        elif varname in ("L1", "L2", "L3", "L4", "L5", "L6"):
             return super().set(varname[:2])
 
         else:
