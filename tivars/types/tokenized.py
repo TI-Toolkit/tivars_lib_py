@@ -47,15 +47,18 @@ class TokenizedEntry(SizedEntry):
 
         spec, lang = format_spec.split(".")
 
-        match spec:
-            case "":
-                return self.decode(self.data, lang=lang)
+        try:
+            match spec:
+                case "":
+                    return self.decode(self.data, lang=lang)
 
-            case "t":
-                return self.decode(self.data, lang=lang, mode="accessible")
+                case "t":
+                    return self.decode(self.data, lang=lang, mode="accessible")
 
-            case _:
-                return super().__format__(format_spec)
+        except KeyError:
+            pass
+
+        return super().__format__(format_spec)
 
     @staticmethod
     def decode(data: bytes, *, lang: str = "en", mode: str = "display") -> str | bytes:
@@ -364,18 +367,21 @@ class TIAsmProgram(TIProgram):
     is_tokenized = False
 
     def __format__(self, format_spec: str) -> str:
-        try:
-            match [*format_spec]:
-                case sep, *width if width:
-                    return self.data.hex(sep, int(''.join(width)))
-
-                case sep, *_:
-                    return self.data.hex(sep)
-
-                case _:
+        if match := re.fullmatch(r"(?P<sep>\D)?(?P<width>\d+)?x", format_spec):
+            match match["sep"], match["width"]:
+                case None, None:
                     return self.data.hex()
 
-        except TypeError:
+                case sep, None:
+                    return self.data.hex(sep)
+
+                case None, width:
+                    return self.data.hex(" ", int(width))
+
+                case sep, width:
+                    return self.data.hex(sep, int(width))
+
+        else:
             return super().__format__(format_spec)
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
