@@ -315,11 +315,11 @@ class TIProgram(TokenizedEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
-        super().load_string(string, model=model, lang=lang)
-
         if not self.is_tokenized:
             warn("ASM programs may not have tokenized data.",
                  UserWarning)
+
+        super().load_string(string, model=model, lang=lang)
 
     def string(self) -> str:
         string = super().string()
