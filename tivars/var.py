@@ -460,12 +460,23 @@ class TIEntry(Dock, Converter):
         return self.string()
 
     @Section(2, Integer)
-    def meta_length(self) -> int:
+    def meta_length(self, value) -> int:
         """
         The length of the meta section of the entry
 
         The possible meta lengths are 11 (without flash) or 13 (with flash).
         """
+
+        if value == TIEntry.base_meta_length:
+            if self.raw.meta_length == b'\x0D\x00':
+                warn(f"Meta data (0x{self.flash_bytes.hex()}) will be lost.",
+                     UserWarning)
+
+            if self.flash_only:
+                warn(f"{type(self)} vars are not compatible with flashless chips.",
+                     UserWarning)
+
+        return value
 
     @property
     def calc_data_length(self) -> int:
@@ -492,7 +503,7 @@ class TIEntry(Dock, Converter):
         """
 
     @Section(1, Bits[:])
-    def version(self) -> int:
+    def version(self, value) -> int:
         """
         The version number of the entry
 
@@ -500,13 +511,25 @@ class TIEntry(Dock, Converter):
         Only flash files support this entry, and it thus not present if `meta_length` <= 11.
         """
 
+        if self.meta_length == TIEntry.base_meta_length:
+            warn(f"Flashless vars do not maintain version information.",
+                 UserWarning)
+
+        return value
+
     @Section(1, Boolean)
-    def archived(self) -> bool:
+    def archived(self, value) -> bool:
         """
         Whether the entry is archived
 
         Only flash files support this entry, and it thus not present if `meta_length` <= 11.
         """
+
+        if self.meta_length == TIEntry.base_meta_length:
+            warn(f"Flashless vars cannot be archived or unarchived.",
+                 UserWarning)
+
+        return value
 
     @Section()
     def calc_data(self) -> bytes:
@@ -706,37 +729,40 @@ class TIEntry(Dock, Converter):
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
-                if self.raw.archived not in b'\x00\x80':
-                    warn(f"The archive flag ({self.raw.archived.hex()}) is set to an unexpected value.",
-                         BytesWarning)
-
             case TIEntry.base_meta_length:
                 self.raw.version = b'\x00'
                 self.raw.archived = b'\x00'
-
-                if self.flash_only:
-                    warn(f"{type(self)} vars are not compatible with flashless chips.",
-                         BytesWarning)
 
             case _:
                 warn(f"The entry meta length has an unexpected value ({self.meta_length}); "
                      f"attempting to read flash bytes anyway.",
                      BytesWarning)
+
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
-                if self.raw.archived not in b'\x00\x80':
-                    warn(f"The archive flag is set to an unexpected value.",
-                         BytesWarning)
+        if self.meta_length == TIEntry.flash_meta_length and self.raw.version + self.raw.archived == data_length:
+            warn(f"The entry meta length is {self.meta_length}, but the flash data is likely missing; "
+                 f"the meta section will be corrected to be flashless.")
 
-        # Read data and check length
-        data_length2 = data.read(2)
-        if data_length != data_length2:
-            warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}); "
-                 f"using {data_length2} to read the data section.",
-                 BytesWarning)
+            self.meta_length = TIEntry.base_meta_length
+            self.raw.version = b'\x00'
+            self.raw.archived = b'\x00'
 
-        self.raw.calc_data = bytearray(data.read(length := int.from_bytes(data_length2, 'little')))
+        else:
+            if self.raw.archived not in b'\x00\x80':
+                warn(f"The archive flag (0x{self.raw.archived.hex()}) is set to an unexpected value.",
+                     BytesWarning)
+
+            # Check length
+            data_length2 = data.read(2)
+            if data_length != data_length2:
+                warn(f"The var entry data lengths are mismatched ({data_length} vs. {data_length2}); "
+                     f"using {data_length} to read the data section.",
+                     BytesWarning)
+
+        # Read data
+        self.raw.calc_data = bytearray(data.read(length := int.from_bytes(data_length, 'little')))
 
         if len(self.calc_data) != length:
             warn(f"The data section length is incorrect (expected {length}, got {len(self.calc_data)}).",
@@ -746,6 +772,10 @@ class TIEntry(Dock, Converter):
 
         if self.versions != [0x00] and self.version not in self.versions:
             warn(f"The version (0x{self.version:02x}) is not recognized.",
+                 BytesWarning)
+
+        if self.meta_length == TIEntry.base_meta_length and self.flash_only:
+            warn(f"{type(self)} vars are not compatible with flashless chips.",
                  BytesWarning)
 
     def bytes(self) -> bytes:
@@ -795,7 +825,9 @@ class TIEntry(Dock, Converter):
         """
 
         # Skip header
-        file.seek(55)
+        header = TIHeader()
+        header.load_from_file(file)
+        file.seek(2, 1)
 
         # Seek to offset
         while offset:
@@ -849,7 +881,7 @@ class TIEntry(Dock, Converter):
             file.seek(2, 1)
 
             if remaining := file.read():
-                if remaining.startswith(b"\x0B\x00") or remaining.startswith(b"\x0D\x00"):
+                if remaining.startswith(b'\x0B\x00') or remaining.startswith(b'\x0D\x00'):
                     warn("The selected var file contains multiple entries; only the first will be loaded. "
                          "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
                          UserWarning)
