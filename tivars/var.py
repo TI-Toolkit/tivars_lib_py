@@ -3,6 +3,8 @@ The fundamental var components
 """
 
 
+import re
+
 from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
@@ -430,7 +432,22 @@ class TIEntry(Dock, Converter):
         :return: A string representation of this entry
         """
 
-        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
+        if match := re.fullmatch(r"(?P<sep>\D)?(?P<width>\d+)?x", format_spec):
+            match match["sep"], match["width"]:
+                case None, None:
+                    return self.calc_data.hex()
+
+                case sep, None:
+                    return self.calc_data.hex(sep)
+
+                case None, width:
+                    return self.calc_data.hex(" ", int(width))
+
+                case sep, width:
+                    return self.calc_data.hex(sep, int(width))
+
+        else:
+            raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
     def __init_subclass__(cls, /, register=False, override=None, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -366,24 +366,6 @@ class TIAsmProgram(TIProgram):
 
     is_tokenized = False
 
-    def __format__(self, format_spec: str) -> str:
-        if match := re.fullmatch(r"(?P<sep>\D)?(?P<width>\d+)?x", format_spec):
-            match match["sep"], match["width"]:
-                case None, None:
-                    return self.data.hex()
-
-                case sep, None:
-                    return self.data.hex(sep)
-
-                case None, width:
-                    return self.data.hex(" ", int(width))
-
-                case sep, width:
-                    return self.data.hex(sep, int(width))
-
-        else:
-            return super().__format__(format_spec)
-
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return max([model.OS() for token, model in self.asm_tokens.items() if token in (data or self.data)],
                    default=OsVersions.INITIAL)
