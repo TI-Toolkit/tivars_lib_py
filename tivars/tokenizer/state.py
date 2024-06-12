@@ -67,7 +67,8 @@ class EncoderState:
         :param token: The current token
         :return: A list of encoder states to add to the stack
         """
-        raise NotImplementedError
+
+        return [type(self)(self.length + 1)]
 
 
 class MaxMode(EncoderState):
@@ -77,9 +78,6 @@ class MaxMode(EncoderState):
 
     mode = 0
 
-    def next(self, token: Token) -> list[EncoderState]:
-        return [MaxMode(self.length + 1)]
-
 
 class MinMode(EncoderState):
     """
@@ -87,9 +85,6 @@ class MinMode(EncoderState):
     """
 
     mode = -1
-
-    def next(self, token: Token) -> list[EncoderState]:
-        return [MinMode(self.length + 1)]
 
 
 class Line(EncoderState):
@@ -103,7 +98,7 @@ class Line(EncoderState):
                 return []
 
             case _:
-                return [type(self)(self.length + 1)]
+                return super().next(token)
 
 
 class Name(Line):
@@ -205,7 +200,7 @@ class SmartMode(EncoderState):
                 return [self, ListName()]
 
             case _:
-                return [SmartMode(self.length + 1)]
+                return super().next(token)
 
 
 __all__ = ["EncoderState", "MaxMode", "MinMode", "SmartMode",
