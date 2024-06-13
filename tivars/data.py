@@ -516,8 +516,12 @@ class Dock:
         """
         for loader_types, loader in self.loaders.items():
             if any(isinstance(data, loader_type) for loader_type in loader_types):
-                loader(self, data)
-                return
+                try:
+                    loader(self, data)
+                    return
+
+                except NotImplementedError:
+                    continue
 
         raise TypeError(f"could not find valid loader for type {type(data)}")
 
