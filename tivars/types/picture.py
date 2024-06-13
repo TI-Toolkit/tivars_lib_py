@@ -27,7 +27,7 @@ class L1(Converter):
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``tuple[int, ...]``
+        Converts ``bytes`` -> ``tuple[int, int, int, int, int, int, int, int]``
 
         :param data: The raw bytes to convert
         :return: A tuple of eight integers in {0, 255} corresponding to the bits of ``data``
@@ -38,7 +38,7 @@ class L1(Converter):
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts  ``tuple[int, ...]`` -> ``bytes``
+        Converts  ``tuple[int, int, int, int, int, int, int, int]`` -> ``bytes``
 
         :param value: The value to convert
         :return: The values in ``value`` joined into a single byte
@@ -426,7 +426,7 @@ class TIImage(PictureEntry, register=True):
 
     @Loader[Sequence]
     def load_array(self, arr: Sequence[Sequence[pixel_type]]):
-        self.data = b''.join(RGB565.set(entry) for row in arr[::-1] for entry in row + [(0, 0, 0)])
+        self.data = b''.join(RGB565.set(entry) for row in arr[::-1] for entry in [*row, (0, 0, 0)])
 
     def array(self) -> list[list[pixel_type]]:
         return [[RGB565.get(self.data[self.data_width * row + col:][:2])
