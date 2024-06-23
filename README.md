@@ -241,9 +241,6 @@ img.show()
 
 Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
 
-> [!IMPORTANT]
-> In contrast to some other tokenizers like SourceCoder, tokenization does _not_ depend on whether the content appears inside a BASIC string literal. Text is always assigned to the _longest_ permissible token.
-
 ## Documentation
 
 Library documentation can be found on [GitHub Pages](https://ti-toolkit.github.io/tivars_lib_py/).
