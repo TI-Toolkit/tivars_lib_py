@@ -247,7 +247,7 @@ class TIString(TokenizedEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str, *, model: TIModel = None):
-        super().load_string(string.strip("\"'"))
+        super().load_string(string.strip("\""))
 
     def string(self) -> str:
         return f"\"{super().string()}\""
