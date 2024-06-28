@@ -12,9 +12,9 @@ from .state import *
 
 
 def encode(string: str, *,
-           trie: TokenTrie = None, mode: str = "smart", normalize: bool = True) -> tuple[bytes, OsVersion]:
+           trie: TokenTrie = None, mode: str = None, normalize: bool = True) -> tuple[bytes, OsVersion]:
     """
-    Encodes a string of token represented in text into a byte stream and its minimum supported OS version
+    Encodes a string of tokens represented as text into a byte stream and its minimum supported OS version
 
     Tokenization is performed using one of three procedures, dictated by ``mode``:
         - ``max``: Always munch maximally, i.e. consume the most input possible to produce a token
@@ -44,6 +44,7 @@ def encode(string: str, *,
 
     string = _normalize(string) if normalize else string
     trie = trie or TI_84PCE.get_trie()
+    mode = mode or "smart"
 
     data = b''
     since = OsVersions.INITIAL

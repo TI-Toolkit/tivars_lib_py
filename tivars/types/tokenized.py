@@ -76,7 +76,7 @@ class TokenizedEntry(SizedEntry):
         return decode(data, lang=lang, mode=mode)[0]
 
     @staticmethod
-    def encode(string: str, *, model: TIModel = None, lang: str = None, mode: str = "max") -> bytes:
+    def encode(string: str, *, model: TIModel = None, lang: str = None, mode: str = None) -> bytes:
         """
         Encodes a string of token represented in text into a byte stream
 
@@ -85,7 +85,7 @@ class TokenizedEntry(SizedEntry):
         :param string: The text string to encode
         :param model: The model to target when encoding (defaults to no specific model)
         :param lang: The language used in ``string`` (defaults to English, ``en``)
-        :param mode: The tokenization mode to use (defaults to ``max``)
+        :param mode: The tokenization mode to use (defaults to ``smart``)
         :return: A stream of token bytes
         """
 
@@ -149,8 +149,19 @@ class TokenizedEntry(SizedEntry):
                  BytesWarning)
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
-        self.data = self.encode(string, model=model, lang=lang)
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+        """
+        Loads this entry from a string representation
+
+        For detailed information on tokenization modes, see `tivars.tokenizer.encode`.
+
+        :param string: The string to load
+        :param model: The model to target when encoding (defaults to no specific model)
+        :param lang: The language used in ``string`` (defaults to English, ``en``)
+        :param mode: The tokenization mode to use (defaults to ``smart``)
+        """
+
+        self.data = self.encode(string, model=model, lang=lang, mode=mode)
 
     def string(self) -> str:
         return format(self, "")
@@ -246,8 +257,8 @@ class TIString(TokenizedEntry, register=True):
         return value.capitalize()
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None):
-        super().load_string(string.strip("\""))
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+        super().load_string(string.strip("\""), model=model, lang=lang, mode=mode)
 
     def string(self) -> str:
         return f"\"{super().string()}\""
@@ -317,12 +328,12 @@ class TIProgram(TokenizedEntry, register=True):
                      BytesWarning)
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None):
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
         if not self.is_tokenized:
             warn("ASM programs may not have tokenized data.",
                  UserWarning)
 
-        super().load_string(string, model=model, lang=lang)
+        super().load_string(string, model=model, lang=lang, mode=mode)
 
     def string(self) -> str:
         string = super().string()
