@@ -221,6 +221,10 @@ class TokenizationTests(unittest.TestCase):
                          b'\xbb\xbdWHITE*+WHITE+\xebWHITE>\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdWHITE>'
                          b'\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdABCDEF')
 
+    def test_newlines(self):
+        lines = "For(A,1,10", "Disp A", "End"
+        self.assertEqual(TIProgram("\n".join(lines)), TIProgram("\r\n".join(lines)))
+
 
 class NumericTests(unittest.TestCase):
     def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):
