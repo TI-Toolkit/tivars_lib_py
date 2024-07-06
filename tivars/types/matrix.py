@@ -56,6 +56,10 @@ class TIMatrix(TIEntry, register=True):
                                     for row in self.matrix()) + "]"
 
     def __iter__(self) -> Iterator[RealEntry]:
+        """
+        :return: An iterator over this matrix's elements in row-major order
+        """
+
         for row in self.matrix():
             for entry in row:
                 yield entry
@@ -109,7 +113,7 @@ class TIMatrix(TIEntry, register=True):
     @property
     def size(self) -> int:
         """
-        :return: The number of elements in the matrix
+        :return: The number of elements in this matrix
         """
 
         return self.width * self.height
