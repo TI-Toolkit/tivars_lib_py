@@ -194,8 +194,7 @@ class TIHeader:
         if hasattr(data, "read"):
             data = BytesIO(data.read())
 
-        else:
-            data = BytesIO(data)
+        data = BytesIO(data.ljust(len(self), b'\x00'))
 
         # Read magic
         self.raw.magic = data.read(8)
@@ -713,10 +712,9 @@ class TIEntry(Dock, Converter):
         """
 
         if hasattr(data, "read"):
-            data = BytesIO(data.read())
+            data = data.read()
 
-        else:
-            data = BytesIO(data)
+        data = BytesIO(data.ljust(TIEntry.flash_meta_length + 4, b'\x00'))
 
         # Read meta length
         self.raw.meta_length = data.read(2)
@@ -1251,13 +1249,19 @@ class TIVar:
         :param filename: A filename to save to (defaults to the var's name and extension)
         """
 
+        if not filename:
+            filename = self.filename
+
+        elif "." not in filename:
+            filename += f".{self.extension}"
+
         if self._model:
             for index, entry in enumerate(self.entries):
                 if entry.get_min_os() > self._model.OS("latest"):
                     warn(f"Entry #{index + 1} is not supported by {self._model}.",
                          UserWarning)
 
-        with open(filename or self.filename, 'wb+') as file:
+        with open(filename, 'wb+') as file:
             file.write(self.bytes())
 
 
