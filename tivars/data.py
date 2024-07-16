@@ -379,7 +379,11 @@ class Section:
         if instance is None:
             return self
 
-        return self._get(self._get_raw(instance), instance=instance)
+        try:
+            return self._get(self._get_raw(instance), instance=instance)
+
+        except IndexError:
+            raise ValueError(f"data '{self._name}' is empty or missing")
 
     def __set__(self, instance, value: _T):
         setattr(instance.raw, self._name, self._set_raw(instance, value))
