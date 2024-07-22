@@ -26,6 +26,10 @@ images = ["pillow", "numpy"]
 arrays = ["numpy"]
 
 
+[tool.coverage.run]
+omit = ["tivars/tokens/*"]
+
+
 [tool.pydoctor]
 add-package = ["./tivars"]
 project-name = "tivars_lib_py"
