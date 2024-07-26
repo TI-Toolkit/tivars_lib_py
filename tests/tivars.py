@@ -201,7 +201,7 @@ class TokenizationTests(unittest.TestCase):
 
     def test_modes(self):
         interpolation = "A and B:Disp \"A and B\":Send(\"SET SOUND eval(A and B) TIME 2"
-        names = "Disp \"WHITE,|LWHITE,prgmWHITE\",WHITE,|LWHITE:prgmWHITE:prgmABCDEF"
+        names = "Disp \"WHITE,ʟWHITE,prgmWHITE\",WHITE,ʟWHITE:prgmWHITE:prgmABCDEF"
 
         self.assertEqual(TIProgram.encode(interpolation, mode="max"),
                          b'A@B>\xde*A@B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
