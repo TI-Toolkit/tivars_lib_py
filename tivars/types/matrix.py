@@ -52,7 +52,7 @@ class TIMatrix(TIEntry, register=True):
             case _:
                 return super().__format__(format_spec)
 
-        return "[" + outer_sep.join(f"[{inner_sep.join(format(entry, format_spec)for entry in row)}]"
+        return "[" + outer_sep.join(f"[{inner_sep.join(format(entry, format_spec) for entry in row)}]"
                                     for row in self.matrix()) + "]"
 
     def __iter__(self) -> Iterator[RealEntry]:
