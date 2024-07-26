@@ -45,15 +45,21 @@ class TokenizedEntry(SizedEntry):
         if "." not in format_spec:
             format_spec += ".en"
 
-        spec, lang = format_spec.split(".")
+        lines, conv, sep, spec, lang = re.match(r"(.*?)(\w?)(\W*)?(\w?)\.(\w+)", format_spec).groups()
+        line_number = f"{{index:{lines}{conv or 'd'}}}{sep}" if conv or lines else sep
 
         try:
             match spec:
                 case "":
-                    return self.decode(self.data, lang=lang)
+                    string = self.decode(self.data, lang=lang)
 
-                case "t":
-                    return self.decode(self.data, lang=lang, mode="accessible")
+                case "a" | "t":
+                    string = self.decode(self.data, lang=lang, mode="accessible")
+
+                case _:
+                    raise KeyError
+
+            return "\n".join(line_number.format(index=index) + line for index, line in enumerate(string.split("\n")))
 
         except KeyError:
             pass
