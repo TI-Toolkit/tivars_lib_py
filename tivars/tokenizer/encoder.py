@@ -36,7 +36,7 @@ def encode(string: str, *,
     All tokenization modes respect token glyphs for substituting Unicode symbols.
 
     :param string: The text string to encode
-    :param trie: The `TokenTrie` object to use for tokenization
+    :param trie: The `TokenTrie` object to use for tokenization (defaults to the TI-84+CE trie)
     :param mode: The tokenization mode to use (defaults to ``smart``)
     :param normalize: Whether to apply NFC normalization to the input before encoding (defaults to ``true``)
     :return: A tuple of a stream of token bytes and a minimum `OsVersion`

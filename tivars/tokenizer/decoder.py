@@ -19,7 +19,7 @@ def decode(bytestream: bytes, *,
         - ``ti_ascii``: Represents the tokens with their internal font indices (returns a ``bytes`` object)
 
     :param bytestream: The token bytes to decode
-    :param tokens: The `Tokens` object to use for decoding
+    :param tokens: The `Tokens` object to use for decoding (defaults to the TI-84+CE tokens)
     :param lang: The language used in ``string`` (defaults to English, ``en``)
     :param mode: The form of token representation to use for output (defaults to ``display``)
     :return: A tuple of a string of token representations and a minimum `OsVersion`
