@@ -225,6 +225,9 @@ class TokenizationTests(unittest.TestCase):
         lines = "For(A,1,10", "Disp A", "End"
         self.assertEqual(TIProgram("\n".join(lines)), TIProgram("\r\n".join(lines)))
 
+    def test_byte_literals(self):
+        self.assertEqual(TIProgram.encode(r"\x26\uAA0AXYZ\0"), b'\x26\xAA\x0AXYZ\xbb\xd70')
+
 
 class NumericTests(unittest.TestCase):
     def real_float_test(self, real_type, filename, name, sign, exponent, mantissa, string, dec):

@@ -3,6 +3,9 @@ Token stream decoder
 """
 
 
+from warnings import warn
+
+from tivars.data import Bytes
 from tivars.models import *
 from tivars.tokens.scripts import *
 
@@ -44,10 +47,18 @@ def decode(bytestream: bytes, *,
 
             elif len(curr_bytes) >= 2:
                 if not any(key.startswith(curr_bytes[:1]) for key in tokens.bytes):
-                    raise ValueError(f"unrecognized byte '0x{curr_bytes[0]:x}' at position {index}")
+                    warn(f"Unrecognized byte '{curr_bytes[0]:x}' at position {index}.",
+                         BytesWarning)
+
+                    out.append(b'?' if mode == "ti_ascii" else rf"\x{curr_bytes[0]:x}")
 
                 else:
-                    raise ValueError(f"unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}")
+                    warn(f"Unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}.",
+                         BytesWarning)
+
+                    out.append(b'?' if mode == "ti_ascii" else rf"\u{curr_bytes[0]:x}{curr_bytes[1]:x}")
+
+                curr_bytes = b''
 
         elif any(curr_bytes):
             raise ValueError(f"unexpected null byte at position {index}")

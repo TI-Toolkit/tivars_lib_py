@@ -37,6 +37,16 @@ class EncoderState:
         :return: A tuple of the output `Token`, the remainder of ``string``, and a list of states to add to the stack
         """
 
+        # Is this a byte literal?
+        if string.startswith(r"\x") or string.startswith(r"\u"):
+            length = 4 if string.startswith(r"\x") else 6
+            string, remainder = string[:length], string[length:]
+            token = Token(bytes.fromhex(string.lstrip(r"\ux")),
+                          {"en": Translation(b'?', string, string, [])},
+                          {"illegal": "true"})
+
+            return token, remainder, self.next(token)
+
         tokens = trie.get_tokens(string)
         if not tokens:
             raise ValueError("no tokenization options exist")
