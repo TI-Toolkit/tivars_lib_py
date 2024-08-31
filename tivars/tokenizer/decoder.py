@@ -5,7 +5,6 @@ Token stream decoder
 
 from warnings import warn
 
-from tivars.data import Bytes
 from tivars.models import *
 from tivars.tokens.scripts import *
 
@@ -40,7 +39,12 @@ def decode(bytestream: bytes, *,
 
         if curr_bytes[0]:
             if curr_bytes in tokens.bytes:
-                out.append(getattr(tokens.bytes[curr_bytes].langs[lang], mode))
+                try:
+                    out.append(getattr(tokens.bytes[curr_bytes].langs[lang], mode))
+
+                except AttributeError:
+                    raise ValueError(f"'{mode}' is not a recognized token representation")
+
                 since = max(tokens.bytes[curr_bytes].since, since)
 
                 curr_bytes = b''
