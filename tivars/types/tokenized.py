@@ -6,7 +6,7 @@ Tokenized types
 import re
 
 from io import BytesIO
-from warnings import warn
+from warnings import catch_warnings, simplefilter, warn
 
 from tivars.data import *
 from tivars.models import *
@@ -351,12 +351,15 @@ class TIProgram(TokenizedEntry, register=True):
         return string
 
     def coerce(self):
-        try:
-            self.string()
-            doors = False
+        with catch_warnings():
+            simplefilter("error")
 
-        except ValueError:
-            doors = True
+            try:
+                self.string()
+                doors = False
+
+            except BytesWarning:
+                doors = True
 
         doors &= b"\xEF\x68" in self.data and self.data.index(b"\xEF\x68") > 0
 

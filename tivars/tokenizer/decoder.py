@@ -32,10 +32,13 @@ def decode(bytestream: bytes, *,
     out = []
     since = OsVersions.INITIAL
 
+    byte_attr = mode == "ti_ascii"
+
     index = 0
     curr_bytes = b''
     while index < len(bytestream):
         curr_bytes += bytestream[index:][:1]
+        curr_hex = curr_bytes.hex()
 
         if curr_bytes[0]:
             if curr_bytes in tokens.bytes:
@@ -51,25 +54,35 @@ def decode(bytestream: bytes, *,
 
             elif len(curr_bytes) >= 2:
                 if not any(key.startswith(curr_bytes[:1]) for key in tokens.bytes):
-                    warn(f"Unrecognized byte '{curr_bytes[0]:x}' at position {index}.",
+                    warn(f"Unrecognized byte '0x{curr_hex}' at position {index}.",
                          BytesWarning)
 
-                    out.append(b'?' if mode == "ti_ascii" else rf"\x{curr_bytes[0]:x}")
+                    out.append(b'?' if byte_attr else rf"\x{curr_hex}")
 
                 else:
-                    warn(f"Unrecognized bytes '0x{curr_bytes[0]:x}{curr_bytes[1]:x}' at position {index}.",
+                    warn(f"Unrecognized bytes '0x{curr_hex}' at position {index}.",
                          BytesWarning)
 
-                    out.append(b'?' if mode == "ti_ascii" else rf"\u{curr_bytes[0]:x}{curr_bytes[1]:x}")
+                    out.append(b'?' if byte_attr else rf"\u{curr_hex}")
 
                 curr_bytes = b''
 
         elif any(curr_bytes):
-            raise ValueError(f"unexpected null byte at position {index}")
+            count = 0
+            while not curr_bytes[0]:
+                curr_bytes = curr_bytes[1:]
+                count += 1
+                out.append(b'?' if byte_attr else r"\x00")
+
+            warn(f"There are {count} unexpected null bytes at position {index}." if count > 1 else
+                 f"There is an unexpected null byte at position {index}.",
+                 BytesWarning)
+
+            index -= 1
 
         index += 1
 
-    return b''.join(out) if mode == "ti_ascii" else "".join(out), since
+    return b''.join(out) if byte_attr else "".join(out), since
 
 
 __all__ = ["decode"]
