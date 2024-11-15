@@ -450,7 +450,7 @@ class TIRealRadical(RealEntry, register=True):
 
     @Loader[Decimal]
     def load_decimal(self, decimal: Decimal):
-        raise NotImplementedError
+        raise NotImplementedError("cannot determine exact representation from decimal approximation")
 
     def decimal(self) -> Decimal:
         return (self.left_scalar * (-1 if self.sign_type % 2 else 1) * Decimal(self.left_radicand).sqrt() +
@@ -601,7 +601,7 @@ class TIRealPi(TIReal, register=True):
 
     @Loader[Decimal]
     def load_decimal(self, decimal: Decimal):
-        raise NotImplementedError
+        raise NotImplementedError("decimal loading is ambiguous for pi types")
 
     def decimal(self) -> Decimal:
         with localcontext() as ctx:

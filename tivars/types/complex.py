@@ -405,7 +405,7 @@ class TIComplexRadical(ComplexEntry, register=True):
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
-        return NotImplemented
+        raise NotImplementedError("cannot determine exact representation from decimal approximation")
 
 
 class TIComplexPi(TIComplex, register=True):
@@ -425,7 +425,7 @@ class TIComplexPi(TIComplex, register=True):
 
     @Loader[complex, float, int]
     def load_complex(self, comp: complex):
-        return NotImplemented
+        raise NotImplementedError("decimal loading is ambiguous for pi types")
 
 
 class TIComplexPiFraction(TIComplexPi, TIComplexFraction, register=True):
