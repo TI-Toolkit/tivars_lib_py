@@ -93,7 +93,7 @@ class ComplexEntry(TIEntry):
     The format for these types varies and is handled by `real_subtype_id` and `imag_subtype_id`.
 
     Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
-    These types need not be the same, and will have subtype IDs not corresponding to their native type IDs.
+    These types need not be the same, and will have subtype IDs not directly corresponding to their native type IDs.
 
     The canonical type of the entire entry is determined by the imaginary part.
     The entry is coerced automatically if the imaginary part is updated.
@@ -148,7 +148,7 @@ class ComplexEntry(TIEntry):
         """
         The data section of the entry
 
-        Contains two real numbers, the real and imaginary parts
+        The real and imaginary parts of the complex number are stored adjacently in `TIReal` format.
         """
 
     @View(calc_data, RealPart)[0:9]
@@ -410,7 +410,7 @@ class TIComplexRadical(ComplexEntry, register=True):
 
 class TIComplexPi(TIComplex, register=True):
     """
-    Parser for complex entries with imaginary part an integer multiple of π
+    Parser for complex entries with imaginary part a multiple of π
 
     A `TIComplexPi` has a `TIRealPi` as its imaginary part.
     """
