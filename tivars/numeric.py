@@ -8,7 +8,7 @@ import decimal as dec
 from .data import *
 
 
-pi = dec.Decimal("3.141592653589792")
+pi = dec.Decimal("3.1415926535898")
 
 
 def replacer(string: str, replacements: dict[str, str]) -> str:

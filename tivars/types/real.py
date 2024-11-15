@@ -614,12 +614,10 @@ class TIRealPi(TIReal, register=True):
         super().load_string(string.strip("π"))
 
     def string(self) -> str:
-        string = f"{self.decimal() / pi:.14g}".rstrip("0").rstrip(".")
-
-        if string.startswith("0e"):
+        if self.decimal() == 0:
             return "0"
-        else:
-            return string + "π"
+
+        return f"{self.decimal() / pi:.14f}".rstrip("0").rstrip(".") + "π"
 
 
 class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
