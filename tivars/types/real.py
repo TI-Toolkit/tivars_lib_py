@@ -625,7 +625,7 @@ class TIRealPi(TIReal, register=True):
             return "0"
 
         else:
-            return f"{self.decimal() / pi:.14f}".rstrip("0").rstrip(".") + "π"
+            return f"{super().decimal():.14f}".rstrip("0").rstrip(".") + "π"
 
 
 class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
