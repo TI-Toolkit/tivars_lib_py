@@ -412,8 +412,8 @@ class TIRealRadical(RealEntry, register=True):
         """
         The sign type of the real radical
 
-        If the sign type is odd, the left scalar is negative.
-        If the sign type is greater than one, the right scalar is negative.
+        If the sign type is odd (first bit is set), the left scalar is negative.
+        If the sign type is greater than one (second bit is set), the right scalar is negative.
         """
 
     @View(calc_data, LeftNibbleBCD)[1:3]
