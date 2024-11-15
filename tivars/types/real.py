@@ -346,6 +346,14 @@ class TIRealFraction(TIReal, register=True):
 
     _type_id = 0x18
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "#":
+                return format(self.fraction(), "#")
+
+            case _:
+                return super().__format__(format_spec)
+
     @Loader[Fraction]
     def load_fraction(self, fraction: Fraction):
         with localcontext() as ctx:
