@@ -307,12 +307,11 @@ class TIReal(RealEntry, register=True):
         self.mantissa, self.exponent, self.sign_bit = int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
     def string(self) -> str:
-        string = f"{self.decimal():.14g}".rstrip("0").rstrip(".")
-
-        if string.startswith("0e"):
+        if self.decimal() == 0:
             return "0"
+
         else:
-            return string
+            return f"{self.decimal():.14f}".rstrip("0").rstrip(".")
 
 
 class TIUndefinedReal(TIReal, register=True):
@@ -617,7 +616,8 @@ class TIRealPi(TIReal, register=True):
         if self.decimal() == 0:
             return "0"
 
-        return f"{self.decimal() / pi:.14f}".rstrip("0").rstrip(".") + "π"
+        else:
+            return f"{self.decimal() / pi:.14f}".rstrip("0").rstrip(".") + "π"
 
 
 class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
