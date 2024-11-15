@@ -321,8 +321,6 @@ class TIUndefinedReal(TIReal, register=True):
     A `TIUndefinedReal` is precisely a `TIReal` but marked as undefined for use in initial sequence values
     """
 
-    _T = 'TIUndefinedReal'
-
     _type_id = 0x0E
 
 
