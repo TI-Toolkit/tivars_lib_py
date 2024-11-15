@@ -9,6 +9,7 @@ from .data import *
 
 
 pi = dec.Decimal("3.1415926535898")
+e = dec.Decimal("2.718281828459")
 
 
 def replacer(string: str, replacements: dict[str, str]) -> str:
@@ -173,5 +174,5 @@ class RightNibbleBCD(Converter):
         return bytes(data)
 
 
-__all__ = ["pi", "replacer", "sign", "squash",
+__all__ = ["pi", "e", "replacer", "sign", "squash",
            "BCD", "LeftNibbleBCD", "RightNibbleBCD"]
