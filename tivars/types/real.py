@@ -370,11 +370,11 @@ class TIRealFraction(TIReal, register=True):
         self.load_fraction(Fraction(squash(string)))
 
     def string(self) -> str:
-        if self.fraction():
-            return "%d / %d" % self.fraction().as_integer_ratio()
+        if self.fraction() == 0:
+            return "0"
 
         else:
-            return "0"
+            return "%d / %d" % self.fraction().as_integer_ratio()
 
 
 class TIRealRadical(RealEntry, register=True):
