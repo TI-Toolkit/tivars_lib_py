@@ -413,11 +413,11 @@ class TIRealRadical(RealEntry, register=True):
                 case _:
                     return part
 
-        left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
-        right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
-
         match format_spec:
             case "":
+                left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
+                right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
+
                 match left, right, self.denominator:
                     case "", "", _:
                         string = "0"
@@ -440,6 +440,9 @@ class TIRealRadical(RealEntry, register=True):
                 return string.replace("+-", "-")
 
             case "#":
+                left = f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}"
+                right = f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}"
+
                 return f"({left}+{right})/{self.denominator}".replace("+-", "-")
 
             case _:
