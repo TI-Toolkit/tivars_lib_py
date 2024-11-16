@@ -50,10 +50,10 @@ class TokenizedEntry(SizedEntry):
 
         try:
             match spec:
-                case "":
+                case "" | "t":
                     string = self.decode(self.data, lang=lang)
 
-                case "a" | "t":
+                case "a":
                     string = self.decode(self.data, lang=lang, mode="accessible")
 
                 case _:
