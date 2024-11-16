@@ -48,6 +48,9 @@ def decode(bytestream: bytes, *,
                 except AttributeError:
                     raise ValueError(f"'{mode}' is not a recognized token representation")
 
+                except KeyError:
+                    raise ValueError(f"'{lang}' is not a recognized language")
+
                 since = max(tokens.bytes[curr_bytes].since, since)
 
                 curr_bytes = b''
