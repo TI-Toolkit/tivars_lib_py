@@ -259,7 +259,7 @@ class NumericTests(unittest.TestCase):
                              Decimal("94.247779607694"))
 
     def test_real_pi_frac(self):
-        self.real_float_test(TIRealPiFraction, "Exact_RealPiFrac", "D", 1, 127, 28571428571429, "2π / 7",
+        self.real_float_test(TIRealPiFraction, "Exact_RealPiFrac", "D", 1, 127, 28571428571429, "2π/7",
                              Decimal("0.89759790102567"))
 
     def test_real_radical(self):
@@ -271,6 +271,8 @@ class NumericTests(unittest.TestCase):
         self.assertEqual(test_radical.right_scalar, 14)
         self.assertEqual(test_radical.right_radicand, 654)
         self.assertEqual(test_radical.denominator, 259)
+
+        self.assertEqual(str(test_radical), "(41√789-14√654)/259")
 
     def complex_float_test(self, comp_type, filename, name, real_sign, real_exponent, real_mantissa,
                            imag_sign, imag_exponent, imag_mantissa, string, comp):
@@ -309,21 +311,21 @@ class NumericTests(unittest.TestCase):
 
     def test_complex_frac(self):
         self.complex_float_test(TIComplexFraction, "Exact_ComplexFrac", "E", 1, 127, 20000000000000,
-                                -1, 127, 40000000000000, "1 / 5 - 2i / 5", 0.2 - 0.4j)
+                                -1, 127, 40000000000000, "1/5 - 2i/5", 0.2 - 0.4j)
 
     def test_complex_pi(self):
         self.complex_float_test(TIComplexPi, "Exact_ComplexPi", "H", 1, 127, 20000000000000,
-                                -1, 128, 30000000000000, "1 / 5 - 3πi", 0.2 - 9.42j)
+                                -1, 128, 30000000000000, "1/5 - 3πi", 0.2 - 9.42j)
 
     def test_complex_pi_frac(self):
         self.complex_float_test(TIComplexPiFraction, "Exact_ComplexPiFrac", "A", 1, 128, 0,
-                                1, 127, 28571428571429, "2πi / 7", 0.90j)
+                                1, 127, 28571428571429, "2πi/7", 0.90j)
 
     def test_coercion(self):
         test_num = TIComplexFraction("1 + 3/5i")
         self.assertEqual(test_num.real_type, TIReal)
         self.assertEqual(test_num.imag_type, TIRealFraction)
-        self.assertEqual(str(test_num), "1 + 3i / 5")
+        self.assertEqual(str(test_num), "1 + 3i/5")
 
         test_num.imag = TIReal("0.6")
         self.assertEqual(test_num.real_type, TIReal)
