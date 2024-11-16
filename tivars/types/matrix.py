@@ -45,12 +45,10 @@ class TIMatrix(TIEntry, register=True):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
-            case "":
-                inner_sep, outer_sep = ", ", ", "
             case "t":
                 inner_sep, outer_sep = ",", ""
             case _:
-                return super().__format__(format_spec)
+                inner_sep, outer_sep = ", ", ", "
 
         return "[" + outer_sep.join(f"[{inner_sep.join(format(entry, format_spec) for entry in row)}]"
                                     for row in self.matrix()) + "]"

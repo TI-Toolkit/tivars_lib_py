@@ -90,12 +90,10 @@ class ListEntry(TIEntry):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
-            case "":
-                return "[" + ", ".join(format(entry, format_spec) for entry in self.list()) + "]"
             case "t":
-                return "{" + ",".join(format(entry, 't') for entry in self.list()) + "}"
+                return "{" + ",".join(format(entry, "t") for entry in self.list()) + "}"
             case _:
-                return super().__format__(format_spec)
+                return "[" + ", ".join(format(entry, format_spec) for entry in self.list()) + "]"
 
     def __iter__(self) -> Iterator[_E]:
         return iter(self.list())
