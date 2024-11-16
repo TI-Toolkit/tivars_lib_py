@@ -65,7 +65,12 @@ class RealEntry(TIEntry):
     def __format__(self, format_spec: str) -> str:
         match format_spec:
             case "":
-                return self.string()
+                if self.decimal() == 0:
+                    return "0"
+
+                else:
+                    return f"{self.decimal():.14f}".rstrip("0").rstrip(".")
+
             case "j":
                 return str(self.json_number())
             case "t":
@@ -306,13 +311,6 @@ class TIReal(RealEntry, register=True):
 
         self.mantissa, self.exponent, self.sign_bit = int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
 
-    def string(self) -> str:
-        if self.decimal() == 0:
-            return "0"
-
-        else:
-            return f"{self.decimal():.14f}".rstrip("0").rstrip(".")
-
 
 class TIUndefinedReal(TIReal, register=True):
     """
@@ -346,8 +344,8 @@ class TIRealFraction(TIReal, register=True):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
-            case "#":
-                return format(self.fraction(), "#")
+            case "" | "#":
+                return format(self.fraction(), format_spec)
 
             case _:
                 return super().__format__(format_spec)
@@ -366,13 +364,6 @@ class TIRealFraction(TIReal, register=True):
     @Loader[str]
     def load_string(self, string: str):
         self.load_fraction(Fraction(squash(string)))
-
-    def string(self) -> str:
-        if self.fraction() == 0:
-            return "0"
-
-        else:
-            return "%d / %d" % self.fraction().as_integer_ratio()
 
 
 class TIRealRadical(RealEntry, register=True):
@@ -400,6 +391,56 @@ class TIRealRadical(RealEntry, register=True):
     is_exact = True
 
     _type_id = 0x1C
+
+    def __format__(self, format_spec: str) -> str:
+        def reduce(part):
+            match [*part]:
+                case ["0", "√", *_]:
+                    return ""
+
+                case [*_, "√", "0"]:
+                    return ""
+
+                case [*_, "√", "1"]:
+                    return part[:-2]
+
+                case ["1", "√", *_]:
+                    return part[1:]
+
+                case ["-1", "√", *_]:
+                    return part[2:]
+
+        left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
+        right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
+
+        match format_spec:
+            case "":
+                match left, right, self.denominator:
+                    case "", "", _:
+                        string = "0"
+
+                    case "", _, 1:
+                        string = right
+
+                    case _, "", 1:
+                        string = left
+
+                    case "", _, _:
+                        string = f"{right}/{self.denominator}"
+
+                    case _, "", _:
+                        string = f"{left}/{self.denominator}"
+
+                    case _:
+                        string = f"({left}+{right})/{self.denominator}"
+
+                return string.replace("+-", "-")
+
+            case "#":
+                return f"({left}+{right})/{self.denominator}".replace("+-", "-")
+
+            case _:
+                return super().__format__(format_spec)
 
     @Section(min_data_length)
     def calc_data(self) -> bytes:
@@ -535,48 +576,6 @@ class TIRealRadical(RealEntry, register=True):
         self.left_scalar, self.right_scalar = abs(left_scalar), abs(right_scalar)
         self.left_radicand, self.right_radicand = left_radicand, right_radicand
 
-    def string(self) -> str:
-        def reduce(part):
-            match [*part]:
-                case ["0", "√", *_]:
-                    return ""
-
-                case [*_, "√", "0"]:
-                    return ""
-
-                case [*_, "√", "1"]:
-                    return part[:-2]
-
-                case ["1", "√", *_]:
-                    return part[1:]
-
-                case ["-1", "√", *_]:
-                    return part[2:]
-
-        left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
-        right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
-
-        match left, right, self.denominator:
-            case "", "", _:
-                string = "0"
-
-            case "", _, 1:
-                string = right
-
-            case _, "", 1:
-                string = left
-
-            case "", _, _:
-                string = f"{right} / {self.denominator}"
-
-            case _, "", _:
-                string = f"{left} / {self.denominator}"
-
-            case _:
-                string = f"({left} + {right}) / {self.denominator}"
-
-        return string.replace("+ -", "- ")
-
 
 class TIRealPi(TIReal, register=True):
     """
@@ -599,6 +598,18 @@ class TIRealPi(TIReal, register=True):
 
     _type_id = 0x20
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "":
+                if self.decimal() == 0:
+                    return "0"
+
+                else:
+                    return f"{super().decimal():.14f}".rstrip("0").rstrip(".") + "π"
+
+            case _:
+                return super().__format__(format_spec)
+
     @Loader[Decimal]
     def load_decimal(self, decimal: Decimal):
         raise NotImplementedError("decimal loading is ambiguous for pi types")
@@ -618,13 +629,6 @@ class TIRealPi(TIReal, register=True):
 
         super().load_string(string.strip("π"))
 
-    def string(self) -> str:
-        if self.decimal() == 0:
-            return "0"
-
-        else:
-            return f"{super().decimal():.14f}".rstrip("0").rstrip(".") + "π"
-
 
 class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
     """
@@ -641,6 +645,14 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
 
     _type_id = 0x21
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "" | "#":
+                return format(self.fraction(), format_spec).replace("/", "π/")
+
+            case _:
+                return super().__format__(format_spec)
+
     def fraction(self) -> Fraction:
         return Fraction(self.decimal() / pi).limit_denominator(10000)
 
@@ -652,9 +664,6 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
             raise ValueError("value must be a fractional multiple of π")
 
         super(TIRealPi, self).load_string(string.replace("π", ""))
-
-    def string(self) -> str:
-        return super(TIRealPi, self).string().replace(" /", "π /")
 
 
 __all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction",

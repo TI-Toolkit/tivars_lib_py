@@ -421,6 +421,14 @@ class TIMonoGDB(SizedEntry, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "":
+                return json.dumps(self.dict())
+
+            case _:
+                return super().__format__(format_spec)
+
     def __iter__(self) -> Iterator:
         return iter(self.dict().items())
 
@@ -685,9 +693,6 @@ class TIMonoGDB(SizedEntry, register=True):
     @Loader[str]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
-
-    def string(self) -> str:
-        return json.dumps(self.dict())
 
     def coerce(self):
         if self.get_color_data():

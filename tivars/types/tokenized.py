@@ -169,9 +169,6 @@ class TokenizedEntry(SizedEntry):
 
         self.data = self.encode(string, model=model, lang=lang, mode=mode)
 
-    def string(self) -> str:
-        return format(self, "")
-
 
 class TIEquation(TokenizedEntry, register=True):
     """

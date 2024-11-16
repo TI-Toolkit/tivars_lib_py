@@ -22,6 +22,14 @@ class SettingsEntry(SizedEntry):
 
     min_data_length = 2
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case "":
+                return json.dumps(self.dict())
+
+            case _:
+                return super().__format__(format_spec)
+
     @Loader[dict]
     def load_dict(self, dct: dict):
         """
@@ -40,9 +48,6 @@ class SettingsEntry(SizedEntry):
     @Loader[str]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
-
-    def string(self) -> str:
-        return json.dumps(self.dict())
 
 
 class TIWindowSettings(SettingsEntry, register=True):

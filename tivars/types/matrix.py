@@ -191,8 +191,5 @@ class TIMatrix(TIEntry, register=True):
 
         self.load_matrix(matrix)
 
-    def string(self) -> str:
-        return format(self, "")
-
 
 __all__ = ["TIMatrix"]

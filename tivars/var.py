@@ -867,7 +867,7 @@ class TIEntry(Dock, Converter):
         :return: A string representation of this entry
         """
 
-        raise NotImplementedError
+        return format(self, "")
 
     @classmethod
     def open(cls, filename: str) -> Self:

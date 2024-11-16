@@ -191,9 +191,6 @@ class ListEntry(TIEntry):
 
         self.load_list(lst)
 
-    def string(self) -> str:
-        return format(self, "")
-
 
 class TIRealList(ListEntry, register=True):
     """

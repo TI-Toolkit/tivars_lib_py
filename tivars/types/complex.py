@@ -130,12 +130,35 @@ class ComplexEntry(TIEntry):
         return self.complex()
 
     def __format__(self, format_spec: str) -> str:
+        def make_imag(entry: 'RealEntry') -> str:
+            match entry.type_id:
+                case 0x18 | 0x21:
+                    return format(entry, format_spec).replace("/", "i/")
+
+                case 0x1C:
+                    return f"{entry:{format_spec}} * i"
+
+                case _:
+                    return f"{entry:{format_spec}}i"
+
         match format_spec:
-            case "":
-                return self.string()
+            case "" | "#":
+                match format(self.real, format_spec), format(self.imag, format_spec):
+                    case "0", "0":
+                        return "0"
+
+                    case _, "0":
+                        return format(self.real, format_spec)
+
+                    case "0", _:
+                        return make_imag(self.imag)
+
+                    case _:
+                        return replacer(f"{self.real:{format_spec}} + " + make_imag(self.imag), {"+ -": "- ", " 1i": " i"})
+
             case "t":
-                return squash(replacer(self.string(), {"i": "[i]", " 1[i]": "[i]", "+ 0[i]": "", "0 +": "",
-                                                       "-": "~"}))
+                return squash(replacer(self.string(), {"i": "[i]", "-": "~"}))
+
             case _:
                 try:
                     return format(self.complex(), format_spec)
@@ -316,31 +339,6 @@ class ComplexEntry(TIEntry):
                 raise ValueError(f"could not parse real part '{parts[0]}'")
 
         self.imag = self.imag_type(parts[1])
-
-    def string(self) -> str:
-        def make_imag(entry: 'RealEntry') -> str:
-            match entry.type_id:
-                case 0x18 | 0x21:
-                    return str(entry).replace(" /", "i /")
-
-                case 0x1C:
-                    return f"{entry} * i"
-
-                case _:
-                    return f"{entry}i"
-
-        match str(self.real), str(self.imag):
-            case "0", "0":
-                return "0"
-
-            case _, "0":
-                return str(self.real)
-
-            case "0", _:
-                return make_imag(self.imag)
-
-            case _:
-                return replacer(f"{self.real} + " + make_imag(self.imag), {"+ -": "- ", " 1i": " i"})
 
     def coerce(self):
         self.type_id = self.imag_subtype_id
