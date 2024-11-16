@@ -410,6 +410,9 @@ class TIRealRadical(RealEntry, register=True):
                 case ["-1", "√", *_]:
                     return part[2:]
 
+                case _:
+                    return part
+
         left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
         right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
 
