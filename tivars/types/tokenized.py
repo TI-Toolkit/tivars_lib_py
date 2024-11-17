@@ -42,13 +42,13 @@ class TokenizedEntry(SizedEntry):
     """
 
     def __format__(self, format_spec: str) -> str:
-        if "." not in format_spec:
-            format_spec += ".en"
-
-        lines, conv, sep, spec, lang = re.match(r"(.*?)(\w?)(\W*)?(\w?)\.(\w+)", format_spec).groups()
-        line_number = f"{{index:{lines}{conv or 'd'}}}{sep}" if conv or lines else sep
-
         try:
+            if "." not in format_spec:
+                format_spec += ".en"
+
+            lines, conv, sep, spec, lang = re.match(r"(.*?)(\w?)(\W*)?(\w?)\.(\w+)", format_spec).groups()
+            line_number = f"{{index:{lines}{conv or 'd'}}}{sep}" if conv or lines else sep
+
             match spec:
                 case "" | "t":
                     string = self.decode(self.data, lang=lang)
@@ -61,10 +61,8 @@ class TokenizedEntry(SizedEntry):
 
             return "\n".join(line_number.format(index=index) + line for index, line in enumerate(string.split("\n")))
 
-        except KeyError:
-            pass
-
-        return super().__format__(format_spec)
+        except (AttributeError, KeyError, ValueError, TypeError):
+            return super().__format__(format_spec)
 
     @staticmethod
     def decode(data: bytes, *, lang: str = "en", mode: str = "display") -> str | bytes:
