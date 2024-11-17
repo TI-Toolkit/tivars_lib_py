@@ -344,17 +344,19 @@ class Section:
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
-    def __init__(self, length: int = None, converter: type[Converter] = None):
+    def __init__(self, length: int = None, converter: type[Converter] = None, *, class_attr: bool = False):
         """
         Define a new data section given a length and type converter
 
         :param length: The length of the section (defaults to ``None``, i.e. unbounded)
         :param converter: The type converter for the section (defaults to `Bytes`)
+        :param class_attr: Whether the section should return a shadowed class attribute (defaults to ``False``)
         """
 
         self._converter = converter or Bytes
         self._get, self._set = self._converter.get, self._converter.set
         self._length = length
+        self._class_attr = class_attr
 
     def __copy__(self) -> 'Section':
         cls = self.__class__
@@ -377,7 +379,7 @@ class Section:
 
     def __get__(self, instance, owner: type = None) -> _T:
         if instance is None:
-            return self
+            return getattr(owner, f"_{self._name}") if self._class_attr else self
 
         try:
             return self._get(self._get_raw(instance), instance=instance)

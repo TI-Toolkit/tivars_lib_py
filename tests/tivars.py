@@ -23,6 +23,9 @@ class VarTests(unittest.TestCase):
 
         self.assertEqual(test_var.header, test_header)
 
+        self.assertEqual(type(test_var.entries[0]), TIProgram)
+        self.assertEqual(type(test_var.entries[0]).type_id, 0x05)
+
         self.assertEqual(test_var.entries[0].meta_length, TIEntry.flash_meta_length)
         self.assertEqual(test_var.entries[0].type_id, 0x05)
         self.assertEqual(test_var.entries[0].name, "SETDATE")

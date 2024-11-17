@@ -502,7 +502,7 @@ class TIEntry(Dock, Converter):
 
         return len(self.calc_data)
 
-    @Section(1, Bits[:])
+    @Section(1, Bits[:], class_attr=True)
     def type_id(self) -> int:
         """
         The type ID of the entry
