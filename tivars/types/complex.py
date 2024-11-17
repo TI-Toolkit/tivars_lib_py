@@ -52,6 +52,7 @@ class ImaginaryPart(Converter):
     Converter for the imaginary part of complex numbers
 
     Imaginary parts are instances of `RealEntry`.
+    Updating the imaginary part of a complex entry updates the type of the entire entry.
     """
 
     _T = RealEntry
@@ -63,7 +64,7 @@ class ImaginaryPart(Converter):
 
         :param data: The raw bytes to convert
         :param instance: The instance containing the data section
-        :return: The real part of ``data`` converted to the appropriate type
+        :return: The imaginary part of ``data`` converted to the appropriate type
         """
 
         return instance.imag_type.get(data)
