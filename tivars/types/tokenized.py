@@ -303,7 +303,7 @@ class TIProgram(TokenizedEntry, register=True):
         Cast this program to a protected program
         """
 
-        self.type_id = 0x06
+        self.type_id = TIProtectedProgram.type_id
         self.coerce()
 
     def unprotect(self):
@@ -311,7 +311,7 @@ class TIProgram(TokenizedEntry, register=True):
         Cast this program to an unprotected program
         """
 
-        self.type_id = 0x05
+        self.type_id = TIProgram.type_id
         self.coerce()
 
     @Loader[bytes, bytearray, BytesIO]
@@ -359,13 +359,13 @@ class TIProgram(TokenizedEntry, register=True):
         doors &= b"\xEF\x68" in self.data and self.data.index(b"\xEF\x68") > 0
 
         match self.type_id, any(token in self.data for token in self.asm_tokens) | doors:
-            case 0x05, False:
+            case TIProgram.type_id, False:
                 self.__class__ = TIProgram
-            case 0x05, True:
+            case TIProgram.type_id, True:
                 self.__class__ = TIAsmProgram
-            case 0x06, False:
+            case TIProtectedProgram.type_id, False:
                 self.__class__ = TIProtectedProgram
-            case 0x06, True:
+            case TIProtectedProgram.type_id, True:
                 self.__class__ = TIProtectedAsmProgram
 
 

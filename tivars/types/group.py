@@ -10,7 +10,10 @@ from warnings import warn
 from tivars.data import *
 from tivars.models import *
 from tivars.var import TIEntry, SizedEntry
+from .appvar import *
 from .gdb import TIGraphedEquation
+from .list import *
+from .tokenized import *
 
 
 class TIGroup(SizedEntry, register=True):
@@ -75,10 +78,10 @@ class TIGroup(SizedEntry, register=True):
                 vat[0] |= entry.raw.flags
 
             match entry.type_id:
-                case 0x05 | 0x06 | 0x15 | 0x17:
+                case TIProgram.type_id | TIProtectedProgram.type_id | TIAppVar.type_id | TIGroup.type_id:
                     vat += bytearray([len(name), *name])
 
-                case 0x01 | 0x0D:
+                case TIRealList.type_id | TIComplexList.type_id:
                     vat += bytearray([len(name) + 1, *name, 0])
 
                 case _:
@@ -113,7 +116,7 @@ class TIGroup(SizedEntry, register=True):
             _, version = data.read(2)
 
             match type_id := type_byte[0] & 63:
-                case 0x05 | 0x06 | 0x15 | 0x17:
+                case TIProgram.type_id | TIProtectedProgram.type_id | TIAppVar.type_id | TIGroup.type_id:
                     *_, page, length = data.read(4)
 
                     if length > 8:
@@ -122,7 +125,7 @@ class TIGroup(SizedEntry, register=True):
 
                     name = data.read(length)
 
-                case 0x01 | 0x0D:
+                case TIRealList.type_id | TIComplexList.type_id:
                     *_, page, length = data.read(4)
 
                     if length > 7:

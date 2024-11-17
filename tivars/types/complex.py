@@ -133,10 +133,10 @@ class ComplexEntry(TIEntry):
     def __format__(self, format_spec: str) -> str:
         def make_imag(entry: 'RealEntry') -> str:
             match entry.type_id:
-                case 0x18 | 0x21:
+                case TIRealFraction.type_id | TIRealPiFraction.type_id:
                     return format(entry, format_spec).replace("/", "i/")
 
-                case 0x1C:
+                case TIRealRadical.type_id:
                     return f"{entry:{format_spec}} * i"
 
                 case _:
@@ -247,8 +247,8 @@ class ComplexEntry(TIEntry):
     def clear(self):
         super().clear()
 
-        self.real_subtype_id = 0x0C
-        self.imag_subtype_id = self._type_id if self._type_id is not None else 0x0C
+        self.real_subtype_id = TIComplex.type_id
+        self.imag_subtype_id = self._type_id if self._type_id is not None else TIComplex.type_id
 
     def components(self) -> (RealEntry, RealEntry):
         """
@@ -258,13 +258,11 @@ class ComplexEntry(TIEntry):
         return self.real, self.imag
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
-        data = data or self.data
-
-        match max(data[0], data[9]):
-            case 0x0C:
+        match self.get_version(data):
+            case 0x00:
                 return TI_83.OS()
 
-            case 0x1B:
+            case 0x0B:
                 return TI_84P.OS("2.55")
 
             case _:
@@ -274,10 +272,10 @@ class ComplexEntry(TIEntry):
         data = data or self.data
 
         match max(data[0], data[9]):
-            case 0x0C:
+            case TIComplex.type_id:
                 return 0x00
 
-            case 0x1B:
+            case TIComplexFraction.type_id:
                 return 0x0B
 
             case _:
@@ -326,7 +324,8 @@ class ComplexEntry(TIEntry):
             self.real = self.real_type(parts[0])
 
         except (TypeError, ValueError):
-            for type_id in [0x00, 0x18, 0x1C, 0x20, 0x21]:
+            for type_id in [TIReal.type_id, TIRealFraction.type_id, TIRealRadical.type_id,
+                            TIRealPi.type_id, TIRealPiFraction.type_id]:
                 if type_id == self.real_subtype_id:
                     continue
 
