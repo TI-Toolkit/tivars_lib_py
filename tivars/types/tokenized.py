@@ -50,10 +50,10 @@ class TokenizedEntry(SizedEntry):
             line_number = f"{{index:{lines}{conv or 'd'}}}{sep}" if conv or lines else sep
 
             match spec:
-                case "" | "t":
+                case "" | "d":
                     string = self.decode(self.data, lang=lang)
 
-                case "a":
+                case "a" | "t":
                     string = self.decode(self.data, lang=lang, mode="accessible")
 
                 case _:
