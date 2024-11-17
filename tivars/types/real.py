@@ -71,9 +71,6 @@ class RealEntry(TIEntry):
                 else:
                     return f"{self.decimal():.14f}".rstrip("0").rstrip(".")
 
-            case "j":
-                return str(self.json_number())
-
             case _:
                 if format_spec.endswith("t"):
                     spec = "" if format_spec == "t" else format_spec[:-1] + "f"
