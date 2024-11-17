@@ -243,12 +243,33 @@ Functions to decode and encode strings into tokens can be found in `tivars.token
 
 ## Documentation
 
+### API
+
 Library documentation can be found on [GitHub Pages](https://ti-toolkit.github.io/tivars_lib_py/).
 
 The var file format(s) and data sections can be found in a readable format on the [repository wiki](https://github.com/TI-Toolkit/tivars_lib_py/wiki). Much of the information is copied from the [TI-83 Link Guide](http://merthsoft.com/linkguide/ti83+/vars.html), though has been updated to account for color models.
 
 > [!NOTE]
 > The wiki is still a work-in-progress. Why not [contribute a page](https://github.com/TI-Toolkit/tivars_lib_py/wiki)?
+
+### Formatting
+
+All entry types support string formatting using Python's f-strings.
+
+- All entries support hex formatting of their data: `{sep}{width}x`
+  - `sep`: a single character to separate groups of hex digits *(default: none)*
+  - `width`: how many digits to group together *(default: no groups)*
+- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}{sep}{type}{lang}`
+  - `line_spec`: format specifier for line numbers *(default: no line numbers)*
+  - `sep`: a string to separate lines and line numbers *(default: none)*
+  - `type`: how to format each token
+    - `a`: use accessible names
+    - `d`: use display names *(default)*
+  - `lang`: language code of the desired translation language *(default: en)*
+- Numerical entries support float-style formatting, whose complete details can be found [in the Python docs](https://docs.python.org/3/library/string.html#formatspecv).
+- Lists and matrices support float-style formatting, applied to their elements.
+
+Additionally, the `t` type is supported for types which can be made from tokens, composing the object out of typeable (accessible) token names. For example, `-2 + 5i` is presented as `~2+5[i]`.
 
 ## Examples
 
