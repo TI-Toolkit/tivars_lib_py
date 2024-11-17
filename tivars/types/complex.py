@@ -156,10 +156,11 @@ class ComplexEntry(TIEntry):
                     case _:
                         return replacer(f"{self.real:{format_spec}} + " + make_imag(self.imag), {"+ -": "- ", " 1i": " i"})
 
-            case "t":
-                return squash(replacer(self.string(), {"i": "[i]", "-": "~"}))
-
             case _:
+                if format_spec.endswith("t"):
+                    spec = "" if format_spec == "t" else format_spec[:-1] + "f"
+                    return squash(replacer(format(self, spec), {"i": "[i]", "-": "~"}))
+
                 try:
                     return format(self.complex(), format_spec)
 

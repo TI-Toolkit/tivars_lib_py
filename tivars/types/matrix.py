@@ -44,11 +44,11 @@ class TIMatrix(TIEntry, register=True):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
-        match format_spec:
-            case "t":
-                inner_sep, outer_sep = ",", ""
-            case _:
-                inner_sep, outer_sep = ", ", ", "
+        if format_spec.endswith("t"):
+            inner_sep, outer_sep = ",", ""
+
+        else:
+            inner_sep, outer_sep = ", ", ", "
 
         return "[" + outer_sep.join(f"[{inner_sep.join(format(entry, format_spec) for entry in row)}]"
                                     for row in self.matrix()) + "]"

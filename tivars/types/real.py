@@ -73,9 +73,12 @@ class RealEntry(TIEntry):
 
             case "j":
                 return str(self.json_number())
-            case "t":
-                return squash(re.sub(r"(√\d*)", r"sqrt(\1)", replacer(self.string(), {"-": "~", "/": "n/d"})))
+
             case _:
+                if format_spec.endswith("t"):
+                    spec = "" if format_spec == "t" else format_spec[:-1] + "f"
+                    return squash(re.sub(r"(√\d*)", r"sqrt(\1)", replacer(format(self, spec), {"-": "~", "/": "n/d"})))
+
                 try:
                     return format(self.decimal(), format_spec)
 

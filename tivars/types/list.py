@@ -89,11 +89,11 @@ class ListEntry(TIEntry):
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
-        match format_spec:
-            case "t":
-                return "{" + ",".join(format(entry, "t") for entry in self.list()) + "}"
-            case _:
-                return "[" + ", ".join(format(entry, format_spec) for entry in self.list()) + "]"
+        if format_spec.endswith("t"):
+            return "{" + ",".join(format(entry, format_spec) for entry in self.list()) + "}"
+
+        else:
+            return "[" + ", ".join(format(entry, format_spec) for entry in self.list()) + "]"
 
     def __iter__(self) -> Iterator[_E]:
         return iter(self.list())
