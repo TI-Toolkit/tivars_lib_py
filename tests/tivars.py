@@ -269,14 +269,18 @@ class NumericTests(unittest.TestCase):
     def test_real_radical(self):
         test_radical = TIRealRadical.open("tests/data/var/Exact_RealRadical.8xn")
 
-        self.assertEqual(test_radical.sign_type, 2)
+        self.assertEqual(test_radical.sign_type, 0)
         self.assertEqual(test_radical.left_scalar, 41)
         self.assertEqual(test_radical.left_radicand, 789)
         self.assertEqual(test_radical.right_scalar, 14)
         self.assertEqual(test_radical.right_radicand, 654)
         self.assertEqual(test_radical.denominator, 259)
 
-        self.assertEqual(str(test_radical), "(41√789-14√654)/259")
+        self.assertEqual(str(test_radical), "(41√789+14√654)/259")
+
+        test_alternate = TIRealRadical("(4√3-2√1)/2")
+        self.assertEqual(f"{test_alternate}", "(4√3-2)/2")
+        self.assertEqual(f"{test_alternate:#}", "(4√3-2√1)/2")
 
     def complex_float_test(self, comp_type, filename, name, real_sign, real_exponent, real_mantissa,
                            imag_sign, imag_exponent, imag_mantissa, string, comp):

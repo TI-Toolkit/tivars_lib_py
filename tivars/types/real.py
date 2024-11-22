@@ -415,8 +415,8 @@ class TIRealRadical(RealEntry, register=True):
 
         match format_spec:
             case "":
-                left = reduce(f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}")
-                right = reduce(f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}")
+                left = reduce(f"{self.signed_left_scalar}√{self.left_radicand}")
+                right = reduce(f"{self.signed_right_scalar}√{self.right_radicand}")
 
                 match left, right, self.denominator:
                     case "", "", _:
@@ -440,8 +440,8 @@ class TIRealRadical(RealEntry, register=True):
                 return string.replace("+-", "-")
 
             case "#":
-                left = f"{self.left_scalar * (-1 if self.sign_type % 2 else 1)}√{self.left_radicand}"
-                right = f"{self.right_scalar * (-1 if self.sign_type > 1 else 1)}√{self.right_radicand}"
+                left = f"{self.signed_left_scalar}√{self.left_radicand}"
+                right = f"{self.signed_right_scalar}√{self.right_radicand}"
 
                 return f"({left}+{right})/{self.denominator}".replace("+-", "-")
 
@@ -452,7 +452,7 @@ class TIRealRadical(RealEntry, register=True):
     def calc_data(self) -> bytes:
         pass
 
-    @View(calc_data, Bits[0:4])[1:2]
+    @View(calc_data, Bits[4:8])[1:2]
     def sign_type(self) -> int:
         """
         The sign type of the real radical
@@ -495,13 +495,29 @@ class TIRealRadical(RealEntry, register=True):
     def sign(self) -> int:
         return -1 if self.decimal() < 0 else 1
 
+    @property
+    def signed_left_scalar(self) -> int:
+        """
+        The left scalar of the real radical, with sign attached
+        """
+
+        return self.left_scalar * (-1 if self.sign_type & 1 else 1)
+
+    @property
+    def signed_right_scalar(self) -> int:
+        """
+        The right scalar of the real radical, with sign attached
+        """
+
+        return self.right_scalar * (-1 if self.sign_type & 2 else 1)
+
     @Loader[Decimal]
     def load_decimal(self, decimal: Decimal):
         raise NotImplementedError("cannot determine exact representation from decimal approximation")
 
     def decimal(self) -> Decimal:
-        return (self.left_scalar * (-1 if self.sign_type % 2 else 1) * Decimal(self.left_radicand).sqrt() +
-                self.right_scalar * (-1 if self.sign_type > 1 else 1) * Decimal(self.right_radicand).sqrt()) \
+        return (self.signed_left_scalar * Decimal(self.left_radicand).sqrt() +
+                self.signed_right_scalar * Decimal(self.right_radicand).sqrt()) \
             / self.denominator
 
     @Loader[str]
