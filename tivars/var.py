@@ -336,7 +336,7 @@ class TIEntry(Dock, Converter):
             """
 
             return self.meta_length + self.calc_data_length + \
-                self.type_id + self.name + self.version + self.archived + \
+                self.type_id + self.name + self.flash_bytes + \
                 self.calc_data_length + self.calc_data
 
     def __init__(self, init=None, *,
