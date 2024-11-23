@@ -138,6 +138,11 @@ class EntryTests(unittest.TestCase):
         test_program.clear()
         self.assertEqual(bool(test_program), True)
 
+    def test_hex(self):
+        test_program = TIEntry.open("tests/data/var/Program.8xp")
+        self.assertEqual(f"{test_program}", "setDate(1")
+        self.assertEqual(f"{test_program:-2X:}", "0300:EF00:31")
+
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):

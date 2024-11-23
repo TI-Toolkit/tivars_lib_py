@@ -431,19 +431,24 @@ class TIEntry(Dock, Converter):
         :return: A string representation of this entry
         """
 
-        if match := re.fullmatch(r"(?P<sep>\D)?(?P<width>\d+)?x", format_spec):
+        if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])(?P<sep>\D)?", format_spec):
             match match["sep"], match["width"]:
                 case None, None:
-                    return self.calc_data.hex()
+                    string = self.calc_data.hex()
 
                 case sep, None:
-                    return self.calc_data.hex(sep)
+                    string = self.calc_data.hex(sep)
 
                 case None, width:
-                    return self.calc_data.hex(" ", int(width))
+                    string = self.calc_data.hex(" ", int(width))
 
                 case sep, width:
-                    return self.calc_data.hex(sep, int(width))
+                    string = self.calc_data.hex(sep, int(width))
+
+            return string if match["case"] == "x" else string.upper()
+
+        elif not format_spec:
+            return super().__str__()
 
         else:
             raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
