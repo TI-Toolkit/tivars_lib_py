@@ -13,7 +13,7 @@ from warnings import warn
 
 from .data import *
 from .models import *
-from .tokenizer import TokenizedString
+from .tokenizer import Name
 
 
 match version_info[:2]:
@@ -515,7 +515,7 @@ class TIEntry(Dock, Converter):
         The type determines how the contents of the data section of the entry are interpreted.
         """
 
-    @Section(8, TokenizedString)
+    @Section(8, Name)
     def name(self) -> str:
         """
         The name of the entry

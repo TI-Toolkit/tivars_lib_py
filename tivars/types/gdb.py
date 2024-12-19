@@ -283,7 +283,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         :return: The name of this equation used in the GDB JSON format
         """
 
-        return decode(self.raw.name, mode="accessible")[0].strip("{}|")
+        return self.decode(self.raw.name, mode="accessible").strip("{}|")
 
     def load_data_section(self, data: BytesIO):
         flag_byte = data.read(1)

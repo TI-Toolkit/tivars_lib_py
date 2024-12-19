@@ -261,7 +261,7 @@ All entry types support string formatting using Python's f-strings.
   - `width`: how many digits to group together *(default: no groups)*
 - Tokenized entries support formatting of their tokens into readable lines: `{line_spec}{sep}{type}{lang}`
   - `line_spec`: format specifier for line numbers *(default: no line numbers)*
-  - `sep`: a string to separate lines and line numbers *(default: none)*
+  - `sep`: a string to separate lines and line numbers *(required for line numbering)*
   - `type`: how to format each token
     - `a`: use accessible names
     - `d`: use display names *(default)*

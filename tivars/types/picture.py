@@ -11,7 +11,7 @@ from warnings import warn
 
 from tivars.data import *
 from tivars.models import *
-from tivars.tokenizer import TokenizedString
+from tivars.tokenizer import Name
 from tivars.var import SizedEntry
 
 RGB = tuple[int, int, int]
@@ -331,7 +331,7 @@ class TIPicture(PictureEntry, register=True):
 
 
 # Workaround until the token sheets are updated
-class ImageName(TokenizedString):
+class ImageName(Name):
     """
     Converter for the name section of images
 

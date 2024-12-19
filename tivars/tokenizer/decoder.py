@@ -9,11 +9,15 @@ from tivars.models import *
 from tivars.tokens.scripts import *
 
 
-def decode(bytestream: bytes, *,
-           tokens: Tokens = None, lang: str = "en",
-           mode: str = "display") -> tuple[str | bytes, OsVersion]:
+def invalid_token(bits: bytes) -> Token:
+    name = rf"\x{bits.hex()}" if len(bits) == 1 else rf"\u{bits.hex()}"
+    return Token(bits, {"en": Translation(b'?', "?", name, [])})
+
+
+
+def decode(bytestream: bytes, *, tokens: Tokens = None) -> tuple[list[Token], OsVersion]:
     """
-    Decodes a byte stream into a string of tokens and its minimum supported OS version
+    Decodes a byte stream into a list of `Token` objects and its minimum supported OS version
 
     Each token is represented using one of three different representations formats, dictated by ``mode``:
         - ``display``: Represents the tokens with Unicode characters matching the calculator's display
@@ -22,17 +26,13 @@ def decode(bytestream: bytes, *,
 
     :param bytestream: The token bytes to decode
     :param tokens: The `Tokens` object to use for decoding (defaults to the TI-84+CE tokens)
-    :param lang: The language used in ``string`` (defaults to English, ``en``)
-    :param mode: The form of token representation to use for output (defaults to ``display``)
-    :return: A tuple of a string of token representations and a minimum `OsVersion`
+    :return: A tuple of a list of `Token` objects and a minimum `OsVersion`
     """
 
     tokens = tokens or TI_84PCE.tokens
 
     out = []
     since = OsVersions.INITIAL
-
-    byte_attr = mode == "ti_ascii"
 
     index = 0
     curr_bytes = b''
@@ -42,50 +42,35 @@ def decode(bytestream: bytes, *,
 
         if curr_bytes[0]:
             if curr_bytes in tokens.bytes:
-                try:
-                    out.append(getattr(tokens.bytes[curr_bytes].langs[lang], mode))
-
-                except AttributeError:
-                    raise ValueError(f"'{mode}' is not a recognized token representation")
-
-                except KeyError:
-                    raise ValueError(f"'{lang}' is not a recognized language")
-
+                out.append(tokens.bytes[curr_bytes])
                 since = max(tokens.bytes[curr_bytes].since, since)
 
                 curr_bytes = b''
 
             elif len(curr_bytes) >= 2:
-                if not any(key.startswith(curr_bytes[:1]) for key in tokens.bytes):
-                    warn(f"Unrecognized byte '0x{curr_hex}' at position {index}.",
-                         BytesWarning)
+                warn(f"Unrecognized byte(s) '0x{curr_hex}' at position {index}.",
+                     BytesWarning)
 
-                    out.append(b'?' if byte_attr else rf"\x{curr_hex}")
-
-                else:
-                    warn(f"Unrecognized bytes '0x{curr_hex}' at position {index}.",
-                         BytesWarning)
-
-                    out.append(b'?' if byte_attr else rf"\u{curr_hex}")
-
+                out.append(invalid_token(curr_bytes))
                 curr_bytes = b''
 
-        elif any(curr_bytes):
+        elif curr_bytes[-1]:
             count = 0
             while not curr_bytes[0]:
                 curr_bytes = curr_bytes[1:]
                 count += 1
-                out.append(b'?' if byte_attr else r"\x00")
+                out.append(invalid_token(b'\x00'))
 
             warn(f"There are {count} unexpected null bytes at position {index}." if count > 1 else
                  f"There is an unexpected null byte at position {index}.",
                  BytesWarning)
 
+            curr_bytes = b''
             index -= 1
 
         index += 1
 
-    return b''.join(out) if byte_attr else "".join(out), since
+    return out, since
 
 
 __all__ = ["decode"]

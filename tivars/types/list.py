@@ -15,7 +15,7 @@ from .complex import ComplexEntry
 from .real import RealEntry
 
 
-class ListName(TokenizedString):
+class ListName(Name):
     """
     Converter for the name section of lists
 

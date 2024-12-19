@@ -6,6 +6,7 @@ Tokenized types
 import re
 
 from io import BytesIO
+from typing import Sequence
 from warnings import catch_warnings, simplefilter, warn
 
 from tivars.data import *
@@ -43,9 +44,8 @@ class TokenizedEntry(SizedEntry):
 
     def __format__(self, format_spec: str) -> str:
         try:
-            lines, sep, spec, lang = re.match(r"(.*?[a-z%#])?(\W*)(\w?)\.?(\w+)?", format_spec).groups()
-            line_number = f"{{index:{lines}}}{sep}" if lines else sep
-            lang = lang or "en"
+            lines, sep, spec, lang = re.match(r"(?:(.*?[a-z%#])(\W+))?(\w?)(\.\w+)?$", format_spec).groups()
+            lang = (lang or ".en")[1:]
 
             match spec:
                 case "" | "d":
@@ -57,17 +57,19 @@ class TokenizedEntry(SizedEntry):
                 case _:
                     raise KeyError
 
-            return "\n".join(line_number.format(index=index) + line for index, line in enumerate(string.split("\n")))
+            if lines:
+                return "\n".join(f"{index:{lines}}{sep}" + line for index, line in enumerate(string.split("\n")))
+
+            else:
+                return string
 
         except (AttributeError, KeyError, TypeError, ValueError):
             return super().__format__(format_spec)
 
     @staticmethod
-    def decode(data: bytes, *, lang: str = "en", mode: str = "display") -> str | bytes:
+    def decode(data: bytes, *, lang: str = "en", mode: str = "display") -> str:
         """
         Decodes a byte stream into a string of tokens
-
-        For detailed information on tokenization modes, see `tivars.tokenizer.decode`.
 
         :param data: The token bytes to decode
         :param lang: The language used in ``string`` (defaults to English, ``en``)
@@ -75,7 +77,11 @@ class TokenizedEntry(SizedEntry):
         :return: A string of token representations
         """
 
-        return decode(data, lang=lang, mode=mode)[0]
+        try:
+            return "".join(getattr(token.langs[lang], mode) for token in decode(data)[0])
+
+        except (AttributeError, TypeError):
+            raise ValueError(f"unrecognized tokenization mode: '{mode}'")
 
     @staticmethod
     def encode(string: str, *, model: TIModel = None, lang: str = None, mode: str = None) -> bytes:
@@ -165,6 +171,23 @@ class TokenizedEntry(SizedEntry):
 
         self.data = self.encode(string, model=model, lang=lang, mode=mode)
 
+    @Loader[Sequence[Token]]
+    def load_tokens(self, tokens: Sequence[Token]):
+        """
+        Loads this entry from a sequence of `Token` objects
+
+        :param tokens: The sequence of tokens to load
+        """
+
+        self.data = b''.join(token.bits for token in tokens)
+
+    def tokens(self) -> list[Token]:
+        """
+        :return: The tokens comprising this entry as a list of `Token` objects
+        """
+
+        return decode(self.data)[0]
+
 
 class TIEquation(TokenizedEntry, register=True):
     """
@@ -191,7 +214,7 @@ class TIEquation(TokenizedEntry, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-    @Section(8, TokenizedString)
+    @Section(8, Name)
     def name(self, value) -> str:
         """
         The name of the entry
@@ -245,7 +268,7 @@ class TIString(TokenizedEntry, register=True):
 
         super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
 
-    @Section(8, TokenizedString)
+    @Section(8, Name)
     def name(self, value) -> str:
         """
         The name of the entry
@@ -335,13 +358,16 @@ class TIProgram(TokenizedEntry, register=True):
         super().load_string(string, model=model, lang=lang, mode=mode)
 
     def string(self) -> str:
-        string = super().string()
-
         if not self.is_tokenized:
             warn("ASM programs may not have tokenized data.",
                  UserWarning)
 
-        return string
+            with catch_warnings():
+                simplefilter("ignore")
+                return super().string()
+
+        else:
+            return super().string()
 
     def coerce(self):
         with catch_warnings():
