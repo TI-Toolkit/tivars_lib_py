@@ -1,3 +1,8 @@
+"""
+Token objects
+"""
+
+
 from tivars.tokens.scripts import *
 
 

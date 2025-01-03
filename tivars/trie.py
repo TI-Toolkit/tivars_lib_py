@@ -1,3 +1,8 @@
+"""
+Token containers
+"""
+
+
 from tivars.tokens.scripts import *
 from .token import TIToken
 
