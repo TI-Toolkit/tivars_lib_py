@@ -4,7 +4,6 @@ import unittest
 from decimal import Decimal
 
 from tivars.models import *
-from tivars.tokenizer import *
 from tivars.types import *
 from tivars import TIHeader, TIVar, TIFlashHeader
 
@@ -355,6 +354,7 @@ class NumericTests(unittest.TestCase):
 class ArrayTests(unittest.TestCase):
     def test_real_list(self):
         test_real_list = TIRealList.open("tests/data/var/RealList.8xl")
+        self.assertEqual(test_real_list, TIList.open("tests/data/var/RealList.8xl"))
 
         test_list = [TIReal("-1.0"), TIReal("2.0"), TIReal("999")]
 
@@ -371,6 +371,7 @@ class ArrayTests(unittest.TestCase):
 
     def test_complex_list(self):
         test_comp_list = TIComplexList.open("tests/data/var/ComplexList.8xl")
+        self.assertEqual(test_comp_list, TIList.open("tests/data/var/ComplexList.8xl"))
 
         test_list = [TIComplex(1 + 1j), TIComplex("-3 + 2i"), TIComplex(4 + 0j)]
 

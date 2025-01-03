@@ -11,8 +11,8 @@ from tivars.data import *
 from tivars.models import *
 from tivars.tokenizer import *
 from tivars.var import TIEntry
-from .complex import ComplexEntry
-from .real import RealEntry
+from .complex import *
+from .real import *
 
 
 class ListName(Name):
@@ -67,7 +67,7 @@ class ListName(Name):
             return super().set(varname[-5:])
 
 
-class ListEntry(TIEntry):
+class TIList(TIEntry):
     """
     Base class for all list entries
 
@@ -154,9 +154,9 @@ class ListEntry(TIEntry):
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.calc_data_length // self._E.min_data_length != self.length:
+        if self._E.min_data_length and self.calc_data_length // self._E.min_data_length != self.length:
             warn(f"The list has an unexpected length "
-                 f"(expected {self.calc_data_length // self._E.min_data_length}, got {self.length}).",
+                 f"(expected {self.length}, got {self.calc_data_length // self._E.min_data_length}).",
                  BytesWarning)
 
     @Loader[Sequence]
@@ -189,8 +189,22 @@ class ListEntry(TIEntry):
 
         self.load_list(lst)
 
+    def coerce(self):
+        match self.data[0] & 31:
+            case TIReal.type_id | TIUndefinedReal.type_id | TIRealFraction.type_id \
+                 | TIRealRadical.type_id | TIRealPi.type_id | TIRealPiFraction.type_id:
+                self.__class__ = TIRealList
 
-class TIRealList(ListEntry, register=True):
+            case TIComplex.type_id | TIComplexFraction.type_id \
+                 | TIComplexRadical.type_id | TIComplexPi.type_id | TIComplexPiFraction.type_id:
+                self.__class__ = TIComplexList
+
+            case _:
+                warn("List contains unrecognized type(s); no coercion will occur.",
+                     UserWarning)
+
+
+class TIRealList(TIList, register=True):
     """
     Parser for lists of real numbers
     """
@@ -207,7 +221,7 @@ class TIRealList(ListEntry, register=True):
     _type_id = 0x01
 
 
-class TIComplexList(ListEntry, register=True):
+class TIComplexList(TIList, register=True):
     """
     Parser for lists of complex numbers
     """
@@ -223,4 +237,4 @@ class TIComplexList(ListEntry, register=True):
     _type_id = 0x0D
 
 
-__all__ = ["TIRealList", "TIComplexList"]
+__all__ = ["TIList", "TIRealList", "TIComplexList"]

@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 else:
     __all__ = ["TIEntry", "TIFlashHeader",
                "TIReal",
-               "TIRealList", "TIMatrix",
+               "TIRealList", "TIMatrix", "TIList",
                "TIEquation", "TIString",
                "TIProgram", "TIAsmProgram", "TIProtectedProgram", "TIProtectedAsmProgram",
                "TIPicture", "TIMonoPicture",

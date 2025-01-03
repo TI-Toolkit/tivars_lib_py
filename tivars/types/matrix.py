@@ -142,7 +142,7 @@ class TIMatrix(TIEntry, register=True):
 
         if self.calc_data_length // RealEntry.min_data_length != self.size:
             warn(f"The matrix has an unexpected size "
-                 f"(expected {self.calc_data_length // RealEntry.min_data_length}, got {self.size}).",
+                 f"(expected {self.size}, got {self.calc_data_length // RealEntry.min_data_length}).",
                  BytesWarning)
 
     def load_data_section(self, data: BytesIO):
