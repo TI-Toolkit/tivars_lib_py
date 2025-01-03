@@ -3,11 +3,11 @@ OS version definitions
 """
 
 
-import tivars.tokens.scripts.parse as parse
+import tivars.tokens.scripts as tokens
 from .model import *
 
 
-class OsVersions(parse.OsVersions):
+class OsVersions(tokens.OsVersions):
     """
     Namespace containing useful OS versions
 

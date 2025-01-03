@@ -8,8 +8,8 @@ import os
 from functools import total_ordering
 
 from tivars.flags import *
-from tivars.tokens.scripts import OsVersion, Tokens, TokenTrie
-from tivars.tokens.scripts.parse import MODEL_ORDER
+from tivars.tokens.scripts.parse import MODEL_ORDER, OsVersion, Tokens
+from tivars.trie import *
 
 
 @total_ordering
@@ -29,20 +29,14 @@ class TIModel:
     """
 
     def __init__(self, name: str, features: 'TIFeature', magic: str, product_id: int, lang: str):
-        self._name = name
-        self._features = TIFeature(features)
-        self._magic = magic
-        self._product_id = product_id
-        self._lang = lang
+        self.name = name
+        self.features = TIFeature(features)
+        self.magic = magic
+        self.product_id = product_id
+        self.lang = lang
 
         with open(os.path.join(os.path.dirname(__file__), "../tokens/8X.xml"), encoding="UTF-8") as file:
-            self._tokens = Tokens.from_xml_string(file.read(), self.OS("latest"))
-
-        self._trie = {}
-        for lang in self._tokens.langs:
-            self._trie[lang] = TokenTrie.from_tokens(self._tokens, lang)
-
-        self._trie[None] = self._trie["en"]
+            self.tokens = TITokens(Tokens.from_xml_string(file.read(), self.OS("latest")))
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -57,70 +51,12 @@ class TIModel:
         return self.name
 
     @property
-    def features(self) -> 'TIFeature':
-        """
-        :return: This model's features
-        """
-
-        return self._features
-
-    @property
-    def lang(self) -> str:
-        """
-        :return: This model's native language
-        """
-
-        return self._lang
-
-    @property
-    def magic(self) -> str:
-        """
-        :return: This model's file magic
-        """
-
-        return self._magic
-
-    @property
-    def name(self) -> str:
-        """
-        :return: This model's (abbreviated) name
-        """
-
-        return self._name
-
-    @property
     def order(self) -> int:
         """
         :return: This model's order within the chronology used by the token sheets
         """
 
-        return MODEL_ORDER[self._name]
-
-    @property
-    def product_id(self) -> int:
-        """
-        :return: This model's product ID
-        """
-
-        return self._product_id
-
-    @property
-    def tokens(self) -> Tokens:
-        """
-        :return: The tokens supported by this model
-        """
-
-        return self._tokens
-
-    def get_trie(self, lang: str = None) -> TokenTrie:
-        """
-        Gets the token trie for this model corresponding to a given language
-
-        :param lang: A language code (defaults to English, ``en``)
-        :return: The token trie corresponding to ``lang``
-        """
-
-        return self._trie[lang]
+        return MODEL_ORDER[self.name]
 
     def has(self, feature: 'TIFeature'):
         """
@@ -130,7 +66,7 @@ class TIModel:
         :return: Whether this model has ``feature``
         """
 
-        return feature in self._features
+        return feature in self.features
 
     def OS(self, version: str = "") -> OsVersion:
         """

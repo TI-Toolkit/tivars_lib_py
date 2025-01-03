@@ -7,7 +7,9 @@ from warnings import warn
 
 from tivars.data import String
 from tivars.models import *
+from tivars.token import *
 from tivars.tokens.scripts import *
+from tivars.trie import *
 from .decoder import *
 from .encoder import *
 
@@ -41,6 +43,7 @@ class Name(TokenizedString):
 
     @classmethod
     def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+        # Is this necessary?
         mode = "max" if instance is not None and instance.leading_name_byte else "string"
         data = encode(value, mode=mode)[0].rstrip(b'\x00')
 
@@ -52,4 +55,4 @@ class Name(TokenizedString):
 
 
 __all__ = ["decode", "encode", "normalize", "Name", "TokenizedString",
-           "Token", "Tokens", "OsVersion", "OsVersions"]
+           "TIToken", "IllegalToken", "TITokenTrie", "TITokens", "OsVersion", "OsVersions"]

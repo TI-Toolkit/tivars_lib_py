@@ -5,7 +5,8 @@ Encoder states
 
 from string import punctuation
 
-from tivars.tokens.scripts import *
+from tivars.token import *
+from tivars.trie import *
 
 
 class EncoderState:
@@ -28,7 +29,7 @@ class EncoderState:
     def __init__(self, length: int = 0):
         self.length = length
 
-    def munch(self, string: str, trie: TokenTrie) -> tuple[Token, str, list['EncoderState']]:
+    def munch(self, string: str, trie: TITokenTrie) -> tuple[TIToken, str, list['EncoderState']]:
         """
         Munch the input string and determine the resulting token, encoder state, and remainder of the string
 
@@ -41,13 +42,11 @@ class EncoderState:
         if string.startswith(r"\x") or string.startswith(r"\u"):
             length = 4 if string.startswith(r"\x") else 6
             string, remainder = string[:length], string[length:]
-            token = Token(bytes.fromhex(string.lstrip(r"\ux")),
-                          {"en": Translation(b'?', string, string, [])},
-                          {"illegal": "true"})
+            token = IllegalToken(bytes.fromhex(string.lstrip(r"\ux")))
 
             return token, remainder, self.next(token)
 
-        tokens = trie.get_tokens(string)
+        tokens = trie.match(string)
         if not tokens:
             raise ValueError("no tokenization options exist")
 
@@ -63,7 +62,7 @@ class EncoderState:
 
         return token, remainder, self.next(token)
 
-    def next(self, token: Token) -> list['EncoderState']:
+    def next(self, token: TIToken) -> list['EncoderState']:
         """
         Determines the next encode state given a token
 
@@ -102,7 +101,7 @@ class Line(EncoderState):
     Encoder state which is always exited after a line break
     """
 
-    def next(self, token: Token) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[EncoderState]:
         match token.bits:
             case b'\x04' | b'\x3F':
                 return []
@@ -118,7 +117,7 @@ class Name(Line):
 
     mode = -1
 
-    def next(self, token: Token) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[EncoderState]:
         #  Digits                              Uppercase letters (and theta)
         if b'\x30' <= token.bits <= b'\x39' or b'\x41' <= token.bits <= b'\x5B':
             return super().next(token)
@@ -150,7 +149,7 @@ class String(Line):
 
     mode = -1
 
-    def next(self, token: Token) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[EncoderState]:
         match token.bits:
             case b'\x2A':
                 return []
@@ -176,7 +175,7 @@ class InterpolationStart(Line):
 
     mode = 0
 
-    def next(self, token: Token) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[EncoderState]:
         match token.bits:
             case b'\x2A':
                 return [InterpolatedString()]
@@ -192,7 +191,7 @@ class SmartMode(EncoderState):
 
     mode = 0
 
-    def next(self, token: Token) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[EncoderState]:
         match token.bits:
             case b'\x2A':
                 return [self, String()]

@@ -7,12 +7,12 @@ import re
 import unicodedata
 
 from tivars.models import *
-from tivars.tokens.scripts import *
+from tivars.trie import *
 from .state import *
 
 
 def encode(string: str, *,
-           trie: TokenTrie = None, mode: str = None, normalize: bool = True) -> tuple[bytes, OsVersion]:
+           trie: TITokenTrie = None, mode: str = None, normalize: bool = True) -> tuple[bytes, OsVersion]:
     """
     Encodes a string of tokens represented as text into a byte stream and its minimum supported OS version
 
@@ -43,7 +43,7 @@ def encode(string: str, *,
     """
 
     string = _normalize(string) if normalize else string
-    trie = trie or TI_84PCE.get_trie()
+    trie = trie or TI_84PCE.tokens.tries[None]
     mode = mode or "smart"
 
     data = b''

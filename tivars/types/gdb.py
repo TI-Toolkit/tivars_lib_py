@@ -13,7 +13,6 @@ from warnings import catch_warnings, filterwarnings, warn
 from tivars.flags import *
 from tivars.data import *
 from tivars.models import *
-from tivars.tokenizer import decode
 from tivars.var import TIEntry, SizedEntry
 from .real import *
 from .tokenized import TIEquation

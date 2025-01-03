@@ -170,9 +170,11 @@ class TokenizationTests(unittest.TestCase):
 
         test_program.load_string(string := "setDate(1")
         self.assertEqual(test_program.string(), string)
+        self.assertEqual(f"{test_program:a}", string)
         self.assertEqual(f"{test_program:02d: }", f"00: {string}")
-        self.assertEqual(test_program.tokens(), [TI_84PCE.tokens.bytes[b'\xef\x00'],
-                                                 TI_84PCE.tokens.bytes[b'1']])
+
+        self.assertEqual(test_program.tokens(), [TI_84PCE.tokens["setDate("],
+                                                 TI_84PCE.tokens[b'1']])
 
         # Version is wrong(?)
         test_program.version = 0x04
