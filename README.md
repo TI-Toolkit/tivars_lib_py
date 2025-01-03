@@ -38,13 +38,16 @@ You can run the test suite via `__main__.py`, or run individual tests found in `
 
 ## How to Use
 
-### Creating objects
+Every var file has two parts: a _header_ and a number of _entries_, where a single entry contains the data for a single variable.
 
-### Var basics
+Most var files you might encounter in the wild or need to create programmatically contain just one entry holding all relevant variable data, so the library provides a convenient interface for loading, manipulating, and saving entries by themselves.
 
-Every var file has two parts: a _header_ and a number of _entries_, where an entry contains the data for a single variable. Usually, var files contain just one entry; in these cases, there's not much distinction between a var and an entry for the purposes of messing with its data.
+> [!TIP]
+> If you _do_ need to mess about with headers or entire files at once (including flash files), head down to the [Vars & Headers](#vars--headers) section.
 
 ### Entries
+
+#### Creating entries
 
 To create an empty entry, instantiate its corresponding type from `tivars.types`. You can specify additional parameters as you like:
 
@@ -58,40 +61,7 @@ my_program = TIProgram(name="HELLO")
 > [!TIP]
 > If you're not sure of an entry's type, you can instantiate a base `TIEntry`.
 
-### Vars and Headers
-
-If you want to create an entire var or just a header, use `TIVar` or `TIHeader` instead:
-
-```python
-from tivars.var import *
-
-my_var = TIVar()
-my_var_for84pce = TIVar(model=TI_84PCE)
-
-my_header = TIHeader()
-my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
-```
-
-### Reading files
-
-#### Vars
-
-Vars can be loaded from files or raw bytes:
-
-```python
-my_var = TIVar.open("HELLO.8xp")
-
-with open("HELLO.8xp", 'rb') as file:
-    my_var.load_var_file(file)
-    
-    file.seek(0)
-    my_var.load_bytes(file.read())
-```
-
-> [!IMPORTANT]
-> When loading from a file object, make sure the file is opened in binary mode.
-
-#### Entries
+#### Loading entries
 
 Entries can be loaded from files or raw bytes. When loading from a file, you may specify which entry to load if there are multiple:
 
@@ -106,6 +76,9 @@ with open("HELLO.8xp", 'rb') as file:
     file.seek(0)
     my_program.load_bytes(file.read())
 ```
+
+> [!IMPORTANT]
+> When loading from a file object, make sure the file is opened in binary mode.
 
 Most entry types also support loading from other natural data types. Any data can be passed to the constructor directly and be delegated to the correct loader:
 
@@ -127,36 +100,22 @@ my_entry = TIEntry.open("HELLO.8xp")
 > [!TIP]
 > Any entry type can be cast to any other by setting the object's `__class__`.
 
-### Exporting objects
+#### Exporting entries
 
-#### Vars
-
-Export a var as bytes or straight to a file:
+Entries can be saved directly to a file:
 
 ```python
-my_var.save("HELLO.8xp")
+my_program.save("HELLO.8xp")
 
 # Infer the filename and extension
-my_var.save()
+my_program.save()
 
-with open("HELLO.8xp", 'wb+') as file:
-    file.write(my_var.bytes())
+# Target the TI-83+
+my_program.save("HELLO.8xp", model=TI_83P)
 ```
 
 > [!IMPORTANT]
 > `.save()` uses the var's name as the filename, saving to the current working directory.
-
-#### Entries
-
-Entries can be passed an explicit header to attach or model to target when exporting:
-
-```python
-my_program.save("HELLO.8xp")
-my_program.save()
-
-with open("HELLO.8xp", 'wb+') as file:
-    file.write(my_program.export(header=my_header).bytes())
-```
 
 Any input data type can also be exported to:
 
@@ -169,16 +128,12 @@ assert my_real.float() == 1.23
 > [!TIP]
 > Built-in types can be exported to using the standard constructors, e.g. `str(my_program)`.
 
-### Data Manipulation
-
 #### Data sections
 
-Vars are comprised of individual _sections_ which represent different forms of data, split across the header and entries. The var itself also contains the total entry length and checksum sections, but these are read-only to prevent file corruption.
-
-You can read and write to individual sections of an entry or header as their "canonical" type:
+Entries are comprised of individual _sections_ which represent different forms of data. You can read and write to individual sections of an entry as their "canonical" type:
 
 ```python
-my_header.comment = "This is my (even cooler) comment!"
+my_program.named = "MYGAME"
 my_program.archived = True
 
 assert my_program.type_id == 0x05
@@ -200,34 +155,80 @@ Each section is annotated with the expected type.
 
 #### Raw containers
 
-All vars store their data sections as raw bytes in the format interpreted by the calculator. Access any data section as a member of the `.raw` attribute to view and edit these bytes directly.
+All entries store their data sections as raw bytes in the format interpreted by the calculator. Access any data section as a member of the `.raw` attribute to view and edit these bytes directly.
 
 ```python
-my_header.raw.comment = "This is my (even rawer) comment!".encode('utf-8')
+my_header.raw.name = "MYGAME".encode('utf-8')
 my_program.raw.archived = b'\x80'
 
 assert my_program.raw.type_id == b'\x05'
 ```
 
+### Vars & Headers
+
+If you want to create an entire var or just a header, use `TIVar` or `TIHeader`:
+
+```python
+from tivars.var import *
+
+my_var = TIVar()
+my_var_for84pce = TIVar(model=TI_84PCE)
+
+my_header = TIHeader()
+my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
+```
+
+Vars can be loaded from files or raw bytes:
+
+```python
+my_var = TIVar.open("HELLO.8xp")
+
+with open("HELLO.8xp", 'rb') as file:
+    my_var.load_var_file(file)
+    
+    file.seek(0)
+    my_var.load_bytes(file.read())
+```
+
+An entry can be exported to a var, with an optional attached header; likewise, a var is made up of its header and entries:
+```python
+my_var = my_program.export(header=my_header)
+
+assert my_header = my_var.header
+assert my_program == my_var.entries[0]
+```
+
+Export a var as bytes or straight to a file:
+
+```python
+my_var.save("HELLO.8xp")
+my_var.save()
+
+with open("HELLO.8xp", 'wb+') as file:
+    file.write(my_var.bytes())
+```
+
+Vars and headers, like entries, are composed of data sections, and contain packaging metadata not found in entries, such as the total entry length and file checksum.
+
 > [!WARNING]
 > Edits to read-only bytes like the checksum are reset whenever any other data in the var is updated.
 
-### Models
-
-All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
-
-### Flash Files
+#### Flash Files
 
 Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers. A flash header does _not_ need to be "packaged" into a larger file format like an entry in a regular var; see `TIFlashHeader.open` and `TIFlashHeader.save`.
 
 > [!TIP]
 > Loading flash files into a `TIEntry` probably won't work very well.
 
+### Models
+
+All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
+
 ## Other Functionalities
 
 ### PIL
 
-The `tivars.PIL` package can be used to interface with PIL, the Python Imaging Library. Simply import the package to register codecs for each of the TI image types. You can then open such images directly into a PIL `Image`:
+The `tivars.PIL` package can be used to interface with PIL, the [Python Imaging Library](https://pillow.readthedocs.io/en/stable/). Simply import the package to register codecs for each of the TI image types. You can then open such images directly into a PIL `Image`:
 
 ```python
 from PIL import Image
