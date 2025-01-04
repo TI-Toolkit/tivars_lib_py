@@ -194,6 +194,44 @@ class TokenizedEntry(SizedEntry):
 
         return decode(self.data)[0]
 
+    def lines(self) -> list[list[TIToken]]:
+        """
+        Splits this entry into logical lines: lines separated by newlines or colons lying outside string literals
+
+        This method is *not* used to format entries with line numbers; only literal newlines are considered there.
+        To split on just literal newlines or some other separator, use ``.string().split``.
+
+        :return: The logical lines of this entry as lists of `TIToken` objects
+        """
+
+        tokens = self.tokens()
+        lines = [[]]
+
+        in_string = False
+        for token in tokens:
+            match token.bits:
+                #    ->
+                case b'\x04':
+                    in_string = False
+
+                #    "
+                case b'\x2A':
+                    in_string = not in_string
+
+                #    :
+                case b'\x3E' if not in_string:
+                    lines.append([])
+
+                #    \n
+                case b'\x3F':
+                    in_string = False
+                    lines.append([])
+
+                case _:
+                    lines[-1].append(token)
+
+        return lines
+
 
 class TIEquation(TokenizedEntry, register=True):
     """
