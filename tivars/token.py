@@ -20,25 +20,48 @@ class TIToken(Token):
         self.translation = self.langs[None] = self.langs["en"]
 
     def __repr__(self) -> str:
-        return f"<{self.display} ({self.escape})>"
+        return self.escape
+
+    def __str__(self) -> str:
+        return self.display
 
     @property
     def accessible(self) -> str:
+        """
+        :return: The accessible name of this token in English (``en``)
+        """
+
         return self.translation.accessible
 
     @property
     def display(self) -> str:
+        """
+        :return: The display name of this token in English (``en``)
+        """
+
         return self.translation.display
 
     @property
     def escape(self) -> str:
+        """
+        :return: The escape sequence for this token as a byte literal
+        """
+
         return rf"\{'x' if len(self.bits) == 1 else 'u'}{self.bits.hex()}"
 
     def names(self) -> list[str]:
+        """
+        :return: The names of this token in English (``en``)
+        """
+
         return self.translation.names()
 
 
 class IllegalToken(TIToken):
+    """
+    `TIToken` subclass for denoting illegal (i.e. nonexistent) tokens
+    """
+
     def __init__(self, bits: bytes):
         self.bits = bits
 

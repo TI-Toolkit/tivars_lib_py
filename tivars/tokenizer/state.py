@@ -98,7 +98,7 @@ class MinMode(EncoderState):
 
 class Line(EncoderState):
     """
-    Encoder state which is always exited after a line break
+    Encoder state which is always exited after a line break or STO
     """
 
     def next(self, token: TIToken) -> list[EncoderState]:
@@ -193,6 +193,7 @@ class SmartMode(EncoderState):
 
     def next(self, token: TIToken) -> list[EncoderState]:
         match token.bits:
+            #    "
             case b'\x2A':
                 return [self, String()]
 
