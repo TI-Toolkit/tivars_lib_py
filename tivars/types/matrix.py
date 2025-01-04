@@ -176,18 +176,8 @@ class TIMatrix(TIEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str):
-        matrix = []
-
-        for string in ''.join(string.split())[1:-1].replace("],[", "][").split("]["):
-            row = []
-            for item in string.replace("[", "").replace("]", "").split(","):
-                entry = RealEntry()
-                entry.load_string(item)
-                row.append(entry)
-
-            matrix.append(row.copy())
-
-        self.load_matrix(matrix)
+        self.load_matrix([[RealEntry(item) for item in row.replace("[", "").replace("]", "").split(",")]
+                          for row in "".join(string.split())[1:-1].replace("],[", "][").split("][")])
 
 
 __all__ = ["TIMatrix"]

@@ -180,16 +180,10 @@ class TIList(TIEntry):
 
     @Loader[str]
     def load_string(self, string: str):
-        lst = []
-
-        for string in ''.join(string.strip("[]{}").split()).split(","):
-            entry = self._E()
-            entry.load_string(string)
-            lst.append(entry)
-
-        self.load_list(lst)
+        self.load_list([self._E(element) for element in "".join(string.strip("[]{}")).split(",")])
 
     def coerce(self):
+        # This is a bit lengthy
         match self.data[0] & 31:
             case TIReal.type_id | TIUndefinedReal.type_id | TIRealFraction.type_id \
                  | TIRealRadical.type_id | TIRealPi.type_id | TIRealPiFraction.type_id:

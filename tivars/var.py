@@ -9,7 +9,7 @@ from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
 from typing import BinaryIO
-from warnings import warn
+from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
 from .models import *
@@ -862,10 +862,25 @@ class TIEntry(Dock, Converter):
         """
         Loads this entry from a string representation
 
+        If there is no dedicated handler for an entry type, all subclasses of the type will be considered.
+
         :param string: The string to load
         """
 
-        raise NotImplementedError
+        with catch_warnings():
+            simplefilter("ignore")
+
+            for entry_type in self._type_ids.values():
+                if issubclass(entry_type, self.__class__):
+                    try:
+                        # Try out each possible string format
+                        self.load_bytes(entry_type(string).bytes())
+                        return
+
+                    except Exception:
+                        continue
+
+        raise ValueError(f"could not parse '{string}' as entry type")
 
     def string(self) -> str:
         """

@@ -350,9 +350,9 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
             return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None):
+    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
         equation = TIEquation()
-        equation.load_string(string, model=model)
+        equation.load_string(string, model=model, lang=lang, mode=mode)
         self.load_equation(equation)
 
     def coerce(self):

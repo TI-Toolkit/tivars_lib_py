@@ -362,12 +362,17 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(test_real_list.length, 3)
         self.assertEqual(test_real_list.list(), test_list)
         self.assertEqual(list(iter(test_real_list)), test_list)
-        self.assertEqual(str(test_real_list), "[-1, 2, 999]")
+        self.assertEqual(str(test_real_list), string := "[-1, 2, 999]")
         self.assertEqual(f"{test_real_list:t}", "{~1,2,999}")
 
         test_real_list.clear()
         test_real_list.load_list(test_list)
         self.assertEqual(list(test_real_list), test_list)
+
+        test_real_list.clear()
+        test_real_list.load_string(string)
+        self.assertEqual(list(test_real_list), test_list)
+
 
     def test_complex_list(self):
         test_comp_list = TIComplexList.open("tests/data/var/ComplexList.8xl")
@@ -379,11 +384,15 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(test_comp_list.length, 3)
         self.assertEqual(test_comp_list.list(), test_list)
         self.assertEqual(list(iter(test_comp_list)), test_list)
-        self.assertEqual(str(test_comp_list), "[1 + i, -3 + 2i, 4]")
+        self.assertEqual(str(test_comp_list), string := "[1 + i, -3 + 2i, 4]")
         self.assertEqual(f"{test_comp_list:t}", "{1+[i],~3+2[i],4}")
 
         test_comp_list.clear()
         test_comp_list.load_list(test_list)
+        self.assertEqual(list(test_comp_list), test_list)
+
+        test_comp_list.clear()
+        test_comp_list.load_string(string)
         self.assertEqual(list(test_comp_list), test_list)
 
     def test_matrix(self):
@@ -399,7 +408,7 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(test_matrix.matrix(), test_array)
         self.assertEqual(list(iter(test_matrix)), [entry for row in test_array for entry in row])
 
-        self.assertEqual(str(test_matrix), "[[0.5, -1, 2.6457513110646],"
+        self.assertEqual(str(test_matrix), string := "[[0.5, -1, 2.6457513110646],"
                                            " [2.7386127875258, 0.5, 3.1415926535898],"
                                            " [1, 99999999, 0]]")
         self.assertEqual(f"{test_matrix:t}", "[[0.5,~1,2.6457513110646]"
@@ -408,6 +417,10 @@ class ArrayTests(unittest.TestCase):
 
         test_matrix.clear()
         test_matrix.load_matrix(test_array)
+        self.assertEqual(test_matrix.matrix(), test_array)
+
+        test_matrix.clear()
+        test_matrix.load_string(string)
         self.assertEqual(test_matrix.matrix(), test_array)
 
     def test_exact_matrix(self):
