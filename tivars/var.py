@@ -964,7 +964,7 @@ class TIEntry(Dock, Converter):
                 self.coerce()
 
             elif self.type_id != 0xFF:
-                warn(f"Type ID 0x{self.type_id:02x} is not recognized; entry will not be coerced to a subclass.",
+                warn(f"Type ID 0x{self.type_id:02x} is not recognized; no coercion will occur.",
                      BytesWarning)
 
             else:
