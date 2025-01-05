@@ -324,8 +324,10 @@ class ComplexEntry(TIEntry):
             self.real = self.real_type(parts[0])
 
         except (TypeError, ValueError):
-            for type_id in [TIReal.type_id, TIRealFraction.type_id, TIRealRadical.type_id,
-                            TIRealPi.type_id, TIRealPiFraction.type_id]:
+            for type_id, entry_type in self._type_ids.items():
+                if not issubclass(entry_type, RealEntry):
+                    continue
+
                 if type_id == self.real_subtype_id:
                     continue
 

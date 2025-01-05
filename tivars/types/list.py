@@ -183,19 +183,23 @@ class TIList(TIEntry):
         self.load_list([self._E(element) for element in "".join(string.strip("[]{}")).split(",")])
 
     def coerce(self):
-        # This is a bit lengthy
-        match self.data[0] & 31:
-            case TIReal.type_id | TIUndefinedReal.type_id | TIRealFraction.type_id \
-                 | TIRealRadical.type_id | TIRealPi.type_id | TIRealPiFraction.type_id:
-                self.__class__ = TIRealList
+        for type_id, entry_type in self._type_ids.items():
+            if type_id == self.data[0] & 31:
+                if issubclass(entry_type, RealEntry):
+                    self.__class__ = TIRealList
+                    return
 
-            case TIComplex.type_id | TIComplexFraction.type_id \
-                 | TIComplexRadical.type_id | TIComplexPi.type_id | TIComplexPiFraction.type_id:
-                self.__class__ = TIComplexList
+                elif issubclass(entry_type, ComplexEntry):
+                    self.__class__ = TIComplexList
+                    return
 
-            case _:
-                warn("List contains unrecognized type(s); no coercion will occur.",
-                     UserWarning)
+                else:
+                    warn(f"List contains invalid type '{entry_type}'; no coercion will occur.",
+                         UserWarning)
+                    return
+
+        warn(f"List contains unrecognized type ID 0x{self.data[0] & 31}; no coercion will occur.",
+             UserWarning)
 
 
 class TIRealList(TIList, register=True):
