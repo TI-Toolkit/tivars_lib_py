@@ -117,7 +117,19 @@ my_program.save("HELLO.8xp", model=TI_83P)
 > [!IMPORTANT]
 > `.save()` uses the var's name as the filename, saving to the current working directory.
 
-Any input data type can also be exported to:
+To package an entry into a var file, use `.export`:
+
+```python
+my_var = my_program.export()
+
+# This is just the entry's data
+my_program.bytes()
+
+# This is a complete var file
+my_var.bytes()
+```
+
+You can also export entries to any of their input data types:
 
 ```python
 assert my_program.string() == "Disp \"HELLO WORLD!\""
@@ -191,11 +203,18 @@ with open("HELLO.8xp", 'rb') as file:
 ```
 
 An entry can be exported to a var, with an optional attached header; likewise, a var is made up of its header and entries:
+
 ```python
 my_var = my_program.export(header=my_header)
 
 assert my_header = my_var.header
 assert my_program == my_var.entries[0]
+```
+
+Pipe syntax is supported for forming a var with multiple entries:
+
+```python
+my_big_var = TIHeader(comment="muy grande") | [TIEntry(name="A"), TIEntry(name="B")]
 ```
 
 Export a var as bytes or straight to a file:
