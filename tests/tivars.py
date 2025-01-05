@@ -435,6 +435,13 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(test_matrix.matrix(), test_array)
         self.assertEqual(list(iter(test_matrix)), [entry for row in test_array for entry in row])
 
+        self.assertEqual(str(test_matrix), string := "[[3π, 3√10], [1/2, (4√5+2√3)/7]]")
+        self.assertEqual(f"{test_matrix:t}", "[[3π,3sqrt(10)][1n/d2,(4sqrt(5)+2sqrt(3))n/d7]]")
+
+        test_matrix.clear()
+        test_matrix.load_string(string)
+        self.assertEqual(test_matrix.matrix(), test_array)
+
 
 class SettingsTests(unittest.TestCase):
     def test_window(self):
