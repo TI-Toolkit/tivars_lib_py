@@ -383,13 +383,13 @@ class TIProgram(TokenizedEntry, register=True):
     def load_bytes(self, data: bytes | BytesIO):
         super(TokenizedEntry, self).load_bytes(data)
 
-        try:
-            if self.version != (version := self.get_version()):
-                warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
-                     BytesWarning)
+        if self.is_tokenized:
+            try:
+                if self.version != (version := self.get_version()):
+                    warn(f"The version is incorrect (expected 0x{version:02x}, got 0x{self.version:02x}).",
+                         BytesWarning)
 
-        except ValueError as e:
-            if self.is_tokenized:
+            except ValueError as e:
                 warn(f"The file contains an invalid token {' '.join(str(e).split()[2:])}.",
                      BytesWarning)
 
