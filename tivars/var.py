@@ -732,8 +732,9 @@ class TIEntry(Dock, Converter):
 
         if self._type_id is not None and self.type_id != self._type_id:
             if subclass := TIEntry.get_type(self.type_id):
-                warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
-                     BytesWarning)
+                if not issubclass(subclass, self.__class__):
+                    warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
+                         BytesWarning)
 
             else:
                 warn(f"The entry type is incorrect (expected {type(self)}, got an unknown type). "
