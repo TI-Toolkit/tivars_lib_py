@@ -531,7 +531,7 @@ class TIEntry(Dock, Converter):
         The version number of the entry
 
         The version is used to determine model compatibility where necessary.
-        Only flash files support this entry, and it thus not present if `meta_length` <= 11.
+        Only flash files support this section, and is thus not present if `meta_length` <= 11.
         """
 
         if self.meta_length == TIEntry.base_meta_length:
@@ -545,7 +545,7 @@ class TIEntry(Dock, Converter):
         """
         Whether the entry is archived
 
-        Only flash files support this entry, and it thus not present if `meta_length` <= 11.
+        Only flash files support this section, and is thus not present if `meta_length` <= 11.
         """
 
         if self.meta_length == TIEntry.base_meta_length:
