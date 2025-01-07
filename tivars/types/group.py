@@ -64,7 +64,7 @@ class TIGroup(SizedEntry, register=True):
             warn("Groups are expected to have at least two entries.",
                  UserWarning)
 
-        group = TIGroup(for_flash=entries[0].meta_length > TIEntry.base_meta_length, name=name)
+        group = TIGroup(for_flash=bool(entries[0].flash_bytes), name=name)
 
         for index, entry in enumerate(entries):
             name = entry.raw.name.rstrip(b'\x00')
@@ -139,7 +139,7 @@ class TIGroup(SizedEntry, register=True):
                     *_, page = data.read(3)
                     name = data.read(3)
 
-            entry = TIEntry(for_flash=self.meta_length > TIEntry.base_meta_length, version=version, archived=page > 0)
+            entry = TIEntry(for_flash=bool(self.flash_bytes), version=version, archived=page > 0)
             entry.type_id = type_id
             entry.coerce()
 

@@ -362,6 +362,7 @@ class TIEntry(Dock, Converter):
         self.type_id = self._type_id if self._type_id is not None else 0xFF
         self.name = name
         self.archived = archived or False
+        self.version = version or 0x00
 
         if not for_flash:
             if version is not None or archived is not None:
@@ -384,7 +385,8 @@ class TIEntry(Dock, Converter):
             else:
                 self.load(init)
 
-        self.version = self.get_version()
+        if version is None:
+            self.version = self.get_version()
 
     def __bool__(self) -> bool:
         """

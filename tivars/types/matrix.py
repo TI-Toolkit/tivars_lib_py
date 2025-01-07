@@ -171,7 +171,7 @@ class TIMatrix(TIEntry, register=True):
         """
 
         it = zip(*[iter(self.data)] * RealEntry.min_data_length)
-        return [[RealEntry(for_flash=self.meta_length > TIEntry.base_meta_length, data=data)
+        return [[RealEntry(for_flash=bool(self.flash_bytes), data=data)
                  for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]
