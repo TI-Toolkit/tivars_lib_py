@@ -902,7 +902,7 @@ class TIEntry(Dock, Converter):
         """
 
         if cls._type_id is not None and \
-                not any(filename.endswith(extension) for extension in cls.extensions.values()):
+                not any(filename.lower().endswith(extension) for extension in cls.extensions.values()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
                  f"attempting to read anyway.",
                  UserWarning)
