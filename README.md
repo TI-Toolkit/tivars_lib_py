@@ -17,6 +17,9 @@ pip install tivars
 
 Alternatively, you can clone this repository or [download a release](https://github.com/TI-Toolkit/tivars_lib_py/tags) and extract the `tivars` directory to include it in your next project. Once downloaded, you can also use `pip` to install it locally.
 
+> [!IMPORTANT]
+> When cloning, use the `--recursive` or `--recurse-submodules` flag to fetch all submodule dependencies. The GitHub ZIP download does _not_ include submodules.
+
 ### As a Submodule
 
 Include this repository in your next project as a submodule using the `git submodule` command. Then, add the following to any file which imports `tivars`:
