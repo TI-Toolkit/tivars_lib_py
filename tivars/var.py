@@ -16,6 +16,7 @@ from .models import *
 from .tokenizer import Name
 
 
+# Use Self type if possible
 match version_info[:2]:
     case 3, 10:
         Self = 'TIEntry'
@@ -447,7 +448,7 @@ class TIEntry(Dock, Converter):
                 case sep, width:
                     string = self.calc_data.hex(sep, int(width))
 
-            return string if match["case"] == "x" else string.upper()
+            return string.lower() if match["case"] == "x" else string.upper()
 
         elif not format_spec:
             return super().__str__()
@@ -635,6 +636,10 @@ class TIEntry(Dock, Converter):
         meta_length = int.from_bytes(stream.read(2), 'little')
         data_length = int.from_bytes(stream.read(2), 'little')
         stream.seek(-4, 1)
+
+        if meta_length not in (TIEntry.base_meta_length, TIEntry.flash_meta_length):
+            warn(f"Got unexpected meta length ({meta_length}) from bytestream.",
+                 BytesWarning)
 
         return 2 + meta_length + 2 + data_length
 
