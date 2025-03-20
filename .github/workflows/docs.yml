@@ -43,7 +43,7 @@ jobs:
         sed -i -r "s:<li>(.*?) 0 - <code data-type=.*?><a href=.(.*?)html#\1%200. class=.internal-link.>\2\1 0</a></code></li>::g" nameIndex.html
 
     - name: Upload pages artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v3
       with:
         path: docs/
 
