@@ -8,10 +8,11 @@ import re
 from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO
+from typing import BinaryIO, Set
 from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
+from .file import *
 from .models import *
 from .tokenizer import Name
 
@@ -31,6 +32,8 @@ class TIHeader:
 
     All var files require a header which includes a number of magic bytes, data lengths, and a customizable comment.
     """
+
+    magics = [model.magic for model in TIModel.MODELS]
 
     class Raw:
         """
@@ -76,6 +79,18 @@ class TIHeader:
         self.product_id = product_id if product_id is not None else model.product_id
         self.comment = comment
 
+        matches = {m for m in TIModel.MODELS if m.magic == self.magic}
+
+        self._supports = {m for m in TIModel.MODELS if m >= min(matches)}
+        if not self._supports:
+            warn(f"File magic '{self.magic}' not recognized.",
+                 BytesWarning)
+
+        self._targets = {m for m in self._supports if self.product_id == 0x00 or m.product_id == self.product_id}
+        if self.product_id != 0x00 and not self._targets:
+            warn(f"Product ID {self.product_id:02x} not recognized.",
+                 BytesWarning)
+
         if data:
             self.load_bytes(data)
 
@@ -109,7 +124,7 @@ class TIHeader:
         except AttributeError:
             return False
 
-    def __or__(self, other: list['TIEntry']) -> 'TIVar':
+    def __or__(self, other: list['TIEntry']) -> 'TIVarFile':
         """
         Constructs a var by concatenating this header with a list of entries
 
@@ -161,29 +176,35 @@ class TIHeader:
         The comment attached to the var
         """
 
-    def targets(self) -> set[TIModel]:
+    def supported_by(self, model: TIModel = None) -> bool | set[TIModel]:
         """
-        Determines which model(s) this header can target
+        Determines which model(s) can support this header
+
+        See `TIHeader.targets` to check models this header explicitly targets.
+
+        :param model: The model to check support for
+        :return: Whether ``model`` supports this header, or the set of models this header supports
+        """
+
+        return model in self._supports if model is not None else self._supports.copy()
+
+    def targets(self, model: TIModel = None) -> bool | set[TIModel]:
+        """
+        Determines which model(s) this header targets
 
         The header contains no reference to a model to target, which permits sharing across models where possible.
         This method derives a set of valid models from the header's file magic and product ID.
 
-        If the header contains malformed magic, an error will be raised.
-        If the header contains a malformed product ID, it will be ignored.
+        If a model is passed, whether that model is a target is returned.
+        Otherwise, the entire set of targeted models is returned.
 
-        :return: A set of models that this header can target
+        See `TIHeader.supported_by` to check models this header _can_ be sent be to.
+
+        :param model: The model to check as a target
+        :return: Whether ``model`` is targeted by this header, or the set of models this header targets
         """
 
-        models = {m for m in TIModel.MODELS if m.magic == self.magic}
-
-        if self.product_id != 0x00:
-            if filtered := {m for m in models if m.product_id == self.product_id}:
-                return filtered
-
-        if not models:
-            raise ValueError(f"file magic '{self.magic}' not recognized")
-
-        return models
+        return model in self._targets if model is not None else self._targets.copy()
 
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -695,15 +716,18 @@ class TIEntry(Dock, Converter):
 
         return self.versions[0]
 
-    def supported_by(self, model: TIModel) -> bool:
+    # I hate the type annotation system so much bro it's so disappointing
+    def supported_by(self, model: TIModel = None) -> bool | Set[TIModel]:
         """
-        Determines whether a given model can support this entry
+        Determines which model(s) can support this entry
 
         :param model: The model to check support for
-        :return: Whether ``model`` supports this entry
+        :return: Whether ``model`` supports this entry, or the set of models this entry supports
         """
 
-        return self.get_min_os() < model.OS("latest")
+        supported_by = {m for m in TIModel.MODELS if self.get_min_os() < m.OS("latest")}
+
+        return model in supported_by if model is not None else supported_by
 
     def unarchive(self):
         """
@@ -946,7 +970,7 @@ class TIEntry(Dock, Converter):
 
         self.export(header=header, model=model).save(filename)
 
-    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = None) -> 'TIVar':
+    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = None) -> 'TIVarFile':
         """
         Exports this entry to a `TIVar` with a specified name, header, and target model
 
@@ -955,7 +979,7 @@ class TIEntry(Dock, Converter):
         :param model: A `TIModel` to target (defaults to ``None``)
         """
 
-        var = TIVar(header=header, name=name or self.name, model=model)
+        var = TIVarFile(header=header, name=name or self.name, model=model)
         var.add_entry(self)
         return var
 
@@ -980,12 +1004,14 @@ class TIEntry(Dock, Converter):
                      UserWarning)
 
 
-class TIVar:
+class TIVarFile(TIFile, register=True):
     """
     Container for var files
 
     A var file is composed of a header and any number of entries (though most have only one).
     """
+
+    magics = TIHeader.magics
 
     def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, model: TIModel = None, data: bytes = None):
         """
@@ -997,18 +1023,10 @@ class TIVar:
         :param data: The var's data (defaults to empty)
         """
 
-        self._header = header or TIHeader(model)
+        self.header = header or TIHeader()
         self.entries = []
 
-        self.name = name
-        self._model = model
-
-        if self._model and self._model not in self._header.targets():
-            warn(f"The var's model ({self._model}) is incompatible with the given header.",
-                 UserWarning)
-
-        if data:
-            self.load_bytes(data)
+        super().__init__(name=name, data=data)
 
     def __bool__(self) -> bool:
         """
@@ -1016,44 +1034,6 @@ class TIVar:
         """
 
         return not self.is_empty
-
-    def __bytes__(self) -> bytes:
-        """
-        :return: The bytes contained in this var
-        """
-
-        return self.bytes()
-
-    def __copy__(self) -> 'TIVar':
-        """
-        :return: A copy of this var
-        """
-
-        new = TIVar()
-        new.load_bytes(self.bytes())
-        return new
-
-    def __eq__(self, other: 'TIVar'):
-        """
-        Determines if two vars contain the same entries
-
-        :param other: The var to check against
-        :return: Whether this var is equal to ``other``
-        """
-
-        try:
-            eq = self.__class__ == other.__class__ and len(self.entries) == len(other.entries)
-            return eq and all(entry == other_entry for entry, other_entry in zip(self.entries, other.entries))
-
-        except AttributeError:
-            return False
-
-    def __len__(self):
-        """
-        :return: The total length of this var's bytes
-        """
-
-        return len(self._header) + self.entry_length + 2
 
     @property
     def entry_length(self) -> int:
@@ -1076,75 +1056,12 @@ class TIVar:
         return int.to_bytes(sum(sum(entry.bytes()) for entry in self.entries) & 0xFFFF, 2, 'little')
 
     @property
-    def extension(self) -> str:
-        """
-        Determines the var's file extension based on its entries and targeted model
-
-        If there is only one entry, that entry's extension for the target model is used.
-        Otherwise, ``.8xg`` is used.
-
-        :return: The var's file extension
-        """
-
-        if len(self.entries) > 1:
-            return "8xg"
-
-        try:
-            if self._model is None:
-                return self.entries[0].extensions[None]
-
-            extension = ""
-            for model in reversed(TIModel.MODELS):
-                if model in self.entries[0].extensions and model <= self._model:
-                    extension = self.entries[0].extensions[self._model]
-                    break
-
-            if not extension:
-                warn(f"The {self._model} does not support this var type.",
-                     UserWarning)
-
-                return self.entries[0].extensions[None]
-
-            return extension
-
-        except IndexError:
-            raise ValueError("this var is empty")
-
-    @property
-    def filename(self) -> str:
-        """
-        Determines the var's filename based on its name, entries, and targeted model
-
-        The filename is the concatenation of the var name and extension (see `TIVar.extension`).
-
-        :return: The var's filename
-        """
-
-        return f"{self.name}.{self.extension}"
-
-    @property
-    def header(self) -> 'TIHeader':
-        """
-        :return: This var's header
-        """
-
-        return self._header
-
-    @property
     def is_empty(self) -> bool:
         """
         :return: Whether this var contains no entries
         """
 
         return len(self.entries) == 0
-
-    @property
-    def model(self) -> TIModel:
-        """
-        :return: This var's targeted model
-        """
-
-        return self._model
 
     def add_entry(self, entry: TIEntry = None):
         """
@@ -1170,28 +1087,26 @@ class TIVar:
 
         self.entries.clear()
 
-    def supported_by(self, model: TIModel = None) -> bool:
-        """
-        Determines whether a given model can support this var
+    def get_extension(self, model: TIModel = None) -> str:
+        if len(self.entries) != 1:
+            if self.is_empty:
+                warn("This var is empty.",
+                     UserWarning)
 
-        :param model: The model to check support for (defaults to this var's model, if it is set)
-        :return: Whether ``model`` supports this var
-        """
+            return "8xg"
 
-        model = model or self._model
-        if model is None:
-            raise ValueError("no model was passed")
+        return get_extension(self.entries[0].extensions, model or min(self.targets()))
 
-        return model in self._header.targets() and \
-            all(entry.get_min_os() < model.OS("latest") for entry in self.entries)
+    def supported_by(self, model: TIModel = None) -> bool | set[TIModel]:
+        supported_by = set.intersection(*[item.supported_by() for item in [self.header, *self.entries]])
 
+        return model in supported_by if model is not None else supported_by
+
+    def targets(self, model: TIModel = None) -> bool | set[TIModel]:
+        return self.header.targets(model)
+
+    @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
-        """
-        Loads a byte string or bytestream into this var
-
-        :param data: The bytes to load
-        """
-
         if hasattr(data, "read"):
             data = BytesIO(data.read())
 
@@ -1199,7 +1114,7 @@ class TIVar:
             data = BytesIO(data)
 
         # Read header
-        self._header.load_bytes(data.read(53))
+        self.header.load_bytes(data.read(53))
         entry_length = int.from_bytes(data.read(2), 'little')
 
         # Read entries
@@ -1225,22 +1140,13 @@ class TIVar:
         # Read checksum
         checksum = data.read(2)
 
-        # Check model
-        if self._model and not self._model <= min(*self._header.targets()):
-            warn(f"The loaded var file is incompatible with the {self._model}.",
-                 BytesWarning)
-
         # Check² sum
         if checksum != self.checksum:
             warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
                  BytesWarning)
 
-    def bytes(self):
-        """
-        :return: The bytes contained in this var
-        """
-
-        dump = self._header.bytes()
+    def bytes(self) -> bytes:
+        dump = self.header.bytes()
         dump += int.to_bytes(self.entry_length, 2, 'little')
 
         for entry in self.entries:
@@ -1249,48 +1155,24 @@ class TIVar:
         dump += self.checksum
         return dump
 
-    def load_var_file(self, file: BinaryIO):
-        """
-        Loads this var from a file given a file pointer
-
-        :param file: A binary file to read from
-        """
-
-        self.load_bytes(file.read())
-
     @classmethod
-    def open(cls, filename: str) -> 'TIVar':
-        """
-        Creates a new var from a file given a filename
-
-        :param filename: A filename to open
-        :return: The var stored in the file
-        """
-
+    def open(cls, filename: str) -> 'TIVarFile':
         with open(filename, 'rb') as file:
             return cls(data=file.read())
 
-    def save(self, filename: str = None):
-        """
-        Saves this var given a filename
+    def save(self, filename: str = None, model: TIModel = None):
+        model = model or min(self.supported_by())
 
-        :param filename: A filename to save to (defaults to the var's name and extension)
-        """
+        if not self.supported_by(model):
+            warn(f"The {model} does not support this var.",
+                 UserWarning)
 
-        if not filename:
-            filename = self.filename
+        for index, entry in enumerate(self.entries):
+            if entry.get_min_os() > model.OS("latest"):
+                warn(f"Entry #{index + 1} is not supported by {model}.",
+                     UserWarning)
 
-        elif "." not in filename:
-            filename += f".{self.extension}"
-
-        if self._model:
-            for index, entry in enumerate(self.entries):
-                if entry.get_min_os() > self._model.OS("latest"):
-                    warn(f"Entry #{index + 1} is not supported by {self._model}.",
-                         UserWarning)
-
-        with open(filename, 'wb+') as file:
-            file.write(self.bytes())
+        super().save(filename, model)
 
 
 class SizedEntry(TIEntry):
@@ -1335,4 +1217,4 @@ class SizedEntry(TIEntry):
         self.raw.calc_data = bytearray(length_bytes + data.read(data_length))
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry"]
+__all__ = ["TIHeader", "TIEntry", "TIVarFile", "SizedEntry"]

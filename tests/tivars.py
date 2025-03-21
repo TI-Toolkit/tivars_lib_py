@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from tivars.models import *
 from tivars.types import *
-from tivars import TIHeader, TIVar, TIFlashHeader
+from tivars import TIHeader, TIVarFile, TIFlashHeader
 
 
 class ModelTests(unittest.TestCase):
@@ -18,7 +18,7 @@ class ModelTests(unittest.TestCase):
 
 class VarTests(unittest.TestCase):
     def test_all_attributes(self):
-        test_var = TIVar.open("tests/data/var/Program.8xp")
+        test_var = TIVarFile.open("tests/data/var/Program.8xp")
         test_header = TIHeader.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.header, test_header)
@@ -36,7 +36,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.checksum, b'M\x03')
 
     def test_all_sections(self):
-        test_var = TIVar.open("tests/data/var/Program.8xp")
+        test_var = TIVarFile.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.header.raw.magic, b'**TI83F*')
         self.assertEqual(test_var.header.raw.extra, b'\x1A\x0A')
@@ -69,7 +69,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.checksum, b'M\x03')
 
     def test_multiple_entries(self):
-        clibs = TIVar.open("tests/data/var/clibs.8xg")
+        clibs = TIVarFile.open("tests/data/var/clibs.8xg")
 
         self.assertEqual(len(clibs.entries), 9)
         self.assertTrue(all(entry.type_id == 0x15 for entry in clibs.entries))
@@ -81,10 +81,10 @@ class VarTests(unittest.TestCase):
         self.assertEqual(second, clibs.entries[1])
 
     def test_save_to_file(self):
-        test_var = TIVar.open("tests/data/var/Program.8xp")
+        test_var = TIVarFile.open("tests/data/var/Program.8xp")
 
-        self.assertEqual(test_var.extension, "8xp")
-        self.assertEqual(test_var.filename, "UNNAMED.8xp")
+        self.assertEqual(test_var.get_extension(), "8xp")
+        self.assertEqual(test_var.get_filename(), "UNNAMED.8xp")
         test_var.save("tests/data/var/Program_new.8xp")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
@@ -95,7 +95,7 @@ class VarTests(unittest.TestCase):
         self.assertEqual(test_var.supported_by(TI_83), False)
 
     def test_truthiness(self):
-        test_var = TIVar.open("tests/data/var/clibs.8xg")
+        test_var = TIVarFile.open("tests/data/var/clibs.8xg")
         self.assertEqual(bool(test_var), True)
 
         test_var.clear()
@@ -109,8 +109,8 @@ class EntryTests(unittest.TestCase):
 
         test_program.save("tests/data/var/Program_new.8xp", header=test_header)
 
-        self.assertEqual(test_program.export().filename, "SETDATE.8xp")
-        self.assertEqual(test_program.export(model=TI_83).filename, "SETDATE.83p")
+        self.assertEqual(test_program.export().get_filename(), "SETDATE.8xp")
+        self.assertEqual(test_program.export(model=TI_83).get_filename(), "SETDATE.83p")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
             with open("tests/data/var/Program_new.8xp", 'rb') as new:
@@ -119,7 +119,7 @@ class EntryTests(unittest.TestCase):
     def test_form_vars(self):
         test_program = TIProgram()
         test_header = TIHeader()
-        test_var = TIVar()
+        test_var = TIVarFile()
 
         with open("tests/data/var/Program.8xp", 'rb') as file:
             test_program.load_from_file(file)
@@ -128,7 +128,7 @@ class EntryTests(unittest.TestCase):
             test_header.load_from_file(file)
             file.seek(0)
 
-            test_var.load_var_file(file)
+            test_var.load_file(file)
             self.assertEqual(test_header | [test_program], test_var)
 
     def test_truthiness(self):
@@ -146,7 +146,7 @@ class EntryTests(unittest.TestCase):
 
 class TokenizationTests(unittest.TestCase):
     def test_load_from_file(self):
-        test_var = TIVar.open("tests/data/var/Program.8xp")
+        test_var = TIVarFile.open("tests/data/var/Program.8xp")
 
         test_program = TIProgram.open("tests/data/var/Program.8xp")
 

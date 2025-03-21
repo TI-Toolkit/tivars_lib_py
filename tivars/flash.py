@@ -9,6 +9,7 @@ from typing import BinaryIO
 from warnings import warn
 
 from .data import *
+from .file import *
 from .flags import *
 from .models import *
 from .numeric import BCD
@@ -812,4 +813,55 @@ class TIFlashHeader(Dock):
                      UserWarning)
 
 
-__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader"]
+class TIFlashFile(TIFile, register=True):
+    magics = ["**TIFL**"]
+
+    def __init__(self, *, name: str = "UNNAMED", data: bytes = None):
+        """
+        Creates an empty flash file with a specified name
+
+        :param name: The name of the flash file (defaults to ``UNNAMED``)
+        :param data: The file's data (defaults to empty)
+        """
+
+        self.headers = []
+
+        super().__init__(name=name, data=data)
+
+    @property
+    def is_empty(self) -> bool:
+        """
+        :return: Whether this var contains no entries
+        """
+
+        return len(self.headers) == 0
+
+    def add_header(self, header: TIFlashHeader = None):
+        """
+        Adds a header to this file
+
+        :param header: A `TIFlashHeader` to add (defaults to an empty header)
+        """
+
+        header = header or TIFlashHeader()
+        self.headers.append(header)
+
+    def clear(self):
+        """
+        Removes all entries from this var
+        """
+
+        self.headers.clear()
+
+    def get_extension(self, model: TIModel = None) -> str:
+        if model and not model.has(TIFeature.Flash):
+            warn(f"The {model} does not support flash files.",
+                 UserWarning)
+
+        if self.is_empty:
+            return "8xk"
+
+        return get_extension(self.headers[0].extensions, model or min(self.supported_by()))
+
+
+__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile"]

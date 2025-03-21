@@ -186,8 +186,8 @@ If you want to create an entire var or just a header, use `TIVar` or `TIHeader`:
 ```python
 from tivars.var import *
 
-my_var = TIVar()
-my_var_for84pce = TIVar(model=TI_84PCE)
+my_var = TIVarFile()
+my_var_for84pce = TIVarFile(model=TI_84PCE)
 
 my_header = TIHeader()
 my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
