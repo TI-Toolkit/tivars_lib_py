@@ -38,11 +38,11 @@ class TIGroup(SizedEntry, register=True):
     _type_id = 0x17
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GROUP",
+                 name: str = "GROUP",
                  version: int = None, archived: bool = True,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @staticmethod
     def group(entries: Sequence[TIEntry], *, name: str = "GROUP") -> 'TIGroup':
@@ -54,17 +54,11 @@ class TIGroup(SizedEntry, register=True):
         :return: A group containing ``entries``
         """
 
-        if not entries:
-            warn("Groups are expected to be non-empty.",
-                 UserWarning)
+        group = TIGroup(name=name)
 
-            return TIGroup(name=name)
-
-        elif len(entries) < 2:
+        if len(entries) < 2:
             warn("Groups are expected to have at least two entries.",
                  UserWarning)
-
-        group = TIGroup(for_flash=bool(entries[0].flash_bytes), name=name)
 
         for index, entry in enumerate(entries):
             name = entry.raw.name.rstrip(b'\x00')
@@ -108,7 +102,7 @@ class TIGroup(SizedEntry, register=True):
         :return: A ``list`` of entries stored in ``data``
         """
 
-        data = BytesIO(data or self.data[:])
+        data = BytesIO(data or self.data)
         entries = []
 
         index = 1
@@ -139,7 +133,7 @@ class TIGroup(SizedEntry, register=True):
                     *_, page = data.read(3)
                     name = data.read(3)
 
-            entry = TIEntry(for_flash=bool(self.flash_bytes), version=version, archived=page > 0)
+            entry = TIEntry(version=version, archived=page > 0)
             entry.type_id = type_id
             entry.coerce()
 

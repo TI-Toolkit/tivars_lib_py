@@ -169,10 +169,10 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "style", "color", "calc_data"
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Y1",
+                 name: str = "Y1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
         self.flags = EquationFlags({0: 1, 1: 1})
         self.style = 0x00
@@ -414,11 +414,11 @@ class TIMonoGDB(SizedEntry, register=True):
     _type_id = 0x08
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
+                 name: str = "GDB1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
@@ -496,7 +496,7 @@ class TIMonoGDB(SizedEntry, register=True):
         """
 
     @property
-    def mode(self) -> str:
+    def mode(self) -> str | None:
         """
         The mode for the GDB
 
@@ -725,11 +725,11 @@ class TIGDB(TIMonoGDB):
     has_color = True
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
+                 name: str = "GDB1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
         self.axes_color = GraphColor.Black
         self.grid_color = GraphColor.MedGray

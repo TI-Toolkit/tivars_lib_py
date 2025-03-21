@@ -37,11 +37,11 @@ class TIMatrix(TIEntry, register=True):
     _type_id = 0x02
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "[A]",
+                 name: str = "[A]",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         if format_spec.endswith("t"):
@@ -171,8 +171,7 @@ class TIMatrix(TIEntry, register=True):
         """
 
         it = zip(*[iter(self.data)] * RealEntry.min_data_length)
-        return [[RealEntry(for_flash=bool(self.flash_bytes), data=data)
-                 for data in row] for row in zip(*[it] * self.width)]
+        return [[RealEntry(data=data) for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]
     def load_string(self, string: str):

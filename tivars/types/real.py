@@ -53,11 +53,11 @@ class RealEntry(TIEntry):
     """
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
+                 name: str = "A",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __float__(self) -> float:
         return self.float()

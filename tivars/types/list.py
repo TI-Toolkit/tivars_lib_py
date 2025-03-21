@@ -82,11 +82,11 @@ class TIList(TIEntry):
     min_data_length = 2
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "L1",
+                 name: str = "L1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         if format_spec.endswith("t"):
@@ -176,7 +176,7 @@ class TIList(TIEntry):
         """
 
         it = zip(*[iter(self.data)] * self._E.min_data_length)
-        return [self._E(for_flash=bool(self.flash_bytes), data=data) for data in it]
+        return [self._E(data=data) for data in it]
 
     @Loader[str]
     def load_string(self, string: str):

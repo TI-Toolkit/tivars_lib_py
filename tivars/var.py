@@ -132,7 +132,7 @@ class TIHeader:
         :return: A var with this header and ``other`` as its entries
         """
 
-        new = other[0].export(header=self, name=other[0].name, model=self.targets().pop())
+        new = other[0].export(header=self, name=other[0].name)
 
         for entry in other[1:]:
             new.add_entry(entry)
@@ -350,19 +350,17 @@ class TIEntry(Dock, Converter):
             :return: The meta section of this entry
             """
 
-            return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
+            return self.calc_data_length + self.type_id + self.name + self.flash_bytes
 
         def bytes(self) -> bytes:
             """
             :return: The bytes contained in this entry
             """
 
-            return self.meta_length + self.calc_data_length + \
-                self.type_id + self.name + self.flash_bytes + \
-                self.calc_data_length + self.calc_data
+            return self.meta_length + self.meta + self.calc_data_length + self.calc_data
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 name: str = "UNNAMED",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
         """
@@ -371,7 +369,6 @@ class TIEntry(Dock, Converter):
         The entry ``version`` and ``archived`` flag are invalid if ``for_flash == False``.
 
         :param init: Values to initialize the entry's data (defaults to ``None``)
-        :param for_flash: Whether the entry supports flash chips (defaults to ``True``)
         :param name: The name of the entry (defaults to a valid default name)
         :param version: The entry's version (defaults to ``None``)
         :param archived: Whether the entry is archived (defaults to entry's default state on-calc)
@@ -380,20 +377,11 @@ class TIEntry(Dock, Converter):
 
         self.raw = self.Raw()
 
-        self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
+        self.meta_length = TIEntry.flash_meta_length
         self.type_id = self._type_id if self._type_id is not None else 0xFF
         self.name = name
         self.archived = archived or False
         self.version = version or 0x00
-
-        if not for_flash:
-            if version is not None or archived is not None:
-                warn("Models without flash chips do not support versioning or archiving.",
-                     UserWarning)
-
-            if self.flash_only:
-                warn(f"{type(self)} entries are not compatible with flashless chips.",
-                     UserWarning)
 
         self.clear()
         if data:
@@ -513,7 +501,7 @@ class TIEntry(Dock, Converter):
         """
 
         if value == TIEntry.base_meta_length:
-            if self.raw.meta_length == b'\x0D\x00':
+            if self.raw.meta_length == TIEntry.flash_meta_length.to_bytes(2, 'little'):
                 warn(f"Meta data (0x{self.flash_bytes.hex()}) will be lost.",
                      UserWarning)
 
@@ -553,7 +541,7 @@ class TIEntry(Dock, Converter):
         The version number of the entry
 
         The version is used to determine model compatibility where necessary.
-        Only flash files support this section, and is thus not present if `meta_length` <= 11.
+        Only flash files support this section, and is thus not present if `meta_length` < 13.
         """
 
         if self.meta_length == TIEntry.base_meta_length:
@@ -567,7 +555,7 @@ class TIEntry(Dock, Converter):
         """
         Whether the entry is archived
 
-        Only flash files support this section, and is thus not present if `meta_length` <= 11.
+        Only flash files support this section, and is thus not present if `meta_length` < 13.
         """
 
         if self.meta_length == TIEntry.base_meta_length:
@@ -619,6 +607,14 @@ class TIEntry(Dock, Converter):
         return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]
 
     @property
+    def for_flash(self) -> bool:
+        """
+        :return: Whether this entry supports flash chips
+        """
+
+        return self.meta_length >= TIEntry.flash_meta_length
+
+    @property
     def is_empty(self) -> bool:
         """
         :return: Whether this entry's data is empty
@@ -632,7 +628,7 @@ class TIEntry(Dock, Converter):
         :return: The meta section of this entry
         """
 
-        return self.raw.calc_data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
+        return self.raw.meta
 
     @classmethod
     def get_type(cls, type_id: int) -> type['TIEntry'] | None:
@@ -677,13 +673,14 @@ class TIEntry(Dock, Converter):
 
     def archive(self):
         """
-        Archives this entry (if supported)
+        Archives this entry
         """
 
-        if self.flash_bytes:
-            self.archived = True
-        else:
-            raise TypeError("entry does not support archiving.")
+        self.archived = True
+
+        if not self.for_flash:
+            warn(f"This entry's meta length is too short ({self.meta_length}), and thus does not support archiving.",
+                 UserWarning)
 
     def clear(self):
         """
@@ -731,13 +728,14 @@ class TIEntry(Dock, Converter):
 
     def unarchive(self):
         """
-        Unarchives this entry (if supported)
+        Unarchives this entry
         """
 
-        if self.flash_bytes:
-            self.archived = False
-        else:
-            raise TypeError("entry does not support archiving.")
+        self.archived = False
+
+        if not self.for_flash:
+            warn(f"This entry's meta length is too short ({self.meta_length}), and thus does not support archiving.",
+                 UserWarning)
 
     @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
@@ -968,18 +966,17 @@ class TIEntry(Dock, Converter):
         :param model: A `TIModel` to target (defaults to ``None``)
         """
 
-        self.export(header=header, model=model).save(filename)
+        self.export(header=header).save(filename, model=model)
 
-    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = None) -> 'TIVarFile':
+    def export(self, *, name: str = None, header: TIHeader = None) -> 'TIVarFile':
         """
-        Exports this entry to a `TIVar` with a specified name, header, and target model
+        Exports this entry to a `TIVar` with a specified name and header
 
         :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A `TIModel` to target (defaults to ``None``)
         """
 
-        var = TIVarFile(header=header, name=name or self.name, model=model)
+        var = TIVarFile(header=header, name=name or self.name)
         var.add_entry(self)
         return var
 
@@ -1013,13 +1010,12 @@ class TIVarFile(TIFile, register=True):
 
     magics = TIHeader.magics
 
-    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, model: TIModel = None, data: bytes = None):
+    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, data: bytes = None):
         """
         Creates an empty var with a specified name, header, and targeted model
 
         :param name: The name of the var (defaults to ``UNNAMED``)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A minimum `TIModel` to target (defaults to ``None``)
         :param data: The var's data (defaults to empty)
         """
 

@@ -252,11 +252,11 @@ class TIEquation(TokenizedEntry, register=True):
     _type_id = 0x03
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Y1",
+                 name: str = "Y1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @Section(8, Name)
     def name(self, value) -> str:
@@ -306,11 +306,11 @@ class TIString(TokenizedEntry, register=True):
     _type_id = 0x04
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Str1",
+                 name: str = "Str1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @Section(8, Name)
     def name(self, value) -> str:

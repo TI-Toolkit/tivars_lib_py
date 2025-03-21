@@ -258,11 +258,11 @@ class TIMonoPicture(PictureEntry):
     _type_id = 0x07
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Pic1",
+                 name: str = "Pic1",
                  version: int = None, archived: bool = True,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_83P.OS()
@@ -311,11 +311,11 @@ class TIPicture(PictureEntry, register=True):
     _type_id = 0x07
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Pic1",
+                 name: str = "Pic1",
                  version: int = None, archived: bool = True,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
         return TI_84PCSE.OS()
@@ -391,11 +391,11 @@ class TIImage(PictureEntry, register=True):
     _type_id = 0x1A
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Image1",
+                 name: str = "Image1",
                  version: int = None, archived: bool = True,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @Section(8, ImageName)
     def name(self) -> str:

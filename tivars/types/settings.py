@@ -69,11 +69,11 @@ class TIWindowSettings(SettingsEntry, register=True):
     _type_id = 0x0F
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Window",
+                 name: str = "Window",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @Section(8, String)
     def name(self) -> str:
@@ -312,11 +312,11 @@ class TIRecallWindow(SettingsEntry, register=True):
     _type_id = 0x10
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "RclWindw",
+                 name: str = "RclWindw",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @Section(8, String)
     def name(self) -> str:
@@ -555,11 +555,11 @@ class TITableSettings(SettingsEntry, register=True):
     _type_id = 0x11
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "TblSet",
+                 name: str = "TblSet",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @Section(8, String)
     def name(self) -> str:
