@@ -147,8 +147,12 @@ class TIList(TIEntry):
         else:
             return 0x00
 
-    def supported_by(self, model: TIModel) -> bool:
-        return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
+    def supported_by(self, model: TIModel = None) -> bool | set[TIModel]:
+        version = self.get_version()
+        supported_by = {m for m in TIModel.MODELS if self.get_min_os() < m.OS("latest")
+                        and (version <= 0x0B or m.has(TIFeature.ExactMath))}
+
+        return model in supported_by if model is not None else supported_by
 
     @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
