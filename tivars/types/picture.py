@@ -233,11 +233,7 @@ class TIMonoPicture(PictureEntry):
     A `TIMonoPicture` is a 96 x 63 grid of black or white pixels, stored as 8 pixels per byte.
     """
 
-    extensions = {
-        None: "8xi",
-        TI_83P: "8xi",
-        TI_84PCSE: ""
-    }
+    extension = "8xi"
 
     min_data_length = 758
 
@@ -288,11 +284,7 @@ class TIPicture(PictureEntry, register=True):
     flash_only = True
 
     versions = [0x0A]
-
-    extensions = {
-        None: "8ci",
-        TI_84PCSE: "8ci"
-    }
+    extension = "8ci"
 
     min_data_length = 21947
 
@@ -366,12 +358,7 @@ class TIImage(PictureEntry, register=True):
 
     flash_only = True
 
-    versions = [0x00]
-
-    extensions = {
-        None: "8ca",
-        TI_84PCSE: "8ca",
-    }
+    extension = "8ca"
 
     min_data_length = 22247
 

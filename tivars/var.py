@@ -8,7 +8,7 @@ import re
 from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO, Set
+from typing import BinaryIO
 from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
@@ -55,14 +55,14 @@ class TIHeader:
 
             return self.magic + self.extra + self.product_id + self.comment
 
-    def __init__(self, model: TIModel = None, *,
+    def __init__(self, model: TIModel = TI_84PCE, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
                  comment: str = "Created with tivars_lib_py v0.9.2",
                  data: bytes = None):
         """
         Creates an empty header which targets a specified model
 
-        :param model: A minimum `TIModel` to target (defaults to ``TI_83P``)
+        :param model: A minimum `TIModel` to target (defaults to ``TI_84PCE``)
         :param magic: File magic at the start of the header (default to the model's magic)
         :param extra: Extra export bytes for the header (defaults to ``$1a0a``)
         :param product_id: The targeted model's product ID (defaults to ``$00``)
@@ -71,8 +71,6 @@ class TIHeader:
         """
 
         self.raw = self.Raw()
-
-        model = model or TI_83P
 
         self.magic = magic or model.magic
         self.extra = extra
@@ -176,35 +174,32 @@ class TIHeader:
         The comment attached to the var
         """
 
-    def supported_by(self, model: TIModel = None) -> bool | set[TIModel]:
+    def supported_by(self, model: TIModel = TI_84PCE) -> bool:
         """
-        Determines which model(s) can support this header
+        Determines whether this header supports a given model
 
         See `TIHeader.targets` to check models this header explicitly targets.
 
         :param model: The model to check support for
-        :return: Whether ``model`` supports this header, or the set of models this header supports
+        :return: Whether ``model`` supports this header
         """
 
-        return model in self._supports if model is not None else self._supports.copy()
+        return model.magic == self.magic
 
-    def targets(self, model: TIModel = None) -> bool | set[TIModel]:
+    def targets(self, model: TIModel = TI_84PCE) -> bool:
         """
-        Determines which model(s) this header targets
+        Determines whether this header targets a given model
 
         The header contains no reference to a model to target, which permits sharing across models where possible.
         This method derives a set of valid models from the header's file magic and product ID.
 
-        If a model is passed, whether that model is a target is returned.
-        Otherwise, the entire set of targeted models is returned.
-
         See `TIHeader.supported_by` to check models this header _can_ be sent be to.
 
         :param model: The model to check as a target
-        :return: Whether ``model`` is targeted by this header, or the set of models this header targets
+        :return: Whether ``model`` is targeted by this header
         """
 
-        return model in self._targets if model is not None else self._targets.copy()
+        return self.supported_by(model) and self.product_id in (0x00, model.product_id)
 
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -279,14 +274,14 @@ class TIEntry(Dock, Converter):
     Whether this entry only supports flash chips
     """
 
-    extensions = {None: "8xg"}
-    """
-    The file extension used for this entry per-model
-    """
-
     versions = [0x00]
     """
     The possible versions of this entry
+    """
+
+    extension = "8xg"
+    """
+    The base file extension used for this entry
     """
 
     base_meta_length = 11
@@ -713,18 +708,15 @@ class TIEntry(Dock, Converter):
 
         return self.versions[0]
 
-    # I hate the type annotation system so much bro it's so disappointing
-    def supported_by(self, model: TIModel = None) -> bool | Set[TIModel]:
+    def supported_by(self, model: TIModel) -> bool:
         """
-        Determines which model(s) can support this entry
+        Determines whether a given model supports this entry
 
         :param model: The model to check support for
-        :return: Whether ``model`` supports this entry, or the set of models this entry supports
+        :return: Whether ``model`` supports this entry
         """
 
-        supported_by = {m for m in TIModel.MODELS if self.get_min_os() < m.OS("latest")}
-
-        return model in supported_by if model is not None else supported_by
+        return self.get_min_os() < model.OS("latest")
 
     def unarchive(self):
         """
@@ -928,8 +920,7 @@ class TIEntry(Dock, Converter):
         :return: The (first) entry stored in the file
         """
 
-        if cls._type_id is not None and \
-                not any(filename.lower().endswith(extension) for extension in cls.extensions.values()):
+        if cls._type_id is not None and not re.search(rf"\.{cls.extension.replace('x', '.')}$", filename):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
                  f"attempting to read anyway.",
                  UserWarning)
@@ -946,7 +937,8 @@ class TIEntry(Dock, Converter):
             file.seek(2, 1)
 
             if remaining := file.read():
-                if remaining.startswith(b'\x0B\x00') or remaining.startswith(b'\x0D\x00'):
+                if remaining.startswith((TIEntry.base_meta_length.to_bytes(2, 'little'),
+                                         TIEntry.flash_meta_length.to_bytes(2, 'little'))):
                     warn("The selected var file contains multiple entries; only the first will be loaded. "
                          "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
                          UserWarning)
@@ -957,7 +949,7 @@ class TIEntry(Dock, Converter):
 
         return entry
 
-    def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
+    def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = TI_84PCE):
         """
         Saves this entry as a var file in the current directory given a filename and optional header and targeted model
 
@@ -1083,22 +1075,30 @@ class TIVarFile(TIFile, register=True):
 
         self.entries.clear()
 
-    def get_extension(self, model: TIModel = None) -> str:
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
         if len(self.entries) != 1:
             if self.is_empty:
                 warn("This var is empty.",
                      UserWarning)
 
-            return "8xg"
+            extension = "8xg"
 
-        return get_extension(self.entries[0].extensions, model or min(self.targets()))
+        else:
+            extension = self.entries[0].extension
 
-    def supported_by(self, model: TIModel = None) -> bool | set[TIModel]:
-        supported_by = set.intersection(*[item.supported_by() for item in [self.header, *self.entries]])
+        if model == TI_82:
+            return extension.replace("x", "2")
 
-        return model in supported_by if model is not None else supported_by
+        elif model == TI_83:
+            return extension.replace("x", "3")
 
-    def targets(self, model: TIModel = None) -> bool | set[TIModel]:
+        else:
+            return extension
+
+    def supported_by(self, model: TIModel) -> bool:
+        return all(item.supported_by(model) for item in [self.header, *self.entries])
+
+    def targets(self, model: TIModel) -> bool:
         return self.header.targets(model)
 
     @Loader[bytes, bytearray, BytesIO]
@@ -1156,9 +1156,7 @@ class TIVarFile(TIFile, register=True):
         with open(filename, 'rb') as file:
             return cls(data=file.read())
 
-    def save(self, filename: str = None, model: TIModel = None):
-        model = model or min(self.supported_by())
-
+    def save(self, filename: str = None, model: TIModel = TI_84PCE):
         if not self.supported_by(model):
             warn(f"The {model} does not support this var.",
                  UserWarning)

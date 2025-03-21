@@ -1,26 +1,9 @@
 from io import BytesIO
 from pathlib import Path
-from typing import BinaryIO, IO
-from warnings import warn
+from typing import BinaryIO
 
 from .data import *
 from .models import *
-
-
-def get_extension(extensions: dict[TIModel, str], model: TIModel):
-    extension = ""
-    for min_model in reversed(TIModel.MODELS):
-        if min_model in extensions and min_model <= model:
-            extension = extensions[min_model]
-            break
-
-    if not extension:
-        warn(f"The {model} does not support this type.",
-             UserWarning)
-
-        return extensions.get(None)
-
-    return extension
 
 
 class TIFile(Dock):
@@ -128,7 +111,7 @@ class TIFile(Dock):
         for magic in file_type.magics:
             cls._magics[magic] = file_type
 
-    def get_extension(self, model: TIModel = None) -> str:
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
         """
         Determines the file extension for a targeted model based on its contents
 
@@ -138,7 +121,7 @@ class TIFile(Dock):
 
         raise NotImplementedError
 
-    def get_filename(self, model: TIModel = None):
+    def get_filename(self, model: TIModel = TI_84PCE):
         """
         Determines the filename based on the instance name and targeted model
 
@@ -150,32 +133,32 @@ class TIFile(Dock):
 
         return f"{self.name}.{self.get_extension(model)}"
 
-    def supported_by(self, model: TIModel = None) -> bool | set[TIModel]:
+    def supported_by(self, model: TIModel) -> bool:
         """
-        Determines which model(s) can support this file
+        Determines whether this file supports a given model
 
         See `.targets` to check models this file explicitly targets.
 
         :param model: The model to check support for
-        :return: Whether ``model`` supports this file, or the set of models this file supports
+        :return: Whether ``model`` supports this file
         """
 
         raise NotImplementedError
 
-    def targets(self, model: TIModel = None) -> bool | set[TIModel]:
+    def targets(self, model: TIModel) -> bool:
         """
-        Determines which model(s) this file can target
+        Determines whether this file targets a given model
 
         See `.supported_by` to check models this file _can_ be sent to.
 
         :param model: The model to check as a target
-        :return: Whether ``model`` is targeted by this file, or the set of models this file targets
+        :return: Whether ``model`` is targeted by this file
         """
 
         raise NotImplementedError
 
-    @Loader[bytes, bytearray, IO[bytes]]
-    def load_bytes(self, data: bytes | IO[bytes]):
+    @Loader[bytes, bytearray, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this file
 
@@ -240,5 +223,4 @@ class TIFile(Dock):
             file.write(self.bytes())
 
 
-__all__ = ["TIFile",
-           "get_extension"]
+__all__ = ["TIFile"]

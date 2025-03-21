@@ -110,7 +110,7 @@ class EntryTests(unittest.TestCase):
         test_program.save("tests/data/var/Program_new.8xp", header=test_header)
 
         self.assertEqual(test_program.export().get_filename(), "SETDATE.8xp")
-        self.assertEqual(test_program.export(model=TI_83).get_filename(), "SETDATE.83p")
+        self.assertEqual(test_program.export().get_filename(model=TI_83), "SETDATE.83p")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
             with open("tests/data/var/Program_new.8xp", 'rb') as new:

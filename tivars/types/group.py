@@ -28,13 +28,6 @@ class TIGroup(SizedEntry, register=True):
 
     _T = 'TIGroup'
 
-    extensions = {
-        None: "8xg",
-        TI_82: "82g",
-        TI_83: "83g",
-        TI_83P: "8xg"
-    }
-
     _type_id = 0x17
 
     def __init__(self, init=None, *,

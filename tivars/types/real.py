@@ -28,12 +28,7 @@ class RealEntry(TIEntry):
 
     _T = 'RealEntry'
 
-    extensions = {
-        None: "8xn",
-        TI_82: "82n",
-        TI_83: "83n",
-        TI_83P: "8xn"
-    }
+    extension = "8xn"
 
     min_data_length = 9
 

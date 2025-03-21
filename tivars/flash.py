@@ -614,7 +614,7 @@ class TIFlashHeader(Dock):
 
         cls._type_ids[var_type._type_id if override is None else override] = var_type
 
-    def extension(self, model: TIModel = TI_84PCE) -> str:
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
         """
         Determines the header's file extension given a targeted model
 
@@ -640,7 +640,7 @@ class TIFlashHeader(Dock):
 
         return extension
 
-    def filename(self, model: TIModel = TI_84PCE) -> str:
+    def get_filename(self, model: TIModel = TI_84PCE) -> str:
         """
         Determines the header's filename given a targeted model
 
@@ -650,7 +650,7 @@ class TIFlashHeader(Dock):
         :return: The header's filename
         """
 
-        return f"{self.name}.{self.extension(model)}"
+        return f"{self.name}.{self.get_extension(model)}"
 
     @Loader[bytes, bytearray, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
@@ -789,7 +789,7 @@ class TIFlashHeader(Dock):
         :param model: A model to target (defaults to ``TI_84PCE``)
         """
 
-        with open(filename or self.filename(model), 'wb+') as file:
+        with open(filename or self.get_filename(model), 'wb+') as file:
             file.write(self.bytes())
 
     def coerce(self):
@@ -853,15 +853,12 @@ class TIFlashFile(TIFile, register=True):
 
         self.headers.clear()
 
-    def get_extension(self, model: TIModel = None) -> str:
-        if model and not model.has(TIFeature.Flash):
-            warn(f"The {model} does not support flash files.",
-                 UserWarning)
-
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
         if self.is_empty:
             return "8xk"
 
-        return get_extension(self.headers[0].extensions, model or min(self.supported_by()))
+        else:
+            return self.headers[0].get_extension(model)
 
 
 __all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile"]

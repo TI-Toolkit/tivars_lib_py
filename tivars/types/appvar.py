@@ -17,10 +17,7 @@ class TIAppVar(SizedEntry, register=True):
 
     flash_only = True
 
-    extensions = {
-        None: "8xv",
-        TI_83P: "8xv",
-    }
+    extension = "8xv"
 
     _type_id = 0x15
 

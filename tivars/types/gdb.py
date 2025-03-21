@@ -350,7 +350,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
             return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+    def load_string(self, string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
         equation = TIEquation()
         equation.load_string(string, model=model, lang=lang, mode=mode)
         self.load_equation(equation)
@@ -370,12 +370,7 @@ class TIMonoGDB(SizedEntry, register=True):
     GDBs for monochrome models are truncations of those for color models.
     """
 
-    extensions = {
-        None: "8xd",
-        TI_82: "82d",
-        TI_83: "83d",
-        TI_83P: "8xd"
-    }
+    extension = "8xd"
 
     min_data_length = 61
 

@@ -102,11 +102,7 @@ class ComplexEntry(TIEntry):
 
     versions = [0x00, 0x0B, 0x10]
 
-    extensions = {
-        None: "8xc",
-        TI_83: "83c",
-        TI_83P: "8xc"
-    }
+    extension = "8xc"
 
     min_data_length = 18
 

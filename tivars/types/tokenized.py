@@ -70,7 +70,7 @@ class TokenizedEntry(SizedEntry):
         return iter(self.tokens())
 
     @staticmethod
-    def decode(data: bytes, *, model: TIModel = None, lang: str = None, mode: str = None) -> str:
+    def decode(data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
         """
         Decodes a byte stream into a string of tokens
 
@@ -82,7 +82,6 @@ class TokenizedEntry(SizedEntry):
         """
 
         try:
-            model = model or TI_84PCE
             return "".join(getattr(token.langs[lang or model.lang], mode or "display")
                            for token in decode(data, tokens=model.tokens)[0])
 
@@ -90,7 +89,7 @@ class TokenizedEntry(SizedEntry):
             raise ValueError(f"unrecognized tokenization mode: '{mode}'")
 
     @staticmethod
-    def encode(string: str, *, model: TIModel = None, lang: str = None, mode: str = None) -> bytes:
+    def encode(string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> bytes:
         """
         Encodes a string of token represented in text into a byte stream
 
@@ -103,7 +102,6 @@ class TokenizedEntry(SizedEntry):
         :return: A stream of token bytes
         """
 
-        model = model or TI_84PCE
         return encode(string, trie=model.tokens.tries[lang or model.lang], mode=mode)[0]
 
     def get_min_os(self, data: bytes = None) -> OsVersion:
@@ -163,7 +161,7 @@ class TokenizedEntry(SizedEntry):
                  BytesWarning)
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+    def load_string(self, string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
         """
         Loads this entry from a string representation
 
@@ -240,12 +238,7 @@ class TIEquation(TokenizedEntry, register=True):
     A `TIEquation` is a stream of tokens that is evaluated either for graphing or on the homescreen.
     """
 
-    extensions = {
-        None: "8xy",
-        TI_82: "82y",
-        TI_83: "83y",
-        TI_83P: "8xy"
-    }
+    extension = "8xy"
 
     leading_name_byte = b'\x5E'
 
@@ -294,12 +287,7 @@ class TIString(TokenizedEntry, register=True):
     A `TIString` is a stream of tokens.
     """
 
-    extensions = {
-        None: "8xs",
-        TI_82: "82s",
-        TI_83: "83s",
-        TI_83P: "8xs"
-    }
+    extension = "8xs"
 
     leading_name_byte = b'\xAA'
 
@@ -323,7 +311,7 @@ class TIString(TokenizedEntry, register=True):
         return value.capitalize()
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+    def load_string(self, string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
         super().load_string(string.strip("\""), model=model, lang=lang, mode=mode)
 
     def string(self) -> str:
@@ -337,12 +325,7 @@ class TIProgram(TokenizedEntry, register=True):
     A `TIProgram` is a stream of tokens that is run as a TI-BASIC program.
     """
 
-    extensions = {
-        None: "8xp",
-        TI_82: "82p",
-        TI_83: "83p",
-        TI_83P: "8xp"
-    }
+    extension = "8xp"
 
     is_protected = False
     """
@@ -394,7 +377,7 @@ class TIProgram(TokenizedEntry, register=True):
                      BytesWarning)
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+    def load_string(self, string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
         if not self.is_tokenized:
             warn("ASM programs may not have tokenized data.",
                  UserWarning)

@@ -57,12 +57,7 @@ class TIWindowSettings(SettingsEntry, register=True):
     A `TIWindowSettings` stores all plot window parameters as a contiguous stream of `TIReal` values.
     """
 
-    extensions = {
-        None: "8xw",
-        TI_82: "82w",
-        TI_83: "83w",
-        TI_83P: "8xw"
-    }
+    extension = "8xw"
 
     min_data_length = 210
 
@@ -300,12 +295,7 @@ class TIRecallWindow(SettingsEntry, register=True):
     A `TIRecallWindow` stores all plot window parameters as a contiguous stream of `TIReal` values.
     """
 
-    extensions = {
-        None: "8xz",
-        TI_82: "82z",
-        TI_83: "83z",
-        TI_83P: "8xz"
-    }
+    extension = "8xz"
 
     min_data_length = 209
 
@@ -543,12 +533,7 @@ class TITableSettings(SettingsEntry, register=True):
     A `TITableSettings` stores all plot table parameters as a contiguous stream of `TIReal` values.
     """
 
-    extensions = {
-        None: "8xt",
-        TI_82: "82t",
-        TI_83: "83t",
-        TI_83P: "8xt"
-    }
+    extension = "8xt"
 
     min_data_length = 20
 
