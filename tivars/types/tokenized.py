@@ -148,7 +148,7 @@ class TokenizedEntry(SizedEntry):
         return version
 
     @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes | BytesIO):
+    def load_bytes(self, data: bytes):
         super().load_bytes(data)
 
         try:
@@ -363,7 +363,7 @@ class TIProgram(TokenizedEntry, register=True):
         self.coerce()
 
     @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes | BytesIO):
+    def load_bytes(self, data: bytes):
         super(TokenizedEntry, self).load_bytes(data)
 
         if self.is_tokenized:

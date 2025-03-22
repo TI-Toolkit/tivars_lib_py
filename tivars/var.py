@@ -375,7 +375,7 @@ class TIEntry(Dock, Converter):
         self.meta_length = TIEntry.flash_meta_length
         self.type_id = self._type_id if self._type_id is not None else 0xFF
         self.name = name
-        self.archived = archived or False
+        self.archived = archived if archived is not None else False
         self.version = version or 0x00
 
         self.clear()
@@ -730,7 +730,7 @@ class TIEntry(Dock, Converter):
                  UserWarning)
 
     @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes | BytesIO):
+    def load_bytes(self, data: bytes):
         """
         Loads a byte string or bytestream into this entry
 
@@ -1073,7 +1073,7 @@ class TIVarFile(TIFile, register=True):
         Removes all entries from this var
         """
 
-        self.entries.clear()
+        self.entries = []
 
     def get_extension(self, model: TIModel = TI_84PCE) -> str:
         if len(self.entries) != 1:
@@ -1110,7 +1110,7 @@ class TIVarFile(TIFile, register=True):
             data = BytesIO(data)
 
         # Read header
-        self.header.load_bytes(data.read(53))
+        self.header = TIHeader(data=data.read(53))
         entry_length = int.from_bytes(data.read(2), 'little')
 
         # Read entries
@@ -1141,6 +1141,10 @@ class TIVarFile(TIFile, register=True):
             warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
                  BytesWarning)
 
+        if remaining := data.read():
+            warn(f"The selected var file contains unexpected additional data: {remaining}.",
+                 BytesWarning)
+
     def bytes(self) -> bytes:
         dump = self.header.bytes()
         dump += int.to_bytes(self.entry_length, 2, 'little')
@@ -1157,10 +1161,6 @@ class TIVarFile(TIFile, register=True):
             return cls(data=file.read())
 
     def save(self, filename: str = None, model: TIModel = TI_84PCE):
-        if not self.supported_by(model):
-            warn(f"The {model} does not support this var.",
-                 UserWarning)
-
         for index, entry in enumerate(self.entries):
             if entry.get_min_os() > model.OS("latest"):
                 warn(f"Entry #{index + 1} is not supported by {model}.",
@@ -1199,7 +1199,7 @@ class SizedEntry(TIEntry):
         self.length = len(self.leading_data_bytes) + len(self.data)
 
     @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes | BytesIO):
+    def load_bytes(self, data: bytes):
         super().load_bytes(data)
 
         if self.length != (data_length := len(self.leading_data_bytes) + len(self.data)):

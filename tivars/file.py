@@ -1,6 +1,7 @@
 from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO
+from warnings import warn
 
 from .data import *
 from .models import *
@@ -172,15 +173,17 @@ class TIFile(Dock):
             data = BytesIO(data)
 
         for magic in self._magics:
-            if data.read(len(magic)).decode() == magic:
+            if data.read(len(magic)) == magic.encode():
                 self.__class__ = self._magics[magic]
+
+                data.seek(-len(magic), 1)
                 self.load_bytes(data)
 
                 return
 
             data.seek(-len(magic), 1)
 
-        raise TypeError("unrecognized file type")
+        raise TypeError(f"unrecognized file magic: {data.read(8)}...")
 
     def bytes(self) -> bytes:
         """
@@ -218,6 +221,9 @@ class TIFile(Dock):
         :param filename: A filename to save to (defaults to the file's name and extension)
         :param model: The model to target
         """
+        if not self.supported_by(model):
+            warn(f"The {model} does not support this var.",
+                 UserWarning)
 
         with open(filename or self.get_filename(model), 'wb+') as file:
             file.write(self.bytes())

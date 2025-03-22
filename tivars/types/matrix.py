@@ -131,7 +131,7 @@ class TIMatrix(TIEntry, register=True):
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
     @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes | BytesIO):
+    def load_bytes(self, data: bytes):
         super().load_bytes(data)
 
         if self.calc_data_length // RealEntry.min_data_length != self.size:

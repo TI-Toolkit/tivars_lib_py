@@ -590,18 +590,18 @@ class TIFlashHeader(Dock):
         stream.seek(data_size, 1)
         match remaining := stream.read(8):
             case b"":
-                entry_length = 78 + data_size
+                header_length = 78 + data_size
 
             case b"**TIFL**":
-                entry_length = 78 + data_size
+                header_length = 78 + data_size
                 stream.seek(-8, 1)
 
             case _:
-                entry_length = 78 + data_size + 2
+                header_length = 78 + data_size + 2
                 stream.seek(-len(remaining), 1)
 
         stream.seek(-78 - data_size, 1)
-        return entry_length
+        return header_length
 
     @classmethod
     def register(cls, var_type: type['TIFlashHeader'], override: int = None):
@@ -831,7 +831,7 @@ class TIFlashFile(TIFile, register=True):
     @property
     def is_empty(self) -> bool:
         """
-        :return: Whether this var contains no entries
+        :return: Whether this flash file contains no headers
         """
 
         return len(self.headers) == 0
@@ -848,10 +848,10 @@ class TIFlashFile(TIFile, register=True):
 
     def clear(self):
         """
-        Removes all entries from this var
+        Removes all headers from this flash file
         """
 
-        self.headers.clear()
+        self.headers = []
 
     def get_extension(self, model: TIModel = TI_84PCE) -> str:
         if self.is_empty:
@@ -859,6 +859,31 @@ class TIFlashFile(TIFile, register=True):
 
         else:
             return self.headers[0].get_extension(model)
+
+    @Loader[bytes, bytearray, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
+        if hasattr(data, "read"):
+            data = BytesIO(data.read())
+
+        else:
+            data = BytesIO(data)
+
+        self.clear()
+        while data.read(8) == b'**TIFL**':
+            data.seek(-8, 1)
+            self.add_header()
+
+            length = TIFlashHeader.next_header_length(data)
+            self.headers[-1].load_bytes(header_data := data.read(length))
+
+            if len(header_data) != length:
+                warn(f"The data length of header #{len(self.headers) - 1} ({type(self.headers[-1])}) is incorrect "
+                     f"(expected {length}, got {len(header_data)}).",
+                     BytesWarning)
+
+        if remaining := data.read():
+            warn(f"The selected flash file contains unexpected additional data: {remaining}.",
+                 BytesWarning)
 
 
 __all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile"]
