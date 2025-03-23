@@ -626,19 +626,11 @@ class TIFlashHeader(Dock):
             warn(f"The {model} does not support flash files.",
                  UserWarning)
 
-        extension = ""
         for min_model in reversed(TIModel.MODELS):
             if model in self.extensions and min_model <= model:
-                extension = self.extensions[model]
-                break
+                return self.extensions[model]
 
-        if not extension:
-            warn(f"The {model} does not support this var type.",
-                 UserWarning)
-
-            return self.extensions[None]
-
-        return extension
+        return self.extensions[TI_84PCE]
 
     def get_filename(self, model: TIModel = TI_84PCE) -> str:
         """
