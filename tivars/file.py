@@ -183,7 +183,7 @@ class TIFile(Dock):
 
             data.seek(-len(magic), 1)
 
-        raise TypeError(f"unrecognized file magic: {data.read(8)}...")
+        raise TypeError(f"unrecognized file magic: {data.read(8)}")
 
     def bytes(self) -> bytes:
         """
