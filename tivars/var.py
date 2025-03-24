@@ -263,7 +263,7 @@ class TIEntry(Dock, Converter):
     **Even though most var files have just one entry, an entry does NOT constitute a complete var file.**
     **All var files require an attached header and other metadata.**
 
-    **Use** `TIEntry.export` **to create a new** `TIVar` **containing the entry, with an optional custom header.**
+    **Use** `TIEntry.export` **to create a new** `TIVarFile` **containing the entry, with an optional custom header.**
     **Use** `TIEntry.save` **to export and save the entry in a var file in the current directory.**
     """
 
@@ -759,7 +759,7 @@ class TIEntry(Dock, Converter):
 
             else:
                 warn(f"The entry type is incorrect (expected {type(self)}, got an unknown type). "
-                     f"Load the var file into a TIVar instance if you don't know the entry type(s).",
+                     f"Load the entry into a base TIEntry instance if you don't know the entry type.",
                      BytesWarning)
 
         # Read varname
@@ -940,7 +940,7 @@ class TIEntry(Dock, Converter):
                 if remaining.startswith((TIEntry.base_meta_length.to_bytes(2, 'little'),
                                          TIEntry.flash_meta_length.to_bytes(2, 'little'))):
                     warn("The selected var file contains multiple entries; only the first will be loaded. "
-                         "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
+                         "Use load_from_file to select a particular entry, or load the entire file into a TIVarFile object.",
                          UserWarning)
 
                 else:
@@ -962,7 +962,7 @@ class TIEntry(Dock, Converter):
 
     def export(self, *, name: str = None, header: TIHeader = None) -> 'TIVarFile':
         """
-        Exports this entry to a `TIVar` with a specified name and header
+        Exports this entry to a `TIVarFile` with a specified name and header
 
         :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
