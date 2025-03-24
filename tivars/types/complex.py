@@ -253,8 +253,10 @@ class ComplexEntry(TIEntry):
 
         return self.real, self.imag
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        match self.get_version(data):
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        match cls.get_version(data):
             case 0x00:
                 return TI_83.OS()
 
@@ -264,9 +266,9 @@ class ComplexEntry(TIEntry):
             case _:
                 return TI_83PCE()
 
-    def get_version(self, data: bytes = None) -> int:
-        data = data or self.data
-
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
         match max(data[0], data[9]):
             case TIComplex.type_id:
                 return 0x00

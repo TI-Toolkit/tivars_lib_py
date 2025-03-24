@@ -120,7 +120,7 @@ class Data(Bytes):
         """
 
         if instance is not None:
-            instance.version = instance.get_version(value)
+            instance.version = type(instance).get_version(value)
 
         return super().set(value)
 
@@ -374,7 +374,7 @@ class Section:
 
         return new
 
-    def __set_name__(self, owner, name: str):
+    def __set_name__(self, owner: type, name: str):
         self._name = name
 
     def __get__(self, instance, owner: type = None) -> _T:
@@ -565,5 +565,16 @@ class Loader:
         setattr(owner, name, self._func)
 
 
-__all__ = ["Section", "View", "Dock", "Loader",
+class datamethod:
+    def __init__(self, func):
+        self.func = getattr(func, "__func__", func)
+
+    def __get__(self, instance, owner: type = None):
+        if instance is None:
+            return lambda data: self.func(owner, data)
+
+        return lambda: self.func(owner, instance.data)
+
+
+__all__ = ["Section", "View", "Dock", "Loader", "datamethod",
            "Converter", "Bytes", "Data", "SizedData", "Boolean", "Integer", "String", "Bits"]

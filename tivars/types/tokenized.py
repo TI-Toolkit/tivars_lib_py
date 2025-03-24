@@ -104,11 +104,15 @@ class TokenizedEntry(SizedEntry):
 
         return encode(string, trie=model.tokens.tries[lang or model.lang], mode=mode)[0]
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        return decode(data or self.data)[1]
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        return decode(data)[1]
 
-    def get_version(self, data: bytes = None) -> int:
-        match self.get_min_os(data):
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
+        match cls.get_min_os(data):
             case os if os >= TI_84PCE.OS("5.3"):
                 version = 0x0C
 
@@ -142,7 +146,7 @@ class TokenizedEntry(SizedEntry):
             case _:
                 version = 0x00
 
-        if any(token in (data or self.data) for token in self.clock_tokens):
+        if any(token in data for token in cls.clock_tokens):
             version += 0x20
 
         return version
@@ -432,8 +436,10 @@ class TIAsmProgram(TIProgram):
 
     is_tokenized = False
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        return max([model.OS() for token, model in self.asm_tokens.items() if token in (data or self.data)],
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        return max([model.OS() for token, model in cls.asm_tokens.items() if token in data],
                    default=OsVersions.INITIAL)
 
 

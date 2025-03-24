@@ -543,7 +543,8 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return data.read()
 
-    def get_equations(self, data: bytes = None) -> tuple[TIGraphedEquation, ...]:
+    @datamethod
+    def get_equations(self, data: bytes) -> tuple[TIGraphedEquation, ...]:
         """
         Extracts the equations stored in a GDB into a ``tuple``
 
@@ -576,11 +577,15 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return equations
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        return max([eq.get_min_os() for eq in self.get_equations(data)], default=OsVersions.INITIAL)
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        return max([eq.get_min_os() for eq in cls.get_equations(data)], default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        return max([eq.get_version() for eq in self.get_equations(data)], default=0x00)
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
+        return max([eq.get_version() for eq in cls.get_equations(data)], default=0x00)
 
     @Loader[dict]
     def load_dict(self, dct: dict):
