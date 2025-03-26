@@ -565,8 +565,16 @@ class Loader:
         setattr(owner, name, self._func)
 
 
-class datamethod:
+class classproperty:
     def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner: type = None):
+        return self.func(owner)
+
+
+class datamethod:
+    def __init__(self, func: classmethod):
         self.func = getattr(func, "__func__", func)
 
     def __get__(self, instance, owner: type = None):
@@ -576,5 +584,5 @@ class datamethod:
         return lambda: self.func(owner, instance.data)
 
 
-__all__ = ["Section", "View", "Dock", "Loader", "datamethod",
+__all__ = ["Section", "View", "Dock", "Loader", "classproperty", "datamethod",
            "Converter", "Bytes", "Data", "SizedData", "Boolean", "Integer", "String", "Bits"]

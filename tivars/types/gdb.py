@@ -220,7 +220,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
                 equations[index] = value
 
                 # Set styles
-                data = instance.raw.calc_data[:instance.offset]
+                data = instance.raw.calc_data[:instance.offset + 2]
                 for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                     data += equations[i].raw.style
 
@@ -512,13 +512,13 @@ class TIMonoGDB(SizedEntry, register=True):
                 warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                      BytesWarning)
 
-    @property
-    def offset(self) -> int:
+    @classproperty
+    def offset(cls) -> int:
         """
-        :return: The index of the start of the equation styles in this GDB
+        :return: The index of the start of the equation styles in this GDB's data
         """
 
-        return TIMonoGDB.min_data_length + GraphRealEntry.min_data_length * self.num_parameters
+        return TIMonoGDB.min_data_length + GraphRealEntry.min_data_length * cls.num_parameters - 2
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -528,7 +528,9 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return self.get_equations()
 
-    def get_color_data(self, data: bytes = None) -> bytes:
+    @datamethod
+    @classmethod
+    def get_color_data(cls, data: bytes) -> bytes:
         """
         Finds the color portion of a GDB if it exists
 
@@ -536,15 +538,17 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: The color portion of ``data``, which may be empty
         """
 
-        data = BytesIO(data or self.calc_data[self.offset + self.num_styles:])
+        data = BytesIO(data)
+        data.seek(cls.offset + cls.num_styles, 0)
         temp = TIGraphedEquation()
-        for i in range(self.num_equations):
+        for i in range(cls.num_equations):
             temp.load_data_section(data)
 
         return data.read()
 
     @datamethod
-    def get_equations(self, data: bytes) -> tuple[TIGraphedEquation, ...]:
+    @classmethod
+    def get_equations(cls, data: bytes) -> tuple[TIGraphedEquation, ...]:
         """
         Extracts the equations stored in a GDB into a ``tuple``
 
@@ -552,17 +556,18 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: A ``tuple`` of equations stored in ``data``
         """
 
-        data = BytesIO(data or self.calc_data[self.offset:])
-        equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
+        data = BytesIO(data)
+        data.seek(cls.offset, 0)
+        equations = tuple(TIGraphedEquation(name=name) for name in cls.equation_names)
 
         # Load styles
-        for i in range(self.num_styles):
+        for i in range(cls.num_styles):
             style = data.read(1)
-            for j in range(r := self.num_equations // self.num_styles):
+            for j in range(r := cls.num_equations // cls.num_styles):
                 equations[r * i + j].raw.style = style
 
         # Load data sections
-        for i in range(self.num_equations):
+        for i in range(cls.num_equations):
             equations[i].load_data_section(data)
 
         # Load colors (if they exist)
@@ -570,9 +575,9 @@ class TIMonoGDB(SizedEntry, register=True):
             data = BytesIO(rest)
             data.seek(3, 1)
 
-            for i in range(self.num_styles):
+            for i in range(cls.num_styles):
                 color = data.read(1)
-                for j in range(r := self.num_equations // self.num_styles):
+                for j in range(r := cls.num_equations // cls.num_styles):
                     equations[r * i + j].raw.color = color
 
         return equations
