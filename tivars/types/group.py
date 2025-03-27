@@ -79,13 +79,19 @@ class TIGroup(SizedEntry, register=True):
 
         return group
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        return max([entry.get_min_os() for entry in self.ungroup(data)], default=OsVersions.INITIAL)
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        return max([entry.get_min_os() for entry in cls.ungroup(data)], default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        return max([entry.get_version() for entry in self.ungroup(data)], default=0x00)
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
+        return max([entry.get_version() for entry in cls.ungroup(data)], default=0x00)
 
-    def ungroup(self, data: bytes = None) -> list[TIEntry]:
+    @datamethod
+    @classmethod
+    def ungroup(cls, data: bytes) -> list[TIEntry]:
         """
         Ungroups a group object into a ``list`` of its entries
 
@@ -95,7 +101,7 @@ class TIGroup(SizedEntry, register=True):
         :return: A ``list`` of entries stored in ``data``
         """
 
-        data = BytesIO(data or self.data)
+        data = BytesIO(data)
         entries = []
 
         index = 1

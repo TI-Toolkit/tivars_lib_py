@@ -683,7 +683,9 @@ class TIEntry(Dock, Converter):
         self.raw.calc_data = bytearray(self.leading_data_bytes)
         self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
         """
         Determines the minimum OS that supports this entry's data
 
@@ -693,7 +695,9 @@ class TIEntry(Dock, Converter):
 
         return OsVersions.INITIAL
 
-    def get_version(self, data: bytes = None) -> int:
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
         """
         Determines the version byte corresponding to given data for this entry type
 
@@ -704,7 +708,7 @@ class TIEntry(Dock, Converter):
         :return: The version byte for ``data``
         """
 
-        return self.versions[0]
+        return cls.versions[0]
 
     def supported_by(self, model: TIModel) -> bool:
         """

@@ -21,7 +21,7 @@ class TIMatrix(TIEntry, register=True):
     Exact types are supported, but complex numbers are not.
     """
 
-    versions = [0x10, 0x0B, 0x00]
+    versions = [0x00, 0x0B, 0x10]
     extension = "8xm"
 
     min_data_length = 2
@@ -110,12 +110,16 @@ class TIMatrix(TIEntry, register=True):
 
         return self.width * self.height
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        it = zip(*[iter(data)] * RealEntry.min_data_length)
         return max(map(RealEntry().get_min_os, it), default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
+        it = zip(*[iter(data)] * RealEntry.min_data_length)
         version = max(map(RealEntry().get_version, it), default=0x00)
 
         if version > 0x1B:

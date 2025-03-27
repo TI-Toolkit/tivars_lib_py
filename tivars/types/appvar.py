@@ -3,6 +3,7 @@ Appvars
 """
 
 
+from tivars.data import *
 from tivars.models import *
 from tivars.var import SizedEntry
 
@@ -28,7 +29,9 @@ class TIAppVar(SizedEntry, register=True):
 
         super().__init__(init, name=name, version=version, archived=archived, data=data)
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
         return TI_83P.OS()
 
 

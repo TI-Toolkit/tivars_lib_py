@@ -77,7 +77,7 @@ class TIList(TIEntry):
 
     _E = TIEntry
 
-    versions = [0x10, 0x0B, 0x00]
+    versions = [0x00, 0x0B, 0x10]
     extension = "8xl"
 
     min_data_length = 2
@@ -131,13 +131,17 @@ class TIList(TIEntry):
     def data(self) -> bytes:
         pass
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        it = zip(*[iter(data or self.data)] * self._E.min_data_length)
-        return max(map(self._E().get_min_os, it), default=OsVersions.INITIAL)
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
+        it = zip(*[iter(data)] * cls._E.min_data_length)
+        return max(map(cls._E().get_min_os, it), default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        it = zip(*[iter(data or self.data)] * self._E.min_data_length)
-        version = max(map(self._E().get_version, it), default=0x00)
+    @datamethod
+    @classmethod
+    def get_version(cls, data: bytes) -> int:
+        it = zip(*[iter(data)] * cls._E.min_data_length)
+        version = max(map(cls._E().get_version, it), default=0x00)
 
         if version > 0x1B:
             return 0x10

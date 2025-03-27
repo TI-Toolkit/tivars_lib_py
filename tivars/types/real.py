@@ -134,9 +134,9 @@ class RealEntry(TIEntry):
         if self._type_id is not None:
             self.subtype_id = self._type_id
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        data = data or self.data
-
+    @datamethod
+    @classmethod
+    def get_min_os(cls, data: bytes) -> OsVersion:
         match data[0]:
             case 0x18 | 0x19:
                 return TI_84P.OS("2.53")
