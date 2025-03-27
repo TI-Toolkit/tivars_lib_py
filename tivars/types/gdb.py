@@ -220,7 +220,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
                 equations[index] = value
 
                 # Set styles
-                data = instance.raw.calc_data[:instance.offset + 2]
+                data = instance.raw.calc_data[:instance.offset]
                 for i in range(0, instance.num_equations, instance.num_equations // instance.num_styles):
                     data += equations[i].raw.style
 
@@ -518,7 +518,7 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: The index of the start of the equation styles in this GDB's data
         """
 
-        return TIMonoGDB.min_data_length + GraphRealEntry.min_data_length * cls.num_parameters - 2
+        return TIMonoGDB.min_data_length + GraphRealEntry.min_data_length * cls.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -539,7 +539,7 @@ class TIMonoGDB(SizedEntry, register=True):
         """
 
         data = BytesIO(data)
-        data.seek(cls.offset + cls.num_styles, 0)
+        data.seek(cls.offset + cls.num_styles - 2, 0)
         temp = TIGraphedEquation()
         for i in range(cls.num_equations):
             temp.load_data_section(data)
@@ -557,7 +557,7 @@ class TIMonoGDB(SizedEntry, register=True):
         """
 
         data = BytesIO(data)
-        data.seek(cls.offset, 0)
+        data.seek(cls.offset - 2, 0)
         equations = tuple(TIGraphedEquation(name=name) for name in cls.equation_names)
 
         # Load styles
