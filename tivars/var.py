@@ -922,7 +922,7 @@ class TIEntry(Dock, Converter):
         :return: The (first) entry stored in the file
         """
 
-        if cls._type_id is not None and not re.search(rf"\.{cls.extension.replace('x', '.')}$", filename):
+        if cls._type_id is not None and not re.search(rf"\.{cls.extension.replace('x', '.')}$", filename.lower()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
                  f"attempting to read anyway.",
                  UserWarning)
