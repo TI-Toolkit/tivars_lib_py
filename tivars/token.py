@@ -10,7 +10,7 @@ class TIToken(Token):
     """
     Interface extension for the token sheets base ``Token`` container
 
-    TITokens can be fetched by bytes or recognized names from a `TITokens` container attached to a `TIModel`.
+    `TIToken` objects can be fetched by bytes or recognized names from a `TITokens` container attached to a `TIModel`.
     Instantiating your own `TIToken` is not recommended.
     """
 
@@ -65,7 +65,7 @@ class IllegalToken(TIToken):
     def __init__(self, bits: bytes):
         self.bits = bits
 
-        super().__init__(Token(bits, {"en": Translation(b'?', "?", self.escape, [])},
+        super().__init__(Token(bits, {"en": Translation(b'?', self.escape, self.escape, [])},
                                {"illegal": "true"}))
 
 

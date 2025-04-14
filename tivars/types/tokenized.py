@@ -405,15 +405,16 @@ class TIProgram(TokenizedEntry, register=True):
             simplefilter("error")
 
             try:
-                self.string()
+                asm_83 = self.string().endswith("End\n0000\nEnd")
                 doors = False
 
             except BytesWarning:
+                asm_83 = False
                 doors = True
 
         doors &= b"\xEF\x68" in self.data and self.data.index(b"\xEF\x68") > 0
 
-        match self.type_id, any(token in self.data for token in self.asm_tokens) | doors:
+        match self.type_id, any(token in self.data for token in self.asm_tokens) | asm_83 | doors:
             case TIProgram.type_id, False:
                 self.__class__ = TIProgram
             case TIProgram.type_id, True:

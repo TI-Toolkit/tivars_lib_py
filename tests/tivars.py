@@ -215,11 +215,16 @@ class TokenizationTests(unittest.TestCase):
             file.seek(55)
             self.assertEqual(test_program.bytes(), file.read()[:-2])
 
-    def test_doors(self):
+    def test_assembly(self):
         test_program = TIProgram.open("tests/data/var/COLORZ.8xp")
         self.assertEqual(type(test_program), TIProtectedAsmProgram)
 
         self.assertEqual(test_program.decode(test_program.data[:26]), "Disp \"Needs Doors CSE\"")
+
+        test_program = TIProgram.open("tests/data/var/ZLOAD.83P")
+        self.assertEqual(type(test_program), TIAsmProgram)
+
+        self.assertEqual(test_program.string()[-12:], "End\n0000\nEnd")
 
     def test_modes(self):
         interpolation = "A and B:Disp \"A and B\":Send(\"SET SOUND eval(A and B) TIME 2"

@@ -29,7 +29,7 @@ def encode(string: str, *,
     For reference, here are the tokenization modes utilized by popular IDEs and other software:
         - SourceCoder: ``max``
         - TokenIDE: ``max``
-        - TI Connect CE: ``smart``
+        - TI Connect CE: ¯\_(ツ)_/¯
         - TI-Planet Project Builder: ``smart``
         - tivars_lib_cpp: ``smart``
 
