@@ -30,7 +30,7 @@ class RealEntry(TIEntry):
 
     extension = "8xn"
 
-    min_data_length = 9
+    min_calc_data_length = 9
 
     min_exponent = 0x00
     """
@@ -86,7 +86,7 @@ class RealEntry(TIEntry):
 
         return negated
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         pass
 
@@ -228,13 +228,13 @@ class TIReal(RealEntry, register=True):
     A `TIReal` entry can be used to form `TIComplex` or `TIComplexPi` complex numbers.
     """
 
-    min_data_length = 9
+    min_calc_data_length = 9
 
     imag_subtype_id = 0x0C
 
     _type_id = 0x00
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         pass
 
@@ -379,7 +379,7 @@ class TIRealRadical(RealEntry, register=True):
 
     versions = [0x10]
 
-    min_data_length = 9
+    min_calc_data_length = 9
 
     imag_subtype_id = 0x1D
 
@@ -443,7 +443,7 @@ class TIRealRadical(RealEntry, register=True):
             case _:
                 return super().__format__(format_spec)
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         pass
 

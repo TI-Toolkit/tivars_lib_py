@@ -104,7 +104,7 @@ class ComplexEntry(TIEntry):
 
     extension = "8xc"
 
-    min_data_length = 18
+    min_calc_data_length = 18
 
     is_exact = False
     """
@@ -164,7 +164,7 @@ class ComplexEntry(TIEntry):
                 except (TypeError, ValueError):
                     return super().__format__(format_spec)
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         """
         The data section of the entry

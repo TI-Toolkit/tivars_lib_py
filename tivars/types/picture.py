@@ -219,9 +219,9 @@ class PictureEntry(SizedEntry):
 
     def coerce(self):
         match self.length + 2:
-            case TIMonoPicture.min_data_length: self.__class__ = TIMonoPicture
-            case TIPicture.min_data_length: self.__class__ = TIPicture
-            case TIImage.min_data_length: self.__class__ = TIImage
+            case TIMonoPicture.min_calc_data_length: self.__class__ = TIMonoPicture
+            case TIPicture.min_calc_data_length: self.__class__ = TIPicture
+            case TIImage.min_calc_data_length: self.__class__ = TIImage
             case _: warn(f"Picture has unexpected length ({self.length}).",
                          BytesWarning)
 
@@ -235,7 +235,7 @@ class TIMonoPicture(PictureEntry):
 
     extension = "8xi"
 
-    min_data_length = 758
+    min_calc_data_length = 758
 
     width = 96
     height = 63
@@ -288,7 +288,7 @@ class TIPicture(PictureEntry, register=True):
     versions = [0x0A]
     extension = "8ci"
 
-    min_data_length = 21947
+    min_calc_data_length = 21947
 
     width = 266
     height = 165
@@ -364,7 +364,7 @@ class TIImage(PictureEntry, register=True):
 
     extension = "8ca"
 
-    min_data_length = 22247
+    min_calc_data_length = 22247
 
     width = 133
     height = 83

@@ -156,7 +156,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
     The equation's style and color in its GDB is bundled for convenience.
     """
 
-    min_data_length = 3
+    min_calc_data_length = 3
 
     class Raw(TIEntry.Raw):
         """
@@ -372,7 +372,7 @@ class TIMonoGDB(SizedEntry, register=True):
 
     extension = "8xd"
 
-    min_data_length = 61
+    min_calc_data_length = 61
 
     leading_name_byte = b'\x61'
 
@@ -518,7 +518,7 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: The index of the start of the equation styles in this GDB's data
         """
 
-        return TIMonoGDB.min_data_length + GraphRealEntry.min_data_length * cls.num_parameters
+        return TIMonoGDB.min_calc_data_length + GraphRealEntry.min_calc_data_length * cls.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -726,7 +726,7 @@ class TIGDB(TIMonoGDB):
     A GDB can correspond to one of the Function, Parametric, Polar, or Sequence plotting modes.
     """
 
-    min_data_length = 66
+    min_calc_data_length = 66
     has_color = True
 
     def __init__(self, init=None, *,
@@ -834,7 +834,7 @@ class TIMonoFuncGDB(TIMonoGDB):
 
     mode_byte = 0x10
 
-    min_data_length = 110
+    min_calc_data_length = 110
 
     num_equations = 10
     num_parameters = 1
@@ -952,7 +952,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     Parser for function color GDBs
     """
 
-    min_data_length = 128
+    min_calc_data_length = 128
 
     @Section()
     def calc_data(self) -> bytes:
@@ -988,7 +988,7 @@ class TIMonoParamGDB(TIMonoGDB):
 
     mode_byte = 0x40
 
-    min_data_length = 130
+    min_calc_data_length = 130
 
     num_equations = 12
     num_parameters = 3
@@ -1134,7 +1134,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     Parser for parametric color GDBs
     """
 
-    min_data_length = 144
+    min_calc_data_length = 144
 
     @Section()
     def calc_data(self) -> bytes:
@@ -1170,7 +1170,7 @@ class TIMonoPolarGDB(TIMonoGDB):
 
     mode_byte = 0x20
 
-    min_data_length = 112
+    min_calc_data_length = 112
 
     num_equations = 6
     num_parameters = 3
@@ -1270,7 +1270,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     Parser for polar color GDBs
     """
 
-    min_data_length = 126
+    min_calc_data_length = 126
 
     @Section()
     def calc_data(self) -> bytes:
@@ -1306,7 +1306,7 @@ class TIMonoSeqGDB(TIMonoGDB):
 
     mode_byte = 0x80
 
-    min_data_length = 163
+    min_calc_data_length = 163
 
     num_equations = 3
     num_parameters = 10
@@ -1518,7 +1518,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     Parser for sequential color GDBs
     """
 
-    min_data_length = 174
+    min_calc_data_length = 174
 
     @Section()
     def calc_data(self) -> bytes:

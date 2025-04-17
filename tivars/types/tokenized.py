@@ -29,7 +29,7 @@ class TokenizedEntry(SizedEntry):
         0x2A, 0x2B, 0x2C
     ]
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     clock_tokens = [
         b'\xEF\x00', b'\xEF\x01', b'\xEF\x02', b'\xEF\x03', b'\xEF\x04',

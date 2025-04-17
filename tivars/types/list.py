@@ -80,7 +80,7 @@ class TIList(TIEntry):
     versions = [0x00, 0x0B, 0x10]
     extension = "8xl"
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     def __init__(self, init=None, *,
                  name: str = "L1",
@@ -134,13 +134,13 @@ class TIList(TIEntry):
     @datamethod
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
-        it = zip(*[iter(data)] * cls._E.min_data_length)
+        it = zip(*[iter(data)] * cls._E.min_calc_data_length)
         return max(map(cls._E().get_min_os, it), default=OsVersions.INITIAL)
 
     @datamethod
     @classmethod
     def get_version(cls, data: bytes) -> int:
-        it = zip(*[iter(data)] * cls._E.min_data_length)
+        it = zip(*[iter(data)] * cls._E.min_calc_data_length)
         version = max(map(cls._E().get_version, it), default=0x00)
 
         if version > 0x1B:
@@ -159,9 +159,9 @@ class TIList(TIEntry):
     def load_bytes(self, data: bytes):
         super().load_bytes(data)
 
-        if self._E.min_data_length and self.calc_data_length // self._E.min_data_length != self.length:
+        if self._E.min_calc_data_length and self.calc_data_length // self._E.min_calc_data_length != self.length:
             warn(f"The list has an unexpected length "
-                 f"(expected {self.length}, got {self.calc_data_length // self._E.min_data_length}).",
+                 f"(expected {self.length}, got {self.calc_data_length // self._E.min_calc_data_length}).",
                  BytesWarning)
 
     @Loader[Sequence]
@@ -180,7 +180,7 @@ class TIList(TIEntry):
         :return: A ``list`` of the elements in this list
         """
 
-        it = zip(*[iter(self.data)] * self._E.min_data_length)
+        it = zip(*[iter(self.data)] * self._E.min_calc_data_length)
         return [self._E(data=data) for data in it]
 
     @Loader[str]

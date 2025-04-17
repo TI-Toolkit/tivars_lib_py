@@ -20,7 +20,7 @@ class SettingsEntry(SizedEntry):
     A settings entry stores all parameters for the different plot windows or tables
     """
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
@@ -59,7 +59,7 @@ class TIWindowSettings(SettingsEntry, register=True):
 
     extension = "8xw"
 
-    min_data_length = 210
+    min_calc_data_length = 210
 
     _type_id = 0x0F
 
@@ -78,7 +78,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         This value is always ``Window``.
         """
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         pass
 
@@ -297,7 +297,7 @@ class TIRecallWindow(SettingsEntry, register=True):
 
     extension = "8xz"
 
-    min_data_length = 209
+    min_calc_data_length = 209
 
     _type_id = 0x10
 
@@ -316,7 +316,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         This value is always ``RclWindw``.
         """
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         pass
 
@@ -535,7 +535,7 @@ class TITableSettings(SettingsEntry, register=True):
 
     extension = "8xt"
 
-    min_data_length = 20
+    min_calc_data_length = 20
 
     _type_id = 0x11
 
@@ -554,7 +554,7 @@ class TITableSettings(SettingsEntry, register=True):
         This value is always ``TblSet``.
         """
 
-    @Section(min_data_length)
+    @Section(min_calc_data_length)
     def calc_data(self) -> bytes:
         pass
 

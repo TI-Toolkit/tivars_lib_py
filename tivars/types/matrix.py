@@ -24,7 +24,7 @@ class TIMatrix(TIEntry, register=True):
     versions = [0x00, 0x0B, 0x10]
     extension = "8xm"
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     leading_name_byte = b'\x5C'
 
@@ -113,13 +113,13 @@ class TIMatrix(TIEntry, register=True):
     @datamethod
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
-        it = zip(*[iter(data)] * RealEntry.min_data_length)
+        it = zip(*[iter(data)] * RealEntry.min_calc_data_length)
         return max(map(RealEntry().get_min_os, it), default=OsVersions.INITIAL)
 
     @datamethod
     @classmethod
     def get_version(cls, data: bytes) -> int:
-        it = zip(*[iter(data)] * RealEntry.min_data_length)
+        it = zip(*[iter(data)] * RealEntry.min_calc_data_length)
         version = max(map(RealEntry().get_version, it), default=0x00)
 
         if version > 0x1B:
@@ -138,9 +138,9 @@ class TIMatrix(TIEntry, register=True):
     def load_bytes(self, data: bytes):
         super().load_bytes(data)
 
-        if self.calc_data_length // RealEntry.min_data_length != self.size:
+        if self.calc_data_length // RealEntry.min_calc_data_length != self.size:
             warn(f"The matrix has an unexpected size "
-                 f"(expected {self.size}, got {self.calc_data_length // RealEntry.min_data_length}).",
+                 f"(expected {self.size}, got {self.calc_data_length // RealEntry.min_calc_data_length}).",
                  BytesWarning)
 
     def load_data_section(self, data: BytesIO):
@@ -168,7 +168,7 @@ class TIMatrix(TIEntry, register=True):
         :return: A two-dimensional ``list`` of the elements in this matrix
         """
 
-        it = zip(*[iter(self.data)] * RealEntry.min_data_length)
+        it = zip(*[iter(self.data)] * RealEntry.min_calc_data_length)
         return [[RealEntry(data=data) for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]

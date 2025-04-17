@@ -287,7 +287,7 @@ class TIEntry(Dock, Converter):
     base_meta_length = 11
     flash_meta_length = 13
 
-    min_data_length = 0
+    min_calc_data_length = 0
     """
     The minimum length of this entry's data
     
@@ -681,7 +681,7 @@ class TIEntry(Dock, Converter):
         """
 
         self.raw.calc_data = bytearray(self.leading_data_bytes)
-        self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
+        self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
 
     @datamethod
     @classmethod
@@ -1179,7 +1179,7 @@ class SizedEntry(TIEntry):
     This length is two less than the length stored in the ``data_length`` section(s).
     """
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     @Section()
     def calc_data(self) -> bytes:
@@ -1197,7 +1197,7 @@ class SizedEntry(TIEntry):
 
     def clear(self):
         self.raw.calc_data = bytearray([0, 0, *self.leading_data_bytes])
-        self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
+        self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
         self.length = len(self.leading_data_bytes) + len(self.data)
 
     @Loader[bytes, bytearray, BytesIO]
