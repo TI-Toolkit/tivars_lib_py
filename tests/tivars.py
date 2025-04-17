@@ -84,7 +84,9 @@ class VarTests(unittest.TestCase):
         self.assertEqual(len(clibs.entries), 9)
         self.assertTrue(all(entry.type_id == 0x15 for entry in clibs.entries))
 
-        first = TIEntry.open("tests/data/var/clibs.8xg")
+        with self.assertWarns(UserWarning):
+            first = TIEntry.open("tests/data/var/clibs.8xg")
+
         with open("tests/data/var/clibs.8xg", 'rb') as file:
             second = TIEntry()
             second.load_from_file(file, offset=1)
@@ -227,7 +229,8 @@ class TokenizationTests(unittest.TestCase):
         test_program = TIProgram.open("tests/data/var/ZLOAD.83P")
         self.assertEqual(type(test_program), TIAsmProgram)
 
-        self.assertEqual(test_program.string()[-12:], "End\n0000\nEnd")
+        with self.assertWarns(UserWarning):
+            self.assertEqual(test_program.string()[-12:], "End\n0000\nEnd")
 
     def test_modes(self):
         interpolation = "A and B:Disp \"A and B\":Send(\"SET SOUND eval(A and B) TIME 2"
@@ -261,9 +264,10 @@ class TokenizationTests(unittest.TestCase):
         for leading_byte, prefix in TIToken.var_prefixes.items():
             self.assertEqual(TIProgram.encode(f"{prefix}0a"), bytes([leading_byte, 10]))
 
-        self.assertEqual(TIProgram(r"List\x00").string(), "L₁")
-        self.assertEqual(TIProgram(r"List\xff").string(), r"List\xff")
-        self.assertEqual(TIProgram("String").string(), "String")
+        with self.assertWarns(BytesWarning):
+            self.assertEqual(TIProgram(r"List\x00").string(), "L₁")
+            self.assertEqual(TIProgram(r"List\xff").string(), r"List\xff")
+            self.assertEqual(TIProgram("String").string(), "String")
 
 
 class NumericTests(unittest.TestCase):
