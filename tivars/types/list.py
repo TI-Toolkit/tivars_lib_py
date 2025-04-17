@@ -135,13 +135,13 @@ class TIList(TIEntry):
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
         it = zip(*[iter(data)] * cls._E.min_calc_data_length)
-        return max(map(cls._E().get_min_os, it), default=OsVersions.INITIAL)
+        return max(map(cls._E.get_min_os, it), default=OsVersions.INITIAL)
 
     @datamethod
     @classmethod
     def get_version(cls, data: bytes) -> int:
         it = zip(*[iter(data)] * cls._E.min_calc_data_length)
-        version = max(map(cls._E().get_version, it), default=0x00)
+        version = max(map(cls._E.get_version, it), default=0x00)
 
         if version > 0x1B:
             return 0x10

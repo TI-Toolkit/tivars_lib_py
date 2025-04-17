@@ -114,7 +114,7 @@ class TIMatrix(TIEntry, register=True):
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
         it = zip(*[iter(data)] * RealEntry.min_calc_data_length)
-        return max(map(RealEntry().get_min_os, it), default=OsVersions.INITIAL)
+        return max(map(RealEntry.get_min_os, it), default=OsVersions.INITIAL)
 
     @datamethod
     @classmethod
