@@ -272,9 +272,11 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
 
     @View(calc_data, Integer)[1:3]
     def length(self) -> int:
-        """
-        The length of this entry's user data section
-        """
+        pass
+
+    @View(calc_data, SizedData)[3:]
+    def data(self) -> bytes:
+        pass
 
     @property
     def json_name(self) -> str:
