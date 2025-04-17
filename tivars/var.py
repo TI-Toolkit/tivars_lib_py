@@ -35,6 +35,8 @@ class TIHeader:
 
     magics = [model.magic for model in TIModel.MODELS]
 
+    length = 53
+
     class Raw:
         """
         Raw bytes container for `TIHeader`
@@ -142,7 +144,7 @@ class TIHeader:
         :return: The total length of this header's bytes
         """
 
-        return 53
+        return self.length
 
     @Section(8, String)
     def magic(self) -> str:
@@ -931,14 +933,14 @@ class TIEntry(Dock, Converter):
             # Use header for sanity check
             header = TIHeader()
             header.load_from_file(file)
-            file.seek(2, 1)
+
+            data_length = int.from_bytes(file.read(2), 'little')
+            entry_length = cls.next_entry_length(file)
 
             entry = cls()
-            entry.load_bytes(file.read(cls.next_entry_length(file)))
+            entry.load_bytes(file.read(entry_length))
 
-            file.seek(2, 1)
-
-            if remaining := file.read():
+            if (remaining := file.read())[2:]:
                 if remaining.startswith((TIEntry.base_meta_length.to_bytes(2, 'little'),
                                          TIEntry.flash_meta_length.to_bytes(2, 'little'))):
                     warn("The selected var file contains multiple entries; only the first will be loaded. "
@@ -948,6 +950,10 @@ class TIEntry(Dock, Converter):
                 else:
                     warn(f"The selected var file contains unexpected additional data: {remaining}.",
                          BytesWarning)
+
+            elif data_length != entry_length:
+                warn(f"The entry length is incorrect (expected {entry_length}, got {data_length}).",
+                     BytesWarning)
 
         return entry
 
@@ -1112,7 +1118,7 @@ class TIVarFile(TIFile, register=True):
             data = BytesIO(data)
 
         # Read header
-        self.header = TIHeader(data=data.read(53))
+        self.header = TIHeader(data=data.read(TIHeader.length))
         entry_length = int.from_bytes(data.read(2), 'little')
 
         # Read entries
