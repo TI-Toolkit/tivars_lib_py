@@ -4,6 +4,7 @@ import unittest
 from decimal import Decimal
 
 from tivars.models import *
+from tivars.tokenizer import *
 from tivars.types import *
 from tivars import TIHeader, TIVarFile, TIFlashHeader, TIFlashFile, TIFile
 
@@ -253,7 +254,14 @@ class TokenizationTests(unittest.TestCase):
         self.assertEqual(TIProgram("\n".join(lines)), TIProgram("\r\n".join(lines)))
 
     def test_byte_literals(self):
-        self.assertEqual(TIProgram.encode(r"\x26\uAA0AXYZ\0"), b'\x26\xAA\x0AXYZ\xbb\xd70')
+        self.assertEqual(TIProgram.encode(r"\x26\uaa0AXYZ\0"), b'\x26\xaa\x0aXYZ\xbb\xd70')
+
+        for leading_byte, prefix in TIToken.var_prefixes.items():
+            self.assertEqual(TIProgram.encode(f"{prefix}0a"), bytes([leading_byte, 10]))
+
+        self.assertEqual(TIProgram(r"List\x00").string(), "L₁")
+        self.assertEqual(TIProgram(r"List\xff").string(), r"List\xff")
+        self.assertEqual(TIProgram("String").string(), "String")
 
 
 class NumericTests(unittest.TestCase):

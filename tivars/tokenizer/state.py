@@ -46,6 +46,15 @@ class EncoderState:
 
             return token, remainder, self.next(token)
 
+        # Is this a var prefix?
+        for leading_byte, prefix in TIToken.var_prefixes.items():
+            if string.startswith(prefix):
+                length = len(prefix) + 2
+                string, remainder = string[:length], string[length:]
+                token = IllegalToken(bytes([leading_byte, int(string[-2:], 16)]))
+
+                return token, remainder, self.next(token)
+
         tokens = trie.match(string)
         if not tokens:
             raise ValueError("no tokenization options exist")
