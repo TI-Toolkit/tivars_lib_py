@@ -566,6 +566,12 @@ class Loader:
 
 
 class classproperty:
+    """
+    Function decorator for class properties
+
+    A class property is like a normal ``property``, but for classes instead of instances.
+    """
+
     def __init__(self, func):
         self.func = func
 
@@ -574,6 +580,18 @@ class classproperty:
 
 
 class datamethod:
+    """
+    Function decorator for methods acting on implicit or explicit entry data
+
+    When accessed from the class, a datamethod takes a single ``data`` parameter.
+    When accessed from an instance, the datamethod takes no parameters, instead using the instance's ``data``.
+
+    .. python::
+
+        TIReal.get_min_os(real.data)  == real.get_min_os()
+        TIReal.get_min_os(other_data) == TIReal(data=other_data).get_min_os()
+    """
+
     def __init__(self, func: classmethod):
         self.func = getattr(func, "__func__", func)
 
