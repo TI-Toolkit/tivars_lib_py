@@ -279,6 +279,14 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         pass
 
     @property
+    def is_undefined(self) -> bool:
+        """
+        :return: Whether this GDB equation is undefined
+        """
+
+        return self.length == 0
+
+    @property
     def json_name(self) -> str:
         """
         :return: The name of this equation used in the GDB JSON format
