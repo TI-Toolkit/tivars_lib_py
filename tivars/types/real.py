@@ -137,12 +137,15 @@ class RealEntry(TIEntry):
     @datamethod
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
-        match data[0]:
-            case 0x18 | 0x19:
+        match cls.get_version(data):
+            case 0x00:
+                return OsVersions.INITIAL
+
+            case 0x06:
                 return TI_84P.OS("2.53")
 
             case _:
-                return OsVersions.INITIAL
+                return TI_83PCE.OS()
 
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.subtype_id <= 0x19 or model.has(TIFeature.ExactMath))

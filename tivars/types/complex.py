@@ -100,8 +100,6 @@ class ComplexEntry(TIEntry):
     The entry is coerced automatically if the imaginary part is updated.
     """
 
-    versions = [0x00, 0x0B, 0x10]
-
     extension = "8xc"
 
     min_calc_data_length = 18
@@ -264,12 +262,12 @@ class ComplexEntry(TIEntry):
                 return TI_84P.OS("2.55")
 
             case _:
-                return TI_83PCE()
+                return TI_83PCE.OS()
 
     @datamethod
     @classmethod
     def get_version(cls, data: bytes) -> int:
-        match max(data[0], data[9]):
+        match max(data[0] & 63, data[9] & 63):
             case TIComplex.type_id:
                 return 0x00
 
@@ -380,6 +378,8 @@ class TIComplexFraction(TIComplex, register=True):
     A `TIComplexFraction` has a `TIRealFraction` as its imaginary part.
     """
 
+    versions = [0x0B]
+
     is_exact = True
 
     real_analogue = TIRealFraction
@@ -395,6 +395,8 @@ class TIComplexRadical(ComplexEntry, register=True):
     """
 
     flash_only = True
+
+    versions = [0x10]
 
     is_exact = True
 
@@ -415,6 +417,8 @@ class TIComplexPi(TIComplex, register=True):
     """
 
     flash_only = True
+
+    versions = [0x10]
 
     is_exact = True
 
