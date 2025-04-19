@@ -219,7 +219,7 @@ class TIFile(Dock):
         Saves this file given a filename
 
         :param filename: A filename to save to (defaults to the file's name and extension)
-        :param model: The model to target
+        :param model: The model to target (defaults to ``TI_84PCE``)
         """
         if not self.supported_by(model):
             warn(f"The {model} does not support this var.",

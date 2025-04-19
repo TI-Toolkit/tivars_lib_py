@@ -963,7 +963,7 @@ class TIEntry(Dock, Converter):
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A `TIModel` to target (defaults to ``None``)
+        :param model: A `TIModel` to target (defaults to ``TI_84PCE``)
         """
 
         self.export(header=header).save(filename, model=model)
@@ -983,8 +983,6 @@ class TIEntry(Dock, Converter):
     def coerce(self):
         """
         Coerces this entry to a subclass if possible using the entry's type ID
-
-        Valid types must be registered to be considered for coercion.
         """
 
         if self._type_id is None:
