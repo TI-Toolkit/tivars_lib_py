@@ -60,11 +60,12 @@ class ListName(Name):
         if "IDList" in varname:
             return b'\x5D\x40'
 
-        elif varname in ("L1", "L2", "L3", "L4", "L5", "L6"):
-            return super().set(varname[:2])
-
         else:
-            return super().set(varname[-5:])
+            if len(varname) > (7 if varname.startswith("|L") else 5):
+                warn(f"The list name '{varname}' is too long.",
+                     UserWarning)
+
+            return super().set(varname)
 
 
 class TIList(TIEntry):
