@@ -17,8 +17,11 @@ def accept(prefix):
 
 def register(file, encoder):
     Image.register_open(file.format, file, accept)
-    Image.register_extension(file.format, "." + file.format)
     Image.register_decoder(file.format, TIDecoder)
+
+    Image.register_extension(file.format, "." + file.format)
+    Image.register_extension(file.format, "." + file.format.replace("x", "2"))
+    Image.register_extension(file.format, "." + file.format.replace("x", "3"))
 
     Image.register_save(file.format, file._save)
     Image.register_encoder(file.format, encoder)
