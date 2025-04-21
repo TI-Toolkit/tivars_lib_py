@@ -49,10 +49,10 @@ class TokenizedEntry(SizedEntry):
 
             match spec:
                 case "" | "d":
-                    string = self.decode(self.data, lang=lang)
+                    string = self.decode(lang=lang)
 
                 case "a" | "t":
-                    string = self.decode(self.data, lang=lang, mode="accessible")
+                    string = self.decode(lang=lang, mode="accessible")
 
                 case _:
                     raise KeyError
@@ -401,7 +401,7 @@ class TIProgram(TokenizedEntry, register=True):
 
         super().load_string(string, model=model, lang=lang, mode=mode)
 
-    def stringstring(self, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
+    def string(self, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
         if not self.is_tokenized:
             warn("ASM programs may not have tokenized data.",
                  UserWarning)

@@ -224,7 +224,7 @@ class TokenizationTests(unittest.TestCase):
         test_program = TIProgram.open("tests/data/var/COLORZ.8xp")
         self.assertEqual(type(test_program), TIProtectedAsmProgram)
 
-        self.assertEqual(test_program.decode(test_program.data[:26]), "Disp \"Needs Doors CSE\"")
+        self.assertEqual(TIProgram.decode(test_program.data[:26]), "Disp \"Needs Doors CSE\"")
 
         test_program = TIProgram.open("tests/data/var/ZLOAD.83P")
         self.assertEqual(type(test_program), TIAsmProgram)
