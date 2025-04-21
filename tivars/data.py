@@ -597,9 +597,9 @@ class datamethod:
 
     def __get__(self, instance, owner: type = None):
         if instance is None:
-            return lambda data: self.func(owner, data)
+            return lambda data, *args, **kwargs: self.func(owner, data, *args, **kwargs)
 
-        return lambda: self.func(owner, instance.data)
+        return lambda *args, **kwargs: self.func(owner, instance.data, *args, **kwargs)
 
 
 __all__ = ["Section", "View", "Dock", "Loader", "classproperty", "datamethod",

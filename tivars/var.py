@@ -12,7 +12,7 @@ from typing import BinaryIO
 from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
-from .file import *
+from .file import TIFile, hexdump
 from .models import *
 from .tokenizer import Name
 
@@ -123,6 +123,15 @@ class TIHeader:
 
         except AttributeError:
             return False
+
+    def __format__(self, format_spec: str) -> str:
+        if not format_spec:
+            return super().__str__()
+
+        elif (dump := hexdump(self.bytes(), format_spec)) is not None:
+            return dump
+
+        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
     def __or__(self, other: list['TIEntry']) -> 'TIVarFile':
         """
@@ -438,27 +447,13 @@ class TIEntry(Dock, Converter):
         :return: A string representation of this entry
         """
 
-        if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])(?P<sep>\D)?", format_spec):
-            match match["sep"], match["width"]:
-                case None, None:
-                    string = self.calc_data.hex()
-
-                case sep, None:
-                    string = self.calc_data.hex(sep)
-
-                case None, width:
-                    string = self.calc_data.hex(" ", int(width))
-
-                case sep, width:
-                    string = self.calc_data.hex(sep, int(width))
-
-            return string.lower() if match["case"] == "x" else string.upper()
-
-        elif not format_spec:
+        if not format_spec:
             return super().__str__()
 
-        else:
-            raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
+        elif (dump := hexdump(self.calc_data, format_spec)) is not None:
+            return dump
+
+        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
     def __init_subclass__(cls, /, register=False, override=None, **kwargs):
         super().__init_subclass__(**kwargs)

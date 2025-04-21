@@ -69,8 +69,9 @@ class TokenizedEntry(SizedEntry):
     def __iter__(self) -> Iterator[TIToken]:
         return iter(self.tokens())
 
-    @staticmethod
-    def decode(data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
+    @datamethod
+    @classmethod
+    def decode(cls, data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
         """
         Decodes a byte stream into a string of tokens
 
@@ -178,6 +179,18 @@ class TokenizedEntry(SizedEntry):
         """
 
         self.data = self.encode(string, model=model, lang=lang, mode=mode)
+
+    def string(self, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
+        """
+        Decodes this entry into a string of tokens
+
+        :param model: A model for which compatibility is ensured (defaults to the TI-84+CE)
+        :param lang: The language used in ``string`` (defaults to the locale of `model`, or English, ``en``)
+        :param mode: The form of token representation to use for output (defaults to ``display``)
+        :return: A string of token representations
+        """
+
+        return self.decode(model=model, lang=lang, mode=mode)
 
     @Loader[Sequence[TIToken]]
     def load_tokens(self, tokens: Sequence[TIToken]):
@@ -318,8 +331,8 @@ class TIString(TokenizedEntry, register=True):
     def load_string(self, string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
         super().load_string(string.strip("\""), model=model, lang=lang, mode=mode)
 
-    def string(self) -> str:
-        return f"\"{super().string()}\""
+    def string(self, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
+        return f"\"{super().string(model=model, lang=lang, mode=mode)}\""
 
 
 class TIProgram(TokenizedEntry, register=True):
@@ -388,17 +401,17 @@ class TIProgram(TokenizedEntry, register=True):
 
         super().load_string(string, model=model, lang=lang, mode=mode)
 
-    def string(self) -> str:
+    def stringstring(self, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
         if not self.is_tokenized:
             warn("ASM programs may not have tokenized data.",
                  UserWarning)
 
             with catch_warnings():
                 simplefilter("ignore")
-                return super().string()
+                return super().string(model=model, lang=lang, mode=mode)
 
         else:
-            return super().string()
+            return super().string(model=model, lang=lang, mode=mode)
 
     def coerce(self):
         with catch_warnings():

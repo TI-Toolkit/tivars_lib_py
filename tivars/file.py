@@ -1,3 +1,5 @@
+import re
+
 from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO
@@ -5,6 +7,37 @@ from warnings import warn
 
 from .data import *
 from .models import *
+
+
+def hexdump(data: bytes, format_spec: str) -> str | None:
+    """
+    Helper function for formatting hex data
+
+    The format specifier takes the form ``{width}?{case}{sep}?``.
+    - ``width`` is the width of groups of hex digits; negative values group from the end (defaults to no groups)
+    - ``case`` is `x` or `X` to dictate the case of the hex digits
+    - ``sep`` is a single character to separate groups of hex digits (defaults to none)
+
+    :param data: The data to format
+    :param format_spec: The f-string specifier to format the hexdump
+    :return: ``data`` formatted in hex with some width, case, and separator
+    """
+
+    if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])(?P<sep>\D)?", format_spec):
+        match match["sep"], match["width"]:
+            case None, None:
+                string = data.hex()
+
+            case sep, None:
+                string = data.hex(sep)
+
+            case None, width:
+                string = data.hex(" ", int(width))
+
+            case sep, width:
+                string = data.hex(sep, int(width))
+
+        return string.lower() if match["case"] == "x" else string.upper()
 
 
 class TIFile(Dock):
@@ -60,6 +93,15 @@ class TIFile(Dock):
 
         except AttributeError:
             return False
+
+    def __format__(self, format_spec: str) -> str:
+        if not format_spec:
+            return super().__str__()
+
+        elif (dump := hexdump(self.bytes(), format_spec)) is not None:
+            return dump
+
+        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
     def __init_subclass__(cls, /, register=False, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -279,10 +279,13 @@ The var file format(s) and data sections can be found in a readable format on th
 
 All entry types support string formatting using Python's f-strings.
 
-- All entries support hex formatting of their data: `{sep}{width}x`
+- All entries support hex formatting of their data: `{width}?{case}{sep}?`
+  - `width`: how many digits to group together; negative values group from the end *(default: no groups)*
+  - `case`: the case of the hex digits
+    - `x`: lowercase
+    - `X`: uppercase
   - `sep`: a single character to separate groups of hex digits *(default: none)*
-  - `width`: how many digits to group together *(default: no groups)*
-- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}{sep}{type}{lang}`
+- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}?{sep}?{type}{lang}?`
   - `line_spec`: format specifier for line numbers *(default: no line numbers)*
   - `sep`: a string to separate lines and line numbers *(required for line numbering)*
   - `type`: how to format each token
