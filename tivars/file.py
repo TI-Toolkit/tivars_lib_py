@@ -254,7 +254,10 @@ class TIFile(Dock):
         """
 
         with open(filename, 'rb') as file:
-            return cls(name=".".join(Path(filename).name.split(".")[:-1]), data=file.read())
+            ti_file = cls(name="".join(filename.split(".")[:-1]))
+            ti_file.load_bytes(file.read())
+
+            return ti_file
 
     def save(self, filename: str = None, model: TIModel = TI_84PCE):
         """

@@ -878,4 +878,4 @@ class TIFlashFile(TIFile, register=True):
                  BytesWarning)
 
 
-__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile"]
+__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile", "TIFile"]

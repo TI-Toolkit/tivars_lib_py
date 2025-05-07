@@ -79,18 +79,6 @@ class TIHeader:
         self.product_id = product_id if product_id is not None else model.product_id
         self.comment = comment
 
-        matches = {m for m in TIModel.MODELS if m.magic == self.magic}
-
-        self._supports = {m for m in TIModel.MODELS if m >= min(matches)}
-        if not self._supports:
-            warn(f"File magic '{self.magic}' not recognized.",
-                 BytesWarning)
-
-        self._targets = {m for m in self._supports if self.product_id == 0x00 or m.product_id == self.product_id}
-        if self.product_id != 0x00 and not self._targets:
-            warn(f"Product ID {self.product_id:02x} not recognized.",
-                 BytesWarning)
-
         if data:
             self.load_bytes(data)
 
@@ -849,12 +837,16 @@ class TIEntry(Dock, Converter):
 
         raise NotImplementedError
 
-    def dict(self) -> str:
+    load_json = load_dict
+
+    def dict(self) -> dict:
         """
         :return: A JSON dictionary representation of this entry
         """
 
         raise NotImplementedError
+
+    json = dict
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
@@ -963,15 +955,18 @@ class TIEntry(Dock, Converter):
 
         self.export(header=header).save(filename, model=model)
 
-    def export(self, *, name: str = None, header: TIHeader = None) -> 'TIVarFile':
+    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = TI_84PCE) -> 'TIVarFile':
         """
         Exports this entry to a `TIVarFile` with a specified name and header
 
         :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
+        :param model: A `TIModel` to target (defaults to ``TI_84PCE``)
+
+        :return: A `TIVarFile` containing this entry and the specified header
         """
 
-        var = TIVarFile(header=header, name=name or self.name)
+        var = TIVarFile(header=header or TIHeader(model=model), name=name or self.name)
         var.add_entry(self)
         return var
 
@@ -1212,4 +1207,4 @@ class SizedEntry(TIEntry):
         self.raw.calc_data = bytearray(length_bytes + data.read(data_length))
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVarFile", "SizedEntry"]
+__all__ = ["TIHeader", "TIEntry", "TIVarFile", "SizedEntry", "TIFile"]

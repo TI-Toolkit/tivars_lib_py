@@ -56,6 +56,8 @@ class ListName(Name):
 
         # TI-ASCII hack
         varname = value.upper().replace("]", "|L")
+        if not varname.startswith("|L"):
+            varname = "|L" + varname
 
         if "IDList" in varname:
             return b'\x5D\x40'
@@ -175,6 +177,7 @@ class TIList(TIEntry):
 
         self.length = len(lst)
         self.data = b''.join(entry.calc_data for entry in lst)
+        self.coerce()
 
     def list(self) -> list[_E]:
         """

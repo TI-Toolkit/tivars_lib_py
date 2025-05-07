@@ -279,12 +279,12 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         pass
 
     @property
-    def is_undefined(self) -> bool:
+    def is_defined(self) -> bool:
         """
         :return: Whether this GDB equation is undefined
         """
 
-        return self.length == 0
+        return self.length != 0
 
     @property
     def json_name(self) -> str:
@@ -1559,4 +1559,5 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
 
 __all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "TIGraphedEquation", "EquationFlags", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle"]
+           "TIGraphedEquation", "EquationFlags",
+           "GraphMode", "SeqMode", "GraphStyle", "GraphColor", "GlobalLineStyle", "BorderColor"]
