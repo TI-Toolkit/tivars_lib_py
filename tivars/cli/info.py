@@ -4,7 +4,6 @@ from tivars.types import *
 from tivars.var import *
 
 from tivars.types.settings import SettingsEntry
-from tivars.types.tokenized import TokenizedEntry
 
 
 def trim(string: str, length: int):
@@ -82,8 +81,8 @@ def summarize_gdb(gdb: TIMonoGDB) -> str:
                      {mode(gdb.mode_flags,"RectGC", "PolarGC")}
                      {mode(gdb.mode_flags,"CoordOn", "CoordOff")}
                      {mode(gdb.mode_flags, "GridOff", "GridDot", "GridLine")}
-                     GridColor: {GraphColor.get_name(gdb.grid_color)}
-                     Axes: {GraphColor.get_name(gdb.axes_color)}
+                     GridColor: {gdb.grid_color.name}
+                     Axes: {gdb.axes_color.name}
                      {mode(gdb.mode_flags, "LabelOff", "LabelOn")}
                      {mode(gdb.extended_mode_flags, "ExprOn", "ExprOff")}
                      BorderColor: {BorderColor.get_name(gdb.border_color)}

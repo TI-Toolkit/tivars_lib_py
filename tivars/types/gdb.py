@@ -312,10 +312,10 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         :return: A ``dict`` representing this GDB equation in JSON format
         """
 
-        dct = {"style": GraphStyle(self.style).name}
+        dct = {"style": self.style.name}
 
         if self.color != GraphColor.Mono:
-            dct["color"] = GraphColor(self.color).name
+            dct["color"] = self.color.name
 
         return dct | {
             "flags": {
@@ -797,12 +797,12 @@ class TIGDB(TIMonoGDB):
         return {
             "global84CSettings": {
                 "colors": {
-                    "grid": GraphColor(self.grid_color).name,
-                    "axes": GraphColor(self.axes_color).name,
+                    "grid": self.grid_color.name,
+                    "axes": self.axes_color.name,
                     "border": self.border_color
                 },
                 "other": {
-                    "globalLineStyle": GlobalLineStyle(self.global_line_style).name,
+                    "globalLineStyle": self.global_line_style.name,
                     "detectAsymptotes": GraphMode.DetectAsymptotesOn in self.color_mode_flags
                 }
             }
