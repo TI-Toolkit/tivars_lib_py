@@ -14,60 +14,41 @@ This module implements two general-use converters:
 
 
 from collections.abc import Mapping
+from enum import IntEnum
 from functools import total_ordering
 from math import ceil
-from warnings import warn
 
 from .data import *
 
 
-class Enum(Converter):
+class Enum(Converter, IntEnum):
     """
     Base class for enum types
 
-    This implementation is used over Python's builtin solutions to permit interface with the `Converter` system.
+    This implementation subclasses Python's builtin `IntEnum` to interface with the `Converter` system.
     """
 
-    _T = int
-
-    _all = []
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> 'Enum':
         """
-        Converts ``bytes`` -> ``int``, returning the first byte
+        Converts ``bytes`` -> ``Enum``, returning the first byte
 
         :param data: The raw bytes to convert
         :return: The first byte of ``data``
         """
 
-        return data[0]
+        return cls(data[0])
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: 'Enum', **kwargs) -> bytes:
         """
-        Converts ``int`` -> ``bytes``, enforcing that the input is a recognized enum value
+        Converts ``Enum`` -> ``bytes``, enforcing that the input is a recognized enum value
 
         :param value: The value to convert
         :return: The byte in ``value``, unchanged
         """
 
-        if value not in cls._all:
-            warn(f"{value} is not recognized.",
-                 BytesWarning)
-
-        return bytes([value])
-
-    @classmethod
-    def get_name(cls, value: _T) -> str:
-        """
-        Finds the first name in this enum with a given value
-
-        :param value: The value to find
-        :return: A name in this enum with value ``value`` or ``None``
-        """
-
-        return next(filter(lambda attr: not attr.startswith("_") and getattr(cls, attr) == value, dir(cls)), None)
+        return bytes([value.value])
 
 
 @total_ordering

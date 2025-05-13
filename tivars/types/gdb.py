@@ -76,9 +76,6 @@ class GraphStyle(Enum):
     Animate = 0x05
     DottedLine = 0x06
 
-    _all = [SolidLine, ThickLine, ShadeAbove, ShadeBelow, Trace, Animate, DottedLine]
-    STYLES = _all[:7]
-
 
 class GraphColor(Enum):
     """
@@ -102,10 +99,6 @@ class GraphColor(Enum):
     Gray = 0x0E
     DarkGray = 0x0F
 
-    _all = [Mono, Blue, Red, Black, Magenta, Green, Orange, Brown, Navy,
-            LtBlue, Yellow, White, LtGray, MedGray, Gray, DarkGray]
-    COLORS = _all[1:]
-
 
 class GlobalLineStyle(Enum):
     """
@@ -117,9 +110,6 @@ class GlobalLineStyle(Enum):
     Thin = 0x02
     DotThin = 0x03
 
-    _all = [Thick, Thin, DotThick, DotThin]
-    STYLES = _all
-
 
 class BorderColor(Enum):
     """
@@ -130,9 +120,6 @@ class BorderColor(Enum):
     Teal = 0x02
     LtBlue = 0x03
     White = 0x04
-
-    _all = [LtGray, Teal, LtBlue, White]
-    COLORS = _all
 
 
 class EquationFlags(Flags):
@@ -175,8 +162,8 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         super().__init__(init, name=name, version=version, archived=archived, data=data)
 
         self.flags = EquationFlags({0: 1, 1: 1})
-        self.style = 0x00
-        self.color = 0x00
+        self.style = GraphStyle(0x00)
+        self.color = GraphColor(0x00)
 
     def __class_getitem__(cls, index: int):
         index -= 1
@@ -325,10 +312,10 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         :return: A ``dict`` representing this GDB equation in JSON format
         """
 
-        dct = {"style": GraphStyle.get_name(self.style)}
+        dct = {"style": GraphStyle(self.style).name}
 
         if self.color != GraphColor.Mono:
-            dct["color"] = GraphColor.get_name(self.color)
+            dct["color"] = GraphColor(self.color).name
 
         return dct | {
             "flags": {
@@ -796,7 +783,7 @@ class TIGDB(TIMonoGDB):
                 self.axes_color = getattr(GraphColor, colors["axes"])
 
             if "border" in colors:
-                self.border_color = BorderColor.COLORS[colors["border"] - 1]
+                self.border_color = BorderColor(colors["border"])
 
         if other := dct.get("global84CSettings", {}).get("other", {}):
             if "globalLineStyle" in other:
@@ -810,12 +797,12 @@ class TIGDB(TIMonoGDB):
         return {
             "global84CSettings": {
                 "colors": {
-                    "grid": GraphColor.get_name(self.grid_color),
-                    "axes": GraphColor.get_name(self.axes_color),
+                    "grid": GraphColor(self.grid_color).name,
+                    "axes": GraphColor(self.axes_color).name,
                     "border": self.border_color
                 },
                 "other": {
-                    "globalLineStyle": GlobalLineStyle.get_name(self.global_line_style),
+                    "globalLineStyle": GlobalLineStyle(self.global_line_style).name,
                     "detectAsymptotes": GraphMode.DetectAsymptotesOn in self.color_mode_flags
                 }
             }

@@ -33,9 +33,6 @@ class DeviceType(Enum):
     TI_92 = 0x88
     TI_89 = 0x98
 
-    _all = [TI_83P, TI_73, TI_92, TI_89]
-    DEVICES = _all
-
 
 class BCDDate(Converter):
     """
@@ -683,7 +680,7 @@ class TIFlashHeader(Dock):
         # Read types
         self.raw.devices = data.read(1)
 
-        if self.device_type not in DeviceType.DEVICES:
+        if self.device_type not in list(DeviceType):
             warn(f"The device type ({self.device_type}) is not recognized.",
                  BytesWarning)
 
