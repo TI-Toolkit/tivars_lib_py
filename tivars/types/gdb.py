@@ -294,8 +294,8 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         :param dct: The dict to load
         """
 
-        self.style = getattr(GraphStyle, dct["style"])
-        self.color = getattr(GraphColor, dct["color"])
+        self.style = GraphStyle[dct["style"]]
+        self.color = GraphColor[dct["color"]]
 
         self.load_equation(TIEquation(dct["expr"]))
 
@@ -777,17 +777,17 @@ class TIGDB(TIMonoGDB):
 
         if colors := dct.get("global84CSettings", {}).get("colors", {}):
             if "grid" in colors:
-                self.grid_color = getattr(GraphColor, colors["grid"])
+                self.grid_color = GraphColor[colors["grid"]]
 
             if "axes" in colors:
-                self.axes_color = getattr(GraphColor, colors["axes"])
+                self.axes_color = GraphColor[colors["axes"]]
 
             if "border" in colors:
                 self.border_color = BorderColor(colors["border"])
 
         if other := dct.get("global84CSettings", {}).get("other", {}):
             if "globalLineStyle" in other:
-                self.global_line_style = getattr(GlobalLineStyle, other["globalLineStyle"])
+                self.global_line_style = GlobalLineStyle[other["globalLineStyle"]]
 
             if "detectAsymptotes" in other:
                 self.color_mode_flags |= \
