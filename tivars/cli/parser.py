@@ -1,13 +1,10 @@
 import argparse
 
-
 from tivars.tokens.scripts.parse import MODEL_ORDER
 from .convert import *
 from .info import *
 
-
 HELP_FORMATTER = lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=40, width=100)
-
 
 parser = argparse.ArgumentParser(
     prog="tivars",
@@ -52,32 +49,44 @@ info.add_argument("-l", "--lang", default="en",
                   help="output language code (default: 'en')")
 info.add_argument("-s", "--single", action="store_true",
                   help="only show the first entry/header in a file (default: false)")
+info.add_argument("-w", "--warn", action="store_true",
+                  help="whether to emit file warnings (default: false)")
 
 pack = subparsers.add_parser("pack",
-                              description="Pack files into a container type",
-                              help="Pack files into a container type",
-                              formatter_class=HELP_FORMATTER)
+                             description="Pack files into a container type",
+                             help="Pack files into a container type",
+                             formatter_class=HELP_FORMATTER)
 pack.add_argument("files", nargs="+",
-                   help="files to pack; can be a directory or list of files")
+                  help="files to pack; can be a directory or list of files")
 pack.add_argument("-f", "--format", default=None,
-                   help="pack format; can be a format type (e.g. 'bundle') or a file extension (e.g. 'b84')")
+                  help="pack format; can be a format type (e.g. 'bundle') or a file extension (e.g. 'b84')")
 pack.add_argument("-m", "--model", default=TI_84PCE,
-                   help="output model target (default: 'TI-84+CE')")
+                  help="output model target (default: 'TI-84+CE')")
 pack.add_argument("-n", "--name", default="UNNAMED",
-                   help="output container name (default: <outfile>, or 'UNNAMED')")
+                  help="output container name (default: <outfile>, or 'UNNAMED')")
 pack.add_argument("-o", "--outfile", default=None,
-                   help="output file (default: <name>.<format>)")
+                  help="output file (default: <name>.<format>)")
 
 unpack = subparsers.add_parser("unpack",
-                                description="Unpack files from a container type",
-                                help="Unpack files from a container type",
-                                formatter_class=HELP_FORMATTER)
+                               description="Unpack files from a container type",
+                               help="Unpack files from a container type",
+                               formatter_class=HELP_FORMATTER)
 unpack.add_argument("infile",
-                     help="input file")
+                    help="input file")
 unpack.add_argument("-f", "--format", default=None,
                     help="pack format (default: inferred from <infile>)")
 unpack.add_argument("-o", "--outdir", default=None,
-                     help="output directory (will be created if nonexistent) (default: cwd)")
+                    help="output directory (will be created if nonexistent) (default: cwd)")
 
+verify = subparsers.add_parser("verify",
+                               description="Read a file and flag/repair improper data",
+                               help="Read a file and flag/repair improper data",
+                               formatter_class=HELP_FORMATTER)
+verify.add_argument("infile",
+                    help="input file")
+verify.add_argument("-o", "--outfile", default=None,
+                    help="output file if repairing (default: <infile>)")
+verify.add_argument("-r", "--repair", action="store_true",
+                    help="whether to repair <infile> if needed (default: false)")
 
 __all__ = ["parser"]

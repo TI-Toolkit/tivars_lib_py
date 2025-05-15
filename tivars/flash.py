@@ -108,29 +108,29 @@ class FlashDevices(Converter):
     The exception is a `TILicense`, which can hold licenses for multiple devices.
     """
 
-    _T = list[tuple[int, int]]
+    _T = list[tuple[int | DeviceType, int]]
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> _T:
         """
-        Converts ``bytes`` -> ``list[tuple[int, int]]``
+        Converts ``bytes`` -> ``list[tuple[DeviceType, int]]``
 
         :param data: The raw bytes to convert
         :return: The device tuples stored in ``data``
         """
 
-        return [*zip(*[iter(data)] * 2)]
+        return [(DeviceType(device), type_id) for device, type_id in zip(*[iter(data)] * 2)]
 
     @classmethod
     def set(cls, value: _T, **kwargs) -> bytes:
         """
-        Converts ``list[tuple[int, int]]`` -> ``bytes``
+        Converts ``list[tuple[int | DeviceType, int]]`` -> ``bytes``
 
         :param value: The value to convert
         :return: The device field derived from ``value``
         """
 
-        return bytes([item for pair in value for item in pair])
+        return bytes([int(item) for pair in value for item in pair])
 
 
 class TIFlashBlock(Dock):
@@ -206,6 +206,10 @@ class TIFlashBlock(Dock):
 
             else:
                 self.load(init)
+
+    def __str__(self) -> str:
+        return " ".join(section.decode().upper()
+                        for section in (self.raw.size, self.raw.address, self.raw.data, self.raw.checksum))
 
     @property
     def size(self) -> int:

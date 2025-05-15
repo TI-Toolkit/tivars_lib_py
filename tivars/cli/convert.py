@@ -54,3 +54,12 @@ def format_to_entry(data, in_format: str, var_type: type[TIEntry], **kwargs) -> 
     getattr(entry, f"load_{in_format}")(data, **kwargs)
 
     return entry
+
+
+def repair(data: bytes) -> bytes:
+    file = TIFile(data=data)
+
+    if hasattr(file, "data"):
+        file.data = file.data
+
+    return file.bytes()
