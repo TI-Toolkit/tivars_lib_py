@@ -16,7 +16,6 @@ This module implements two general-use converters:
 from collections.abc import Mapping
 from enum import IntEnum
 from functools import total_ordering
-from math import ceil
 
 from .data import *
 
@@ -61,21 +60,14 @@ class Flags(Converter, dict, Mapping[int, int]):
 
     _T = 'Flags'
 
-    def __init__(self, bitsets: Mapping[int, int] = None, *, width: int = 8):
+    def __init__(self, bitsets: Mapping[int, int] = None):
         """
         Creates an empty `Flags` instance with a given initial state and width
 
         :param bitsets: The initial state of these flags
-        :param width: The number of bitfields used for these flags (defaults to ``8``)
         """
 
-        if bitsets is None:
-            bitsets = {bit: 0 for bit in range(width)}
-
-        else:
-            bitsets = {bit: 0 for bit in range(ceil((max(bitsets.keys(), default=0) + 1) / 8) * 8)} | bitsets
-
-        super().__init__({bit: value % 2 for bit, value in bitsets.items()})
+        super().__init__({bit: (bitsets or {}).get(bit, 0) % 2 for bit in range(8)})
 
     def __gt__(self, other) -> bool:
         return int(self) > int(other)
