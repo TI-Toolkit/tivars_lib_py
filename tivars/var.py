@@ -33,9 +33,9 @@ class TIHeader:
     All var files require a header which includes a number of magic bytes, data lengths, and a customizable comment.
     """
 
-    magics = [model.magic for model in TIModel.MODELS]
+    magics: list[str] = [model.magic for model in TIModel.MODELS]
 
-    length = 53
+    length: int = 53
 
     class Raw:
         """
@@ -441,7 +441,7 @@ class TIEntry(Dock, Converter):
 
         raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
-    def __init_subclass__(cls, /, register=False, override=None, **kwargs):
+    def __init_subclass__(cls, /, register: bool = False, override: int = None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if register:

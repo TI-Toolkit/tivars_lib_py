@@ -316,12 +316,15 @@ class FlashData(Converter[bytes | list[TIFlashBlock]]):
         """
         Converts ``bytes | list[TIFlashBlock]`` -> ``bytes``
 
+        If `value` is a `list[TIFlashBlock]`, the instance `binary_flag` will be updated.
+
         :param value: The value to convert
         :param instance: The instance which contains the data section
         :return: The concatenation of the blocks in ``value``
         """
 
         if instance is None or instance.binary_flag == 0x01 or isinstance(value, list):
+            instance.binary_flag = 0x01
             return b'\r\n'.join(block.bytes() for block in value)
 
         else:
@@ -437,7 +440,7 @@ class TIFlashHeader(Dock):
 
         self._has_checksum = True
 
-    def __init_subclass__(cls, /, register=False, override=None, **kwargs):
+    def __init_subclass__(cls, /, register: bool = False, override: int = None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if register:
