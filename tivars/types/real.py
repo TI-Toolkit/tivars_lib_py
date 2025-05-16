@@ -26,23 +26,21 @@ class RealEntry(TIEntry):
     Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
     """
 
-    _T = 'RealEntry'
-
     extension = "8xn"
 
     min_calc_data_length = 9
 
-    min_exponent = 0x00
+    min_exponent: int = 0x00
     """
     The smallest allowed floating point exponent
     """
 
-    is_exact = False
+    is_exact: bool = False
     """
     Whether this numeric type is exact
     """
 
-    imag_subtype_id = None
+    imag_subtype_id: int = None
     """
     The subtype ID this type receives if used as an imaginary part
     """
@@ -211,10 +209,8 @@ class GraphRealEntry(RealEntry):
     Values used for plotting (e.g. Xmin) will behave unexpectedly if set to a radical or π type.
     """
 
-    _T = 'RealEntry'
-
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: RealEntry, **kwargs) -> bytes:
         if type(value) not in (TIReal, TIUndefinedReal, TIRealFraction):
             warn(f"Graph parameters cannot store {type(value)} values correctly.",
                  UserWarning)

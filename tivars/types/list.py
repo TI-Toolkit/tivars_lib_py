@@ -5,6 +5,7 @@ Lists
 
 from collections.abc import Iterator, Sequence
 from io import BytesIO
+from typing import TypeAlias
 from warnings import warn
 
 from tivars.data import *
@@ -22,11 +23,8 @@ class ListName(Name):
     List names can be ``L1`` - ``L6`` or a string of five alphanumeric characters that do not start with a digit.
     The special name and token ``IDList`` is also used (but is planned to be relegated to a separate type).
     """
-
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         """
         Converts ``bytes`` -> ``str`` as done by the memory viewer
 
@@ -46,7 +44,7 @@ class ListName(Name):
         return super().get(data)
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         """
         Converts ``str`` -> ``bytes`` to match appearance in the memory viewer
 
@@ -78,7 +76,7 @@ class TIList(TIEntry):
     Exact types are supported.
     """
 
-    _E = TIEntry
+    _E: TypeAlias = TIEntry
 
     versions = [0x00, 0x0B, 0x10]
     extension = "8xl"
@@ -158,8 +156,8 @@ class TIList(TIEntry):
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
-    @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes):
+    @Loader[bytes, bytearray, memoryview, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self._E.min_calc_data_length and self.calc_data_length // self._E.min_calc_data_length != self.length:
@@ -216,7 +214,7 @@ class TIRealList(TIList, register=True):
     Parser for lists of real numbers
     """
 
-    _E = RealEntry
+    _E: TypeAlias = RealEntry
 
     _type_id = 0x01
 
@@ -226,7 +224,7 @@ class TIComplexList(TIList, register=True):
     Parser for lists of complex numbers
     """
 
-    _E = ComplexEntry
+    _E: TypeAlias = ComplexEntry
 
     _type_id = 0x0D
 

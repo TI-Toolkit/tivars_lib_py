@@ -7,6 +7,7 @@ import re
 
 
 from collections.abc import Iterator, Sequence
+from typing import TypeAlias
 from warnings import warn
 
 from tivars.data import *
@@ -114,15 +115,13 @@ class RGBPalette(Converter):
         return bytes([(cls.palette.index(cls.nearest(*value[0])) << 4) + cls.palette.index(cls.nearest(*value[1]))])
 
 
-class RGB565(Converter):
+class RGB565(Converter[RGB]):
     """
     Converter for color pixels stored in RGB565 format
     """
 
-    _T = RGB
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> RGB:
         """
         Converts ``bytes`` -> `RGB`
 
@@ -137,7 +136,7 @@ class RGB565(Converter):
         )
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: RGB, **kwargs) -> bytes:
         """
         Converts `RGB` -> ``bytes``
 
@@ -155,42 +154,42 @@ class PictureEntry(SizedEntry):
     A picture or image is stored as a stream of pixels in some encoding format.
     """
 
-    width = 0
+    width: int = 0
     """
     The width of the picture
     """
 
-    height = 0
+    height: int = 0
     """
     The height of the picture
     """
 
-    data_width = width
+    data_width: int = width
     """
     The width of the picture while stored as data
     """
 
-    data_height = height
+    data_height: int = height
     """
     The height of the picture while stored as data
     """
 
-    pil_mode = None
+    pil_mode: str = None
     """
     The mode used by PIL images for this image type
     """
 
-    pixel_type = None
+    pixel_type: TypeAlias = None
     """
     The type of a single pixel
     """
 
-    np_shape = (height, width, 3)
+    np_shape: tuple[int, ...] = (height, width, 3)
     """
     The shape of this image as a NumPy array
     """
 
-    has_color = True
+    has_color: bool = True
     """
     Whether this picture has color
     """
@@ -244,7 +243,7 @@ class TIMonoPicture(PictureEntry):
     data_height = height
 
     pil_mode = "L"
-    pixel_type = int
+    pixel_type: TypeAlias = int
     np_shape = (height, width)
 
     has_color = False
@@ -297,7 +296,7 @@ class TIPicture(PictureEntry, register=True):
     data_height = height
 
     pil_mode = "RGB"
-    pixel_type = RGB
+    pixel_type: TypeAlias = RGB
     np_shape = (height, width, 3)
 
     leading_name_byte = b'\x60'
@@ -334,14 +333,12 @@ class ImageName(Name):
     Image names can be ``Image1`` - ``Image0``, but are stored using a font offset rather than tokens.
     """
 
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         return f"Image{data[1] + 1}"
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         if not re.fullmatch(r"(Image)?\d", value):
             warn(f"'{value}' is not a valid image name; defaulting to 'Image1'.",
                  BytesWarning)
@@ -373,7 +370,7 @@ class TIImage(PictureEntry, register=True):
     data_height = height
 
     pil_mode = "RGB"
-    pixel_type = RGB
+    pixel_type: TypeAlias = RGB
     np_shape = (height, width, 3)
 
     leading_name_byte = b'\x3C'

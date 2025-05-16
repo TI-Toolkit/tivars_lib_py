@@ -8,7 +8,7 @@ import re
 from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO
+from typing import BinaryIO, TypeAlias
 from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
@@ -20,7 +20,7 @@ from .tokenizer import Name
 # Use Self type if possible
 match version_info[:2]:
     case 3, 10:
-        Self = 'TIEntry'
+        Self: TypeAlias = 'TIEntry'
 
     case _:
         from typing import Self
@@ -98,7 +98,7 @@ class TIHeader:
         new.load_bytes(self.bytes())
         return new
 
-    def __eq__(self, other: 'TIHeader') -> bool:
+    def __eq__(self, other) -> bool:
         """
         Determines if two headers have the same bytes
 
@@ -266,45 +266,43 @@ class TIEntry(Dock, Converter):
     **Use** `TIEntry.save` **to export and save the entry in a var file in the current directory.**
     """
 
-    _T = 'TIEntry'
-
-    flash_only = False
+    flash_only: bool = False
     """
     Whether this entry only supports flash chips
     """
 
-    versions = [0x00]
+    versions: list[int] = [0x00]
     """
     The possible versions of this entry
     """
 
-    extension = "8xg"
+    extension: str = "8xg"
     """
     The base file extension used for this entry
     """
 
-    base_meta_length = 11
-    flash_meta_length = 13
+    base_meta_length: int = 11
+    flash_meta_length: int = 13
 
-    min_calc_data_length = 0
+    min_calc_data_length: int = 0
     """
     The minimum length of this entry's data
     
     If an entry's data is fixed in size, this value is necessarily the length of the data
     """
 
-    leading_name_byte = b''
+    leading_name_byte: bytes = b''
     """
     Byte that always begins the name of this entry
     """
 
-    leading_data_bytes = b''
+    leading_data_bytes: bytes = b''
     """
     Bytes that always begin this entry's data
     """
 
-    _type_id = None
-    _type_ids = {}
+    _type_id: int = None
+    _type_ids: dict[int, type['TIEntry']] = {}
 
     class Raw:
         """
@@ -413,7 +411,7 @@ class TIEntry(Dock, Converter):
         new.load_bytes(self.bytes())
         return new
 
-    def __eq__(self, other: 'TIEntry') -> bool:
+    def __eq__(self, other) -> bool:
         """
         Determines if two entries are the same type and have the same bytes
 
@@ -555,7 +553,7 @@ class TIEntry(Dock, Converter):
         """
 
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> Self:
         """
         Converts ``bytes`` -> `TIEntry`
 
@@ -566,7 +564,7 @@ class TIEntry(Dock, Converter):
         return cls(data=data)
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: Self, **kwargs) -> bytes:
         """
         Converts `TIEntry` -> ``bytes``
 
@@ -716,8 +714,8 @@ class TIEntry(Dock, Converter):
             warn(f"This entry's meta length is too short ({self.meta_length}), and thus does not support archiving.",
                  UserWarning)
 
-    @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes):
+    @Loader[bytes, bytearray, memoryview, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this entry
 
@@ -1008,7 +1006,7 @@ class TIVarFile(TIFile, register=True):
         """
 
         self.header = header or TIHeader()
-        self.entries = []
+        self.entries: list[TIEntry] = []
 
         super().__init__(name=name, data=data)
 
@@ -1097,7 +1095,7 @@ class TIVarFile(TIFile, register=True):
     def targets(self, model: TIModel) -> bool:
         return self.header.targets(model)
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         if hasattr(data, "read"):
             data = BytesIO(data.read())
@@ -1194,8 +1192,8 @@ class SizedEntry(TIEntry):
         self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
         self.length = len(self.leading_data_bytes) + len(self.data)
 
-    @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes):
+    @Loader[bytes, bytearray, memoryview, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         if self.length != (data_length := len(self.leading_data_bytes) + len(self.data)):

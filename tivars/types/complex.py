@@ -12,17 +12,15 @@ from tivars.var import TIEntry
 from .real import *
 
 
-class RealPart(Converter):
+class RealPart(Converter[RealEntry]):
     """
     Converter for the real part of complex numbers
 
     Real parts are instances of `RealEntry`.
     """
 
-    _T = RealEntry
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> RealEntry:
         """
         Converts ``bytes`` -> `RealEntry`
 
@@ -34,7 +32,7 @@ class RealPart(Converter):
         return instance.real_type.get(data)
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: RealEntry, **kwargs) -> bytes:
         """
         Converts `RealEntry` -> ``bytes``
 
@@ -47,7 +45,7 @@ class RealPart(Converter):
         return type(value).set(value)
 
 
-class ImaginaryPart(Converter):
+class ImaginaryPart(Converter[RealEntry]):
     """
     Converter for the imaginary part of complex numbers
 
@@ -55,10 +53,8 @@ class ImaginaryPart(Converter):
     Updating the imaginary part of a complex entry updates the type of the entire entry.
     """
 
-    _T = RealEntry
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> RealEntry:
         """
         Converts ``bytes`` -> `RealEntry`
 
@@ -70,7 +66,7 @@ class ImaginaryPart(Converter):
         return instance.imag_type.get(data)
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: RealEntry, *, instance=None, **kwargs) -> bytes:
         """
         Converts `RealEntry` -> ``bytes``
 
@@ -244,7 +240,7 @@ class ComplexEntry(TIEntry):
         self.real_subtype_id = TIComplex.type_id
         self.imag_subtype_id = self._type_id if self._type_id is not None else TIComplex.type_id
 
-    def components(self) -> (RealEntry, RealEntry):
+    def components(self) -> tuple[RealEntry, RealEntry]:
         """
         :return: The components of this complex number as a pair of `RealEntry` values
         """

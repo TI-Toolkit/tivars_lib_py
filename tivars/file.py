@@ -1,7 +1,6 @@
 import re
 
 from io import BytesIO
-from pathlib import Path
 from typing import BinaryIO
 from warnings import warn
 
@@ -41,8 +40,8 @@ def hexdump(data: bytes, format_spec: str) -> str | None:
 
 
 class TIFile(Dock):
-    magics = []
-    _magics = {}
+    magics: list[str] = []
+    _magics: dict[str, type['TIFile']] = {}
 
     def __init__(self, *, name: str = "UNNAMED", data: bytes = None):
         """
@@ -80,7 +79,7 @@ class TIFile(Dock):
         new.load_bytes(self.bytes())
         return new
 
-    def __eq__(self, other: 'TIFile'):
+    def __eq__(self, other):
         """
         Determines if two files are identical
 
@@ -133,7 +132,7 @@ class TIFile(Dock):
         raise NotImplementedError
 
     @classmethod
-    def get_type(cls, magic: bytes) -> type['TIFile']:
+    def get_type(cls, magic: str) -> type['TIFile'] | None:
         """
         Gets the subclass corresponding to file magic if one is registered
 
@@ -200,7 +199,7 @@ class TIFile(Dock):
 
         raise NotImplementedError
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this file
@@ -216,7 +215,7 @@ class TIFile(Dock):
 
         for magic in self._magics:
             if data.read(len(magic)) == magic.encode():
-                self.__class__ = self._magics[magic]
+                self.__class__ = self.get_type(magic)
 
                 data.seek(-len(magic), 1)
                 self.load_bytes(data)

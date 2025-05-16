@@ -23,7 +23,7 @@ class TIModel:
     Models can also be used to obtain token maps and tries for tokenization and OS versions for compatibility checks.
     """
 
-    MODELS = []
+    MODELS: list['TIModel'] = []
     """
     A list of all models
     """
@@ -125,7 +125,7 @@ class TIFeature(Flags):
     """
 
 
-features82 = {}
+features82: TIFeature = {}
 features83 = features82 | TIFeature.Complex
 features82a = features83 | TIFeature.Flash
 features83p = features82a | TIFeature.Apps

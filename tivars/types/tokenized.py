@@ -5,8 +5,8 @@ Tokenized types
 
 import re
 
+from collections.abc import Iterator, Sequence
 from io import BytesIO
-from typing import Iterator, Sequence
 from warnings import catch_warnings, simplefilter, warn
 
 from tivars.data import *
@@ -152,8 +152,8 @@ class TokenizedEntry(SizedEntry):
 
         return version
 
-    @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes):
+    @Loader[bytes, bytearray, memoryview, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
         try:
@@ -220,7 +220,7 @@ class TokenizedEntry(SizedEntry):
         """
 
         tokens = self.tokens()
-        lines = [[]]
+        lines: list[list[TIToken]] = [[]]
 
         in_string = False
         for token in tokens:
@@ -379,8 +379,8 @@ class TIProgram(TokenizedEntry, register=True):
         self.type_id = TIProgram.type_id
         self.coerce()
 
-    @Loader[bytes, bytearray, BytesIO]
-    def load_bytes(self, data: bytes):
+    @Loader[bytes, bytearray, memoryview, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
         super(TokenizedEntry, self).load_bytes(data)
 
         if self.is_tokenized:

@@ -21,14 +21,12 @@ class TokenizedString(String):
     Tokenization uses the TI-84+CE token sheet.
     """
 
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         return "".join(token.langs["en"].display for token in decode(data.ljust(8, b'\x00'))[0])
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: str, *, instance=None, **kwargs) -> bytes:
         return encode(value)[0].rstrip(b'\x00')
 
 
@@ -39,10 +37,8 @@ class Name(TokenizedString):
     Tokenization uses the TI-84+CE token sheet, which is backwards compatible for all var name tokens.
     """
 
-    _T = str
-
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: str, *, instance=None, **kwargs) -> bytes:
         # Is this necessary?
         mode = "max" if instance is not None and instance.leading_name_byte else "string"
         data = encode(value, mode=mode)[0].rstrip(b'\x00')

@@ -168,7 +168,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
     def __class_getitem__(cls, index: int):
         index -= 1
 
-        class IndexedEquationConverter(Converter):
+        class IndexedEquationConverter(Converter[TIGraphedEquation]):
             """
             Converter for equations within a GDB
 
@@ -178,10 +178,8 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
             The ``n``th equation in a GDB is interfaced by the converter ``TIGraphedEquation[n]``.
             """
 
-            _T = TIGraphedEquation
-
             @classmethod
-            def get(cls, data: bytes, *, instance=None) -> _T:
+            def get(cls, data: bytes, *, instance=None) -> TIGraphedEquation:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by finding the equation at ``index`` within a GDB
 
@@ -193,7 +191,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
                 return instance.equations[index]
 
             @classmethod
-            def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+            def set(cls, value: TIGraphedEquation, *, instance=None, **kwargs) -> bytes:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by modifying the equation at ``index`` within a GDB
 
@@ -373,32 +371,32 @@ class TIMonoGDB(SizedEntry, register=True):
 
     leading_name_byte = b'\x61'
 
-    mode_byte = 0x00
+    mode_byte: int = 0x00
     """
     The byte which identifies the GDB type
     """
 
-    has_color = False
+    has_color: bool = False
     """
     Whether this GDB type carries color information
     """
 
-    num_equations = 0
+    num_equations: int = 0
     """
     The number of equations contained in this GDB type
     """
 
-    num_parameters = 0
+    num_parameters: int = 0
     """
     The number of graph parameters contained in this GDB type
     """
 
-    num_styles = 0
+    num_styles: int = 0
     """
     The number of equation styles contained in this GDB type
     """
 
-    equation_names = []
+    equation_names: list[str] = []
     """
     The names of the equations in this GDB type
     """

@@ -16,12 +16,12 @@ class EncoderState:
     Each state represents some encoding context which affects tokenization.
     """
 
-    mode = 0
+    mode: int = 0
     """
     Whether to munch maximally (``0``) or minimally (``-1``)
     """
 
-    max_length = None
+    max_length: int = None
     """
     The maximum number of tokens to emit before leaving this state
     """

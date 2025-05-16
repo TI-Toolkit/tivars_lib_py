@@ -5,7 +5,7 @@ The fundamental flash file components
 
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO
+from typing import BinaryIO, TypeAlias
 from warnings import warn
 
 from .data import *
@@ -17,7 +17,7 @@ from .numeric import BCD
 
 match version_info[:2]:
     case 3, 10:
-        Self = 'TIFlashHeader'
+        Self: TypeAlias = 'TIFlashHeader'
 
     case _:
         from typing import Self
@@ -34,17 +34,15 @@ class DeviceType(Enum):
     TI_89 = 0x98
 
 
-class BCDDate(Converter):
+class BCDDate(Converter[tuple[int, int, int]]):
     """
     Converter for dates stored in four byte BCD
 
     A date (dd, mm, yyyy) is stored in BCD as ``ddmmyyyy``.
     """
 
-    _T = tuple[int, int, int]
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> tuple[int, int, int]:
         """
         Converts ``bytes`` -> ``tuple[int, int, int]``
 
@@ -55,7 +53,7 @@ class BCDDate(Converter):
         return BCD.get(data[0:1]), BCD.get(data[1:2]), BCD.get(data[2:4])
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: tuple[int, int, int], **kwargs) -> bytes:
         """
         Converts ``tuple[int, int, int]`` -> ``bytes``
 
@@ -66,17 +64,15 @@ class BCDDate(Converter):
         return BCD.set(value[0] * 100 ** 3 + value[1] * 100 ** 2 + value[2], **kwargs)
 
 
-class BCDRevision(Converter):
+class BCDRevision(Converter[str]):
     """
     Converter for revision numbers stored in two byte BCD
 
     A revision xx.yy is stored in BCD as ``xxyy``.
     """
 
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         """
         Converts ``bytes`` -> ``str``
 
@@ -87,7 +83,7 @@ class BCDRevision(Converter):
         return f"{BCD.get(data[0:1])}.{BCD.get(data[1:2])}"
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         """
         Converts ``str`` -> ``bytes``
 
@@ -99,7 +95,7 @@ class BCDRevision(Converter):
         return BCD.set(100 * int(major) + int(minor), **kwargs)
 
 
-class FlashDevices(Converter):
+class FlashDevices(Converter[list[tuple[int | DeviceType, int]]]):
     """
     Converter for the device field of a flash header
 
@@ -108,10 +104,8 @@ class FlashDevices(Converter):
     The exception is a `TILicense`, which can hold licenses for multiple devices.
     """
 
-    _T = list[tuple[int | DeviceType, int]]
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> list[tuple[int | DeviceType, int]]:
         """
         Converts ``bytes`` -> ``list[tuple[DeviceType, int]]``
 
@@ -122,7 +116,7 @@ class FlashDevices(Converter):
         return [(DeviceType(device), type_id) for device, type_id in zip(*[iter(data)] * 2)]
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: list[tuple[int | DeviceType, int]], **kwargs) -> bytes:
         """
         Converts ``list[tuple[int | DeviceType, int]]`` -> ``bytes``
 
@@ -248,7 +242,7 @@ class TIFlashBlock(Dock):
 
         return self.raw.checksum
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this block
@@ -293,7 +287,7 @@ class TIFlashBlock(Dock):
         return self.raw.bytes()
 
 
-class FlashData(Converter):
+class FlashData(Converter[bytes | list[TIFlashBlock]]):
     """
     Converter to split flash data into blocks if stored in Intel format
 
@@ -301,10 +295,8 @@ class FlashData(Converter):
     Otherwise, this converter manipulates ``list[TIFlashBlock]``.
     """
 
-    _T = bytes | list[TIFlashBlock]
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> bytes | list[TIFlashBlock]:
         """
         Converts ``bytes`` -> ``bytes | list[TIFlashBlock]``
 
@@ -320,7 +312,7 @@ class FlashData(Converter):
             return data
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: bytes | list[TIFlashBlock], *, instance=None, **kwargs) -> bytes:
         """
         Converts ``bytes | list[TIFlashBlock]`` -> ``bytes``
 
@@ -329,7 +321,7 @@ class FlashData(Converter):
         :return: The concatenation of the blocks in ``value``
         """
 
-        if instance is None or instance.binary_flag == 0x01:
+        if instance is None or instance.binary_flag == 0x01 or isinstance(value, list):
             return b'\r\n'.join(block.bytes() for block in value)
 
         else:
@@ -343,13 +335,13 @@ class TIFlashHeader(Dock):
     A flash file can contain up to three headers, though usually only one.
     """
 
-    extensions = {None: "8ek"}
+    extensions: dict[TIModel | None, str] = {None: "8ek"}
     """
     The file extension used for this header per-model
     """
 
-    _type_id = None
-    _type_ids = {}
+    _type_id: int = None
+    _type_ids: dict[int, type['TIFlashHeader']] = {}
 
     class Raw:
         """
@@ -645,7 +637,7 @@ class TIFlashHeader(Dock):
 
         return f"{self.name}.{self.get_extension(model)}"
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this header
@@ -817,7 +809,7 @@ class TIFlashFile(TIFile, register=True):
         :param data: The file's data (defaults to empty)
         """
 
-        self.headers = []
+        self.headers: list[TIFlashHeader] = []
 
         super().__init__(name=name, data=data)
 
@@ -853,7 +845,7 @@ class TIFlashFile(TIFile, register=True):
         else:
             return self.headers[0].get_extension(model)
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         if hasattr(data, "read"):
             data = BytesIO(data.read())

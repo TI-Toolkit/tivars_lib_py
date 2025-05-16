@@ -20,7 +20,7 @@ from functools import total_ordering
 from .data import *
 
 
-class Enum(Converter, IntEnum):
+class Enum(Converter['Enum'], IntEnum):
     """
     Base class for enum types
 
@@ -51,14 +51,12 @@ class Enum(Converter, IntEnum):
 
 
 @total_ordering
-class Flags(Converter, dict, Mapping[int, int]):
+class Flags(Converter['Flags'], dict, Mapping[int, int]):
     """
     Base class for flag types
 
     Flags are bitfields in a byte that are set or cleared using dict update notation.
     """
-
-    _T = 'Flags'
 
     def __init__(self, bitsets: Mapping[int, int] = None):
         """
@@ -67,7 +65,7 @@ class Flags(Converter, dict, Mapping[int, int]):
         :param bitsets: The initial state of these flags
         """
 
-        super().__init__({bit: (bitsets or {}).get(bit, 0) % 2 for bit in range(8)})
+        super().__init__({bit: dict.get(bitsets or {}, bit, 0) % 2 for bit in range(8)})
 
     def __gt__(self, other) -> bool:
         return int(self) > int(other)
@@ -78,13 +76,17 @@ class Flags(Converter, dict, Mapping[int, int]):
     def __str__(self) -> str:
         return ''.join([str(bit) for bit in self.values()][::-1])
 
-    def __contains__(self, bitsets: Mapping[int, int]) -> bool:
-        return all(self[bit] == int(bool(bitsets[bit])) for bit in bitsets)
+    def __contains__(self, bitsets) -> bool:
+        try:
+            return all(self[bit] == int(bool(bitsets[bit])) for bit in bitsets)
+
+        except (KeyError, IndexError):
+            return False
 
     has = __contains__
 
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> 'Flags':
         """
         Converts ``bytes`` -> `Flags`, splitting the byte into the corresponding bitfields
 
@@ -95,7 +97,7 @@ class Flags(Converter, dict, Mapping[int, int]):
         return cls({bit: int(value) for bit, value in enumerate(f"{int.from_bytes(data, 'little'):b}"[::-1])})
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: 'Flags', **kwargs) -> bytes:
         """
         Converts `Flags` -> ``bytes``, packing the bitfields into the appropriate number of bytes
 

@@ -26,8 +26,6 @@ class TIGroup(SizedEntry, register=True):
     The VAT information can be safely ignored since it is redetermined when importing back onto a calculator.
     """
 
-    _T = 'TIGroup'
-
     _type_id = 0x17
 
     def __init__(self, init=None, *,

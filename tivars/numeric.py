@@ -49,17 +49,15 @@ def squash(string: str) -> str:
     return ''.join(string.split())
 
 
-class BCD(Converter):
+class BCD(Converter[int]):
     """
     Converter for 2-digit binary-coded decimal
 
     A single byte contains two decimal digits as if they were hex digits.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal
 
@@ -76,7 +74,7 @@ class BCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, *, length: int = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, length: int = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal
 
@@ -88,7 +86,7 @@ class BCD(Converter):
         return int.to_bytes(int(str(value), 16), length if length is not None else 7, 'big')
 
 
-class LeftNibbleBCD(Converter):
+class LeftNibbleBCD(Converter[int]):
     """
     Converter for 2-digit binary-coded decimal with a single extra nibble
 
@@ -96,10 +94,8 @@ class LeftNibbleBCD(Converter):
     The extraneous nibble appears in the leftmost byte, left-padded with a single hex digit.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal with an extra nibble on the left
 
@@ -116,7 +112,7 @@ class LeftNibbleBCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the left
 
@@ -131,7 +127,7 @@ class LeftNibbleBCD(Converter):
         return bytes(data)
 
 
-class RightNibbleBCD(Converter):
+class RightNibbleBCD(Converter[int]):
     """
     Converter for 2-digit binary-coded decimal with a single extra nibble
 
@@ -139,10 +135,8 @@ class RightNibbleBCD(Converter):
     The extraneous nibble appears in the rightmost byte, right-padded with a single hex digit.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal with an extra nibble on the right
 
@@ -159,7 +153,7 @@ class RightNibbleBCD(Converter):
         return 10 * value + data[-1] // 16
 
     @classmethod
-    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the right
 
