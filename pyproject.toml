@@ -21,6 +21,9 @@ requires-python = ">=3.10"
 Repository = "https://github.com/TI-Toolkit/tivars_lib_py"
 Documentation = "https://ti-toolkit.github.io/tivars_lib_py/"
 
+[project.scripts]
+tivars = "tivars.cli:cli"
+
 [project.optional-dependencies]
 images = ["pillow", "numpy"]
 arrays = ["numpy"]

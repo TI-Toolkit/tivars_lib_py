@@ -4,8 +4,9 @@ from tivars.file import *
 from .parser import *
 
 
-def process(args: argparse.Namespace):
+def cli(args: argparse.Namespace = None):
+    args = args or parser.parse_args()
     print(args)
 
 
-__all__ = ["parser", "process"]
+__all__ = ["parser", "cli"]
