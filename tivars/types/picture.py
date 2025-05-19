@@ -394,7 +394,7 @@ class TIImage(PictureEntry, register=True):
         """
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Bytes)[2:3]

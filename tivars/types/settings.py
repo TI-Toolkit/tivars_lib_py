@@ -79,7 +79,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         """
 
     @Section(min_calc_data_length)
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphRealEntry)[3:12]
@@ -317,7 +317,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         """
 
     @Section(min_calc_data_length)
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphRealEntry)[2:11]
@@ -555,7 +555,7 @@ class TITableSettings(SettingsEntry, register=True):
         """
 
     @Section(min_calc_data_length)
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphRealEntry)[2:11]

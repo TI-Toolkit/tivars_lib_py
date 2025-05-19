@@ -159,7 +159,7 @@ class ComplexEntry(TIEntry):
                     return super().__format__(format_spec)
 
     @Section(min_calc_data_length)
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         """
         The data section of the entry
 

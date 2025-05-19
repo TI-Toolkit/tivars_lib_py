@@ -323,15 +323,14 @@ class FlashData(Converter[bytes | list[TIFlashBlock]]):
         :return: The concatenation of the blocks in ``value``
         """
 
-        if instance is None or instance.binary_flag == 0x01 or isinstance(value, list):
-            instance.binary_flag = 0x01
+        if instance is not None and instance.binary_flag == 0x01 and isinstance(value, list):
             return b'\r\n'.join(block.bytes() for block in value)
 
         else:
             return value
 
 
-class TIFlashHeader(Dock):
+class TIFlashHeader(TIComponent):
     """
     Parser for flash headers
 
@@ -343,20 +342,9 @@ class TIFlashHeader(Dock):
     The file extension used for this header per-model
     """
 
-    _type_id: int = None
-    _type_ids: dict[int, type['TIFlashHeader']] = {}
+    _type_ids: dict[int, type[Self]] = {}
 
-    class Raw:
-        """
-        Raw bytes container for `TIFlashHeader`
-
-        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
-        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
-
-        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
-        Additional methods can also be included, but should be callable from the outer class.
-        """
-
+    class Raw(TIComponent.Raw):
         __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id", \
             "calc_data"
 
@@ -428,15 +416,7 @@ class TIFlashHeader(Dock):
         self.devices = [(device_type, self._type_id if self._type_id is not None else 0xFF)]
         self.product_id = product_id
 
-        if data:
-            self.calc_data = bytearray(data)
-
-        elif init is not None:
-            if hasattr(init, "bytes"):
-                self.load_bytes(init.bytes())
-
-            else:
-                self.load(init)
+        super().__init__(init, data=data)
 
         self._has_checksum = True
 
@@ -512,7 +492,7 @@ class TIFlashHeader(Dock):
         The (first) device targeted by the flash header
         """
 
-    @View(devices, Bits[:])[1:2]
+    @View(devices, Bits[:], class_attr=True)[1:2]
     def type_id(self) -> int:
         """
         The (first) type ID of the flash header
@@ -536,7 +516,7 @@ class TIFlashHeader(Dock):
         return int.from_bytes(self.raw.calc_data_size, 'little')
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         """
         The data stored in the flash header
         """
@@ -559,17 +539,6 @@ class TIFlashHeader(Dock):
         """
 
         return self.raw.checksum
-
-    @classmethod
-    def get_type(cls, type_id: int) -> type['TIFlashHeader'] | None:
-        """
-        Gets the subclass corresponding to a type ID if one is registered
-
-        :param type_id: The type ID to search by
-        :return: A subclass of `TIFlashHeader` with corresponding type ID or ``None``
-        """
-
-        return cls._type_ids.get(type_id, None)
 
     @staticmethod
     def next_header_length(stream: BinaryIO) -> int:
@@ -598,17 +567,6 @@ class TIFlashHeader(Dock):
 
         stream.seek(-78 - data_size, 1)
         return header_length
-
-    @classmethod
-    def register(cls, var_type: type['TIFlashHeader'], override: int = None):
-        """
-        Registers a subtype with this class for coercion
-
-        :param var_type: The `TIFlashHeader` subtype to register
-        :param override: A type ID to use for registry that differs from that of the var type
-        """
-
-        cls._type_ids[var_type._type_id if override is None else override] = var_type
 
     def get_extension(self, model: TIModel = TI_84PCE) -> str:
         """

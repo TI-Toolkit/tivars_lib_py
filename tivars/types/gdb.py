@@ -244,7 +244,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         """
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, EquationFlags)[0:1]
@@ -422,7 +422,7 @@ class TIMonoGDB(SizedEntry, register=True):
         return iter(self.dict().items())
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -735,7 +735,7 @@ class TIGDB(TIMonoGDB):
         self.grid_color = GraphColor.MedGray
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphColor)[-5:-4]
@@ -838,7 +838,7 @@ class TIMonoFuncGDB(TIMonoGDB):
     equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -950,7 +950,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     min_calc_data_length = 128
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-18:-15]
@@ -992,7 +992,7 @@ class TIMonoParamGDB(TIMonoGDB):
     equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1132,7 +1132,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     min_calc_data_length = 144
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-14:-11]
@@ -1174,7 +1174,7 @@ class TIMonoPolarGDB(TIMonoGDB):
     equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1268,7 +1268,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     min_calc_data_length = 126
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-14:-11]
@@ -1310,7 +1310,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     equation_names = ["u", "v", "w"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1516,7 +1516,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     min_calc_data_length = 174
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-11:-8]

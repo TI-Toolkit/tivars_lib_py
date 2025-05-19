@@ -9,10 +9,10 @@ from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
 from typing import BinaryIO, TypeAlias
-from warnings import catch_warnings, simplefilter, warn
+from warnings import warn
 
 from .data import *
-from .file import TIFile, hexdump
+from .file import *
 from .models import *
 from .tokenizer import Name
 
@@ -113,13 +113,7 @@ class TIHeader:
             return False
 
     def __format__(self, format_spec: str) -> str:
-        if not format_spec:
-            return super().__str__()
-
-        elif (dump := hexdump(self.bytes(), format_spec)) is not None:
-            return dump
-
-        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
+        return TIComponent.formatter(self.bytes(), format_spec)
 
     def __or__(self, other: list['TIEntry']) -> 'TIVarFile':
         """
@@ -253,7 +247,7 @@ class TIHeader:
             return cls(data=file.read())
 
 
-class TIEntry(Dock, Converter):
+class TIEntry(TIComponent):
     """
     Base class for all var entries
 
@@ -301,22 +295,9 @@ class TIEntry(Dock, Converter):
     Bytes that always begin this entry's data
     """
 
-    _type_id: int = None
-    _type_ids: dict[int, type['TIEntry']] = {}
+    _type_ids: dict[int, type[Self]] = {}
 
-    class Raw:
-        """
-        Raw bytes container for `TIEntry`
-
-        Any class with a distinct byte format requires its own ``Raw`` class to contain its data sections.
-        Each data section must have a corresponding slot in ``Raw`` in order to use `Converter` classes.
-
-        The ``Raw`` class must also contain a ``bytes()`` method specifying the order of the data sections.
-        Additional methods can also be included, but should be callable from the outer class.
-
-        Most entry types do not require a new ``Raw`` class since only the entry's data changes between types.
-        """
-
+    class Raw(TIComponent.Raw):
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "calc_data"
 
         @property
@@ -373,73 +354,10 @@ class TIEntry(Dock, Converter):
         self.archived = archived if archived is not None else False
         self.version = version or 0x00
 
-        self.clear()
-        if data:
-            self.data = bytearray(data)
-            self.coerce()
-
-        elif init is not None:
-            if hasattr(init, "bytes"):
-                self.load_bytes(init.bytes())
-
-            else:
-                self.load(init)
+        super().__init__(init, data=data)
 
         if version is None:
             self.version = self.get_version()
-
-    def __bool__(self) -> bool:
-        """
-        :return: Whether this entry's data is empty
-        """
-
-        return not self.is_empty
-
-    def __bytes__(self) -> bytes:
-        """
-        :return: The bytes contained in this entry
-        """
-
-        return self.bytes()
-
-    def __copy__(self) -> Self:
-        """
-        :return: A copy of this entry
-        """
-
-        new = self.__class__()
-        new.load_bytes(self.bytes())
-        return new
-
-    def __eq__(self, other) -> bool:
-        """
-        Determines if two entries are the same type and have the same bytes
-
-        :param other: The entry to check against
-        :return: Whether this entry is equal to ``other``
-        """
-
-        try:
-            return self.__class__ == other.__class__ and self.bytes() == other.bytes()
-
-        except AttributeError:
-            return False
-
-    def __format__(self, format_spec: str) -> str:
-        """
-        Formats this entry for string representations
-
-        :param format_spec: The format parameters
-        :return: A string representation of this entry
-        """
-
-        if not format_spec:
-            return super().__str__()
-
-        elif (dump := hexdump(self.calc_data, format_spec)) is not None:
-            return dump
-
-        raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
 
     def __init_subclass__(cls, /, register: bool = False, override: int = None, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -460,13 +378,6 @@ class TIEntry(Dock, Converter):
         """
 
         return 2 + self.meta_length + 2 + self.calc_data_length
-
-    def __str__(self) -> str:
-        """
-        :return: A string representation of this entry
-        """
-
-        return self.string()
 
     @Section(2, Integer)
     def meta_length(self, value) -> int:
@@ -540,40 +451,6 @@ class TIEntry(Dock, Converter):
 
         return value
 
-    @Section()
-    def calc_data(self) -> bytes:
-        """
-        The data section of the entry which is loaded on-calc
-        """
-
-    @View(calc_data, Data)[:]
-    def data(self) -> bytes:
-        """
-        The entry's user data
-        """
-
-    @classmethod
-    def get(cls, data: bytes, **kwargs) -> Self:
-        """
-        Converts ``bytes`` -> `TIEntry`
-
-        :param data: The raw bytes to convert
-        :return: A `TIEntry` instance with data equal to ``data``
-        """
-
-        return cls(data=data)
-
-    @classmethod
-    def set(cls, value: Self, **kwargs) -> bytes:
-        """
-        Converts `TIEntry` -> ``bytes``
-
-        :param value: The value to convert
-        :return: The data of ``value``
-        """
-
-        return value.calc_data
-
     @property
     def flash_bytes(self) -> bytes:
         """
@@ -591,31 +468,12 @@ class TIEntry(Dock, Converter):
         return self.meta_length >= TIEntry.flash_meta_length
 
     @property
-    def is_empty(self) -> bool:
-        """
-        :return: Whether this entry's data is empty
-        """
-
-        return self.calc_data_length == 0
-
-    @property
     def meta(self) -> bytes:
         """
         :return: The meta section of this entry
         """
 
         return self.raw.meta
-
-    @classmethod
-    def get_type(cls, type_id: int) -> type['TIEntry'] | None:
-        """
-        Gets the subclass corresponding to a type ID if one is registered
-
-        :param type_id: The type ID to search by
-        :return: A subclass of `TIEntry` with corresponding type ID or ``None``
-        """
-
-        return cls._type_ids.get(type_id, None)
 
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:
@@ -635,17 +493,6 @@ class TIEntry(Dock, Converter):
                  BytesWarning)
 
         return 2 + meta_length + 2 + data_length
-
-    @classmethod
-    def register(cls, var_type: type['TIEntry'], override: int = None):
-        """
-        Registers a subtype with this class for coercion
-
-        :param var_type: The `TIEntry` subtype to register
-        :param override: A type ID to use for registry that differs from that of the var type
-        """
-
-        cls._type_ids[var_type._type_id if override is None else override] = var_type
 
     def archive(self):
         """
@@ -867,38 +714,6 @@ class TIEntry(Dock, Converter):
 
         self.load_bytes(file.read(self.next_entry_length(file)))
         file.seek(2, 1)
-
-    @Loader[str]
-    def load_string(self, string: str):
-        """
-        Loads this entry from a string representation
-
-        If there is no dedicated handler for an entry type, all subclasses of the type will be considered.
-
-        :param string: The string to load
-        """
-
-        with catch_warnings():
-            simplefilter("ignore")
-
-            for entry_type in self._type_ids.values():
-                if issubclass(entry_type, self.__class__):
-                    try:
-                        # Try out each possible string format
-                        self.load_bytes(entry_type(string).bytes())
-                        return
-
-                    except Exception:
-                        continue
-
-        raise ValueError(f"could not parse '{string}' as entry type")
-
-    def string(self) -> str:
-        """
-        :return: A string representation of this entry
-        """
-
-        return format(self, "")
 
     @classmethod
     def open(cls, filename: str) -> Self:
@@ -1174,7 +989,7 @@ class SizedEntry(TIEntry):
     min_calc_data_length = 2
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[0:2]

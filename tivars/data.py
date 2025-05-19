@@ -450,16 +450,18 @@ class View(Section):
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
-    def __init__(self, target: Section, converter: type[Converter], indices: slice = slice(None)):
+    def __init__(self, target: Section, converter: type[Converter], indices: slice = slice(None), *,
+                 class_attr: bool = False):
         """
         Define a new data view given a data section to watch, a type converter, and the portion of the section to view
 
         :param target: The data section to view
         :param converter: The type converter for the view (defaults to `Bytes`)
         :param indices: The slice of the data section to view (defaults to the entire section)
+        :param class_attr: Whether the view should return a shadowed class attribute (defaults to ``False``)
         """
 
-        super().__init__(None, converter)
+        super().__init__(None, converter, class_attr=class_attr)
 
         self._target = target
         self._indices = indices

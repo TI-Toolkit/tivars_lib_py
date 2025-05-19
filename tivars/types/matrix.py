@@ -57,7 +57,7 @@ class TIMatrix(TIEntry, register=True):
                 yield entry
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[0:1]

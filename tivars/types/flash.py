@@ -67,7 +67,7 @@ class TILicense(TIFlashHeader, register=True):
     _type_id = 0x3E
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         """
         The data stored in the flash header
         """
