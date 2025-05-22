@@ -8,7 +8,6 @@ import json
 from warnings import warn
 
 from tivars.data import *
-from tivars.models import *
 from tivars.var import SizedEntry
 from .real import GraphRealEntry
 
@@ -48,6 +47,12 @@ class SettingsEntry(SizedEntry):
     @Loader[str]
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
+
+    def summary(self) -> str:
+        return super().summary() + (
+                "\n"
+                "Settings Information\n" + "\n  ".join(f"{var:9} {value}" for var, value in self.dict().items())
+        )
 
 
 class TIWindowSettings(SettingsEntry, register=True):

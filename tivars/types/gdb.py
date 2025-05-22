@@ -13,6 +13,7 @@ from warnings import catch_warnings, filterwarnings, warn
 from tivars.flags import *
 from tivars.data import *
 from tivars.models import *
+from tivars.util import *
 from tivars.var import TIEntry, SizedEntry
 from .real import *
 from .tokenized import TIEquation
@@ -693,6 +694,39 @@ class TIMonoGDB(SizedEntry, register=True):
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
 
+    def summary(self) -> str:
+        if isinstance(self, TIMonoSeqGDB):
+            seq_modes = (f"{mode_format(self.extended_mode_flags, 'SEQ_n', 'SEQ_np1', 'SEQ_np2')}\n"
+                         f"\n"
+                         f"{mode_format(self.sequence_flags, 'Time', 'Web', 'uv', 'vw', 'uw')}")
+
+        else:
+            seq_modes = ""
+
+        return TIEntry.summary(self) + (
+            f"\n"
+            f"GDB Information\n"
+            f"  Type             {self.mode}\n"
+            f"  Has Color Data?  False\n"
+            f"\n"
+            f"  Mode Settings    {mode_format(self.mode_flags, 'Connected', 'Dot')}\n"
+            f"                   {mode_format(self.mode_flags, 'Sequential', 'Simul')}\n"
+            f"                   {seq_modes}\n"
+            f"                   {mode_format(self.mode_flags, 'RectGC', 'PolarGC')}\n"
+            f"                   {mode_format(self.mode_flags, 'CoordOn', 'CoordOff')}\n"
+            f"                   {mode_format(self.mode_flags, 'GridOff', 'GridOn')}\n"
+            f"                   {mode_format(self.mode_flags, 'AxesOn', 'AxesOff')}\n"
+            f"                   {mode_format(self.mode_flags, 'LabelOff', 'LabelOn')}\n"
+            f"                   {mode_format(self.extended_mode_flags, 'ExprOn', 'ExprOff')}\n"
+        ) + (
+            "\n  " +
+            "\n  ".join(f"{var:9} {value}" for var, value in
+                        (self.dict()["globalWindowSettings"] | self.dict()["specificData"]["settings"]).items()) +
+            "\n\n  " +
+            "\n  ".join(f"{equation.json_name:9} {equation}" for equation in self.equations if equation.is_defined) +
+            "\n"
+        )
+
     def coerce(self):
         if self.get_color_data():
             self.__class__ = TIGDB
@@ -805,6 +839,44 @@ class TIGDB(TIMonoGDB):
                 }
             }
         }
+
+    def summary(self) -> str:
+        if isinstance(self, TISeqGDB):
+            seq_modes = (f"{mode_format(self.extended_mode_flags, 'SEQ_n', 'SEQ_np1', 'SEQ_np2')}\n"
+                         f"\n"
+                         f"{mode_format(self.sequence_flags, 'Time', 'Web', 'uv', 'vw', 'uw')}")
+
+        else:
+            seq_modes = ""
+
+        detect_asymptotes = "On" if GraphMode.DetectAsymptotesOn in self.color_mode_flags else "Off"
+
+        return TIEntry.summary(self) + (
+            f"\n"
+            f"GDB Information\n"
+            f"  Type             {self.mode}\n"
+            f"  Has Color Data?  True\n"
+            f"\n"
+            f"  Mode Settings    {mode_format(self.mode_flags, 'Sequential', 'Simul')}\n"
+            f"                   {seq_modes}\n"
+            f"                   {mode_format(self.mode_flags, 'RectGC', 'PolarGC')}\n"
+            f"                   {mode_format(self.mode_flags, 'CoordOn', 'CoordOff')}\n"
+            f"                   {mode_format(self.mode_flags, 'GridOff', 'GridDot', 'GridLine')}\n"
+            f"                   GridColor: {self.grid_color.name}\n"
+            f"                   Axes: {self.axes_color.name}\n"
+            f"                   {mode_format(self.mode_flags, 'LabelOff', 'LabelOn')}\n"
+            f"                   {mode_format(self.extended_mode_flags, 'ExprOn', 'ExprOff')}\n"
+            f"                   BorderColor: {BorderColor(self.border_color)}\n"
+            f"\n"
+            f"                   Detect Asymptotes: {detect_asymptotes}\n"
+        ) + (
+            "\n  " +
+            "\n  ".join(f"{var:9} {value}" for var, value in
+                        (self.dict()["globalWindowSettings"] | self.dict()["specificData"]["settings"]).items()) +
+            "\n\n  " +
+            "\n  ".join(f"{equation.json_name:9} {equation}" for equation in self.equations if equation.is_defined)
+            + "\n"
+        )
 
     def coerce(self):
         match self.mode_id:

@@ -12,21 +12,6 @@ pi = dec.Decimal("3.1415926535898")
 e = dec.Decimal("2.718281828459")
 
 
-def replacer(string: str, replacements: dict[str, str]) -> str:
-    """
-    Iteratively applies string replacements
-
-    :param string: The input string
-    :param replacements: The replacements to make
-    :return: The input string with all replacements made in-order
-    """
-
-    for substring, replacement in replacements.items():
-        string = string.replace(substring, replacement)
-
-    return string
-
-
 def sign(x: int) -> int:
     """
     Computes the mathematical sign of a number
@@ -36,17 +21,6 @@ def sign(x: int) -> int:
     """
 
     return (x > 0) - (x < 0)
-
-
-def squash(string: str) -> str:
-    """
-    Removes all spaces from a string
-
-    :param string: The input string
-    :return: The input string with all spaces removed
-    """
-
-    return ''.join(string.split())
 
 
 class BCD(Converter[int]):
@@ -168,5 +142,4 @@ class RightNibbleBCD(Converter[int]):
         return bytes(data)
 
 
-__all__ = ["pi", "e", "replacer", "sign", "squash",
-           "BCD", "LeftNibbleBCD", "RightNibbleBCD"]
+__all__ = ["pi", "e", "sign", "BCD", "LeftNibbleBCD", "RightNibbleBCD"]

@@ -13,6 +13,7 @@ from warnings import warn
 from tivars.data import *
 from tivars.models import *
 from tivars.numeric import *
+from tivars.util import *
 from tivars.var import TIEntry
 
 
@@ -116,7 +117,7 @@ class RealEntry(TIEntry):
         :return: The subtype of this real number
         """
 
-        return self.get_type(self.subtype_id)
+        return self.get_type(type_id=self.subtype_id)
 
     @property
     def sign(self) -> int:

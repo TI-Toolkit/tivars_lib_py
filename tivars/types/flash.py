@@ -3,6 +3,8 @@ Flash types
 """
 
 
+import re
+
 from tivars.data import *
 from tivars.flash import TIFlashHeader
 from tivars.models import *
@@ -77,6 +79,13 @@ class TILicense(TIFlashHeader, register=True):
         """
         The license stored in the header as a string
         """
+
+    def summary(self) -> str:
+        regex = r"\[\w+\]"
+        return super().summary() + (
+            f"\n"
+            f"  License(s)     {', '.join(re.findall(regex, self.license))}\n"
+        )
 
 
 __all__ = ["TIOperatingSystem", "TIApp", "TICertificate", "TILicense"]

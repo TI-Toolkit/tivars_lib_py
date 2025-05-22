@@ -11,6 +11,7 @@ from warnings import warn
 from tivars.data import *
 from tivars.models import *
 from tivars.tokenizer import *
+from tivars.util import *
 from tivars.var import TIEntry
 from .complex import *
 from .real import *
@@ -136,13 +137,13 @@ class TIList(TIEntry):
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
         it = zip(*[iter(data)] * cls._E.min_calc_data_length)
-        return max(map(cls._E.get_min_os, it), default=OsVersions.INITIAL)
+        return max([cls._E(data=data).get_min_os() for data in it], default=OsVersions.INITIAL)
 
     @datamethod
     @classmethod
     def get_version(cls, data: bytes) -> int:
         it = zip(*[iter(data)] * cls._E.min_calc_data_length)
-        version = max(map(cls._E.get_version, it), default=0x00)
+        version = max([cls._E(data=data).get_version() for data in it], default=0x00)
 
         if version > 0x1B:
             return 0x10
@@ -188,6 +189,12 @@ class TIList(TIEntry):
     @Loader[str]
     def load_string(self, string: str):
         self.load_list([self._E(element) for element in "".join(string.strip("[]{}")).split(",")])
+
+    def summary(self) -> str:
+        return super().summary() + (
+            f"\n"
+            f"  Value          [{trim_string(trim_list(self.list(), 8, ', '), 46)}]\n"
+        )
 
     def coerce(self):
         for type_id, entry_type in self._type_ids.items():

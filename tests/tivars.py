@@ -98,7 +98,7 @@ class VarTests(unittest.TestCase):
         test_var = TIVarFile.open("tests/data/var/Program.8xp")
 
         self.assertEqual(test_var.get_extension(), "8xp")
-        self.assertEqual(test_var.get_filename(), "UNNAMED.8xp")
+        self.assertEqual(test_var.get_filename(), "Program.8xp")
         test_var.save("tests/data/var/Program_new.8xp")
 
         with open("tests/data/var/Program.8xp", 'rb') as orig:
@@ -410,6 +410,7 @@ class ArrayTests(unittest.TestCase):
 
         self.assertEqual(test_comp_list.name, "I")
         self.assertEqual(test_comp_list.length, 3)
+        self.assertEqual(test_comp_list.get_min_os(), TI_83.OS())
         self.assertEqual(test_comp_list.list(), test_list)
         self.assertEqual(list(iter(test_comp_list)), test_list)
         self.assertEqual(str(test_comp_list), string := "[1 + i, -3 + 2i, 4]")
@@ -460,6 +461,7 @@ class ArrayTests(unittest.TestCase):
         self.assertEqual(test_matrix.name, "[B]")
         self.assertEqual(test_matrix.height, 2)
         self.assertEqual(test_matrix.width, 2)
+        self.assertEqual(test_matrix.get_min_os(), TI_83PCE.OS())
         self.assertEqual(test_matrix.matrix(), test_array)
         self.assertEqual(list(iter(test_matrix)), [entry for row in test_array for entry in row])
 

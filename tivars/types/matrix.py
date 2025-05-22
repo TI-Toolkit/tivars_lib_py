@@ -9,6 +9,7 @@ from warnings import warn
 
 from tivars.data import *
 from tivars.models import *
+from tivars.util import *
 from tivars.var import TIEntry
 from .real import RealEntry
 
@@ -114,13 +115,13 @@ class TIMatrix(TIEntry, register=True):
     @classmethod
     def get_min_os(cls, data: bytes) -> OsVersion:
         it = zip(*[iter(data)] * RealEntry.min_calc_data_length)
-        return max(map(RealEntry.get_min_os, it), default=OsVersions.INITIAL)
+        return max([RealEntry(data=data).get_min_os() for data in it], default=OsVersions.INITIAL)
 
     @datamethod
     @classmethod
     def get_version(cls, data: bytes) -> int:
         it = zip(*[iter(data)] * RealEntry.min_calc_data_length)
-        version = max(map(RealEntry().get_version, it), default=0x00)
+        version = max([RealEntry(data=data).get_version() for data in it], default=0x00)
 
         if version > 0x1B:
             return 0x10
@@ -173,8 +174,17 @@ class TIMatrix(TIEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str):
-        self.load_matrix([[RealEntry(item) for item in row.replace("[", "").replace("]", "").split(",")]
-                          for row in "".join(string.split())[1:-1].replace("],[", "][").split("][")])
+        self.load_matrix([[RealEntry(item) for item in replacer(row, {"[": "", "]": ""}).split(",")]
+                          for row in replacer("".join(string.split())[1:-1], {"],[": "]["}).split("][")])
+
+    def summary(self) -> str:
+        joiner = "\n                 "
+        matrix = trim_list([f"[{trim_string(trim_list(row, 8, ', '), 46)}]" for row in self.matrix()], 8, joiner)
+
+        return super().summary() + (
+            f"\n"
+            f"  Value          {matrix}\n"
+        )
 
 
 __all__ = ["TIMatrix"]

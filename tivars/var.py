@@ -15,6 +15,7 @@ from .data import *
 from .file import *
 from .models import *
 from .tokenizer import Name
+from .util import *
 
 
 # Use Self type if possible
@@ -113,7 +114,7 @@ class TIHeader:
             return False
 
     def __format__(self, format_spec: str) -> str:
-        return TIComponent.formatter(self.bytes(), format_spec)
+        return hex_format(self.bytes(), format_spec)
 
     def __or__(self, other: list['TIEntry']) -> 'TIVarFile':
         """
@@ -233,6 +234,21 @@ class TIHeader:
         """
 
         self.load_bytes(file.read(len(self)))
+
+    def summary(self) -> str:
+        """
+        :return: A text summary of this header
+        """
+
+        model = next((model for model in TIModel.MODELS
+                      if model.magic == self.magic and model.product_id == self.product_id), 'unknown')
+
+        return (
+            f"Header Information\n"
+            f"  Product ID  0x{self.product_id:02x}\n"
+            f"  Model       {model} or newer\n"
+            f"  Comment     {self.comment}\n"
+        )
 
     @classmethod
     def open(cls, filename: str) -> 'TIHeader':
@@ -467,6 +483,19 @@ class TIEntry(TIComponent):
 
         return self.meta_length >= TIEntry.flash_meta_length
 
+    @classmethod
+    def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
+        if extension is not None:
+            if type_id is None:
+                raise ValueError("too many parameters passed to get_type")
+
+            for var_type in cls._type_ids.values():
+                if replacer(extension, {"2": "x", "3": "x"}).lstrip(".") == var_type.extension:
+                    return var_type
+
+        else:
+            return super().get_type(type_id=type_id)
+
     @property
     def meta(self) -> bytes:
         """
@@ -584,7 +613,7 @@ class TIEntry(TIComponent):
         self.raw.type_id = data.read(1)
 
         if self._type_id is not None and self.type_id != self._type_id:
-            if subclass := TIEntry.get_type(self.type_id):
+            if subclass := TIEntry.get_type(type_id=self.type_id):
                 if not issubclass(subclass, self.__class__):
                     warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
                          BytesWarning)
@@ -715,6 +744,23 @@ class TIEntry(TIComponent):
         self.load_bytes(file.read(self.next_entry_length(file)))
         file.seek(2, 1)
 
+    def summary(self) -> str:
+        os = self.get_min_os()
+        model = os.model or TI_82
+        compat = f"{model} (OS {os.version})" if os.version else f"{model}"
+
+        return (
+            f"Entry Information\n"
+            f"  Type           {type(self).__name__} (ID 0x{self.type_id:02x})\n"
+            f"  Name           {self.name}\n"
+            f"  Version        0x{self.version:02x}\n"
+            f"  Archived?      {self.archived}\n"
+            f"\n"
+            f"  Data Length    {self.calc_data_length}\n"
+            f"  Compatibility  {compat} or newer\n"
+            f"  Data           {trim_string(hex_format(self.calc_data, '-2x'), 50)}\n"
+        )
+
     @classmethod
     def open(cls, filename: str) -> Self:
         """
@@ -782,24 +828,6 @@ class TIEntry(TIComponent):
         var = TIVarFile(header=header or TIHeader(model=model), name=name or self.name)
         var.add_entry(self)
         return var
-
-    def coerce(self):
-        """
-        Coerces this entry to a subclass if possible using the entry's type ID
-        """
-
-        if self._type_id is None:
-            if subclass := self.get_type(self.type_id):
-                self.__class__ = subclass
-                self.coerce()
-
-            elif self.type_id != 0xFF:
-                warn(f"Type ID 0x{self.type_id:02x} is not recognized; no coercion will occur.",
-                     BytesWarning)
-
-            else:
-                warn("Type ID is 0xFF; no coercion will occur.",
-                     UserWarning)
 
 
 class TIVarFile(TIFile, register=True):
@@ -964,10 +992,8 @@ class TIVarFile(TIFile, register=True):
         dump += self.checksum
         return dump
 
-    @classmethod
-    def open(cls, filename: str) -> 'TIVarFile':
-        with open(filename, 'rb') as file:
-            return cls(data=file.read())
+    def summary(self) -> str:
+        return "\n".join([self.header.summary(), *[entry.summary() for entry in self.entries]]) + "\n"
 
     def save(self, filename: str = None, model: TIModel = TI_84PCE):
         for index, entry in enumerate(self.entries):

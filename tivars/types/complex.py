@@ -8,6 +8,7 @@ from warnings import warn
 from tivars.data import *
 from tivars.models import *
 from tivars.numeric import *
+from tivars.util import *
 from tivars.var import TIEntry
 from .real import *
 
@@ -224,7 +225,7 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `real_subtype_id`.
         """
 
-        return self.get_type(self.real_subtype_id).real_analogue
+        return self.get_type(type_id=self.real_subtype_id).real_analogue
 
     @property
     def imag_type(self) -> type['RealEntry']:
@@ -232,7 +233,7 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `imag_subtype_id`.
         """
 
-        return self.get_type(self.imag_subtype_id).real_analogue
+        return self.get_type(type_id=self.imag_subtype_id).real_analogue
 
     def clear(self):
         super().clear()
@@ -324,7 +325,7 @@ class ComplexEntry(TIEntry):
                     continue
 
                 try:
-                    self.real = self.get_type(type_id)(parts[0])
+                    self.real = self.get_type(type_id=type_id)(parts[0])
                     break
 
                 except (TypeError, ValueError):
@@ -337,7 +338,7 @@ class ComplexEntry(TIEntry):
 
     def coerce(self):
         self.type_id = self.imag_subtype_id
-        if subclass := self.get_type(self.type_id):
+        if subclass := self.get_type(type_id=self.type_id):
             self.__class__ = subclass
 
         else:

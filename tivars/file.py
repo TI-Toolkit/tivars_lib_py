@@ -1,12 +1,17 @@
-import re
+"""
+The fundamental file components
+"""
+
 
 from io import BytesIO
+from pathlib import Path
 from sys import version_info
 from typing import BinaryIO, TypeAlias
 from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
 from .models import *
+from .util import *
 
 
 # Use Self type if possible
@@ -50,6 +55,13 @@ class TIComponent(Dock, Converter):
             raise NotImplementedError
 
     def __init__(self, init=None, *, data: bytes = None):
+        """
+        Creates an empty component with specified data
+
+        :param init: Values to initialize the component's data (defaults to ``None``)
+        :param data: The component's data (defaults to empty)
+        """
+
         self.clear()
         if data:
             self.data = bytearray(data)
@@ -100,7 +112,7 @@ class TIComponent(Dock, Converter):
             return False
 
     def __format__(self, format_spec: str) -> str:
-        return TIComponent.formatter(self.calc_data, format_spec)
+        return hex_format(self.calc_data, format_spec)
 
     def __len__(self) -> int:
         """
@@ -116,7 +128,7 @@ class TIComponent(Dock, Converter):
 
         return self.string()
 
-    @property
+    @Section()
     def type_id(self) -> int:
         """
         The (first) type ID of the component
@@ -167,15 +179,20 @@ class TIComponent(Dock, Converter):
         return not len(self.calc_data)
 
     @classmethod
-    def get_type(cls, type_id: int) -> type[Self] | None:
+    def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
         """
-        Gets the subclass corresponding to a type ID if one is registered
+        Gets the subclass corresponding to a type ID or file extension if one is registered
 
-        :param type_id: The type ID to search by
+        :param type_id: The type ID to search by, or
+        :param extension: The file extension to search by
         :return: A subclass of this component with corresponding type ID or extension, or ``None``
         """
 
-        return cls._type_ids.get(type_id, None)
+        if type_id is not None:
+            if extension is not None:
+                raise ValueError("too many parameters passed to get_type")
+
+            return cls._type_ids.get(type_id, None)
 
     @classmethod
     def register(cls, var_type: type[Self], override: int = None):
@@ -187,39 +204,6 @@ class TIComponent(Dock, Converter):
         """
 
         cls._type_ids[var_type._type_id if override is None else override] = var_type
-
-    @staticmethod
-    def formatter(data: bytes, format_spec: str) -> str:
-        """
-        Helper function for formatting hex data
-
-        The format specifier takes the form ``{width}?{case}{sep}?``.
-        - ``width`` is the width of groups of hex digits; negative values group from the end (defaults to no groups)
-        - ``case`` is `x` or `X` to dictate the case of the hex digits
-        - ``sep`` is a single character to separate groups of hex digits (defaults to none)
-
-        :param data: The data to format
-        :param format_spec: The f-string specifier to format the hexdump
-        :return: ``data`` formatted in hex with some width, case, and separator
-        """
-
-        if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])(?P<sep>\D)?", format_spec):
-            match match["sep"], match["width"]:
-                case None, None:
-                    string = data.hex()
-
-                case sep, None:
-                    string = data.hex(sep)
-
-                case None, width:
-                    string = data.hex(" ", int(width))
-
-                case sep, width:
-                    string = data.hex(sep, int(width))
-
-            return string.lower() if match["case"] == "x" else string.upper()
-
-        raise TypeError(f"unsupported format string passed to __format__")
 
     def clear(self):
         """
@@ -288,6 +272,13 @@ class TIComponent(Dock, Converter):
 
         return format(self, "")
 
+    def summary(self) -> str:
+        """
+        :return: A text summary of this component
+        """
+
+        raise NotImplementedError
+
     @classmethod
     def open(cls, filename: str) -> Self:
         """
@@ -311,23 +302,19 @@ class TIComponent(Dock, Converter):
 
     def coerce(self):
         """
-        Coerces this header to a subclass if possible using the header's type ID
+        Coerces this component to a subclass if possible using the component's type ID
 
         Valid types must be registered to be considered for coercion.
         """
 
         if self._type_id is None:
-            if subclass := self.get_type(self.type_id):
+            if subclass := self.get_type(type_id=self.type_id):
                 self.__class__ = subclass
                 self.coerce()
 
             elif self.type_id != 0xFF:
                 warn(f"Type ID 0x{self.type_id:02x} is not recognized; no coercion will occur.",
                      BytesWarning)
-
-            else:
-                warn("Type ID is 0xFF; no coercion will occur.",
-                     UserWarning)
 
 
 class TIFile(Dock):
@@ -389,7 +376,7 @@ class TIFile(Dock):
             return False
 
     def __format__(self, format_spec: str) -> str:
-        return TIComponent.formatter(self.bytes(), format_spec)
+        return hex_format(self.bytes(), format_spec)
 
     def __init_subclass__(cls, /, register=False, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -532,6 +519,13 @@ class TIFile(Dock):
 
         self.load_bytes(file.read())
 
+    def summary(self) -> str:
+        """
+        :return: A text summary of this file
+        """
+
+        raise NotImplementedError
+
     @classmethod
     def open(cls, filename: str) -> 'TIFile':
         """
@@ -542,7 +536,7 @@ class TIFile(Dock):
         """
 
         with open(filename, 'rb') as file:
-            ti_file = cls(name="".join(filename.split(".")[:-1]))
+            ti_file = cls(name=Path(filename).stem)
             ti_file.load_bytes(file.read())
 
             return ti_file

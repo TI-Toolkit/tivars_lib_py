@@ -13,6 +13,7 @@ from .file import *
 from .flags import *
 from .models import *
 from .numeric import BCD
+from .util import *
 
 
 match version_info[:2]:
@@ -105,7 +106,7 @@ class FlashDevices(Converter[list[tuple[int | DeviceType, int]]]):
     """
 
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> list[tuple[int | DeviceType, int]]:
+    def get(cls, data: bytes, **kwargs) -> list[tuple[DeviceType, int]]:
         """
         Converts ``bytes`` -> ``list[tuple[DeviceType, int]]``
 
@@ -386,7 +387,7 @@ class TIFlashHeader(TIComponent):
     def __init__(self, init=None, *,
                  magic: str = "**TIFL**", revision: str = "0.0", binary_format: bool = False, object_type: int = 0x88,
                  date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED",
-                 device_type: int = 0x73, product_id: int = 0x00,
+                 device_type: int | DeviceType = DeviceType.TI_83P, product_id: int = 0x00,
                  data: bytes = b':00000001FF'):
         """
         Creates an empty flash header with specified meta and data values
@@ -478,7 +479,7 @@ class TIFlashHeader(TIComponent):
         """
 
     @Section(None, FlashDevices)
-    def devices(self) -> list[tuple[int, int]]:
+    def devices(self) -> list[tuple[DeviceType, int]]:
         """
         The devices targeted by the flash header
 
@@ -487,7 +488,7 @@ class TIFlashHeader(TIComponent):
         """
 
     @View(devices, DeviceType)[0:1]
-    def device_type(self) -> int:
+    def device_type(self) -> DeviceType:
         """
         The (first) device targeted by the flash header
         """
@@ -539,6 +540,19 @@ class TIFlashHeader(TIComponent):
         """
 
         return self.raw.checksum
+
+    @classmethod
+    def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
+        if extension is not None:
+            if type_id is None:
+                raise ValueError("too many parameters passed to get_type")
+
+            for var_type in cls._type_ids.values():
+                if extension.lstrip(".") in var_type.extensions:
+                    return var_type
+
+        else:
+            return super().get_type(type_id=type_id)
 
     @staticmethod
     def next_header_length(stream: BinaryIO) -> int:
@@ -702,6 +716,30 @@ class TIFlashHeader(TIComponent):
 
         self.load_bytes(file.read(self.next_header_length(file)))
 
+    def summary(self) -> str:
+        joiner = "\n                 "
+
+        if self.binary_flag == 0x01:
+            data = trim_list([str(block) for block in self.data], 4, joiner)
+
+        else:
+            data = trim_string(hex_format(self.calc_data, '-2x'), 50)
+
+        return (
+            f"Header Information\n"
+            f"  Type           {type(self).__name__} (ID 0x{self.type_id})\n"
+            f"  Name           {self.name}\n"
+            f"\n"
+            f"  Revision No.   {self.revision}\n"
+            f"  Revision Date  {self.date}\n"
+            f"\n"
+            f"  Binary Format  0x{self.binary_flag:02x} ({'Intel' if self.binary_flag == 0x01 else 'binary'})\n"
+            f"  Object Type    0x{self.object_type:02x}\n"
+            f"  Device(s)      {', '.join(device.name for device, _ in self.devices)}"
+            f"\n"
+            f"  Data           {data}\n"
+        )
+
     @classmethod
     def open(cls, filename: str) -> Self:
         """
@@ -737,26 +775,6 @@ class TIFlashHeader(TIComponent):
 
         with open(filename or self.get_filename(model), 'wb+') as file:
             file.write(self.bytes())
-
-    def coerce(self):
-        """
-        Coerces this header to a subclass if possible using the header's type ID
-
-        Valid types must be registered to be considered for coercion.
-        """
-
-        if self._type_id is None:
-            if subclass := self.get_type(self.type_id):
-                self.__class__ = subclass
-                self.coerce()
-
-            elif self.type_id != 0xFF:
-                warn(f"Type ID 0x{self.type_id:02x} is not recognized; no coercion will occur.",
-                     BytesWarning)
-
-            else:
-                warn("Type ID is 0xFF; no coercion will occur.",
-                     UserWarning)
 
 
 class TIFlashFile(TIFile, register=True):
@@ -830,6 +848,9 @@ class TIFlashFile(TIFile, register=True):
         if remaining := data.read():
             warn(f"The selected flash file contains unexpected additional data: {remaining}.",
                  BytesWarning)
+
+    def summary(self) -> str:
+        return "\n".join(header.summary() for header in self.headers) + "\n"
 
 
 __all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile", "TIFile"]

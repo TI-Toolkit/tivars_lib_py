@@ -12,6 +12,7 @@ from warnings import catch_warnings, simplefilter, warn
 from tivars.data import *
 from tivars.models import *
 from tivars.tokenizer import *
+from tivars.util import *
 from tivars.var import SizedEntry
 
 
@@ -412,6 +413,16 @@ class TIProgram(TokenizedEntry, register=True):
 
         else:
             return super().string(model=model, lang=lang, mode=mode)
+
+    def summary(self) -> str:
+        return super().summary() + (
+            f"\n"
+            f"Program Information\n"
+            f"  Length  {self.length}\n"
+            f"  Lines   {len(self.lines())}\n"
+            f"\n"
+            f"  Program {trim_string(format(self, 'a'), 48)}\n"
+        )
 
     def coerce(self):
         with catch_warnings():

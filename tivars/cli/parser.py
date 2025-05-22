@@ -2,7 +2,6 @@ import argparse
 
 from tivars.tokens.scripts.parse import MODEL_ORDER
 from .convert import *
-from .info import *
 
 HELP_FORMATTER = lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=40, width=100)
 
@@ -20,7 +19,7 @@ parser.add_argument("-m", "--models", action="version", version=MODEL_LIST,
 parser.add_argument("-v", "--version", action="version", version="tivars_lib_py 0.9.2",
                     help="show tivars_lib_py version and exit")
 
-subparsers = parser.add_subparsers(title="modes")
+subparsers = parser.add_subparsers(title="modes", dest="subparser")
 
 convert = subparsers.add_parser("convert",
                                 description="Convert between file types",
