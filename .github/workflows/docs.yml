@@ -37,11 +37,10 @@ jobs:
             --html-output ./docs \
             --make-html
 
-    - name: Patch some PyDoctor bugs
+    - name: Patch the name index
       run: |
         cd ./docs
         sed -i -r "s:<li>(.*?) 0 - <code data-type=.*?><a href=.(.*?)html#\1%200. class=.internal-link.>\2\1 0</a></code></li>::g" nameIndex.html
-        sed -i -r "s:<p></p>::g" index.html
 
     - name: Upload pages artifact
       uses: actions/upload-pages-artifact@v3
