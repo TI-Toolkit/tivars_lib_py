@@ -507,7 +507,7 @@ class Dock:
     Base class to inherit to implement the loader system
     """
 
-    loaders: dict[tuple[type, ...], Callable[[_I, _T], None]] = {}
+    loaders: dict[tuple[type, ...], Callable] = {}
 
     def load(self, data):
         """
