@@ -22,7 +22,7 @@ def hex_format(data: bytes, format_spec: str) -> str:
     :return: ``data`` formatted in hex with some width, case, and separator
     """
 
-    if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])(?P<sep>\D)?", format_spec):
+    if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])?(?P<sep>\D)?", format_spec):
         match match["sep"], match["width"]:
             case None, None:
                 string = data.hex()
