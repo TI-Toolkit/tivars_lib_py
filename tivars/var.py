@@ -794,6 +794,7 @@ class TIEntry(TIComponent):
                          UserWarning)
 
                 else:
+                    remaining = trim_string(str(remaining)[2:], 24)
                     warn(f"The selected var file contains unexpected additional data: {remaining}.",
                          BytesWarning)
 
