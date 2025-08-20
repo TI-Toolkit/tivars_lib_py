@@ -1,5 +1,8 @@
 """
 A library for interacting with TI-(e)z80 (82/83/84 series) calculator files
+
+Docs and API reference for specific functionalities are in the modules listed below.
+Example scripts can be found `in the repository <https://github.com/TI-Toolkit/tivars_lib_py/tree/main/examples>`_.
 """
 
 
