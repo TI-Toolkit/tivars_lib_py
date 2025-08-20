@@ -210,7 +210,7 @@ An entry can be exported to a var, with an optional attached header; likewise, a
 ```python
 my_var = my_program.export(header=my_header)
 
-assert my_header = my_var.header
+assert my_header == my_var.header
 assert my_program == my_var.entries[0]
 ```
 
