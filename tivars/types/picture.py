@@ -259,9 +259,7 @@ class TIMonoPicture(PictureEntry):
 
         super().__init__(init, name=name, version=version, archived=archived, data=data)
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
+    def get_min_os(self) -> OsVersion:
         return TI_83P.OS()
 
     @Loader[Sequence]
@@ -310,9 +308,7 @@ class TIPicture(PictureEntry, register=True):
 
         super().__init__(init, name=name, version=version, archived=archived, data=data)
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
+    def get_min_os(self) -> OsVersion:
         return TI_84PCSE.OS()
 
     @Loader[Sequence]
@@ -405,13 +401,11 @@ class TIImage(PictureEntry, register=True):
         This value is always ``0x81``.
         """
 
-    @View(calc_data, SizedData)[3:]
+    @View(calc_data, Data)[3:]
     def data(self) -> bytes:
         pass
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
+    def get_min_os(self) -> OsVersion:
         return TI_84PCSE.OS()
 
     @Loader[Sequence]

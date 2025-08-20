@@ -77,29 +77,22 @@ class TIGroup(SizedEntry, register=True):
 
         return group
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
-        return max([entry.get_min_os() for entry in cls.ungroup(data)], default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        return max([entry.get_min_os() for entry in self.ungroup()], default=OsVersions.INITIAL)
 
-    @datamethod
-    @classmethod
-    def get_version(cls, data: bytes) -> int:
-        return max([entry.get_version() for entry in cls.ungroup(data)], default=0x00)
+    def get_version(self) -> int:
+        return max([entry.get_version() for entry in self.ungroup()], default=0x00)
 
-    @datamethod
-    @classmethod
-    def ungroup(cls, data: bytes) -> list[TIEntry]:
+    def ungroup(self) -> list[TIEntry]:
         """
         Ungroups a group object into a ``list`` of its entries
 
         All VAT data is ignored.
 
-        :param data: The data to ungroup (defaults to this group's data)
         :return: A ``list`` of entries stored in ``data``
         """
 
-        data = BytesIO(data)
+        data = BytesIO(self.data)
         entries = []
 
         index = 1

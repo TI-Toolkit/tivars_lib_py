@@ -50,10 +50,10 @@ class TokenizedEntry(SizedEntry):
 
             match spec:
                 case "" | "d":
-                    string = self.decode(lang=lang)
+                    string = self.string(lang=lang)
 
                 case "a" | "t":
-                    string = self.decode(lang=lang, mode="accessible")
+                    string = self.string(lang=lang, mode="accessible")
 
                 case _:
                     raise KeyError
@@ -70,9 +70,8 @@ class TokenizedEntry(SizedEntry):
     def __iter__(self) -> Iterator[TIToken]:
         return iter(self.tokens())
 
-    @datamethod
-    @classmethod
-    def decode(cls, data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
+    @staticmethod
+    def decode(data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
         """
         Decodes a byte stream into a string of tokens
 
@@ -106,15 +105,11 @@ class TokenizedEntry(SizedEntry):
 
         return encode(string, trie=model.tokens.tries[lang or model.lang], mode=mode)[0]
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
-        return decode(data)[1]
+    def get_min_os(self) -> OsVersion:
+        return decode(self.data)[1]
 
-    @datamethod
-    @classmethod
-    def get_version(cls, data: bytes) -> int:
-        match cls.get_min_os(data):
+    def get_version(self) -> int:
+        match self.get_min_os():
             case os if os >= TI_84PCE.OS("5.3"):
                 version = 0x0C
 
@@ -148,7 +143,7 @@ class TokenizedEntry(SizedEntry):
             case _:
                 version = 0x00
 
-        if any(token in data for token in cls.clock_tokens):
+        if any(token in self.data for token in self.clock_tokens):
             version += 0x20
 
         return version
@@ -191,7 +186,7 @@ class TokenizedEntry(SizedEntry):
         :return: A string of token representations
         """
 
-        return self.decode(model=model, lang=lang, mode=mode)
+        return self.decode(self.data, model=model, lang=lang, mode=mode)
 
     @Loader[Sequence[TIToken]]
     def load_tokens(self, tokens: Sequence[TIToken]):
@@ -461,10 +456,8 @@ class TIAsmProgram(TIProgram):
 
     is_tokenized = False
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
-        return max([model.OS() for token, model in cls.asm_tokens.items() if token in data],
+    def get_min_os(self) -> OsVersion:
+        return max([model.OS() for token, model in self.asm_tokens.items() if token in self.data],
                    default=OsVersions.INITIAL)
 
 

@@ -29,9 +29,7 @@ class TIAppVar(SizedEntry, register=True):
 
         super().__init__(init, name=name, version=version, archived=archived, data=data)
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
+    def get_min_os(self) -> OsVersion:
         return TI_83P.OS()
 
 

@@ -26,7 +26,7 @@ class TokenizedString(String):
         return "".join(token.langs["en"].display for token in decode(data.ljust(8, b'\x00'))[0])
 
     @classmethod
-    def set(cls, value: str, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         return encode(value)[0].rstrip(b'\x00')
 
 

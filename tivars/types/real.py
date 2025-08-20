@@ -133,10 +133,8 @@ class RealEntry(TIEntry):
         if self._type_id is not None:
             self.subtype_id = self._type_id
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
-        match cls.get_version(data):
+    def get_min_os(self) -> OsVersion:
+        match self.get_version():
             case 0x00:
                 return OsVersions.INITIAL
 

@@ -207,10 +207,22 @@ class TIComponent(Dock, Converter):
 
     def clear(self):
         """
-        Clears this entry's data
+        Clears this component's data
         """
 
         self.raw.calc_data = bytearray()
+
+    def update(self):
+        """
+        Updates this component's metadata
+
+        All attributes ``self.<name>`` are set to ``self.get_<name>()`` if possible.
+        """
+
+        names = dir(type(self))
+        for name in names:
+            if isinstance(getattr(type(self), name), Section) and (updater := f"get_{name}") in names:
+                setattr(self, name, getattr(type(self), updater)(self))
 
     @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):

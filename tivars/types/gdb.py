@@ -260,7 +260,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
     def length(self) -> int:
         pass
 
-    @View(calc_data, SizedData)[3:]
+    @View(calc_data, Data)[3:]
     def data(self) -> bytes:
         pass
 
@@ -508,13 +508,13 @@ class TIMonoGDB(SizedEntry, register=True):
                 warn(f"Graphing mode byte 0x{self.mode_id:x} not recognized.",
                      BytesWarning)
 
-    @classproperty
-    def offset(cls) -> int:
+    @property
+    def offset(self) -> int:
         """
         :return: The index of the start of the equation styles in this GDB's data
         """
 
-        return TIMonoGDB.min_calc_data_length + GraphRealEntry.min_calc_data_length * cls.num_parameters
+        return TIMonoGDB.min_calc_data_length + GraphRealEntry.min_calc_data_length * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -524,46 +524,40 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return self.get_equations()
 
-    @datamethod
-    @classmethod
-    def get_color_data(cls, data: bytes) -> bytes:
+    def get_color_data(self) -> bytes:
         """
         Finds the color portion of a GDB if it exists
 
-        :param data: The data to find the color portion of (defaults to this GDB's data)
         :return: The color portion of ``data``, which may be empty
         """
 
-        data = BytesIO(data)
-        data.seek(cls.offset + cls.num_styles - 2, 0)
+        data = BytesIO(self.data)
+        data.seek(self.offset + self.num_styles - 2, 0)
         temp = TIGraphedEquation()
-        for i in range(cls.num_equations):
+        for i in range(self.num_equations):
             temp.load_data_section(data)
 
         return data.read()
 
-    @datamethod
-    @classmethod
-    def get_equations(cls, data: bytes) -> tuple[TIGraphedEquation, ...]:
+    def get_equations(self) -> tuple[TIGraphedEquation, ...]:
         """
         Extracts the equations stored in a GDB into a ``tuple``
 
-        :param data: The data to extract equations from (defaults to this GDB's data)
         :return: A ``tuple`` of equations stored in ``data``
         """
 
-        data = BytesIO(data)
-        data.seek(cls.offset - 2, 0)
-        equations = tuple(TIGraphedEquation(name=name) for name in cls.equation_names)
+        data = BytesIO(self.data)
+        data.seek(self.offset - 2, 0)
+        equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
         # Load styles
-        for i in range(cls.num_styles):
+        for i in range(self.num_styles):
             style = data.read(1)
-            for j in range(r := cls.num_equations // cls.num_styles):
+            for j in range(r := self.num_equations // self.num_styles):
                 equations[r * i + j].raw.style = style
 
         # Load data sections
-        for i in range(cls.num_equations):
+        for i in range(self.num_equations):
             equations[i].load_data_section(data)
 
         # Load colors (if they exist)
@@ -571,22 +565,18 @@ class TIMonoGDB(SizedEntry, register=True):
             data = BytesIO(rest)
             data.seek(3, 1)
 
-            for i in range(cls.num_styles):
+            for i in range(self.num_styles):
                 color = data.read(1)
-                for j in range(r := cls.num_equations // cls.num_styles):
+                for j in range(r := self.num_equations // self.num_styles):
                     equations[r * i + j].raw.color = color
 
         return equations
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
-        return max([eq.get_min_os() for eq in cls.get_equations(data)], default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        return max([eq.get_min_os() for eq in self.get_equations()], default=OsVersions.INITIAL)
 
-    @datamethod
-    @classmethod
-    def get_version(cls, data: bytes) -> int:
-        return max([eq.get_version() for eq in cls.get_equations(data)], default=0x00)
+    def get_version(self) -> int:
+        return max([eq.get_version() for eq in self.get_equations()], default=0x00)
 
     @Loader[dict]
     def load_dict(self, dct: dict):

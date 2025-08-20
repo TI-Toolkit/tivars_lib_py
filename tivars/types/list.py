@@ -129,21 +129,17 @@ class TIList(TIEntry):
 
         return value
 
-    @View(calc_data, Bytes)[2:]
+    @View(calc_data, Data)[2:]
     def data(self) -> bytes:
         pass
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
-        it = zip(*[iter(data)] * cls._E.min_calc_data_length)
-        return max([cls._E(data=data).get_min_os() for data in it], default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        it = zip(*[iter(self.data)] * self._E.min_calc_data_length)
+        return max([self._E(data=data).get_min_os() for data in it], default=OsVersions.INITIAL)
 
-    @datamethod
-    @classmethod
-    def get_version(cls, data: bytes) -> int:
-        it = zip(*[iter(data)] * cls._E.min_calc_data_length)
-        version = max([cls._E(data=data).get_version() for data in it], default=0x00)
+    def get_version(self) -> int:
+        it = zip(*[iter(self.data)] * self._E.min_calc_data_length)
+        version = max([self._E(data=data).get_version() for data in it], default=0x00)
 
         if version > 0x1B:
             return 0x10

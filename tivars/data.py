@@ -97,45 +97,8 @@ class Bytes(Converter[bytes]):
 
 class Data(Bytes):
     """
-    No-op converter for data sections with associated metadata
-
-    The following metadata fields are automatically set by this converter:
-
-            - Version
+    No-op converter for data sections which calls ``instance.update()`` to propagate metadata changes
     """
-
-    @classmethod
-    def set(cls, value: bytes, *, instance: _I = None, **kwargs) -> bytes:
-        """
-        Converts ``bytes`` -> ``bytes`` and updates metadata fields
-
-        :param value: The value to convert
-        :param instance: The instance which contains the data section
-        :return: The bytes in ``value``, unchanged
-        """
-
-        if instance is not None:
-            instance.version = type(instance).get_version(value)
-
-        return super().set(value)
-
-
-class SizedData(Data):
-    """
-    No-op converter for sized data sections with associated metadata
-
-    The following metadata fields are automatically set by this converter:
-
-            - Version
-            - Length
-    """
-
-    @classmethod
-    def set(cls, value: bytes, *, instance: _I = None, **kwargs) -> bytes:
-        if instance is not None:
-            instance.length = len(value)
-
-        return super().set(value, instance=instance)
 
 
 class Boolean(Converter[bool]):
@@ -383,6 +346,10 @@ class Section:
     def __set__(self, instance: _I, value: _T):
         setattr(instance.raw, self._name, self._set_raw(instance, value))
 
+        if issubclass(self._converter, Data):
+            instance.update()
+
+
     def __call__(self, func: Callable[[_I], _T] | Callable[[_I, _T], _T]) -> 'Section':
         new = copy.copy(self)
         new.__doc__ = func.__doc__
@@ -484,6 +451,9 @@ class View(Section):
     def __set__(self, instance: _I, value: _T):
         getattr(instance.raw, self._target.name)[self._indices] = self._set_raw(instance, value)
 
+        if issubclass(self._converter, Data):
+            instance.update()
+
     def __getitem__(self, indices: slice) -> 'View':
         return self.__class__(self._target, self._converter, indices)
 
@@ -559,42 +529,5 @@ class Loader:
         setattr(owner, name, self._func)
 
 
-class classproperty:
-    """
-    Function decorator for class properties
-
-    A class property is like a normal ``property``, but for classes instead of instances.
-    """
-
-    def __init__(self, func: Callable):
-        self.func = func
-
-    def __get__(self, instance, owner: type = None):
-        return self.func(owner)
-
-
-class datamethod:
-    """
-    Function decorator for methods acting on implicit or explicit entry data
-
-    When accessed from the class, the datamethod takes a single ``data`` parameter.
-    When accessed from an instance, the datamethod takes no parameters, instead using the instance's ``data``.
-
-    .. python::
-
-        TIReal.get_min_os(real.data)  == real.get_min_os()
-        TIReal.get_min_os(other_data) == TIReal(data=other_data).get_min_os()
-    """
-
-    def __init__(self, func: Callable):
-        self.func = getattr(func, "__func__", func)
-
-    def __get__(self, instance: _I, owner: type = None):
-        if instance is None:
-            return lambda data, *args, **kwargs: self.func(owner, data, *args, **kwargs)
-
-        return lambda *args, **kwargs: self.func(owner, instance.data, *args, **kwargs)
-
-
-__all__ = ["Section", "View", "Dock", "Loader", "classproperty", "datamethod",
-           "Converter", "Bytes", "Data", "SizedData", "Boolean", "Integer", "String", "Bits"]
+__all__ = ["Section", "View", "Dock", "Loader",
+           "Converter", "Bytes", "Data", "Boolean", "Integer", "String", "Bits"]

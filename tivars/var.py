@@ -542,32 +542,26 @@ class TIEntry(TIComponent):
         self.raw.calc_data = bytearray(self.leading_data_bytes)
         self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
 
-    @datamethod
-    @classmethod
-    def get_min_os(cls, data: bytes) -> OsVersion:
+    def get_min_os(self) -> OsVersion:
         """
         Determines the minimum OS that supports this entry's data
 
-        :param data: The data to find the minimum support for (defaults to this entry's data)
         :return: The minimum ``OsVersion`` this entry supports
         """
 
         return OsVersions.INITIAL
 
-    @datamethod
-    @classmethod
-    def get_version(cls, data: bytes) -> int:
+    def get_version(self) -> int:
         """
         Determines the version byte corresponding to given data for this entry type
 
         Entries which could contain non-backwards compatible data are assigned a version byte.
         If an entry's version exceeds the "version" of a calculator, transfer to the calculator will fail.
 
-        :param data: The data to find the version of (defaults to this entry's data)
         :return: The version byte for ``data``
         """
 
-        return cls.versions[0]
+        return self.versions[0]
 
     def supported_by(self, model: TIModel) -> bool:
         """
@@ -1025,7 +1019,7 @@ class SizedEntry(TIEntry):
         The length of this entry's user data section
         """
 
-    @View(calc_data, SizedData)[2:]
+    @View(calc_data, Data)[2:]
     def data(self) -> bytes:
         pass
 
@@ -1033,6 +1027,13 @@ class SizedEntry(TIEntry):
         self.raw.calc_data = bytearray([0, 0, *self.leading_data_bytes])
         self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
         self.length = len(self.leading_data_bytes) + len(self.data)
+
+    def get_length(self) -> int:
+        """
+        Determines the length of this entry's user data section
+        """
+
+        return len(self.data)
 
     @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
