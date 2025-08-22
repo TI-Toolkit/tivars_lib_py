@@ -526,9 +526,9 @@ class TIMonoGDB(SizedEntry, register=True):
 
     def get_color_data(self) -> bytes:
         """
-        Finds the color portion of a GDB if it exists
+        Finds the color portion of this GDB if it exists
 
-        :return: The color portion of ``data``, which may be empty
+        :return: The color portion of this GDB, which may be empty
         """
 
         data = BytesIO(self.data)
@@ -541,9 +541,9 @@ class TIMonoGDB(SizedEntry, register=True):
 
     def get_equations(self) -> tuple[TIGraphedEquation, ...]:
         """
-        Extracts the equations stored in a GDB into a ``tuple``
+        Extracts the equations stored in this GDB
 
-        :return: A ``tuple`` of equations stored in ``data``
+        :return: A ``tuple`` of equations stored in this GDB
         """
 
         data = BytesIO(self.data)

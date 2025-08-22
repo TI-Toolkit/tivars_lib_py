@@ -89,7 +89,7 @@ class TIGroup(SizedEntry, register=True):
 
         All VAT data is ignored.
 
-        :return: A ``list`` of entries stored in ``data``
+        :return: A ``list`` of the entries stored in this group
         """
 
         data = BytesIO(self.data)

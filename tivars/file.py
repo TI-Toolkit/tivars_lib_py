@@ -506,7 +506,7 @@ class TIFile(Dock):
                 self.__class__ = self.get_type(magic)
 
                 data.seek(-len(magic), 1)
-                self.load_bytes(data)
+                self.__init__(name=self.name, data=data.read())
 
                 return
 
@@ -561,7 +561,7 @@ class TIFile(Dock):
         :param model: The model to target (defaults to ``TI_84PCE``)
         """
         if not self.supported_by(model):
-            warn(f"The {model} does not support this var.",
+            warn(f"The {model} does not support this file.",
                  UserWarning)
 
         with open(filename or self.get_filename(model), 'wb+') as file:

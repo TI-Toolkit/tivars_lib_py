@@ -558,7 +558,7 @@ class TIEntry(TIComponent):
         Entries which could contain non-backwards compatible data are assigned a version byte.
         If an entry's version exceeds the "version" of a calculator, transfer to the calculator will fail.
 
-        :return: The version byte for ``data``
+        :return: The version byte for this entry
         """
 
         return self.versions[0]
