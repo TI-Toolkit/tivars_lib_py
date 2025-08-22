@@ -45,6 +45,8 @@ class FileTests(unittest.TestCase):
         self.assertEqual(files[0].name, "BONJOUR")
         self.assertEqual(type(files[9].entries[0]), TIImage)
 
+        self.assertEqual(files, test_bundle.bundle(files, model=TI_83PCE).unbundle())
+
 
 class VarTests(unittest.TestCase):
     def test_all_attributes(self):

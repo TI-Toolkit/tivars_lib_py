@@ -45,7 +45,7 @@ class TIBundle(TIFile, register=True):
         This is given as a sum of the CRC's of its files
         """
 
-        return f"{sum(info.CRC for info in self.zipfile.infolist()) & 0xFFFFFFFF:x}\r\n".encode()
+        return self.zipfile.read("_CHECKSUM")
 
     @property
     def metadata(self) -> dict[str, str]:
@@ -79,7 +79,8 @@ class TIBundle(TIFile, register=True):
 
         return int(self.metadata["bundle_format_version"])
 
-    def bundle(self, files: list[TIFile], *, name: str = "BUNDLE", model: TIModel = TI_84PCE,
+    @staticmethod
+    def bundle(files: list[TIFile], *, name: str = "BUNDLE", model: TIModel = TI_84PCE,
                comment: str = "Created with tivars_lib_py v0.9.2") -> 'TIBundle':
         """
         Compress a list of `TIFile` objects into a bundle
@@ -102,19 +103,20 @@ class TIBundle(TIFile, register=True):
         metadata = {
             "bundle_identifier": "TI Bundle",
             "bundle_format_version": "1",
-            "bundle_target_device": f"{self.get_extension(model)[1:]}CE",
+            "bundle_target_device": f"{TIBundle.get_extension(model)[1:]}CE",
             "bundle_target_type": "CUSTOM",
             "bundle_comments": comment or "N/A"
         }
         archive.writestr("METADATA", "".join(f"{key}:{value}\n" for key, value in metadata.items()))
 
         # Write checksum
-        archive.writestr("_CHECKSUM", self.checksum)
+        archive.writestr("_CHECKSUM", f"{sum(info.CRC for info in archive.infolist()) & 0xFFFFFFFF:x}\r\n".encode())
         archive.close()
 
         return TIBundle(name=name, data=buffer.getvalue())
 
-    def get_extension(self, model: TIModel = TI_84PCE) -> str:
+    @classmethod
+    def get_extension(cls, model: TIModel = TI_84PCE) -> str:
         if model in (TI_84PCE, TI_84PCET, TI_84PCEPY, TI_84PCETPE):
             return "b84"
 

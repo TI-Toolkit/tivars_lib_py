@@ -472,7 +472,7 @@ class TIFlashHeader(TIComponent):
 
         return int.from_bytes(self.raw.name_length, 'little')
 
-    @Section(31, String)
+    @Section(8, String)
     def name(self) -> str:
         """
         The name or basecode attached to the flash header
@@ -641,7 +641,7 @@ class TIFlashHeader(TIComponent):
 
         # Read name
         name_length = data.read(1)[0]
-        self.raw.name = data.read(31).rstrip(b'\x00')
+        self.raw.name = data.read(8)
 
         if name_length != self.name_length:
             warn(f"The header name length ({name_length}) doesn't match the length of the name "
@@ -649,6 +649,7 @@ class TIFlashHeader(TIComponent):
                  BytesWarning)
 
         # Read types
+        data.seek(23, 1)
         self.raw.devices = data.read(1)
 
         if self.device_type not in list(DeviceType):
@@ -848,6 +849,9 @@ class TIFlashFile(TIFile, register=True):
         if remaining := data.read():
             warn(f"The selected flash file contains unexpected additional data: {remaining}.",
                  BytesWarning)
+
+    def bytes(self) -> bytes:
+        return b"".join(header.bytes() for header in self.headers)
 
     def summary(self) -> str:
         return "\n".join(header.summary() for header in self.headers) + "\n"
