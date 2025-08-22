@@ -6,6 +6,7 @@ Example scripts can be found `in the repository <https://github.com/TI-Toolkit/t
 """
 
 
+from .bundle import *
 from .file import *
 from .flash import *
 from .models import *
@@ -14,4 +15,4 @@ from .types import *
 from .var import *
 
 
-__all__ = list({*file.__all__, *flash.__all__, *models.__all__, *tokenizer.__all__, *types.__all__, *var.__all__})
+__all__ = list({*bundle.__all__, *file.__all__, *flash.__all__, *models.__all__, *tokenizer.__all__, *types.__all__, *var.__all__})

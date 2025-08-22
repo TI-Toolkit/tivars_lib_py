@@ -6,7 +6,7 @@ from decimal import Decimal
 from tivars.models import *
 from tivars.tokenizer import *
 from tivars.types import *
-from tivars import TIHeader, TIVarFile, TIFlashHeader, TIFlashFile, TIFile
+from tivars import TIHeader, TIVarFile, TIFlashHeader, TIFlashFile, TIFile, TIBundle
 
 
 class ModelTests(unittest.TestCase):
@@ -21,9 +21,29 @@ class FileTests(unittest.TestCase):
     def test_file_coercion(self):
         test_var_file = TIFile.open("tests/data/var/ALLTOKS.8xp")
         test_flash_file = TIFile.open("tests/data/var/TI-84_Plus_CE-Python-OS-5.8.0.0022.8eu")
+        test_bundle = TIFile.open("tests/data/var/TI84CEBundle_5.4.0.34.b84")
 
         self.assertEqual(type(test_var_file), TIVarFile)
         self.assertEqual(type(test_flash_file), TIFlashFile)
+        self.assertEqual(type(test_bundle), TIBundle)
+
+    def test_bundle(self):
+        test_bundle = TIBundle()
+
+        with open("tests/data/var/TI83CEBundle_5.4.0.34.b83", 'rb') as file:
+            test_bundle.load_bytes(file.read())
+
+            file.seek(0)
+            self.assertEqual(test_bundle.bytes(), file.read())
+
+        self.assertEqual(test_bundle.version, 1)
+        self.assertEqual(test_bundle.type, "RESTORE")
+        self.assertEqual(test_bundle.comment, "Created by TI Bundle Creation Tool 1.0.0.15")
+
+        files = test_bundle.unbundle()
+        self.assertEqual(len(files), 27)
+        self.assertEqual(files[0].name, "BONJOUR")
+        self.assertEqual(type(files[9].entries[0]), TIImage)
 
 
 class VarTests(unittest.TestCase):
