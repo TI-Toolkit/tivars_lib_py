@@ -64,7 +64,7 @@ class TIBundle(TIFile, register=True):
         return TI_84PCE if self.metadata["bundle_target_device"] == "84CE" else TI_83PCE
 
     @property
-    def type(self) -> str:
+    def target_type(self) -> str:
         """
         This bundle's target type
         """
@@ -81,7 +81,8 @@ class TIBundle(TIFile, register=True):
 
     @staticmethod
     def bundle(files: list[TIFile], *, name: str = "BUNDLE", model: TIModel = TI_84PCE,
-               comment: str = "Created with tivars_lib_py v0.9.2") -> 'TIBundle':
+               comment: str = "Created with tivars_lib_py v0.9.2",
+               target_type: str = "CUSTOM", version: int = 1) -> 'TIBundle':
         """
         Compress a list of `TIFile` objects into a bundle
 
@@ -89,6 +90,8 @@ class TIBundle(TIFile, register=True):
         :param name: The name of the bundle (defaults to ``BUNDLE``)
         :param model: The model this bundle should target (defaults to the TI-84+CE)
         :param comment: A comment to attach to this bundle (defaults to a simple lib message)
+        :param target_type: The target type for the bundle (defaults to ``CUSTOM``)
+        :param version: The format version of the bundle (defaults to 1)
         :return: A bundle containing ``files`` with the specified metadata
         """
 
@@ -102,11 +105,12 @@ class TIBundle(TIFile, register=True):
         # Write METADATA
         metadata = {
             "bundle_identifier": "TI Bundle",
-            "bundle_format_version": "1",
+            "bundle_format_version": str(version),
             "bundle_target_device": f"{TIBundle.get_extension(model)[1:]}CE",
-            "bundle_target_type": "CUSTOM",
+            "bundle_target_type": target_type,
             "bundle_comments": comment or "N/A"
         }
+
         archive.writestr("METADATA", "".join(f"{key}:{value}\n" for key, value in metadata.items()))
 
         # Write checksum

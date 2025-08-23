@@ -37,7 +37,7 @@ class FileTests(unittest.TestCase):
             self.assertEqual(test_bundle.bytes(), file.read())
 
         self.assertEqual(test_bundle.version, 1)
-        self.assertEqual(test_bundle.type, "RESTORE")
+        self.assertEqual(test_bundle.target_type, "RESTORE")
         self.assertEqual(test_bundle.comment, "Created by TI Bundle Creation Tool 1.0.0.15")
 
         files = test_bundle.unbundle()
