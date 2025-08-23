@@ -15,4 +15,5 @@ from .types import *
 from .var import *
 
 
-__all__ = list({*bundle.__all__, *file.__all__, *flash.__all__, *models.__all__, *tokenizer.__all__, *types.__all__, *var.__all__})
+__version__ = "0.9.2"
+__all__ = list({*bundle.__all__, *file.__all__, *flash.__all__, *models.__all__, *tokenizer.__all__, *types.__all__, *var.__all__, "__version__"})
