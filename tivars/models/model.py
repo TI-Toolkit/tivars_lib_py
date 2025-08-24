@@ -157,7 +157,7 @@ TIModel.MODELS = [
     TI_84P := TIModel(next(it), "TI-84 Plus", features84p, "**TI83F*", 0x0A, "en"),
     TI_84PSE := TIModel(next(it), "TI-84 Plus Silver Edition", features84p, "**TI83F*", 0x0A, "en"),
     TI_83P_fr_USB := TIModel(next(it), "TI-83 Plus.fr (USB)", features84p, "**TI83F*", 0x0A, "fr"),
-    TI_84P_fr := TIModel(next(it), "TI-84 Plus.fr", features84p, "**TI83F*", 0x0A, "fr"),
+    TI_84P_fr := TIModel(next(it), "TI-84 Pocket.fr", features84p, "**TI83F*", 0x0A, "fr"),
     TI_84PPSE := TIModel(next(it), "TI-84 Plus Pocket SE", features84p, "**TI83F*", 0x0A, "en"),
 
     TI_82A := TIModel(next(it), "TI-82 Advanced", features82a, "**TI83F*", 0x0B, "fr"),
