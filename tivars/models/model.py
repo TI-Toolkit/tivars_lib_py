@@ -5,9 +5,9 @@ Model and feature definitions
 
 import os
 
+from enum import auto, Flag
 from functools import total_ordering
 
-from tivars.flags import *
 from tivars.tokens.scripts.parse import MODEL_ORDER, OsVersion, Tokens
 from tivars.trie import *
 
@@ -80,53 +80,53 @@ class TIModel:
         return OsVersion(self.name, version)
 
 
-class TIFeature(Flags):
+class TIFeature(Flag):
     """
     Flags representing all calculator features
     """
 
-    Complex = {0: 1}
+    Complex = auto()
     """
     Whether the model supports complex numbers
     """
 
-    Flash = {1: 1}
+    Flash = auto()
     """
     Whether the model has a flash chip
     """
 
-    Apps = {2: 1}
+    Apps = auto()
     """
     Whether the model supports apps
     """
 
-    Clock = {3: 1}
+    Clock = auto()
     """
     Whether the model has a real-time clock
     """
 
-    Color = {4: 1}
+    Color = auto()
     """
     Whether the model has a color display
     """
 
-    eZ80 = {5: 1}
+    eZ80 = auto()
     """
     Whether the model has an eZ80 chip
     """
 
-    ExactMath = {6: 1}
+    ExactMath = auto()
     """
     Whether the model supports exact math for fractions and radicals
     """
 
-    Python = {7: 1}
+    Python = auto()
     """
     Whether the model supports Python
     """
 
 
-features82: TIFeature = {}
+features82 = TIFeature(0)
 features83 = features82 | TIFeature.Complex
 features82a = features83 | TIFeature.Flash
 features83p = features82a | TIFeature.Apps
@@ -136,7 +136,7 @@ features84pce = features84pcse | TIFeature.eZ80
 features83pce = features84pce | TIFeature.ExactMath
 features83pceep = features83pce | TIFeature.Python
 features84pcepy = features84pce | TIFeature.Python
-features82aep = features83pceep | {2: 0}
+features82aep = features83pceep & ~TIFeature.Apps
 
 it = iter(MODEL_ORDER)
 next(it)
