@@ -427,7 +427,7 @@ class TIProgram(TokenizedEntry, register=True):
                 asm_83 = self.string().endswith("End\n0000\nEnd")
                 doors = False
 
-            except BytesWarning:
+            except (BytesWarning, UserWarning):
                 asm_83 = False
                 doors = True
 
