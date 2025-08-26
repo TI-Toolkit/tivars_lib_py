@@ -421,13 +421,13 @@ class TIProgram(TokenizedEntry, register=True):
 
     def coerce(self):
         with catch_warnings():
-            simplefilter("error")
+            simplefilter("error", category=BytesWarning)
 
             try:
                 asm_83 = self.string().endswith("End\n0000\nEnd")
                 doors = False
 
-            except (BytesWarning, UserWarning):
+            except BytesWarning:
                 asm_83 = False
                 doors = True
 
@@ -459,6 +459,9 @@ class TIAsmProgram(TIProgram):
     def get_min_os(self) -> OsVersion:
         return max([model.OS() for token, model in self.asm_tokens.items() if token in self.data],
                    default=OsVersions.INITIAL)
+
+    def coerce(self):
+        pass
 
 
 class TIProtectedProgram(TIProgram, register=True):
