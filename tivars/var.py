@@ -635,6 +635,7 @@ class TIEntry(TIComponent):
                      f"attempting to read flash bytes anyway.",
                      BytesWarning)
 
+                self.meta_length = TIEntry.flash_meta_length
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
