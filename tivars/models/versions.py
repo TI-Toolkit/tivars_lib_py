@@ -22,8 +22,8 @@ class OsVersions(tokens.OsVersions):
     ASM_DISABLED_84PCETPE = TI_84PCETPE.OS("5.5.5")
     ASM_DISABLED_84PCE = TI_84PCE.OS("5.6.0")
 
-    ARTIFICE_PATCHED = TI_84PCE.OS("5.8.3")
-    ARTIFI82_PATCHED = TI_82AEP.OS("5.6.5")
+    ARTIFICE_v1_PATCHED = TI_84PCE.OS("5.8.3")
+    ARTIFI82_v1_PATCHED = TI_82AEP.OS("5.6.5")
 
 
 __all__ = ["OsVersions"]
