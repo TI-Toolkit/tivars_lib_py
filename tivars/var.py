@@ -640,10 +640,8 @@ class TIEntry(TIComponent):
                 self.raw.archived = data.read(1)
 
         if self.meta_length == TIEntry.flash_meta_length and self.raw.version + self.raw.archived == data_length:
-            warn(f"The entry meta length is {self.meta_length}, but the flash data is likely missing; "
-                 f"the meta section will be corrected to be flashless.")
+            warn(f"The entry meta length is {self.meta_length}, but the flash data is likely missing.")
 
-            self.meta_length = TIEntry.base_meta_length
             self.raw.version = b'\x00'
             self.raw.archived = b'\x00'
 
