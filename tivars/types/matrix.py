@@ -143,7 +143,7 @@ class TIMatrix(TIEntry, register=True):
     def load_data_section(self, data: BytesIO):
         width = int.from_bytes(width_byte := data.read(1), 'little')
         height = int.from_bytes(height_byte := data.read(1), 'little')
-        self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height))
+        self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height * RealEntry.min_calc_data_length))
 
     @Loader[Sequence]
     def load_matrix(self, matrix: Sequence[Sequence[RealEntry]]):
