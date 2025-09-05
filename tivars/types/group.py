@@ -46,6 +46,7 @@ class TIGroup(SizedEntry, register=True):
         """
 
         group = TIGroup(name=name)
+        data = b''
 
         if len(entries) < 2:
             warn("Groups are expected to have at least two entries.",
@@ -72,9 +73,11 @@ class TIGroup(SizedEntry, register=True):
                 case _:
                     vat += name.ljust(3, b'\x00')
 
-            group.data += vat
-            group.data += entry.calc_data
+            data += vat
+            data += entry.calc_data
 
+        # Only update metadata when we're done
+        group.data += data
         return group
 
     def get_min_os(self) -> OsVersion:
