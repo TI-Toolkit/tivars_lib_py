@@ -461,7 +461,7 @@ class TIFile(Dock):
         :return: The filename
         """
 
-        return f"{self.name}.{self.get_extension(model)}"
+        return f"{self.name or 'UNNAMED'}.{self.get_extension(model)}"
 
     def supported_by(self, model: TIModel) -> bool:
         """
@@ -560,9 +560,13 @@ class TIFile(Dock):
         :param filename: A filename to save to (defaults to the file's name and extension)
         :param model: The model to target (defaults to ``TI_84PCE``)
         """
-        if not self.supported_by(model):
-            warn(f"The {model} does not support this file.",
-                 UserWarning)
+        try:
+            if not self.supported_by(model):
+                warn(f"The {model} does not support this file.",
+                     UserWarning)
+
+        except NotImplementedError:
+            pass
 
         with open(filename or self.get_filename(model), 'wb+') as file:
             file.write(self.bytes())
