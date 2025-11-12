@@ -1,4 +1,5 @@
 import io
+import json
 
 from tivars.file import *
 from tivars.models import *
@@ -6,34 +7,46 @@ from tivars.tokenizer import *
 from tivars.types import *
 
 
-FORMATS = """
-TIComplex         <-> text
-TIEquation        <-> text
+CONVERT_FORMATS = """
+TIComplex         <-> txt
+TIEquation        <-> txt
 TIGDB             <-> json
 TIImage           <-> png, jpeg, etc. (requires PIL)
-TILicense         <-> text
-TIList            <-> text
-TIMatrix          <-> text
+TILicense         <-> txt
+TIList            <-> txt
+TIMatrix          <-> txt
 TIMonoPicture     <-> png, jpeg, etc. (requires PIL)
 TIPicture         <-> png, jpeg, etc. (requires PIL)
-TIProgram         <-> text
-TIReal            <-> text
+TIProgram         <-> txt
+TIReal            <-> txt
 TIRecallWindow    <-> json
-TIString          <-> text
+TIString          <-> txt
 TITableSettings   <-> json
 TIWindowSettings  <-> json
 """
 
 
-def get_type_from_extension(extension: str) -> type[TIEntry]:
-    for var_type in TIEntry._type_ids.values():
-        if var_type.extension == extension.replace("2", "x").replace("3", "x"):
-            return var_type
+def component_to_json(var: TIComponent) -> str:
+    if isinstance(var, (TIGDB, TIRecallWindow, TITableSettings, TIWindowSettings)):
+        return json.dumps(var.json())
 
-    raise ValueError(f"could not identify extension '.{extension}'")
+    else:
+        raise TypeError(f"A {type(var).__name__} cannot be converted to json.")
 
 
-def image_to_image(in_file: bytes, in_format: str, out_format: str) -> bytes:
+def component_to_text(var: TIComponent, **kwargs) -> str:
+    try:
+        return component_to_json(var)
+
+    except TypeError:
+        if isinstance(var, (TIImage, TIMonoPicture, TIPicture)):
+            raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
+
+        else:
+            return var.string(**kwargs)
+
+
+def image_to_image(infile: bytes, in_format: str, out_format: str) -> bytes:
     try:
         from PIL import Image
         from tivars.PIL import TI8xiPlugin, TI8ciPlugin, TI8caPlugin
@@ -41,25 +54,25 @@ def image_to_image(in_file: bytes, in_format: str, out_format: str) -> bytes:
     except ImportError:
         raise ImportError("PIL is required to convert TI pictures/images to/from other formats")
 
-    Image.open(in_file, "r", (in_format,)).save(out_file := io.BytesIO(), out_format)
+    Image.open(infile, "r", (in_format,)).save(out_file := io.BytesIO(), out_format)
     return out_file.read()
 
 
-def entry_to_format(var: TIEntry, out_format: str, **kwargs):
-    return getattr(var, out_format)(**kwargs)
+def json_to_component(text: str, out_format: type[TIComponent], **kwargs) -> TIComponent:
+    try:
+        component = out_format()
+        component.load_dict(json.loads(text), **kwargs)
+        return component
+
+    except NotImplementedError:
+        raise TypeError(f"A {out_format.__name__} cannot be loaded from json.")
 
 
-def format_to_entry(data, in_format: str, var_type: type[TIEntry], **kwargs) -> TIEntry:
-    entry = var_type()
-    getattr(entry, f"load_{in_format}")(data, **kwargs)
+def text_to_component(text: str, out_format: type[TIComponent], **kwargs) -> TIComponent:
+    try:
+        component = out_format()
+        component.load_string(text, **kwargs)
+        return component
 
-    return entry
-
-
-def repair(data: bytes) -> bytes:
-    file = TIFile(data=data)
-
-    if hasattr(file, "data"):
-        file.data = file.data
-
-    return file.bytes()
+    except NotImplementedError:
+        raise TypeError(f"A {out_format.__name__} cannot be loaded from text.")

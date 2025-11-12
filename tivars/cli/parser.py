@@ -2,6 +2,7 @@ import argparse
 
 from tivars.tokens.scripts.parse import MODEL_ORDER
 from .convert import *
+from .pack import *
 
 HELP_FORMATTER = lambda prog: argparse.RawTextHelpFormatter(prog, max_help_position=40, width=100)
 
@@ -28,14 +29,14 @@ convert = subparsers.add_parser("convert",
 convert.add_argument("infile",
                      help="input file")
 convert.add_argument("-o", "--outfile", default=None,
-                     help="output file (default: stdout)")
+                     help="output file (default: file of type <format>, or stdout)")
 convert.add_argument("-f", "--format", default=None,
-                     help="output format (default: format of <outfile>, or 'text')")
+                     help="output format (default: format of <outfile>, or the format of <infile>)")
 convert.add_argument("-l", "--lang", default="en",
                      help="output language code (default: 'en')")
 convert.add_argument("-m", "--model", default=TI_84PCE,
                      help="output model target (default: 'TI-84+CE')")
-convert.add_argument("--formats", action="version", version=FORMATS,
+convert.add_argument("--formats", action="version", version=CONVERT_FORMATS,
                      help="show list of supported formats and exit")
 
 info = subparsers.add_parser("info",
@@ -44,8 +45,6 @@ info = subparsers.add_parser("info",
                              formatter_class=HELP_FORMATTER)
 info.add_argument("infile",
                   help="input file")
-info.add_argument("-l", "--lang", default="en",
-                  help="output language code (default: 'en')")
 info.add_argument("-s", "--single", action="store_true",
                   help="only show the first entry/header in a file (default: false)")
 info.add_argument("-w", "--warn", action="store_true",
@@ -65,6 +64,8 @@ pack.add_argument("-n", "--name", default="UNNAMED",
                   help="output container name (default: <outfile>, or 'UNNAMED')")
 pack.add_argument("-o", "--outfile", default=None,
                   help="output file (default: <name>.<format>)")
+pack.add_argument("--formats", action="version", version=PACK_FORMATS,
+                  help="show list of supported formats and exit")
 
 unpack = subparsers.add_parser("unpack",
                                description="Unpack files from a container type",
@@ -72,8 +73,6 @@ unpack = subparsers.add_parser("unpack",
                                formatter_class=HELP_FORMATTER)
 unpack.add_argument("infile",
                     help="input file")
-unpack.add_argument("-f", "--format", default=None,
-                    help="pack format (default: inferred from <infile>)")
 unpack.add_argument("-o", "--outdir", default=None,
                     help="output directory (will be created if nonexistent) (default: cwd)")
 

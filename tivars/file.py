@@ -241,13 +241,34 @@ class TIComponent(Dock, Converter):
 
         return self.raw.bytes()
 
+    @Loader[dict]
+    def load_dict(self, dct: dict):
+        """
+        Loads this component from a JSON dictionary representation
+
+        :param dct: The dict to load
+        """
+
+        raise NotImplementedError
+
+    load_json = load_dict
+
+    def dict(self) -> dict:
+        """
+        :return: A JSON dictionary representation of this component
+        """
+
+        raise NotImplementedError
+
+    json = dict
+
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
         """
         Loads this component from a file given a file pointer and offset
 
         :param file: A binary file to read from
-        :param offset: The offset of the entry to read
+        :param offset: The offset of the component to read
         """
 
         raise NotImplementedError
@@ -275,7 +296,7 @@ class TIComponent(Dock, Converter):
                     except Exception:
                         continue
 
-        raise ValueError(f"could not parse '{string}' as entry type")
+        raise ValueError(f"could not parse '{string}' as a file component")
 
     def string(self) -> str:
         """
