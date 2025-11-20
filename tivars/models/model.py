@@ -51,6 +51,24 @@ class TIModel:
     def __str__(self):
         return self.name
 
+    @classmethod
+    def from_name(cls, name: str) -> 'TIModel':
+        """
+        Gets a `TIModel` by name, fuzzily-matching non-alphanumeric characters
+
+        :param name: The name of the model to find
+        :return: The `TIModel` instance corresponding to ``name``
+        """
+
+        table = str.maketrans({"+": "P", "-": "_", ".": "_", ":": "_"})
+        name = "".join(name.translate(table).split())
+
+        for model in cls.MODELS:
+            if model.name.translate(table) == name:
+                return model
+
+        raise KeyError(f"could not identify model '{name}'")
+
     @property
     def order(self) -> int:
         """

@@ -1,4 +1,5 @@
-import argparse
+import contextlib
+import glob
 import os
 
 from pathlib import Path
@@ -9,12 +10,19 @@ from .pack import *
 from .parser import *
 
 
-def cli(args: argparse.Namespace = None):
-    args = args or parser.parse_args()
+def cli(*args, **kwargs):
+    if args or kwargs:
+        args = [*args, *[f"--{key}={value}" for key, value in kwargs.items()]]
+
+    else:
+        args = None
+
+    args = parser.parse_args(args)
+    if hasattr(args, "model") and isinstance(args.model, str):
+        args.model = TIModel.from_name(args.model)
 
     match args.subparser:
         case "convert":
-            in_format = args.infile.split(".")[-1]
             out_format = args.format or (args.outfile or args.infile).split(".")[-1]
 
             match in_format := args.infile.split(".")[-1]:
@@ -75,7 +83,12 @@ def cli(args: argparse.Namespace = None):
                 print(infile.summary())
 
         case "pack":
-            files = [TIFile.open(file) for file in args.files]
+            if len(args.files) == 1 and os.path.isdir(args.files[0]):
+                args.files = glob.glob(f"{args.files[0]}/*")
+
+            files = [TIFile.open(file) for file in args.files if os.path.isfile(file)]
+            if not files:
+                raise ValueError("No files were passed")
 
             if not args.format:
                 if not args.outfile:
@@ -137,17 +150,13 @@ def cli(args: argparse.Namespace = None):
             if files is None:
                 raise TypeError(f"File '{args.infile}' is not a container type.")
 
-            if not files:
-                print(f"Container '{args.infile}' is empty.")
-
             if args.outdir:
                 os.makedirs(args.outdir, exist_ok=True)
-                os.chdir(args.outdir)
+                with contextlib.chdir(args.outdir):
+                    for file in files:
+                        file.save()
 
-            for file in files:
-                file.save()
-
-            print(f"Wrote {len(files)} file{'s' if len(files) > 1 else ''} to {os.getcwd()}.")
+                    print(f"Wrote {len(files)} file{'s' if len(files) > 1 else ''} to {os.getcwd()}.")
 
 
 __all__ = ["parser", "cli"]

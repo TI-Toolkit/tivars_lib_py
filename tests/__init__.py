@@ -1,5 +1,6 @@
 from .appvar import *
 from .array import *
+from .cli import *
 from .file import *
 from .flash import *
 from .gdb import *
