@@ -486,7 +486,7 @@ class TIEntry(TIComponent):
     @classmethod
     def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
         if extension is not None:
-            if type_id is None:
+            if type_id is not None:
                 raise ValueError("too many parameters passed to get_type")
 
             for var_type in cls._type_ids.values():
