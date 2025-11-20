@@ -1,17 +1,22 @@
 import contextlib
 import io
+import json
 import os
 import shutil
 import unittest
 
-from tivars import *
+from tivars.bundle import *
 from tivars.cli import *
+from tivars.models import *
+from tivars.types import *
 
 
 def in_clean_dir(func):
     def inner(self):
         with contextlib.chdir("tests"):
+            shutil.rmtree("cli", ignore_errors=True)
             os.makedirs("cli", exist_ok=True)
+
             with contextlib.chdir("cli"):
                 func(self)
 
@@ -23,7 +28,10 @@ def in_clean_dir(func):
 class CLITests(unittest.TestCase):
     @in_clean_dir
     def test_convert_json(self):
-        cli("convert", "../data/json/param.json", format="TIParamGDB", name="test_gdb")
+        cli("convert", "../data/json/param.json", format="TIGDB", name="test_gdb")
+
+        self.assertEqual(TIGDB.open("test_gdb.8xd").json(), json.load(file := open("../data/json/param.json")))
+        file.close()
 
     def test_info(self):
         out = io.StringIO()

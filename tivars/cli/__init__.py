@@ -61,10 +61,10 @@ def cli(*args, **kwargs):
                             infile = file.read()
                             file.close()
 
-                            if issubclass(in_format, TIComponent):
+                            if issubclass(in_format, TIEntry):
                                 in_format = in_format.extension
 
-                            if issubclass(out_format, TIComponent):
+                            if issubclass(out_format, TIEntry):
                                 out_format = out_format.extension
 
                             outfile = image_to_image(infile, in_format, out_format)
