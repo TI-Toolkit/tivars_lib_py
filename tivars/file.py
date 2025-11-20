@@ -252,6 +252,16 @@ class TIComponent(Dock, Converter):
         return self.raw.bytes()
 
     @Loader[dict]
+    def load_json(self, dct: dict, **kwargs):
+        """
+        Loads this component from a JSON dictionary representation
+
+        :param dct: The dict to load
+        """
+
+        self.load_dict(dct, **kwargs)
+
+    @Loader[dict]
     def load_dict(self, dct: dict, **kwargs):
         """
         Loads this component from a JSON dictionary representation
@@ -261,7 +271,12 @@ class TIComponent(Dock, Converter):
 
         raise NotImplementedError
 
-    load_json = load_dict
+    def json(self, **kwargs) -> dict:
+        """
+        :return: A JSON dictionary representation of this component
+        """
+
+        return self.dict(**kwargs)
 
     def dict(self, **kwargs) -> dict:
         """
@@ -269,8 +284,6 @@ class TIComponent(Dock, Converter):
         """
 
         raise NotImplementedError
-
-    json = dict
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
@@ -598,6 +611,9 @@ class TIFile(Dock):
 
         except NotImplementedError:
             pass
+
+        if filename is not None and "." not in filename:
+            filename = f"{filename}.{self.get_extension(model)}"
 
         with open(filename or self.get_filename(model), 'wb+') as file:
             file.write(self.bytes())
