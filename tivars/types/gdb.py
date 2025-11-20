@@ -524,6 +524,11 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return self.get_equations()
 
+    def clear(self):
+        self.raw.calc_data = bytearray([0, 0, 0, self.mode_byte])
+        self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
+        self.length = len(self.data)
+
     def get_color_data(self) -> bytes:
         """
         Finds the color portion of this GDB if it exists
@@ -585,14 +590,19 @@ class TIMonoGDB(SizedEntry, register=True):
 
         :param dct: The dict to load
         """
-
-        self.clear()
         self.raw.calc_data[3] = {
             'Function': 0x10,
             'Parametric': 0x40,
             'Polar': 0x20,
             'Sequence': 0x80
         }.get(mode := dct.get("graphMode", "Function"), 0x00)
+
+        # Set type if color data exists so it can be loaded
+        if "global84CSettings" in dct:
+            self.__class__ = TIGDB
+
+        self.coerce()
+        self.clear()
 
         # Load formatSettings
         for setting in dct.get("formatSettings", []):
@@ -641,11 +651,6 @@ class TIMonoGDB(SizedEntry, register=True):
                 warn(f"Unrecognized equation ({name}).",
                      UserWarning)
 
-        # Set type if color data exists so it can be loaded
-        if "global84CSettings" in dct:
-            self.__class__ = TIGDB
-
-        self.coerce()
         self._load_dict(dct)
 
     def _load_dict(self, dct: dict):
@@ -821,7 +826,7 @@ class TIGDB(TIMonoGDB):
                 "colors": {
                     "grid": self.grid_color.name,
                     "axes": self.axes_color.name,
-                    "border": self.border_color
+                    "border": self.border_color.value
                 },
                 "other": {
                     "globalLineStyle": self.global_line_style.name,
