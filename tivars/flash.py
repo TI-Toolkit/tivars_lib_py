@@ -551,6 +551,8 @@ class TIFlashHeader(TIComponent):
                 if extension.lstrip(".") in var_type.extensions:
                     return var_type
 
+            return None
+
         else:
             return super().get_type(type_id=type_id)
 

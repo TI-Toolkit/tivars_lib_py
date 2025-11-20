@@ -26,9 +26,37 @@ TIWindowSettings  <-> json
 """
 
 
-def component_to_json(var: TIComponent) -> str:
+def get_format(fmt: str) -> type[TIComponent] | str:
+    if fmt in ("txt", "text", "md"):
+        return "txt"
+
+    elif fmt == "json":
+        return "json"
+
+    elif fmt.startswith("8"):
+        if fmt.endswith("u"):
+            return TILicense
+
+        return TIEntry.get_type(extension=fmt)
+
+    else:
+        if not fmt.upper().startswith("TI"):
+            fmt = "TI" + fmt
+
+        subclasses = TIComponent.__subclasses__()
+        while subclasses:
+            subclass = subclasses.pop(0)
+            if subclass.__name__.lower() == fmt.lower():
+                return subclass
+
+            subclasses.extend(subclass.__subclasses__())
+
+        return fmt
+
+
+def component_to_json(var: TIComponent, **kwargs) -> str:
     if isinstance(var, (TIGDB, TIRecallWindow, TITableSettings, TIWindowSettings)):
-        return json.dumps(var.json())
+        return json.dumps(var.json(**kwargs))
 
     else:
         raise TypeError(f"A {type(var).__name__} cannot be converted to json.")
@@ -58,21 +86,13 @@ def image_to_image(infile: bytes, in_format: str, out_format: str) -> bytes:
     return out_file.read()
 
 
-def json_to_component(text: str, out_format: type[TIComponent], **kwargs) -> TIComponent:
-    try:
-        component = out_format()
-        component.load_dict(json.loads(text), **kwargs)
-        return component
-
-    except NotImplementedError:
-        raise TypeError(f"A {out_format.__name__} cannot be loaded from json.")
+def json_to_component(dct: dict, out_format: type[TIComponent], **kwargs) -> TIComponent:
+    component = out_format()
+    component.load_dict(dct, **kwargs)
+    return component
 
 
 def text_to_component(text: str, out_format: type[TIComponent], **kwargs) -> TIComponent:
-    try:
-        component = out_format()
-        component.load_string(text, **kwargs)
-        return component
-
-    except NotImplementedError:
-        raise TypeError(f"A {out_format.__name__} cannot be loaded from text.")
+    component = out_format()
+    component.load_string(text, **kwargs)
+    return component

@@ -137,6 +137,14 @@ class TIComponent(Dock, Converter):
         raise NotImplementedError
 
     @Section()
+    def name(self) -> str:
+        """
+        The name of the component
+        """
+
+        raise NotImplementedError
+
+    @Section()
     def calc_data(self) -> bytearray:
         """
         The data section of the component which is loaded on-calc
@@ -194,6 +202,8 @@ class TIComponent(Dock, Converter):
 
             return cls._type_ids.get(type_id, None)
 
+        return None
+
     @classmethod
     def register(cls, var_type: type[Self], override: int = None):
         """
@@ -242,7 +252,7 @@ class TIComponent(Dock, Converter):
         return self.raw.bytes()
 
     @Loader[dict]
-    def load_dict(self, dct: dict):
+    def load_dict(self, dct: dict, **kwargs):
         """
         Loads this component from a JSON dictionary representation
 
@@ -253,7 +263,7 @@ class TIComponent(Dock, Converter):
 
     load_json = load_dict
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         """
         :return: A JSON dictionary representation of this component
         """
@@ -274,7 +284,7 @@ class TIComponent(Dock, Converter):
         raise NotImplementedError
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         """
         Loads this component from a string representation
 
@@ -298,7 +308,7 @@ class TIComponent(Dock, Converter):
 
         raise ValueError(f"could not parse '{string}' as a file component")
 
-    def string(self) -> str:
+    def string(self, **kwargs) -> str:
         """
         :return: A string representation of this component
         """

@@ -23,46 +23,60 @@ def cli(*args, **kwargs):
 
     match args.subparser:
         case "convert":
-            out_format = args.format or (args.outfile or args.infile).split(".")[-1]
+            in_format = get_format(args.infile.split(".")[-1])
+            out_format = get_format(args.format or (args.outfile or args.infile).split(".")[-1])
 
-            match in_format := args.infile.split(".")[-1]:
-                case "txt" | "md":
-                    infile = Path(args.infile).read_text(encoding="utf8")
+            if in_format == out_format:
+                print("Successfully did nothing.")
+                return
 
-                    outfile = text_to_component(infile, out_format, lang=args.lang, model=args.model).bytes()
+            try:
+                match in_format:
+                    case "txt":
+                        infile = Path(args.infile).read_text(encoding="utf8")
 
-                case "json":
-                    infile = json.load(file := open(args.infile))
-                    file.close()
+                        text_to_component(infile, out_format, lang=args.lang, model=args.model).save(args.name, model=args.model)
 
-                    outfile = json_to_component(infile, out_format, lang=args.lang, model=args.model).bytes()
+                    case "json":
+                        infile = json.load(file := open(args.infile))
+                        file.close()
 
-                case _:
-                    try:
-                        if in_format.startswith("8"):
-                            infile = TIFile.open(args.infile)
+                        json_to_component(infile, out_format, lang=args.lang, model=args.model).save(args.name, model=args.model)
+
+                    case _:
+                        if issubclass(in_format, TIComponent):
+                            infile = in_format.open(args.infile)
 
                             if isinstance(infile, TIVarFile):
-                                outfile = component_to_text(infile.entries[0]).encode()
+                                outfile = component_to_text(infile.entries[0], lang=args.lang, model=args.model).encode()
 
                             elif isinstance(infile, TIFlashFile):
-                                outfile = component_to_text(infile.headers[0]).encode()
+                                outfile = component_to_text(infile.headers[0], lang=args.lang, model=args.model).encode()
 
                             else:
-                                raise TypeError(f"Cannot convert file '{args.infile}.'")
+                                raise TypeError
 
                         else:
                             file = open(args.infile, "rb")
                             infile = file.read()
                             file.close()
 
+                            if issubclass(in_format, TIComponent):
+                                in_format = in_format.extension
+
+                            if issubclass(out_format, TIComponent):
+                                out_format = out_format.extension
+
                             outfile = image_to_image(infile, in_format, out_format)
 
-                    except Exception:
-                        raise ValueError(f"Unrecognized format '{out_format}'.")
+                        filename = args.name or "UNNAMED"
+                        filename += f".{out_format if isinstance(out_format, str) else out_format}"
 
-            with open(args.outfile or f"UNNAMED.{out_format}", "rb+") as file:
-                file.write(outfile)
+                        with open(args.outfile or f"{args.name or 'UNNAMED'}.{out_format}", "rb+") as file:
+                            file.write(outfile)
+
+            except Exception as e:
+                raise ValueError(f"Cannot convert file '{args.infile}' to format '{out_format}'.")
 
         case "info":
             infile = TIFile.open(args.infile)
@@ -126,6 +140,7 @@ def cli(*args, **kwargs):
                     raise ValueError(f"Unrecognized format '{out_format}'.")
 
             outfile.save(filename=args.outfile, model=args.model)
+            print(f"Packed {len(files)} file{'s' if len(files) > 1 else ''}.")
 
         case "unpack":
             infile = TIFile.open(args.infile)
@@ -150,13 +165,12 @@ def cli(*args, **kwargs):
             if files is None:
                 raise TypeError(f"File '{args.infile}' is not a container type.")
 
-            if args.outdir:
-                os.makedirs(args.outdir, exist_ok=True)
-                with contextlib.chdir(args.outdir):
-                    for file in files:
-                        file.save()
+            os.makedirs(args.outdir, exist_ok=True)
+            with contextlib.chdir(args.outdir):
+                for file in files:
+                    file.save()
 
-                    print(f"Wrote {len(files)} file{'s' if len(files) > 1 else ''} to {os.getcwd()}.")
+                print(f"Wrote {len(files)} file{'s' if len(files) > 1 else ''} to {os.getcwd()}.")
 
 
 __all__ = ["parser", "cli"]

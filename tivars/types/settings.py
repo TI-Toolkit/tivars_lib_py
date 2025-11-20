@@ -30,7 +30,7 @@ class SettingsEntry(SizedEntry):
                 return super().__format__(format_spec)
 
     @Loader[dict]
-    def load_dict(self, dct: dict):
+    def load_dict(self, dct: dict, **kwargs):
         """
         Loads a JSON ``dict`` into this settings entry
 
@@ -265,7 +265,7 @@ class TIWindowSettings(SettingsEntry, register=True):
         w(𝑛Min+1): the initial value of w at 𝑛Min + 1
         """
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return {
             "Xmin": self.Xmin.json_number(),
             "Xmax": self.Xmax.json_number(),
@@ -503,7 +503,7 @@ class TIRecallWindow(SettingsEntry, register=True):
         w(𝑛Min + 1): the initial value of w at 𝑛Min + 1
         """
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return {
             "Xmin": self.Xmin.json_number(),
             "Xmax": self.Xmax.json_number(),
@@ -591,7 +591,7 @@ class TITableSettings(SettingsEntry, register=True):
 
         return value
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return {
             "TblMin": int(self.TblMin),
             "DeltaTbl": int(self.DeltaTbl)

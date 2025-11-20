@@ -1,5 +1,6 @@
 import contextlib
 import io
+import os
 import shutil
 import unittest
 
@@ -7,19 +8,23 @@ from tivars import *
 from tivars.cli import *
 
 
-def clean(directory):
-    def outer(func):
-        def inner(self):
-            shutil.rmtree(directory, ignore_errors=True)
-            func(self)
-            shutil.rmtree(directory)
+def in_clean_dir(func):
+    def inner(self):
+        with contextlib.chdir("tests"):
+            os.makedirs("cli", exist_ok=True)
+            with contextlib.chdir("cli"):
+                func(self)
 
-        return inner
+            shutil.rmtree("cli")
 
-    return outer
+    return inner
 
 
 class CLITests(unittest.TestCase):
+    @in_clean_dir
+    def test_convert_json(self):
+        cli("convert", "../data/json/param.json", format="TIParamGDB", name="test_gdb")
+
     def test_info(self):
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
@@ -46,22 +51,22 @@ class CLITests(unittest.TestCase):
                                     "\n"
                                     "  Program setDate(1\n\n\n")
 
-    @clean("tests/cli")
+    @in_clean_dir
     def test_bundle_round_trip(self):
-        cli("unpack", "tests/data/var/TI83CEBundle_5.4.0.34.b83", outdir="tests/cli")
-        cli("pack", "tests/cli", format="bundle", model=TI_83PCE, name="tests/cli/test_bundle")
+        cli("unpack", "../data/var/TI83CEBundle_5.4.0.34.b83")
+        cli("pack", ".", format="bundle", model=TI_83PCE, name="test_bundle")
 
-        orig = TIBundle.open("tests/data/var/TI83CEBundle_5.4.0.34.b83")
-        new = TIBundle.open("tests/cli/test_bundle.b83")
+        orig = TIBundle.open("../data/var/TI83CEBundle_5.4.0.34.b83")
+        new = TIBundle.open("test_bundle.b83")
 
         self.assertListEqual(orig.unbundle(), new.unbundle())
 
-    @clean("tests/cli")
+    @in_clean_dir
     def test_group_round_trip(self):
-        cli("unpack", "tests/data/var/Group.8xg", outdir="tests/cli")
-        cli("pack", "tests/cli", outfile="tests/cli/test_group.8xg")
+        cli("unpack", "../data/var/Group.8xg")
+        cli("pack", ".", outfile="test_group.8xg")
 
-        orig = TIGroup.open("tests/data/var/Group.8xg")
-        new = TIGroup.open("tests/cli/test_group.8xg")
+        orig = TIGroup.open("../data/var/Group.8xg")
+        new = TIGroup.open("test_group.8xg")
 
         self.assertListEqual(orig.ungroup(), new.ungroup())

@@ -286,7 +286,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         self.raw.calc_data = bytearray(flag_byte + length_bytes + data.read(data_length))
 
     @Loader[dict]
-    def load_dict(self, dct: dict):
+    def load_dict(self, dct: dict, **kwargs):
         """
         Loads a JSON ``dict`` into this GDB equation
 
@@ -306,7 +306,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         self.flags |= EquationFlags.UsedForGraph if flags["wasUsedForGraph"] else EquationFlags.UnusedForGraph
         self.flags |= EquationFlags.LinkTransferSet if flags["linkTransfer"] else EquationFlags.LinkTransferClear
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         """
         :return: A ``dict`` representing this GDB equation in JSON format
         """
@@ -579,7 +579,7 @@ class TIMonoGDB(SizedEntry, register=True):
         return max([eq.get_version() for eq in self.get_equations()], default=0x00)
 
     @Loader[dict]
-    def load_dict(self, dct: dict):
+    def load_dict(self, dct: dict, **kwargs):
         """
         Loads a JSON ``dict`` into this GDB
 
@@ -651,7 +651,7 @@ class TIMonoGDB(SizedEntry, register=True):
     def _load_dict(self, dct: dict):
         pass
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         """
         :return: A ``dict`` representing this GDB in JSON format
         """
@@ -815,7 +815,7 @@ class TIGDB(TIMonoGDB):
                 self.color_mode_flags |= \
                     GraphMode.DetectAsymptotesOn if other["detectAsymptotes"] else GraphMode.DetectAsymptotesOff
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return {
             "global84CSettings": {
                 "colors": {
@@ -984,14 +984,14 @@ class TIMonoFuncGDB(TIMonoGDB):
         """
 
     @Loader[dict]
-    def load_dict(self, dct: dict = None):
+    def load_dict(self, dct: dict = None, **kwargs):
         if dct is None:
             with open(os.path.join(os.path.dirname(__file__), "json/func.default.json")) as file:
                 dct = json.load(file)
 
         super().load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
                 "settings": {
@@ -1034,7 +1034,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TIFuncGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TIFuncGDB, self).dict()
 
 
@@ -1154,7 +1154,7 @@ class TIMonoParamGDB(TIMonoGDB):
         """
 
     @Loader[dict]
-    def load_dict(self, dct: dict = None):
+    def load_dict(self, dct: dict = None, **kwargs):
         if dct is None:
             with open(os.path.join(os.path.dirname(__file__), "json/param.default.json")) as file:
                 dct = json.load(file)
@@ -1171,7 +1171,7 @@ class TIMonoParamGDB(TIMonoGDB):
                 warn(f"X and Y component colors do not agree (X{i}T: {x_color}, Y{i}T: {y_color}).",
                      UserWarning)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
                 "settings": {
@@ -1216,7 +1216,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TIParamGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TIParamGDB, self).dict()
 
 
@@ -1300,14 +1300,14 @@ class TIMonoPolarGDB(TIMonoGDB):
         """
 
     @Loader[dict]
-    def load_dict(self, dct: dict = None):
+    def load_dict(self, dct: dict = None, **kwargs):
         if dct is None:
             with open(os.path.join(os.path.dirname(__file__), "json/polar.default.json")) as file:
                 dct = json.load(file)
 
         super().load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
                 "settings": {
@@ -1352,7 +1352,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TIPolarGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TIPolarGDB, self).dict()
 
 
@@ -1498,7 +1498,7 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
 
     @Loader[dict]
-    def load_dict(self, dct: dict = None):
+    def load_dict(self, dct: dict = None, **kwargs):
         if dct is None:
             with open(os.path.join(os.path.dirname(__file__), "json/seq.default.json")) as file:
                 dct = json.load(file)
@@ -1524,7 +1524,7 @@ class TIMonoSeqGDB(TIMonoGDB):
                 warn(f"Unrecognized sequence mode ({dct['seqMode']}).",
                      UserWarning)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         dct = super().dict()
 
         match self.extended_mode_flags:
@@ -1600,7 +1600,7 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TISeqGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TISeqGDB, self).dict()
 
 

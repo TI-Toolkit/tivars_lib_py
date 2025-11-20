@@ -493,6 +493,8 @@ class TIEntry(TIComponent):
                 if replacer(extension, {"2": "x", "3": "x"}).lstrip(".") == var_type.extension:
                     return var_type
 
+            return None
+
         else:
             return super().get_type(type_id=type_id)
 
