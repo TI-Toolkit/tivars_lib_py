@@ -40,13 +40,10 @@ def get_format(fmt: str) -> type[TIComponent] | str:
         return TIEntry.get_type(extension=fmt)
 
     else:
-        if not fmt.upper().startswith("TI"):
-            fmt = "TI" + fmt
-
         subclasses = TIComponent.__subclasses__()
         while subclasses:
             subclass = subclasses.pop(0)
-            if subclass.__name__.lower() == fmt.lower():
+            if subclass.__name__.upper().removeprefix("TI") == fmt.upper().removeprefix("TI"):
                 return subclass
 
             subclasses.extend(subclass.__subclasses__())
@@ -74,7 +71,7 @@ def component_to_text(var: TIComponent, **kwargs) -> str:
             return var.string(**kwargs)
 
 
-def image_to_image(infile: bytes, in_format: str, out_format: str) -> bytes:
+def image_to_image(infile: bytes, out_format: str) -> bytes:
     try:
         from PIL import Image
         from tivars.PIL import TI8xiPlugin, TI8ciPlugin, TI8caPlugin
@@ -82,8 +79,9 @@ def image_to_image(infile: bytes, in_format: str, out_format: str) -> bytes:
     except ImportError:
         raise ImportError("PIL is required to convert TI pictures/images to/from other formats")
 
-    Image.open(infile, "r", (in_format,)).save(out_file := io.BytesIO(), out_format)
-    return out_file.read()
+    Image.open(infile, "r").save(outfile := io.BytesIO(), out_format.upper())
+    outfile.seek(0)
+    return outfile.read()
 
 
 def json_to_component(dct: dict, out_format: type[TIComponent], **kwargs) -> TIComponent:

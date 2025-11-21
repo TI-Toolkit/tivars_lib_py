@@ -44,35 +44,32 @@ def cli(*args, **kwargs):
                         json_to_component(infile, out_format, lang=args.lang, model=args.model).save(args.name, model=args.model)
 
                     case _:
-                        if issubclass(in_format, TIComponent):
-                            infile = in_format.open(args.infile)
+                        try:
+                            if isinstance(out_format, type):
+                                out_format = out_format.extension
 
-                            if isinstance(infile, TIVarFile):
-                                outfile = component_to_text(infile.entries[0], lang=args.lang, model=args.model).encode()
+                            outfile = image_to_image(args.infile, out_format)
 
-                            elif isinstance(infile, TIFlashFile):
-                                outfile = component_to_text(infile.headers[0], lang=args.lang, model=args.model).encode()
+                        except Exception as e:
+                            if isinstance(in_format, type):
+                                infile = in_format.open(args.infile)
+
+                                if isinstance(infile, TIVarFile):
+                                    outfile = component_to_text(infile.entries[0], lang=args.lang, model=args.model).encode()
+
+                                elif isinstance(infile, TIFlashFile):
+                                    outfile = component_to_text(infile.headers[0], lang=args.lang, model=args.model).encode()
+
+                                else:
+                                    raise TypeError
 
                             else:
                                 raise TypeError
 
-                        else:
-                            file = open(args.infile, "rb")
-                            infile = file.read()
-                            file.close()
+                        filename = args.name or ".".join(args.infile.split(".")[:-1])
+                        filename += f".{out_format if isinstance(out_format, str) else out_format.extension}"
 
-                            if issubclass(in_format, TIEntry):
-                                in_format = in_format.extension
-
-                            if issubclass(out_format, TIEntry):
-                                out_format = out_format.extension
-
-                            outfile = image_to_image(infile, in_format, out_format)
-
-                        filename = args.name or "UNNAMED"
-                        filename += f".{out_format if isinstance(out_format, str) else out_format}"
-
-                        with open(args.outfile or f"{args.name or 'UNNAMED'}.{out_format}", "rb+") as file:
+                        with open(args.outfile or filename, "wb+") as file:
                             file.write(outfile)
 
             except Exception as e:

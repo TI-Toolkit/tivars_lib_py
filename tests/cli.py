@@ -11,6 +11,7 @@ from tivars.models import *
 from tivars.types import *
 
 
+# I really shouldn't have to write this myself
 def in_clean_dir(func):
     def inner(self):
         with contextlib.chdir("tests"):
@@ -32,6 +33,16 @@ class CLITests(unittest.TestCase):
 
         self.assertEqual(TIGDB.open("test_gdb.8xd").json(), json.load(file := open("../data/json/param.json")))
         file.close()
+
+    @in_clean_dir
+    def test_convert_picture(self):
+        cli("convert", "../data/var/Pic1.8ci", outfile="test.png")
+        cli("convert", "test.png", format="TIPicture")
+
+        img = TIPicture.open("../data/var/Pic1.8ci")
+        img.clear_white()
+
+        self.assertEqual(img.data, TIPicture.open("test.8ci").data)
 
     def test_info(self):
         out = io.StringIO()
