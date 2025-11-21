@@ -320,6 +320,21 @@ class TIPicture(PictureEntry, register=True):
                  for rgb in RGBPalette.get(self.data[self.data_width * row + col:][:1])]
                 for row in range(self.data_height)]
 
+    def clear_white(self):
+        """
+        Sets all white pixels (which may be encoded with palette index 0 or 11) to 0
+        """
+
+        def clear_white(byte: int) -> int:
+            high, low = byte // 16, byte % 16
+
+            high *= high != 11
+            low *= low != 11
+
+            return 16 * high + low
+
+        self.data = bytes(map(clear_white, self.data))
+
 
 # Workaround until the token sheets are updated
 class ImageName(Name):

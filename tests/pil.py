@@ -34,15 +34,8 @@ class PILTests(unittest.TestCase):
         self.assertEqual(buf.read()[72:-2], ti_img.calc_data)
 
     def test_8ci(self):
-        def the_palette_is_stinky(byte: int) -> bytes:
-            high, low = byte // 16, byte % 16
-
-            high *= high != 11
-            low *= low != 11
-
-            return bytes([16 * high + low])
-
         ti_img = TIPicture.open("tests/data/var/Pic1.8ci")
+        ti_img.clear_white()
 
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/Pic1.8ci")
@@ -53,8 +46,7 @@ class PILTests(unittest.TestCase):
         img.save(buf := io.BytesIO(), "8ci")
         buf.seek(0)
 
-        trans = b"".join(map(the_palette_is_stinky, range(256)))
-        self.assertEqual(buf.read()[72:-2].translate(trans), ti_img.calc_data.translate(trans))
+        self.assertEqual(buf.read()[72:-2], ti_img.calc_data)
 
     def test_8ca(self):
         ti_img = TIImage.open("tests/data/var/Image1.8ca")
