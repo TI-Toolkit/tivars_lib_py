@@ -584,7 +584,8 @@ class TIFlashHeader(TIComponent):
         stream.seek(-78 - data_size, 1)
         return header_length
 
-    def get_extension(self, model: TIModel = TI_84PCE) -> str:
+    @classmethod
+    def get_extension(cls, model: TIModel = TI_84PCE) -> str:
         """
         Determines the header's file extension given a targeted model
 
@@ -597,22 +598,10 @@ class TIFlashHeader(TIComponent):
                  UserWarning)
 
         for min_model in reversed(TIModel.MODELS):
-            if model in self.extensions and min_model <= model:
-                return self.extensions[model]
+            if model in cls.extensions and min_model <= model:
+                return cls.extensions[model]
 
-        return self.extensions[TI_84PCE]
-
-    def get_filename(self, model: TIModel = TI_84PCE) -> str:
-        """
-        Determines the header's filename given a targeted model
-
-        The filename is the concatenation of the header name and extension (see `TIFlashHeader.extension`).
-
-        :param model: A model to target (defaults to ``TI_84PCE``)
-        :return: The header's filename
-        """
-
-        return f"{self.name}.{self.get_extension(model)}"
+        return cls.extensions[TI_84PCE]
 
     @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):

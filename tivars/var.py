@@ -544,6 +544,17 @@ class TIEntry(TIComponent):
         self.raw.calc_data = bytearray(self.leading_data_bytes)
         self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
 
+    @classmethod
+    def get_extension(cls, model: TIModel = TI_84PCE) -> str:
+        if model == TI_82:
+            return cls.extension.replace("x", "2")
+
+        elif model == TI_83:
+            return cls.extension.replace("x", "3")
+
+        else:
+            return cls.extension
+
     def get_min_os(self) -> OsVersion:
         """
         Determines the minimum OS that supports this entry's data
@@ -893,19 +904,10 @@ class TIVarFile(TIFile, register=True):
                 warn("This var is empty.",
                      UserWarning)
 
-            extension = "8xg"
+            return "8xg"
 
         else:
-            extension = self.entries[0].extension
-
-        if model == TI_82:
-            return extension.replace("x", "2")
-
-        elif model == TI_83:
-            return extension.replace("x", "3")
-
-        else:
-            return extension
+            return self.entries[0].get_extension(model)
 
     def supported_by(self, model: TIModel) -> bool:
         return all(item.supported_by(model) for item in [self.header, *self.entries])

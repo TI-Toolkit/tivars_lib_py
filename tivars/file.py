@@ -222,6 +222,16 @@ class TIComponent(Dock, Converter):
 
         self.raw.calc_data = bytearray()
 
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
+        """
+        Determines the file extension for a targeted model based on its contents
+
+        :param model: The model to target (defaults to ``TI_84PCE``)
+        :return: The file's extension
+        """
+
+        raise NotImplementedError
+
     def update(self):
         """
         Updates this component's metadata
