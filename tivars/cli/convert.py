@@ -3,7 +3,6 @@ import json
 
 from tivars.file import *
 from tivars.models import *
-from tivars.tokenizer import *
 from tivars.types import *
 
 
