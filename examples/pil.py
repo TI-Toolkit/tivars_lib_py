@@ -18,4 +18,4 @@ img = Image.fromarray(arr, mode=ti_img.pil_mode)
 img.show()
 
 # Each pixel becomes a 2x2 square of pixels on-calc
-img.resize((266, 166), resample=Image.NEAREST).show()
+img.resize((266, 166), resample=Image.Resampling.NEAREST).show()
