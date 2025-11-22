@@ -23,57 +23,51 @@ def cli(*args, **kwargs):
 
     match args.subparser:
         case "convert":
-            in_format = get_format(args.infile.split(".")[-1])
-            out_format = get_format(args.format or (args.outfile or args.infile).split(".")[-1])
+            in_ext = Path(args.infile).suffix.removeprefix(".")
+            out_ext = format_to_extension(args.format or Path(args.outfile or args.infile).suffix.removeprefix("."), model=args.model)
+            name = args.name
 
-            if in_format == out_format:
+            if in_ext == out_ext:
                 print("Successfully did nothing.")
                 return
 
             try:
-                match in_format:
-                    case "txt":
-                        infile = Path(args.infile).read_text(encoding="utf8")
+                match in_ext:
+                    case "txt" | "md":
+                        text = Path(args.infile).read_text(encoding="utf8")
 
-                        text_to_component(infile, out_format, lang=args.lang, model=args.model).save(args.name, model=args.model)
+                        text_to_component(text, out_ext, lang=args.lang, model=args.model).save(args.name, model=args.model)
 
                     case "json":
-                        infile = json.load(file := open(args.infile))
-                        file.close()
+                        with open(args.infile) as file:
+                            dct = json.load(file)
 
-                        json_to_component(infile, out_format, lang=args.lang, model=args.model).save(args.name, model=args.model)
+                        json_to_component(dct, out_ext, lang=args.lang, model=args.model).save(args.name, model=args.model)
 
                     case _:
                         try:
-                            if isinstance(out_format, type):
-                                out_format = out_format.extension
-
-                            outfile = image_to_image(args.infile, out_format)
+                            outfile = image_to_image(args.infile, out_ext)
 
                         except Exception as e:
-                            if isinstance(in_format, type):
-                                infile = in_format.open(args.infile)
+                            infile = extension_to_type(in_ext).open(args.infile)
+                            name = infile.name
 
-                                if isinstance(infile, TIVarFile):
-                                    outfile = component_to_text(infile.entries[0], lang=args.lang, model=args.model).encode()
+                            match out_ext:
+                                case "txt":
+                                    outfile = component_to_text(infile, lang=args.lang, model=args.model).encode()
 
-                                elif isinstance(infile, TIFlashFile):
-                                    outfile = component_to_text(infile.headers[0], lang=args.lang, model=args.model).encode()
+                                case "json":
+                                    outfile = json.dumps(component_to_json(infile, lang=args.lang, model=args.model))
 
-                                else:
-                                    raise TypeError
+                                case _:
+                                    raise TypeError(f"Format '{in_ext}' not recognized.")
 
-                            else:
-                                raise TypeError
-
-                        filename = args.name or ".".join(args.infile.split(".")[:-1])
-                        filename += f".{out_format if isinstance(out_format, str) else out_format.extension}"
-
+                        filename = (name or Path(args.infile).stem) + "." + out_ext
                         with open(args.outfile or filename, "wb+") as file:
                             file.write(outfile)
 
             except Exception as e:
-                raise ValueError(f"Cannot convert file '{args.infile}' to format '{out_format}'.")
+                raise ValueError(f"Cannot convert file '{args.infile}' to format '{out_ext}'.") from None
 
         case "info":
             infile = TIFile.open(args.infile)
@@ -105,12 +99,12 @@ def cli(*args, **kwargs):
                 if not args.outfile:
                     raise ValueError("No pack format was specified.")
 
-                out_format = args.outfile.split(".")[-1]
+                out_ext = args.outfile.split(".")[-1]
 
             else:
-                out_format = args.format
+                out_ext = args.format
 
-            match out_format:
+            match out_ext:
                 case "b83":
                     outfile = pack_bundle(files, name=args.name, model=args.model or TI_83PCE)
 
@@ -124,17 +118,17 @@ def cli(*args, **kwargs):
                     outfile = pack_group(files, name=args.name)
 
                 case "juxt" | "var" | "flash":
-                    if isinstance(files[0], TIVarFile) and out_format != "flash":
+                    if isinstance(files[0], TIVarFile) and out_ext != "flash":
                         outfile = pack_entries(files, name=args.name)
 
-                    elif isinstance(files[0], TIFlashFile) and out_format != "var":
+                    elif isinstance(files[0], TIFlashFile) and out_ext != "var":
                         outfile = pack_headers(files, name=args.name)
 
                     else:
-                        raise TypeError(f"Cannot juxtapose passed files with format '{out_format}'.")
+                        raise TypeError(f"Cannot juxtapose passed files with format '{out_ext}'.")
 
                 case _:
-                    raise ValueError(f"Unrecognized format '{out_format}'.")
+                    raise ValueError(f"Unrecognized format '{out_ext}'.")
 
             outfile.save(filename=args.outfile, model=args.model)
             print(f"Packed {len(files)} file{'s' if len(files) > 1 else ''}.")

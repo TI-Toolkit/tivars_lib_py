@@ -26,29 +26,31 @@ TIWindowSettings  <-> json
 """
 
 
-def get_format(fmt: str) -> type[TIComponent] | str:
-    if fmt in ("txt", "text", "md"):
-        return "txt"
+def format_to_extension(fmt: str, *, model: TIModel) -> str:
+    subclasses = TIEntry.__subclasses__()
+    while subclasses:
+        subclass = subclasses.pop(0)
+        if subclass.__name__.upper().removeprefix("TI") == fmt.upper().removeprefix("TI"):
+            return subclass.get_extension(model)
 
-    elif fmt == "json":
-        return "json"
+        subclasses.extend(subclass.__subclasses__())
 
-    elif fmt.startswith("8"):
-        if fmt.endswith("u"):
+    match fmt.removeprefix("."):
+        case "txt" | "text" | "md":
+            return "txt"
+
+        case ext:
+            return ext
+
+
+def extension_to_type(ext: str) -> type[TIComponent]:
+    if ext.startswith("8"):
+        if ext.endswith("u"):
             return TILicense
 
-        return TIEntry.get_type(extension=fmt)
+        return TIEntry.get_type(extension=ext)
 
-    else:
-        subclasses = TIComponent.__subclasses__()
-        while subclasses:
-            subclass = subclasses.pop(0)
-            if subclass.__name__.upper().removeprefix("TI") == fmt.upper().removeprefix("TI"):
-                return subclass
-
-            subclasses.extend(subclass.__subclasses__())
-
-        return fmt
+    raise TypeError(f"Extension '{ext}' does not correspond to a TI type")
 
 
 def component_to_json(var: TIComponent, **kwargs) -> str:
@@ -71,7 +73,7 @@ def component_to_text(var: TIComponent, **kwargs) -> str:
             return var.string(**kwargs)
 
 
-def image_to_image(infile: bytes, out_format: str) -> bytes:
+def image_to_image(infile: bytes, out_ext: str) -> bytes:
     try:
         from PIL import Image
         from tivars.PIL import TI8xiPlugin, TI8ciPlugin, TI8caPlugin
@@ -79,18 +81,18 @@ def image_to_image(infile: bytes, out_format: str) -> bytes:
     except ImportError:
         raise ImportError("PIL is required to convert TI pictures/images to/from other formats")
 
-    Image.open(infile, "r").save(outfile := io.BytesIO(), out_format.upper())
+    Image.open(infile, "r").save(outfile := io.BytesIO(), out_ext.upper())
     outfile.seek(0)
     return outfile.read()
 
 
-def json_to_component(dct: dict, out_format: type[TIComponent], **kwargs) -> TIComponent:
-    component = out_format()
+def json_to_component(dct: dict, out_ext: str, **kwargs) -> TIComponent:
+    component = extension_to_type(out_ext)()
     component.load_dict(dct, **kwargs)
     return component
 
 
-def text_to_component(text: str, out_format: type[TIComponent], **kwargs) -> TIComponent:
-    component = out_format()
+def text_to_component(text: str, out_ext: str, **kwargs) -> TIComponent:
+    component = extension_to_type(out_ext)()
     component.load_string(text, **kwargs)
     return component

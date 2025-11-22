@@ -5,6 +5,8 @@ import os
 import shutil
 import unittest
 
+from pathlib import Path
+
 from tivars.bundle import *
 from tivars.cli import *
 from tivars.models import *
@@ -35,6 +37,11 @@ class CLITests(unittest.TestCase):
         file.close()
 
     @in_clean_dir
+    def test_convert_number(self):
+        cli("convert", "../data/var/Complex.8xc", format="text")
+        self.assertEqual(Path("C.txt").read_text(), "-5 + 2i")
+
+    @in_clean_dir
     def test_convert_picture(self):
         cli("convert", "../data/var/Pic1.8ci", outfile="test.png")
         cli("convert", "test.png", format="TIPicture")
@@ -43,6 +50,11 @@ class CLITests(unittest.TestCase):
         img.clear_white()
 
         self.assertEqual(img.data, TIPicture.open("test.8ci").data)
+
+    @in_clean_dir
+    def test_convert_program(self):
+        cli("convert", "../data/var/Program.8xp", format="text")
+        self.assertEqual(Path("SETDATE.txt").read_text(), "setDate(1")
 
     def test_info(self):
         out = io.StringIO()
