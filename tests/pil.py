@@ -25,8 +25,7 @@ class PILTests(unittest.TestCase):
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/BartSimpson.8xi")
 
-        self.assertEqual((np.asarray(Image.fromarray(arr, mode=ti_img.pil_mode)) ==
-                          np.asarray(img)).all(), True)
+        self.assertEqual((np.asarray(Image.fromarray(arr)) == np.asarray(img)).all(), True)
 
         img.save(buf := io.BytesIO(), "8xi")
         buf.seek(0)
@@ -40,8 +39,7 @@ class PILTests(unittest.TestCase):
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/Pic1.8ci")
 
-        self.assertEqual((np.asarray(Image.fromarray(arr, mode=ti_img.pil_mode)) ==
-                          np.asarray(img)).all(), True)
+        self.assertEqual((np.asarray(Image.fromarray(arr)) == np.asarray(img)).all(), True)
 
         img.save(buf := io.BytesIO(), "8ci")
         buf.seek(0)
@@ -54,5 +52,4 @@ class PILTests(unittest.TestCase):
         arr = np.asarray(ti_img.array(), dtype=np.uint8)
         img = Image.open("tests/data/var/Image1.8ca")
 
-        self.assertEqual((np.asarray(Image.fromarray(arr, mode=ti_img.pil_mode)) ==
-                          np.asarray(img)).all(), True)
+        self.assertEqual((np.asarray(Image.fromarray(arr)) == np.asarray(img)).all(), True)
