@@ -14,7 +14,7 @@ img.show()
 ti_img = TIImage.open("../tests/data/var/Image1.8ca")
 
 arr = np.asarray(ti_img.array(), dtype=np.uint8)
-img = Image.fromarray(arr, mode=ti_img.pil_mode)
+img = Image.fromarray(arr)
 img.show()
 
 # Each pixel becomes a 2x2 square of pixels on-calc
