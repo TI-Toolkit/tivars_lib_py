@@ -5,6 +5,8 @@ from tivars.file import *
 from tivars.models import *
 from tivars.types import *
 
+from tivars.types.picture import PictureEntry
+
 
 CONVERT_FORMATS = """
 TIComplex         <-> txt
@@ -49,14 +51,14 @@ def extension_to_type(ext: str) -> type[TIComponent]:
 
         return TIEntry.get_type(extension=ext)
 
-    raise TypeError(f"Extension '{ext}' does not correspond to a TI type")
+    raise TypeError(f"Extension '{ext}' does not correspond to a TI-83 series type")
 
 
 def component_to_json(var: TIComponent, **kwargs) -> str:
-    if isinstance(var, (TIGDB, TIRecallWindow, TITableSettings, TIWindowSettings)):
+    try:
         return json.dumps(var.json(**kwargs))
 
-    else:
+    except NotImplementedError:
         raise TypeError(f"A {type(var).__name__} cannot be converted to json.")
 
 
@@ -65,7 +67,7 @@ def component_to_text(var: TIComponent, **kwargs) -> str:
         return component_to_json(var)
 
     except TypeError:
-        if isinstance(var, (TIImage, TIMonoPicture, TIPicture)):
+        if isinstance(var, PictureEntry):
             raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
 
         else:
