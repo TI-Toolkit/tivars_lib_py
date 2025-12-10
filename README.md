@@ -4,6 +4,22 @@
 
 Much of the functionality of this package has been ported over from [tivars_lib_cpp](https://github.com/adriweb/tivars_lib_cpp). However, a number of changes have been made to the API to better suit Python's strengths and capabilities as a language (e.g. scripting, dynamic typing).
 
+- [Installation](#installation)
+  - [As a Package](#as-a-package)
+  - [As a Submodule](#as-a-submodule)
+  - [Unit Testing](#unit-testing)
+- [How to Use](#how-to-use)
+  - [Entries](#entries)
+  - [Vars & Headers](#vars--headers)
+  - [Models](#models)
+- [Documentation](#documentation)
+  - [API](#api)
+  - [Formatting Output](#formatting-output)
+- [Other Functionalities](#other-functionalities)
+  - [PIL](#pil)
+  - [Tokenization](#tokenization)
+- [Examples](#examples)
+
 ## Installation
 
 The current release version is `v0.9.2`. All versions require Python 3.10+ to run.
@@ -246,24 +262,6 @@ Flash files such as apps, OSes, and certificates can be loaded using the `TIFlas
 
 All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
 
-## Other Functionalities
-
-### PIL
-
-The `tivars.PIL` package can be used to interface with PIL, the [Python Imaging Library](https://pillow.readthedocs.io/en/stable/). Simply import the package to register codecs for each of the TI image types. You can then open such images directly into a PIL `Image`:
-
-```python
-from PIL import Image
-from tivars.PIL import *
-
-img = Image.open("Pic1.8ci")
-img.show()
-```
-
-### Tokenization
-
-Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
-
 ## Documentation
 
 ### API
@@ -275,7 +273,7 @@ The var file format(s) and data sections can be found in a readable format on th
 > [!NOTE]
 > The wiki is still a work-in-progress. Why not [contribute a page](https://github.com/TI-Toolkit/tivars_lib_py/wiki)?
 
-### Formatting
+### Formatting Output
 
 All entry types support string formatting using Python's f-strings.
 
@@ -294,6 +292,24 @@ All entry types support string formatting using Python's f-strings.
 
 Additionally, the `t` type is supported for types which can be made from tokens, composing the object out of typeable (accessible) token names. For example, `-2 + 5i` is presented as `~2+5[i]`.
 
+## Other Functionalities
+
+### PIL
+
+The `tivars.PIL` package can be used to interface with PIL, the [Python Imaging Library](https://pillow.readthedocs.io/en/stable/). Simply import the package to register codecs for each of the TI image types. You can then open such images directly into a PIL `Image`:
+
+```python
+from PIL import Image
+from tivars.PIL import *
+
+img = Image.open("Pic1.8ci")
+img.show()
+```
+
+### Tokenization
+
+Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
+
 ## Examples
 
-You can find more sample code in `examples` that details common operations on each of the entry types. There are also examples for interfacing with popular external libraries (e.g. NumPy, PIL). Contributions welcome!
+You can find more sample code in [`examples`](https://github.com/TI-Toolkit/tivars_lib_py/tree/main/examples) that details common operations on each of the entry types. There are also examples for interfacing with popular external libraries (e.g. NumPy, PIL). Contributions welcome!
