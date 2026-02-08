@@ -273,7 +273,7 @@ class TIEquation(TokenizedEntry, register=True):
         (See https://ti-toolkit.github.io/tokens-wiki/categories/Y%3D%20Functions.html)
         """
 
-        varname = value
+        varname = value.replace("\uF038", "T")
         if varname in ("u", "v", "w"):
             varname = "|" + varname
 
