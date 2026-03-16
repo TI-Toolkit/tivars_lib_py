@@ -450,38 +450,38 @@ class TIMonoGDB(SizedEntry, register=True):
         ExprOn/Off and sequence plot offsets for sequence mode
         """
 
-    @View(calc_data, GraphRealEntry)[7:16]
-    def Xmin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[7:16]
+    def Xmin(self) -> RealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[16:25]
-    def Xmax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[16:25]
+    def Xmax(self) -> RealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[25:34]
-    def Xscl(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[25:34]
+    def Xscl(self) -> RealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(calc_data, GraphRealEntry)[34:43]
-    def Ymin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[34:43]
+    def Ymin(self) -> RealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[43:52]
-    def Ymax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[43:52]
+    def Ymax(self) -> RealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[52:61]
-    def Yscl(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[52:61]
+    def Yscl(self) -> RealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
@@ -514,7 +514,7 @@ class TIMonoGDB(SizedEntry, register=True):
         :return: The index of the start of the equation styles in this GDB's data
         """
 
-        return TIMonoGDB.min_calc_data_length + GraphRealEntry.min_calc_data_length * self.num_parameters
+        return TIMonoGDB.min_calc_data_length + RealEntry.min_calc_data_length * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -914,8 +914,8 @@ class TIMonoFuncGDB(TIMonoGDB):
         The mode ID for the GDB - ``0x10``
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def Xres(self, value: GraphRealEntry) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def Xres(self, value: RealEntry) -> RealEntry:
         """
         Xres: The pixel separation of points in a function plot
 
@@ -1068,20 +1068,20 @@ class TIMonoParamGDB(TIMonoGDB):
         The mode ID for the GDB - ``0x40``
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def Tmin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def Tmin(self) -> RealEntry:
         """
         Tmin: The initial time
         """
 
-    @View(calc_data, GraphRealEntry)[70:79]
-    def Tmax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[70:79]
+    def Tmax(self) -> RealEntry:
         """
         Tmax: The final time
         """
 
-    @View(calc_data, GraphRealEntry)[79:88]
-    def Tstep(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[79:88]
+    def Tstep(self) -> RealEntry:
         """
         Tstep: The time increment
         """
@@ -1250,20 +1250,20 @@ class TIMonoPolarGDB(TIMonoGDB):
         The mode ID for the GDB - ``0x20``
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def Thetamin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def Thetamin(self) -> RealEntry:
         """
         θmin: The initial angle
         """
 
-    @View(calc_data, GraphRealEntry)[70:79]
-    def Thetamax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[70:79]
+    def Thetamax(self) -> RealEntry:
         """
         θmax: The final angle
         """
 
-    @View(calc_data, GraphRealEntry)[79:88]
-    def Thetastep(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[79:88]
+    def Thetastep(self) -> RealEntry:
         """
         θstep: The angle increment
         """
@@ -1392,8 +1392,8 @@ class TIMonoSeqGDB(TIMonoGDB):
         The flags for the sequence mode settings
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def PlotStart(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def PlotStart(self, value) -> RealEntry:
         """
         PlotStart: The initial value of 𝑛 for sequential plots
 
@@ -1406,8 +1406,8 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[70:79]
-    def nMax(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[70:79]
+    def nMax(self, value) -> RealEntry:
         """
         𝑛Max: The final value of 𝑛
 
@@ -1420,20 +1420,20 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[79:88]
-    def unMin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[79:88]
+    def unMin(self) -> RealEntry:
         """
         u(𝑛Min): The initial value of u at 𝑛Min
         """
 
-    @View(calc_data, GraphRealEntry)[88:97]
-    def vnMin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[88:97]
+    def vnMin(self) -> RealEntry:
         """
         v(𝑛Min): The initial value of v at 𝑛Min
         """
 
-    @View(calc_data, GraphRealEntry)[97:106]
-    def nMin(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[97:106]
+    def nMin(self, value) -> RealEntry:
         """
         nMin: the initial value of 𝑛
 
@@ -1446,26 +1446,26 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[106:115]
-    def unMinp1(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[106:115]
+    def unMinp1(self) -> RealEntry:
         """
         u(𝑛Min+1): The initial value of u at 𝑛Min + 1
         """
 
-    @View(calc_data, GraphRealEntry)[115:124]
-    def vnMinp1(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[115:124]
+    def vnMinp1(self) -> RealEntry:
         """
         v(nMin+1): The initial value of v at 𝑛Min + 1
         """
 
-    @View(calc_data, GraphRealEntry)[124:133]
-    def wnMin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[124:133]
+    def wnMin(self) -> RealEntry:
         """
         w(𝑛Min): The initial value of w at 𝑛Min
         """
 
-    @View(calc_data, GraphRealEntry)[133:142]
-    def PlotStep(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[133:142]
+    def PlotStep(self, value) -> RealEntry:
         """
         PlotStep: The 𝑛 increment for sequential plots
 
@@ -1478,8 +1478,8 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[142:151]
-    def wnMinp1(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[142:151]
+    def wnMinp1(self) -> RealEntry:
         """
         w(𝑛Min+1): The initial value of w at 𝑛Min + 1
         """

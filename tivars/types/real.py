@@ -155,7 +155,7 @@ class RealEntry(TIEntry):
         :param decimal: The decimal to load
         """
 
-        raise NotImplementedError
+        self.load_string(str(decimal))
 
     def decimal(self) -> Decimal:
         """
@@ -201,22 +201,6 @@ class RealEntry(TIEntry):
             super().coerce()
 
 
-class GraphRealEntry(RealEntry):
-    """
-    Warning converter for real numeric types supported by graph parameters
-
-    Values used for plotting (e.g. Xmin) will behave unexpectedly if set to a radical or π type.
-    """
-
-    @classmethod
-    def set(cls, value: RealEntry, **kwargs) -> bytes:
-        if type(value) not in (TIReal, TIUndefinedReal, TIRealFraction):
-            warn(f"Graph parameters cannot store {type(value)} values correctly.",
-                 UserWarning)
-
-        return super().set(value)
-
-
 class TIReal(RealEntry, register=True):
     """
     Parser for real floating point values
@@ -251,10 +235,6 @@ class TIReal(RealEntry, register=True):
 
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
-
-    @Loader[Decimal]
-    def load_decimal(self, decimal: Decimal):
-        self.load_string(str(decimal))
 
     def decimal(self) -> Decimal:
         with localcontext() as ctx:
@@ -682,4 +662,4 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
 
 
 __all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction",
-           "RealEntry", "GraphRealEntry"]
+           "RealEntry", "RealEntry"]
