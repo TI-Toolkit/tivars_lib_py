@@ -151,3 +151,10 @@ class TIGroup(SizedEntry, register=True):
         """
 
         self.data = self.group(entries).data
+
+    @Loader[dict]
+    def load_dict(self, dct: dict, **kwargs):
+        self.load_from_entries([TIEntry(entry) for entry in dct["entries"]])
+
+    def dict(self, **kwargs) -> dict:
+        return {"entries": [TIEntry.dict(entry) for entry in self.ungroup()]}

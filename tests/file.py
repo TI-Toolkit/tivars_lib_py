@@ -166,3 +166,7 @@ class EntryTests(unittest.TestCase):
         test_program = TIEntry.open("tests/data/var/Program.8xp")
         self.assertEqual(f"{test_program}", "setDate(1")
         self.assertEqual(f"{test_program:-2X:}", "0300:EF00:31")
+
+    def test_json(self):
+        test_complex = TIEntry.open("tests/data/var/Complex.8xc")
+        self.assertEqual(test_complex, TIEntry(test_complex.json()))

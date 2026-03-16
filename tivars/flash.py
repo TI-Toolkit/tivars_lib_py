@@ -287,6 +287,46 @@ class TIFlashBlock(Dock):
 
         return self.raw.bytes()
 
+    @Loader[dict]
+    def load_json(self, dct: dict, **kwargs):
+        """
+        Loads this component from a JSON dictionary representation
+
+        :param dct: The dict to load
+        """
+
+        self.load_dict(dct, **kwargs)
+
+    @Loader[dict]
+    def load_dict(self, dct: dict, **kwargs):
+        """
+        Loads this block from a JSON dictionary representation
+
+        :param dct: The dict to load
+        """
+
+        self.address = bytes.fromhex(dct["address"]),
+        self.block_type = bytes.fromhex(dct["blockType"]),
+        self.data = bytearray.fromhex(dct["dataHex"])
+
+    def json(self, **kwargs) -> dict:
+        """
+        :return: A JSON dictionary representation of this block
+        """
+
+        return self.dict(**kwargs)
+
+    def dict(self, **kwargs) -> dict:
+        """
+        :return: A JSON dictionary representation of this block
+        """
+
+        return {
+            "address": self.address.hex().upper(),
+            "block_type": self.block_type.hex().upper(),
+            "dataHex": self.data.hex().upper()
+        }
+
 
 class FlashData(Converter[bytes | list[TIFlashBlock]]):
     """
@@ -542,11 +582,8 @@ class TIFlashHeader(TIComponent):
         return self.raw.checksum
 
     @classmethod
-    def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
+    def get_type(cls, *, type_id: int = None, name: str = None, extension: str = None) -> type[Self] | None:
         if extension is not None:
-            if type_id is not None:
-                raise ValueError("too many parameters passed to get_type")
-
             for var_type in cls._type_ids.values():
                 if extension.lstrip(".") in var_type.extensions:
                     return var_type
@@ -554,7 +591,7 @@ class TIFlashHeader(TIComponent):
             return None
 
         else:
-            return super().get_type(type_id=type_id)
+            return super().get_type(type_id=type_id, name=name)
 
     @staticmethod
     def next_header_length(stream: BinaryIO) -> int:

@@ -9,19 +9,19 @@ from tivars.types.picture import PictureEntry
 
 
 CONVERT_FORMATS = """
-TIComplex         <-> txt
-TIEquation        <-> txt
+TIComplex         <-> json, txt
+TIEquation        <-> json, txt
 TIGDB             <-> json
 TIImage           <-> png, jpeg, etc. (requires PIL)
-TILicense         <-> txt
-TIList            <-> txt
-TIMatrix          <-> txt
+TILicense         <-> json, txt
+TIList            <-> json, txt
+TIMatrix          <-> json, txt
 TIMonoPicture     <-> png, jpeg, etc. (requires PIL)
 TIPicture         <-> png, jpeg, etc. (requires PIL)
-TIProgram         <-> txt
-TIReal            <-> txt
+TIProgram         <-> json, txt
+TIReal            <-> json, txt
 TIRecallWindow    <-> json
-TIString          <-> txt
+TIString          <-> json, txt
 TITableSettings   <-> json
 TIWindowSettings  <-> json
 """
@@ -63,15 +63,11 @@ def component_to_json(var: TIComponent, **kwargs) -> str:
 
 
 def component_to_text(var: TIComponent, **kwargs) -> str:
-    try:
-        return component_to_json(var)
+    if isinstance(var, PictureEntry):
+        raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
 
-    except TypeError:
-        if isinstance(var, PictureEntry):
-            raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
-
-        else:
-            return var.string(**kwargs)
+    else:
+        return var.string(**kwargs)
 
 
 def image_to_image(infile: bytes, out_ext: str) -> bytes:

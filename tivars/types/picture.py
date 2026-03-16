@@ -425,7 +425,7 @@ class TIImage(PictureEntry, register=True):
 
     @Loader[Sequence]
     def load_array(self, arr: Sequence[Sequence[pixel_type]]):
-        self.data = b''.join(RGB565.set(entry) for row in arr[::-1] for entry in [*row, (0, 0, 0)])
+        self.data = b''.join(RGB565.set(entry) for row in arr[::-1] for entry in [*row[:self.data_width], (0, 0, 0)])
 
     def array(self) -> list[list[pixel_type]]:
         return [[RGB565.get(self.data[self.data_width * row + col:][:2])

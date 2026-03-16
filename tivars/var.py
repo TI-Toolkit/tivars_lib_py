@@ -484,11 +484,8 @@ class TIEntry(TIComponent):
         return self.meta_length >= TIEntry.flash_meta_length
 
     @classmethod
-    def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
+    def get_type(cls, *, type_id: int = None, name: str = None, extension: str = None) -> type[Self] | None:
         if extension is not None:
-            if type_id is not None:
-                raise ValueError("too many parameters passed to get_type")
-
             for var_type in cls._type_ids.values():
                 if replacer(extension, {"2": "x", "3": "x"}).lstrip(".") == var_type.extension:
                     return var_type
@@ -496,7 +493,7 @@ class TIEntry(TIComponent):
             return None
 
         else:
-            return super().get_type(type_id=type_id)
+            return super().get_type(type_id=type_id, name=name)
 
     @property
     def meta(self) -> bytes:
@@ -697,6 +694,40 @@ class TIEntry(TIComponent):
         """
 
         return self.raw.bytes()
+
+    @Loader[dict]
+    def load_dict(self, dct: dict, **kwargs):
+        self.__class__ = self.get_type(type_id=dct.get("typeID"), name=dct.get("typeName"))
+        self.type_id = self._type_id
+
+        self.version = dct.get("version", self.version)
+        self.archived = dct.get("archived", self.archived)
+        self.name = dct.get("name", self.name)
+
+        if "nameHex" in dct:
+            name = bytes.fromhex(dct["nameHex"])
+            if "name" in dct and name != self.raw.name:
+                warn(f"The provided name string ('{dct['name']}') and decoded hex ('{name}') disagree.",
+                     UserWarning)
+
+        if "rawDataHex" in dct:
+            self.raw.calc_data = bytearray.fromhex(dct["rawDataHex"])
+
+        self.coerce()
+        if "readableContent" in dct:
+            self.load_string(dct["readableContent"])
+
+    def dict(self, **kwargs) -> dict:
+        string = self.string(**kwargs)
+        return {
+            "typeName": type(self).__name__.removeprefix("TI"),
+            "typeID": self.type_id,
+            "version": self.version,
+            "archived": self.archived,
+            "name": self.name,
+            "nameHex": self.raw.name.hex().upper(),
+            "rawDataHex": (data := self.calc_data.hex().upper())
+        } | ({"readableContent": string} if string.upper() != data else {})
 
     def load_data_section(self, data: BytesIO):
         """

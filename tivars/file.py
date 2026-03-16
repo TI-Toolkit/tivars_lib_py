@@ -187,20 +187,25 @@ class TIComponent(Dock, Converter):
         return not len(self.calc_data)
 
     @classmethod
-    def get_type(cls, *, type_id: int = None, extension: str = None) -> type[Self] | None:
+    def get_type(cls, *, type_id: int = None, name: str = None, extension: str = None) -> type[Self] | None:
         """
-        Gets the subclass corresponding to a type ID or file extension if one is registered
+        Gets the subclass corresponding to a type ID, type name, or file extension if one is registered
 
         :param type_id: The type ID to search by, or
+        :param name: The type name to search by, or
         :param extension: The file extension to search by
         :return: A subclass of this component with corresponding type ID or extension, or ``None``
         """
 
         if type_id is not None:
-            if extension is not None:
-                raise ValueError("too many parameters passed to get_type")
-
             return cls._type_ids.get(type_id, None)
+
+        elif name is not None:
+            for var_type in cls._type_ids.values():
+                if name.removeprefix("TI") == var_type.__name__.removeprefix("TI"):
+                    return var_type
+
+            return None
 
         return None
 
