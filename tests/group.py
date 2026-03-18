@@ -23,6 +23,4 @@ class GroupTests(unittest.TestCase):
 
     def test_json(self):
         test_group = TIGroup.open("tests/data/var/Group.8xg")
-
-        # Technically not a round trip
-        self.assertEqual(test_group.ungroup()[1].json(), TIGroup(test_group.json()).ungroup()[1].json())
+        self.assertEqual(test_group.ungroup()[1].data, TIGroup(test_group.json()).ungroup()[1].data)

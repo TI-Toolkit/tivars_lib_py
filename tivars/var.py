@@ -712,10 +712,14 @@ class TIEntry(TIComponent):
 
         if "rawDataHex" in dct:
             self.raw.calc_data = bytearray.fromhex(dct["rawDataHex"])
+            self.coerce()
 
-        self.coerce()
-        if "readableContent" in dct:
+        elif "readableContent" in dct:
             self.load_string(dct["readableContent"])
+
+        else:
+            warn(f"No entry data was provided.",
+                 UserWarning)
 
     def dict(self, **kwargs) -> dict:
         string = self.string(**kwargs)
