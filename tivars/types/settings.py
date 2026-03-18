@@ -51,7 +51,7 @@ class SettingsEntry(SizedEntry):
     def summary(self) -> str:
         return super().summary() + (
                 "\n"
-                "Settings Information\n" + "\n  ".join(f"{var:9} {value}" for var, value in self.dict().items())
+                "Settings Information\n  " + "\n  ".join(f"{var:9} {value}" for var, value in self.dict().items())
         )
 
 
