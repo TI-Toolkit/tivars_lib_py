@@ -51,7 +51,7 @@ def extension_to_type(ext: str) -> type[TIComponent]:
 
         return TIEntry.get_type(extension=ext)
 
-    raise TypeError(f"Extension '{ext}' does not correspond to a TI-83 series type")
+    raise TypeError(f"Extension '{ext}' does not correspond to a TI-(e)z80 type")
 
 
 def component_to_json(var: TIComponent, **kwargs) -> str:
@@ -76,7 +76,7 @@ def image_to_image(infile: bytes, out_ext: str) -> bytes:
         from tivars.PIL import TI8xiPlugin, TI8ciPlugin, TI8caPlugin
 
     except ImportError:
-        raise ImportError("PIL is required to convert TI pictures/images to/from other formats")
+        raise ImportError("PIL is required to convert TI-(e)z80 pictures/images to/from other formats")
 
     Image.open(infile, "r").save(outfile := io.BytesIO(), out_ext.upper())
     outfile.seek(0)
