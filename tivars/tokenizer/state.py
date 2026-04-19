@@ -55,6 +55,10 @@ class EncoderState:
 
                 return token, remainder, self.next(token)
 
+        # Is there a token separator?
+        if string.startswith(("\\", "␟", " ", "‌")):
+            string = string[1:]
+
         tokens = trie.match(string)
         if not tokens:
             raise ValueError("no tokenization options exist")
