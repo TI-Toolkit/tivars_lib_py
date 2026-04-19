@@ -115,7 +115,7 @@ class TokenizationTests(unittest.TestCase):
         self.assertEqual(TIProgram("\n".join(lines)), TIProgram("\r\n".join(lines)))
 
     def test_byte_literals(self):
-        self.assertEqual(TIProgram.encode(r"\x26\uaa0AXYZ\0"), b'\x26\xaa\x0aXYZ\xbb\xd70')
+        self.assertEqual(TIProgram.encode(r"\x26\uaa0AXYZ\\0"), b'\x26\xaa\x0aXYZ\xbb\xd70')
 
         for leading_byte, prefix in TIToken.var_prefixes.items():
             self.assertEqual(TIProgram.encode(f"{prefix}0a"), bytes([leading_byte, 10]))
