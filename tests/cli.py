@@ -6,6 +6,7 @@ import shutil
 import unittest
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from tivars.bundle import *
 from tivars.cli import *
@@ -16,18 +17,17 @@ from tivars.types import *
 # I really shouldn't have to write this myself
 def in_clean_dir(func):
     def inner(self):
-        try:
-            with contextlib.chdir("tests"):
-                shutil.rmtree("cli", ignore_errors=True)
-                os.makedirs("cli", exist_ok=True)
+        with TemporaryDirectory() as tmp:
+            shutil.copytree("tests", tmp, dirs_exist_ok=True)
 
-                with contextlib.chdir("cli"):
-                    func(self)
+            try:
+                with contextlib.chdir(tmp):
+                    os.makedirs("cli")
+                    with contextlib.chdir("cli"):
+                        func(self)
 
-                shutil.rmtree("cli")
-
-        except AttributeError:
-            raise unittest.SkipTest("contextlib.chdir is not present in 3.10")
+            except AttributeError:
+                raise unittest.SkipTest("contextlib.chdir is not present in 3.10")
 
     return inner
 
