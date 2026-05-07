@@ -7,7 +7,7 @@ from tivars import TIHeader, TIVarFile, TIFlashFile, TIFile, TIBundle
 
 class FileTests(unittest.TestCase):
     def test_file_coercion(self):
-        test_var_file = TIFile.open("tests/data/var/ALLTOKS.8xp")
+        test_var_file = TIFile.open("tests/data/var/ALLTOKS.8Xp")
         test_flash_file = TIFile.open("tests/data/var/TI-84_Plus_CE-Python-OS-5.8.0.0022.8eu")
         test_bundle = TIFile.open("tests/data/var/TI84CEBundle_5.4.0.34.b84")
 
