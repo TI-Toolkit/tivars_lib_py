@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 include = ["tivars*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.default.json", "*.xml"]
+"*" = ["*.default.json", "*.schema.json", "*.xml"]
 
 
 [project]

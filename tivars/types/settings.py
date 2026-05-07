@@ -4,11 +4,13 @@ Graph window and table settings
 
 
 import json
+import os
 
 from warnings import warn
 
 from tivars.data import *
 from tivars.var import SizedEntry
+from tivars.util import *
 from .real import RealEntry
 
 
@@ -36,6 +38,11 @@ class SettingsEntry(SizedEntry):
 
         :param dct: The dict to load
         """
+
+        if dct is None:
+            name = "-".join(word.removeprefix("TI").lower() for word in split_case(self.__name__))
+            with open(os.path.join(os.path.dirname(__file__), f"json/{name}.default.json")) as file:
+                dct = json.load(file)
 
         for var, value in dct.items():
             if not hasattr(self, var):

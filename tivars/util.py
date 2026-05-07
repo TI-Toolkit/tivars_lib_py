@@ -68,6 +68,17 @@ def replacer(string: str, replacements: dict[str, str]) -> str:
     return string
 
 
+def split_case(string: str) -> list[str]:
+    """
+    Splits a string in any of several naming cases into separate words
+
+    :param string: The input string
+    :return: The words forming ``string``
+    """
+
+    return re.split("(?<=[a-z])(?=[A-Z])|[-+_]", string)
+
+
 def squash(string: str) -> str:
     """
     Removes all spaces from a string
@@ -112,4 +123,4 @@ def trim_string(string: str, length: int) -> str:
         return string[:length] + "..."
 
 
-__all__ = ["hex_format", "mode_format", "replacer", "squash", "trim_list", "trim_string"]
+__all__ = ["hex_format", "mode_format", "replacer", "split_case", "squash", "trim_list", "trim_string"]

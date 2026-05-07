@@ -584,12 +584,18 @@ class TIMonoGDB(SizedEntry, register=True):
         return max([eq.get_version() for eq in self.get_equations()], default=0x00)
 
     @Loader[dict]
-    def load_dict(self, dct: dict, **kwargs):
+    def load_dict(self, dct: dict = None, **kwargs):
         """
         Loads a JSON ``dict`` into this GDB
 
         :param dct: The dict to load
         """
+
+        if dct is None:
+            name = split_case(self.__name__)[-2].removeprefix("TI").lower()
+            with open(os.path.join(os.path.dirname(__file__), f"json/{name}.default.json")) as file:
+                dct = json.load(file)
+
         self.raw.calc_data[3] = {
             'Function': 0x10,
             'Parametric': 0x40,
@@ -988,14 +994,6 @@ class TIMonoFuncGDB(TIMonoGDB):
         Y0: The 10th equation in function mode
         """
 
-    @Loader[dict]
-    def load_dict(self, dct: dict = None, **kwargs):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/func.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
-
     def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
@@ -1158,14 +1156,6 @@ class TIMonoParamGDB(TIMonoGDB):
         Y6T: The 6th Y-component in parametric mode
         """
 
-    @Loader[dict]
-    def load_dict(self, dct: dict = None, **kwargs):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/param.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
-
     def _load_dict(self, dct: dict):
         for i in range(1, self.num_styles + 1):
             if (x_style := getattr(self, f"X{i}T").style) != (y_style := getattr(self, f"Y{i}T").style):
@@ -1303,14 +1293,6 @@ class TIMonoPolarGDB(TIMonoGDB):
         """
         r6: The 6th equation in polar mode
         """
-
-    @Loader[dict]
-    def load_dict(self, dct: dict = None, **kwargs):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/polar.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
 
     def dict(self, **kwargs) -> dict:
         return super().dict() | {
@@ -1501,14 +1483,6 @@ class TIMonoSeqGDB(TIMonoGDB):
         """
         w: The 3rd equation in sequence mode
         """
-
-    @Loader[dict]
-    def load_dict(self, dct: dict = None, **kwargs):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/seq.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
 
     def _load_dict(self, dct: dict):
         ext_settings = dct.get("extSettings", {})
