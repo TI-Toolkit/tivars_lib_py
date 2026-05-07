@@ -12,6 +12,7 @@ CONVERT_FORMATS = """
 TIComplex         <-> json, txt
 TIEquation        <-> json, txt
 TIGDB             <-> json
+TIGroup           <-> json
 TIImage           <-> png, jpeg, etc. (requires PIL)
 TILicense         <-> json, txt
 TIList            <-> json, txt
@@ -63,7 +64,7 @@ def component_to_json(var: TIComponent, **kwargs) -> str:
 
 
 def component_to_text(var: TIComponent, **kwargs) -> str:
-    if isinstance(var, PictureEntry):
+    if var.__format__ == TIComponent.__format__:
         raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
 
     else:

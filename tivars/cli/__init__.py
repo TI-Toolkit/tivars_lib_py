@@ -33,7 +33,7 @@ def cli(*args, **kwargs):
 
             try:
                 match in_ext:
-                    case "txt" | "md":
+                    case "txt":
                         text = Path(args.infile).read_text(encoding="utf8")
 
                         text_to_component(text, out_ext, lang=args.lang, model=args.model).save(args.name, model=args.model)
