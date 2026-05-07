@@ -96,7 +96,7 @@ def trim_list(lst: list, length: int, joiner: str = "\n") -> str:
 
     :param lst: The list to trim
     :param length: The length to trim ``lst`` to
-    :param joiner: The string to join ``lst` by (defaults to a newline)
+    :param joiner: The string to join ``lst`` by (defaults to a newline)
     :return: ``lst`` trimmed to ``length`` and joined by ``joiner``
     """
 
