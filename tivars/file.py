@@ -207,7 +207,13 @@ class TIComponent(Dock, Converter):
 
             return None
 
-        return None
+        else:
+            for subclass in cls.__subclasses__():
+                if subtype := subclass.get_type(extension=extension):
+                    return subtype
+
+            return None
+
 
     @classmethod
     def register(cls, var_type: type[Self], override: int = None):

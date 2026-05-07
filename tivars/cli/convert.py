@@ -46,11 +46,8 @@ def format_to_extension(fmt: str, *, model: TIModel) -> str:
 
 
 def extension_to_type(ext: str) -> type[TIComponent]:
-    if ext.startswith("8"):
-        if ext.endswith("u"):
-            return TILicense
-
-        return TIEntry.get_type(extension=ext)
+    if subtype := TIComponent.get_type(extension=ext):
+        return subtype
 
     raise TypeError(f"Extension '{ext}' does not correspond to a TI-(e)z80 type")
 

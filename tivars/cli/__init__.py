@@ -66,6 +66,9 @@ def cli(*args, **kwargs):
                         with open(args.outfile or filename, "wb+") as file:
                             file.write(outfile)
 
+            except (TypeError, ImportError) as e:
+                raise e
+
             except Exception as e:
                 raise ValueError(f"Cannot convert file '{args.infile}' to format '{out_ext}'.") from None
 
@@ -128,7 +131,7 @@ def cli(*args, **kwargs):
                         raise TypeError(f"Cannot juxtapose passed files with format '{out_ext}'.")
 
                 case _:
-                    raise ValueError(f"Unrecognized format '{out_ext}'.")
+                    raise TypeError(f"Unrecognized format '{out_ext}'.")
 
             outfile.save(filename=args.outfile, model=args.model)
             print(f"Packed {len(files)} file{'s' if len(files) > 1 else ''}.")
