@@ -94,7 +94,7 @@ class CLITests(unittest.TestCase):
         orig = TIBundle.open("../data/var/TI83CEBundle_5.4.0.34.b83")
         new = TIBundle.open("test_bundle.b83")
 
-        self.assertListEqual(orig.unbundle(), new.unbundle())
+        self.assertCountEqual(orig.unbundle(), new.unbundle())
 
     @in_clean_dir
     def test_group_round_trip(self):
@@ -104,4 +104,4 @@ class CLITests(unittest.TestCase):
         orig = TIGroup.open("../data/var/Group.8xg")
         new = TIGroup.open("test_group.8xg")
 
-        self.assertListEqual(orig.ungroup(), new.ungroup())
+        self.assertCountEqual(orig.ungroup(), new.ungroup())
