@@ -197,7 +197,7 @@ assert my_program.raw.type_id == b'\x05'
 
 ### Vars & Headers
 
-If you want to create an entire var or just a header, use `TIVar` or `TIHeader`:
+If you want to create an entire var or just a header, use `TIVarFile` or `TIHeader`:
 
 ```python
 from tivars.var import *
@@ -253,14 +253,20 @@ Vars and headers, like entries, are composed of data sections, and contain packa
 
 #### Flash Files
 
-Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers. A flash header does _not_ need to be "packaged" into a larger file format like an entry in a regular var; see `TIFlashHeader.open` and `TIFlashHeader.save`.
+Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers.
+
+A flash header does _not_ need to be "packaged" into a larger file format like an entry in a regular var; see `TIFlashHeader.open` and `TIFlashHeader.save`. If you do want to stitch multiple together, though, or need to load a source with multiple headers, use a `TIFlashFile`.
 
 > [!TIP]
 > Loading flash files into a `TIEntry` probably won't work very well.
 
+#### Generic Loaders
+
+All file types are children of the `TIFile` base type, and entries and flash headers are children of the `TIComponent` type. Use either of these to load files or portions thereof whose identities are completely unknown to you, and they will be coerced to the correct type. Methods such as `TIComponent.get_type` can additionally be used to identify unknown files from partial information, such as a file extension, without delegating to the type handlers.
+
 ### Models
 
-All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
+All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets (see [Tokenization](#tokenization)).
 
 ## Documentation
 
@@ -311,7 +317,12 @@ img.show()
 
 ### Tokenization
 
-Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
+Functions to transcode between strings and TI-BASIC tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
+
+These functions operate on sequences of `TIToken` objects, which store relevant translation and transcoding information. `TIModel` instances (see [Models](#models)) track a `TITokens` container of all tokens available on that model and a `TITokenTrie` for encoding those tokens.
+
+> [!TIP]
+> If you find yourself holding an `IllegalToken` after decoding, the source program is either malformed, not written in TI-BASIC, or engaging in deep shenanigans.
 
 ## Examples
 
