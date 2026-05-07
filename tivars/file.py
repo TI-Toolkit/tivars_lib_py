@@ -6,7 +6,7 @@ The fundamental file components
 from io import BytesIO
 from pathlib import Path
 from sys import version_info
-from typing import BinaryIO, TypeAlias
+from typing import BinaryIO
 from warnings import catch_warnings, simplefilter, warn
 
 from .data import *
@@ -17,7 +17,7 @@ from .util import *
 # Use Self type if possible
 match version_info[:2]:
     case 3, 10:
-        Self: TypeAlias = 'TIComponent'
+        Self = 'TIComponent'
 
     case _:
         from typing import Self

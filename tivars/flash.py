@@ -5,7 +5,7 @@ The fundamental flash file components
 
 from io import BytesIO
 from sys import version_info
-from typing import BinaryIO, TypeAlias
+from typing import BinaryIO
 from warnings import warn
 
 from .data import *
@@ -18,7 +18,7 @@ from .util import *
 
 match version_info[:2]:
     case 3, 10:
-        Self: TypeAlias = 'TIFlashHeader'
+        Self = 'TIFlashHeader'
 
     case _:
         from typing import Self
