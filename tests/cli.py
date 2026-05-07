@@ -16,14 +16,18 @@ from tivars.types import *
 # I really shouldn't have to write this myself
 def in_clean_dir(func):
     def inner(self):
-        with contextlib.chdir("tests"):
-            shutil.rmtree("cli", ignore_errors=True)
-            os.makedirs("cli", exist_ok=True)
+        try:
+            with contextlib.chdir("tests"):
+                shutil.rmtree("cli", ignore_errors=True)
+                os.makedirs("cli", exist_ok=True)
 
-            with contextlib.chdir("cli"):
-                func(self)
+                with contextlib.chdir("cli"):
+                    func(self)
 
-            shutil.rmtree("cli")
+                shutil.rmtree("cli")
+
+        except AttributeError:
+            raise unittest.SkipTest("contextlib.chdir is not present in 3.10")
 
     return inner
 
