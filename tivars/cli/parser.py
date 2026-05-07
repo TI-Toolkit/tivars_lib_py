@@ -78,15 +78,4 @@ unpack.add_argument("infile",
 unpack.add_argument("-o", "--outdir", default=".",
                     help="output directory (will be created if nonexistent) (default: cwd)")
 
-verify = subparsers.add_parser("verify",
-                               description="Read a file and flag/repair improper data",
-                               help="Read a file and flag/repair improper data",
-                               formatter_class=HELP_FORMATTER)
-verify.add_argument("infile",
-                    help="input file")
-verify.add_argument("-o", "--outfile", default=None,
-                    help="output file if repairing (default: <infile>)")
-verify.add_argument("-r", "--repair", action="store_true",
-                    help="whether to repair <infile> if needed (default: false)")
-
 __all__ = ["parser"]
