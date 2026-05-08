@@ -1,3 +1,8 @@
+"""
+Manipulate groups and bundles
+"""
+
+
 from tivars.bundle import *
 from tivars.flash import *
 from tivars.types import *
