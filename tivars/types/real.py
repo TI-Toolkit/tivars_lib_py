@@ -8,7 +8,6 @@ import re
 
 from decimal import Decimal, localcontext
 from fractions import Fraction
-from warnings import warn
 
 from tivars.data import *
 from tivars.models import *
@@ -617,7 +616,7 @@ class TIRealPi(TIReal, register=True):
 
     @Loader[str]
     def load_string(self, string: str):
-        string = replacer(string, {"pi": "π", "*": ""})
+        string = replacer(string.lower(), {"pi": "π", "*": ""})
 
         if "π" not in string:
             raise ValueError("value must be a multiple of π")
@@ -642,8 +641,13 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
+            # Backport '#' Fraction format spec
             case "" | "#":
-                return format(self.fraction(), format_spec).replace("/", "π/")
+                string = format(self.fraction(), "")
+                if "/" not in string:
+                    string += "/1"
+
+                return string.replace("/", "π/")
 
             case _:
                 return super().__format__(format_spec)
@@ -653,7 +657,7 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
 
     @Loader[str]
     def load_string(self, string: str):
-        replacer(string, {"pi": "π", "*": ""})
+        string = replacer(string.lower(), {"pi": "π", "*": ""})
 
         if string != "0" and "π" not in string:
             raise ValueError("value must be a fractional multiple of π")
