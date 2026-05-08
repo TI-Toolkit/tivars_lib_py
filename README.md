@@ -16,6 +16,7 @@ Much of the functionality of this package has been ported over from [tivars_lib_
 - [Documentation](#documentation)
   - [API](#api)
   - [Formatting Output](#formatting-output)
+- [CLI](#cli)
 - [Other Functionalities](#other-functionalities)
   - [PIL](#pil)
   - [Tokenization](#tokenization)
@@ -307,6 +308,20 @@ All entry types support string formatting using Python's f-strings.
 - Lists and matrices support float-style formatting, applied to their elements.
 
 Additionally, the `t` type is supported for types which can be made from tokens, composing the object out of typeable (accessible) token names. For example, `-2 + 5i` is presented as `~2+5[i]`.
+
+## CLI
+
+For simple var operations that don't need whole scripts to hoist, a command-line interface is offered via `python -m tivars ...`. If installed using `pip`, a top-level `tivars ...` command will also be registered.
+
+The CLI is divided into three core functionalities.
+- `tivars convert`: Convert between file types, e.g. `TIProgram -> txt`, `png -> TIPicture`, etc.
+  - `PIL` must be installed to import or export TI picture types 
+- `tivars info`: Display basic information about a file
+  - The same view can be obtained in the library using the `.summary()` method on an object
+- `tivars pack/unpack`: Manipulate groups and bundles
+  - Placing multiple entries or flash headers into one file is also supported
+
+Use `tivars --help` to get your bearings, and `tivars <subcommand> --help` to view all accepted arguments for a function listed above.
 
 ## Other Functionalities
 
