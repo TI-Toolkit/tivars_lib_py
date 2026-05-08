@@ -56,7 +56,7 @@ class TokenizedEntry(SizedEntry):
                     string = self.string(lang=lang, mode="accessible")
 
                 case _:
-                    raise KeyError
+                    raise KeyError()
 
             if lines:
                 return "\n".join(f"{index:{lines}}{sep}" + line for index, line in enumerate(string.split("\n")))
