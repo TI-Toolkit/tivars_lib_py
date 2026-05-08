@@ -25,10 +25,18 @@ To juxtapose flash headers in a single flash file:
 
 
 def pack_bundle(files: list[TIFile], *, name: str = None, model: TIModel = None) -> TIBundle:
+    """
+    :return: A `TIBundle` containing ``files``, with some ``name`` and targeting ``model``
+    """
+
     return TIBundle.bundle(files, name=name or "BUNDLE", model=model or TI_84PCE)
 
 
 def pack_group(files: list[TIFile], *, name: str = None) -> TIGroup:
+    """
+    :return: A `TIGroup` containing ``files``, with some ``name``
+    """
+
     entries = []
     for file in files:
         if not isinstance(file, TIVarFile):
@@ -39,6 +47,10 @@ def pack_group(files: list[TIFile], *, name: str = None) -> TIGroup:
     return TIGroup.group(entries, name=name or "GROUP")
 
 def pack_entries(files: list[TIFile], *, name: str = None) -> TIVarFile:
+    """
+    :return: A `TIVarFile` containing the entries from ``files``, with some ``name``
+    """
+
     var = TIVarFile(name=name or "UNNAMED")
     for file in files:
         if not isinstance(file, TIVarFile):
@@ -50,6 +62,10 @@ def pack_entries(files: list[TIFile], *, name: str = None) -> TIVarFile:
 
 
 def pack_headers(files: list[TIFile], *, name: str = None) -> TIFlashFile:
+    """
+    :return: A `TIFlashFile` containing the headers from ``files``, with some ``name``
+    """
+
     flash = TIFlashFile(name=name or "UNNAMED")
     for file in files:
         if not isinstance(file, TIFlashFile):

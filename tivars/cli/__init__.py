@@ -1,3 +1,8 @@
+"""
+CLI for common, simple file operations
+"""
+
+
 import contextlib
 import glob
 import os
@@ -11,6 +16,10 @@ from .parser import *
 
 
 def cli(*args, **kwargs):
+    """
+    Main CLI driver; if no args are passed, pulls from the command line
+    """
+
     if args or kwargs:
         args = [*args, *[f"--{key}={value}" for key, value in kwargs.items()]]
 

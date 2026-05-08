@@ -54,4 +54,6 @@ privacy = ["PRIVATE:**.__class_getitem__", "PRIVATE:**.__get__", "PRIVATE:**.__i
 
            "PRIVATE:tivars.models.model.*",
            "PUBLIC:tivars.models.model.TIFeature", "PUBLIC:tivars.models.model.TIModel",
+
+           "PRIVATE:tivars.__version__",
 ]

@@ -5,8 +5,6 @@ from tivars.file import *
 from tivars.models import *
 from tivars.types import *
 
-from tivars.types.picture import PictureEntry
-
 
 CONVERT_FORMATS = """
 TIComplex         <-> json, txt
@@ -29,6 +27,10 @@ TIWindowSettings  <-> json
 
 
 def format_to_extension(fmt: str, *, model: TIModel) -> str:
+    """
+    :return: The file extension for ``fmt`` corresponding to ``model``
+    """
+
     subclasses = TIEntry.__subclasses__()
     while subclasses:
         subclass = subclasses.pop(0)
@@ -46,6 +48,10 @@ def format_to_extension(fmt: str, *, model: TIModel) -> str:
 
 
 def extension_to_type(ext: str) -> type[TIComponent]:
+    """
+    :return: The `TIComponent` subtype having extension ``ext``
+    """
+
     if subtype := TIComponent.get_type(extension=ext):
         return subtype
 
@@ -53,6 +59,10 @@ def extension_to_type(ext: str) -> type[TIComponent]:
 
 
 def component_to_json(var: TIComponent, **kwargs) -> str:
+    """
+    :return: The JSON representation of ``var`` given some parameters, or errors
+    """
+
     try:
         return json.dumps(var.json(**kwargs))
 
@@ -61,6 +71,10 @@ def component_to_json(var: TIComponent, **kwargs) -> str:
 
 
 def component_to_text(var: TIComponent, **kwargs) -> str:
+    """
+    :return: The text representation of ``var`` given some parameters, or errors
+    """
+
     if var.__format__ == TIComponent.__format__:
         raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
 
@@ -69,6 +83,10 @@ def component_to_text(var: TIComponent, **kwargs) -> str:
 
 
 def image_to_image(infile: bytes, out_ext: str) -> bytes:
+    """
+    :return: The bytes of ``infile`` in ``out_ext`` format, or errors
+    """
+
     try:
         from PIL import Image
         from tivars.PIL import TI8xiPlugin, TI8ciPlugin, TI8caPlugin
@@ -82,12 +100,20 @@ def image_to_image(infile: bytes, out_ext: str) -> bytes:
 
 
 def json_to_component(dct: dict, out_ext: str, **kwargs) -> TIComponent:
+    """
+    :return: The JSON ``dct`` converted to a `TIComponent` supporting file extension ``out_ext``
+    """
+
     component = extension_to_type(out_ext)()
     component.load_dict(dct, **kwargs)
     return component
 
 
 def text_to_component(text: str, out_ext: str, **kwargs) -> TIComponent:
+    """
+    :return: The text ``text`` converted to a `TIComponent` supporting file extension ``out_ext``
+    """
+
     component = extension_to_type(out_ext)()
     component.load_string(text, **kwargs)
     return component
