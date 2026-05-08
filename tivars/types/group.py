@@ -53,6 +53,9 @@ class TIGroup(SizedEntry, register=True):
                  UserWarning)
 
         for index, entry in enumerate(entries):
+            if not isinstance(entry, TIEntry):
+                raise TypeError(f"groups cannot hold '{entry.__class__}' types")
+
             name = entry.raw.name.rstrip(b'\x00')
             vat = bytearray([entry.type_id, 0, entry.version, 0, 0, entry.archived])
 
