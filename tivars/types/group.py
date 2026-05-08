@@ -54,13 +54,13 @@ class TIGroup(SizedEntry, register=True):
 
         for index, entry in enumerate(entries):
             if not isinstance(entry, TIEntry):
-                raise TypeError(f"groups cannot hold '{entry.__class__}' types")
+                raise TypeError(f"groups cannot hold {type(entry).__name__} types")
 
             name = entry.raw.name.rstrip(b'\x00')
             vat = bytearray([entry.type_id, 0, entry.version, 0, 0, entry.archived])
 
             if entry.archived:
-                warn(f"Entry #{index} ({type(entry)}) is archived, which may lead to unexpected behavior on-calc.",
+                warn(f"Entry #{index} ({type(entry).__name__}) is archived, which may lead to unexpected behavior on-calc.",
                      UserWarning)
 
             if isinstance(entry, TIGraphedEquation):

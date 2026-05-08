@@ -688,12 +688,12 @@ class TIFlashHeader(TIComponent):
         self.raw.devices += data.read(1)
 
         if self._type_id is not None and self.type_id != self._type_id:
-            if subclass := TIFlashHeader.get_type(self.type_id):
-                warn(f"The header type is incorrect (expected {type(self)}, got {subclass}).",
+            if subclass := TIFlashHeader.get_type(type_id=self.type_id):
+                warn(f"The header type is incorrect (expected {type(self).__name__}, got {subclass.__name__}).",
                      BytesWarning)
 
             else:
-                warn(f"The header type is incorrect (expected {type(self)}, got an unknown type). "
+                warn(f"The header type is incorrect (expected {type(self).__name__}, got an unknown type). "
                      f"Load the header into a TIFlashHeader instance if you don't know the header type.",
                      BytesWarning)
 
@@ -870,7 +870,7 @@ class TIFlashFile(TIFile, register=True):
             self.headers[-1].load_bytes(header_data := data.read(length))
 
             if len(header_data) != length:
-                warn(f"The data length of header #{len(self.headers) - 1} ({type(self.headers[-1])}) is incorrect "
+                warn(f"The data length of header #{len(self.headers) - 1} ({type(self.headers[-1]).__name__}) is incorrect "
                      f"(expected {length}, got {len(header_data)}).",
                      BytesWarning)
 

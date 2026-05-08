@@ -409,7 +409,7 @@ class TIEntry(TIComponent):
                      UserWarning)
 
             if self.flash_only:
-                warn(f"{type(self)} vars are not compatible with flashless chips.",
+                warn(f"{type(self).__name__} vars are not compatible with flashless chips.",
                      UserWarning)
 
         return value
@@ -619,11 +619,11 @@ class TIEntry(TIComponent):
         if self._type_id is not None and self.type_id != self._type_id:
             if subclass := TIEntry.get_type(type_id=self.type_id):
                 if not issubclass(subclass, self.__class__):
-                    warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
+                    warn(f"The entry type is incorrect (expected {type(self).__name__}, got {subclass.__name__}).",
                          BytesWarning)
 
             else:
-                warn(f"The entry type is incorrect (expected {type(self)}, got an unknown type). "
+                warn(f"The entry type is incorrect (expected {type(self).__name__}, got an unknown type). "
                      f"Load the entry into a base TIEntry instance if you don't know the entry type.",
                      BytesWarning)
 
@@ -681,7 +681,7 @@ class TIEntry(TIComponent):
                  BytesWarning)
 
         if self.meta_length == TIEntry.base_meta_length and self.flash_only:
-            warn(f"{type(self)} vars are not compatible with flashless chips.",
+            warn(f"{type(self).__name__} vars are not compatible with flashless chips.",
                  BytesWarning)
 
     def bytes(self) -> bytes:
@@ -971,7 +971,7 @@ class TIVarFile(TIFile, register=True):
             self.entries[-1].load_bytes(entry_data := data.read(length))
 
             if len(entry_data) != length:
-                warn(f"The data length of entry #{len(self.entries) - 1} ({type(self.entries[-1])}) is incorrect "
+                warn(f"The data length of entry #{len(self.entries) - 1} ({type(self.entries[-1]).__name__}) is incorrect "
                      f"(expected {length}, got {len(entry_data)}).",
                      BytesWarning)
 
