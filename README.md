@@ -11,6 +11,7 @@ Much of the functionality of this package has been ported over from [tivars_lib_
 - [How to Use](#how-to-use)
   - [Entries](#entries)
   - [Vars & Headers](#vars--headers)
+  - [Other Files](#other-files) 
   - [Models](#models)
 - [Documentation](#documentation)
   - [API](#api)
@@ -251,6 +252,8 @@ Vars and headers, like entries, are composed of data sections, and contain packa
 > [!WARNING]
 > Edits to read-only bytes like the checksum are reset whenever any other data in the var is updated.
 
+### Other Files
+
 #### Flash Files
 
 Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers.
@@ -259,6 +262,10 @@ A flash header does _not_ need to be "packaged" into a larger file format like a
 
 > [!TIP]
 > Loading flash files into a `TIEntry` probably won't work very well.
+
+#### Bundles
+
+Bundles can be loaded and unpacked using the `TIBundle` type.
 
 #### Generic Loaders
 
