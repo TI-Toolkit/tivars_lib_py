@@ -618,7 +618,7 @@ class TIFile(Dock):
 
             return ti_file
 
-    def save(self, filename: str = None, model: TIModel = TI_84PCE):
+    def save(self, filename: str = None, *, model: TIModel = TI_84PCE):
         """
         Saves this file given a filename
 

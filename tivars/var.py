@@ -1007,13 +1007,13 @@ class TIVarFile(TIFile, register=True):
     def summary(self) -> str:
         return "\n".join([self.header.summary(), *[entry.summary() for entry in self.entries]]) + "\n"
 
-    def save(self, filename: str = None, model: TIModel = TI_84PCE):
+    def save(self, filename: str = None, *, model: TIModel = TI_84PCE):
         for index, entry in enumerate(self.entries):
             if entry.get_min_os() > model.OS("latest"):
                 warn(f"Entry #{index + 1} is not supported by {model}.",
                      UserWarning)
 
-        super().save(filename, model)
+        super().save(filename, model=model)
 
 
 class SizedEntry(TIEntry):

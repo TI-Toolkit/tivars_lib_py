@@ -794,7 +794,7 @@ class TIFlashHeader(TIComponent):
 
         return header
 
-    def save(self, filename: str = None, model: TIModel = TI_84PCE):
+    def save(self, filename: str = None, *, model: TIModel = TI_84PCE):
         """
         Saves this header to the current directory given a filename and targeted model
 
@@ -802,8 +802,20 @@ class TIFlashHeader(TIComponent):
         :param model: A model to target (defaults to ``TI_84PCE``)
         """
 
-        with open(filename or self.get_filename(model), 'wb+') as file:
-            file.write(self.bytes())
+        self.export().save(filename, model=model)
+
+    def export(self, *, name: str = None) -> 'TIFlashFile':
+        """
+        Exports this header to a `TIFlashFile` with a specified name
+
+        :param name: The name of the flash file (defaults to this header's name)
+
+        :return: A `TIFlashFile` containing this header
+        """
+
+        flash = TIFlashFile(name=name or self.name)
+        flash.add_header(self)
+        return flash
 
 
 class TIFlashFile(TIFile, register=True):
