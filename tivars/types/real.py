@@ -13,6 +13,7 @@ from warnings import warn
 from tivars.data import *
 from tivars.models import *
 from tivars.numeric import *
+from tivars.util import *
 from tivars.var import TIEntry
 
 
@@ -26,38 +27,31 @@ class RealEntry(TIEntry):
     Two `RealEntry` types are used to form a single `ComplexEntry` corresponding to a complex number.
     """
 
-    _T = 'RealEntry'
+    extension = "8xn"
 
-    extensions = {
-        None: "8xn",
-        TI_82: "82n",
-        TI_83: "83n",
-        TI_83P: "8xn"
-    }
+    min_calc_data_length = 9
 
-    min_data_length = 9
-
-    min_exponent = 0x00
+    min_exponent: int = 0x00
     """
     The smallest allowed floating point exponent
     """
 
-    is_exact = False
+    is_exact: bool = False
     """
     Whether this numeric type is exact
     """
 
-    imag_subtype_id = None
+    imag_subtype_id: int = None
     """
     The subtype ID this type receives if used as an imaginary part
     """
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
+                 name: str = "A",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __float__(self) -> float:
         return self.float()
@@ -91,8 +85,8 @@ class RealEntry(TIEntry):
 
         return negated
 
-    @Section(min_data_length)
-    def calc_data(self) -> bytes:
+    @Section(min_calc_data_length)
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Bits[0:6])[0:1]
@@ -123,7 +117,7 @@ class RealEntry(TIEntry):
         :return: The subtype of this real number
         """
 
-        return self.get_type(self.subtype_id)
+        return self.get_type(type_id=self.subtype_id)
 
     @property
     def sign(self) -> int:
@@ -139,15 +133,16 @@ class RealEntry(TIEntry):
         if self._type_id is not None:
             self.subtype_id = self._type_id
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        data = data or self.data
+    def get_min_os(self) -> OsVersion:
+        match self.get_version():
+            case 0x00:
+                return OsVersions.INITIAL
 
-        match data[0]:
-            case 0x18 | 0x19:
+            case 0x06:
                 return TI_84P.OS("2.53")
 
             case _:
-                return OsVersions.INITIAL
+                return TI_83PCE.OS()
 
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.subtype_id <= 0x19 or model.has(TIFeature.ExactMath))
@@ -160,7 +155,7 @@ class RealEntry(TIEntry):
         :param decimal: The decimal to load
         """
 
-        raise NotImplementedError
+        self.load_string(str(decimal))
 
     def decimal(self) -> Decimal:
         """
@@ -206,24 +201,6 @@ class RealEntry(TIEntry):
             super().coerce()
 
 
-class GraphRealEntry(RealEntry):
-    """
-    Warning converter for real numeric types supported by graph parameters
-
-    Values used for plotting (e.g. Xmin) will behave unexpectedly if set to a radical or π type.
-    """
-
-    _T = 'RealEntry'
-
-    @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
-        if type(value) not in (TIReal, TIUndefinedReal, TIRealFraction):
-            warn(f"Graph parameters cannot store {type(value)} values correctly.",
-                 UserWarning)
-
-        return super().set(value)
-
-
 class TIReal(RealEntry, register=True):
     """
     Parser for real floating point values
@@ -233,14 +210,14 @@ class TIReal(RealEntry, register=True):
     A `TIReal` entry can be used to form `TIComplex` or `TIComplexPi` complex numbers.
     """
 
-    min_data_length = 9
+    min_calc_data_length = 9
 
     imag_subtype_id = 0x0C
 
     _type_id = 0x00
 
-    @Section(min_data_length)
-    def calc_data(self) -> bytes:
+    @Section(min_calc_data_length)
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[1:2]
@@ -258,10 +235,6 @@ class TIReal(RealEntry, register=True):
 
         The mantissa is 14 digits stored in BCD format, two digits per byte.
         """
-
-    @Loader[Decimal]
-    def load_decimal(self, decimal: Decimal):
-        self.load_string(str(decimal))
 
     def decimal(self) -> Decimal:
         with localcontext() as ctx:
@@ -384,7 +357,7 @@ class TIRealRadical(RealEntry, register=True):
 
     versions = [0x10]
 
-    min_data_length = 9
+    min_calc_data_length = 9
 
     imag_subtype_id = 0x1D
 
@@ -448,8 +421,8 @@ class TIRealRadical(RealEntry, register=True):
             case _:
                 return super().__format__(format_spec)
 
-    @Section(min_data_length)
-    def calc_data(self) -> bytes:
+    @Section(min_calc_data_length)
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Bits[4:8])[1:2]
@@ -689,4 +662,4 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
 
 
 __all__ = ["TIReal", "TIUndefinedReal", "TIRealFraction", "TIRealRadical", "TIRealPi", "TIRealPiFraction",
-           "RealEntry", "GraphRealEntry"]
+           "RealEntry", "RealEntry"]

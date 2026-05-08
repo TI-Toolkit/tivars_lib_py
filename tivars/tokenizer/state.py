@@ -16,12 +16,12 @@ class EncoderState:
     Each state represents some encoding context which affects tokenization.
     """
 
-    mode = 0
+    mode: int = 0
     """
     Whether to munch maximally (``0``) or minimally (``-1``)
     """
 
-    max_length = None
+    max_length: int = None
     """
     The maximum number of tokens to emit before leaving this state
     """
@@ -45,6 +45,19 @@ class EncoderState:
             token = IllegalToken(bytes.fromhex(string.lstrip(r"\ux")))
 
             return token, remainder, self.next(token)
+
+        # Is this a var prefix?
+        for leading_byte, prefix in TIToken.var_prefixes.items():
+            if string.startswith(prefix):
+                length = len(prefix) + 2
+                string, remainder = string[:length], string[length:]
+                token = IllegalToken(bytes([leading_byte, int(string[-2:], 16)]))
+
+                return token, remainder, self.next(token)
+
+        # Is there a token separator?
+        if string.startswith(("\\", "␟", " ", "‌")):
+            string = string[1:]
 
         tokens = trie.match(string)
         if not tokens:

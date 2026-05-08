@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 include = ["tivars*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.default.json", "*.xml"]
+"*" = ["*.default.json", "*.schema.json", "*.xml"]
 
 
 [project]
@@ -20,6 +20,9 @@ requires-python = ">=3.10"
 [project.urls]
 Repository = "https://github.com/TI-Toolkit/tivars_lib_py"
 Documentation = "https://ti-toolkit.github.io/tivars_lib_py/"
+
+[project.scripts]
+tivars = "tivars.cli:cli"
 
 [project.optional-dependencies]
 images = ["pillow", "numpy"]

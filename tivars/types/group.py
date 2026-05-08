@@ -26,23 +26,14 @@ class TIGroup(SizedEntry, register=True):
     The VAT information can be safely ignored since it is redetermined when importing back onto a calculator.
     """
 
-    _T = 'TIGroup'
-
-    extensions = {
-        None: "8xg",
-        TI_82: "82g",
-        TI_83: "83g",
-        TI_83P: "8xg"
-    }
-
     _type_id = 0x17
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GROUP",
+                 name: str = "GROUP",
                  version: int = None, archived: bool = True,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     @staticmethod
     def group(entries: Sequence[TIEntry], *, name: str = "GROUP") -> 'TIGroup':
@@ -54,17 +45,12 @@ class TIGroup(SizedEntry, register=True):
         :return: A group containing ``entries``
         """
 
-        if not entries:
-            warn("Groups are expected to be non-empty.",
-                 UserWarning)
+        group = TIGroup(name=name)
+        data = b''
 
-            return TIGroup(name=name)
-
-        elif len(entries) < 2:
+        if len(entries) < 2:
             warn("Groups are expected to have at least two entries.",
                  UserWarning)
-
-        group = TIGroup(for_flash=bool(entries[0].flash_bytes), name=name)
 
         for index, entry in enumerate(entries):
             name = entry.raw.name.rstrip(b'\x00')
@@ -87,28 +73,29 @@ class TIGroup(SizedEntry, register=True):
                 case _:
                     vat += name.ljust(3, b'\x00')
 
-            group.data += vat
-            group.data += entry.calc_data
+            data += vat
+            data += entry.calc_data
 
+        # Only update metadata when we're done
+        group.data += data
         return group
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        return max([entry.get_min_os() for entry in self.ungroup(data)], default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        return max([entry.get_min_os() for entry in self.ungroup()], default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        return max([entry.get_version() for entry in self.ungroup(data)], default=0x00)
+    def get_version(self) -> int:
+        return max([entry.get_version() for entry in self.ungroup()], default=0x00)
 
-    def ungroup(self, data: bytes = None) -> list[TIEntry]:
+    def ungroup(self) -> list[TIEntry]:
         """
         Ungroups a group object into a ``list`` of its entries
 
         All VAT data is ignored.
 
-        :param data: The data to ungroup (defaults to this group's data)
-        :return: A ``list`` of entries stored in ``data``
+        :return: A ``list`` of the entries stored in this group
         """
 
-        data = BytesIO(data or self.data[:])
+        data = BytesIO(self.data)
         entries = []
 
         index = 1
@@ -139,7 +126,7 @@ class TIGroup(SizedEntry, register=True):
                     *_, page = data.read(3)
                     name = data.read(3)
 
-            entry = TIEntry(for_flash=bool(self.flash_bytes), version=version, archived=page > 0)
+            entry = TIEntry(version=version, archived=page > 0)
             entry.type_id = type_id
             entry.coerce()
 
@@ -164,3 +151,10 @@ class TIGroup(SizedEntry, register=True):
         """
 
         self.data = self.group(entries).data
+
+    @Loader[dict]
+    def load_dict(self, dct: dict, **kwargs):
+        self.load_from_entries([TIEntry(entry) for entry in dct["entries"]])
+
+    def dict(self, **kwargs) -> dict:
+        return {"entries": [TIEntry.dict(entry) for entry in self.ungroup()]}

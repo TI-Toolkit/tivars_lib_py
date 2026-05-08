@@ -27,22 +27,21 @@ import inspect
 
 from collections.abc import Callable
 from math import ceil
-from typing import TypeVar
+from typing import overload, Generic, TypeVar
 from warnings import warn
 
 
+_I = TypeVar('_I')
 _T = TypeVar('_T')
 
 
-class Converter:
+class Converter(Generic[_T]):
     """
     Abstract base class for data section converters
     """
 
-    _T = _T
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance: _I = None) -> _T:
         """
         Converts ``bytes`` -> `_T`
 
@@ -54,7 +53,7 @@ class Converter:
         raise NotImplementedError
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, length: int = None, current: bytes = None) -> bytes:
+    def set(cls, value: _T, *, instance: _I = None, length: int = None, current: bytes = b'') -> bytes:
         """
         Converts  `_T` -> ``bytes``
 
@@ -68,15 +67,13 @@ class Converter:
         raise NotImplementedError
 
 
-class Bytes(Converter):
+class Bytes(Converter[bytes]):
     """
     No-op converter for data sections best interpreted as raw bytes
     """
 
-    _T = bytes
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> bytes:
         """
         Converts ``bytes`` -> ``bytes`` (no-op)
 
@@ -87,7 +84,7 @@ class Bytes(Converter):
         return bytes(data)
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: bytes, **kwargs) -> bytes:
         """
         Converts ``bytes`` -> ``bytes`` (no-op)
 
@@ -100,62 +97,19 @@ class Bytes(Converter):
 
 class Data(Bytes):
     """
-    No-op converter for data sections with associated metadata
-
-    The following metadata fields are automatically set by this converter:
-
-            - Version
+    No-op converter for data sections which calls ``instance.update()`` to propagate metadata changes
     """
 
-    _T = bytes
 
-    @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> _T:
-        """
-        Converts ``bytes`` -> ``bytes`` and updates metadata fields
-
-        :param value: The value to convert
-        :param instance: The instance which contains the data section
-        :return: The bytes in ``value``, unchanged
-        """
-
-        if instance is not None:
-            instance.version = instance.get_version(value)
-
-        return super().set(value)
-
-
-class SizedData(Data):
-    """
-    No-op converter for sized data sections with associated metadata
-
-    The following metadata fields are automatically set by this converter:
-
-            - Version
-            - Length
-    """
-
-    _T = bytes
-
-    @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> _T:
-        if instance is not None:
-            instance.length = len(value)
-
-        return super().set(value, instance=instance)
-
-
-class Boolean(Converter):
+class Boolean(Converter[bool]):
     """
     Converter for data sections best interpreted as boolean flags
 
     The data section is expected to have length one.
     """
 
-    _T = bool
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> bool:
         """
         Converts ``bytes`` -> ``bool``, where any nonzero value is truthy
 
@@ -166,7 +120,7 @@ class Boolean(Converter):
         return data != b'\x00'
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: bool, **kwargs) -> bytes:
         """
         Converts ``bool`` -> ``bytes``, where ``b'\\x80'`` is truthy and ``b'\\x00'`` is falsy
 
@@ -177,17 +131,15 @@ class Boolean(Converter):
         return b'\x80' if value else b'\x00'
 
 
-class Integer(Converter):
+class Integer(Converter[int]):
     """
     Converter for data sections best interpreted as integers
 
     Integers are always little-endian, unsigned, and at most two bytes.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts `bytes` -> ``int``
 
@@ -198,7 +150,7 @@ class Integer(Converter):
         return int.from_bytes(data, 'little')
 
     @classmethod
-    def set(cls, value: _T, *, length: int = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, length: int = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes``
 
@@ -215,17 +167,15 @@ class Integer(Converter):
             raise OverflowError(f"{value} cannot fit in a section of width {length}")
 
 
-class String(Converter):
+class String(Converter[str]):
     """
     Converter for data sections best interpreted as strings
 
     Strings are encoded in latin-1.
     """
 
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         """
         Converts ``bytes`` -> ``str``
 
@@ -236,7 +186,7 @@ class String(Converter):
         return data.decode('latin-1').rstrip('\0')
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         """
         Converts ``str`` -> ``bytes``
 
@@ -258,19 +208,17 @@ class Bits:
     def __class_getitem__(cls, item: slice):
         indices = range(*item.indices(8))
 
-        class BitSlice(Converter):
+        class BitSlice(Converter[int]):
             """
             Converter to extract and package a slice of bits within a byte
 
             The data section is expected to have length one.
             """
 
-            _T = int
-
             mask = sum(1 << i for i in indices)
 
             @classmethod
-            def get(cls, data: bytes, **kwargs) -> _T:
+            def get(cls, data: bytes, **kwargs) -> int:
                 """
                 Converts ``bytes`` -> ``int`` by concatenating bits in a slice
 
@@ -286,7 +234,7 @@ class Bits:
                 return int(value[::-1], 2)
 
             @classmethod
-            def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+            def set(cls, value: int, *, current: bytes = b'', **kwargs) -> bytes:
                 """
                 Converts ``int`` -> ``bytes`` by setting bits in a slice
 
@@ -344,7 +292,7 @@ class Section:
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
-    def __init__(self, length: int = None, converter: type[Converter] = None, *, class_attr: bool = False):
+    def __init__(self, length: int = None, converter: type[Converter[_T]] = None, *, class_attr: bool = False):
         """
         Define a new data section given a length and type converter
 
@@ -374,10 +322,18 @@ class Section:
 
         return new
 
-    def __set_name__(self, owner, name: str):
+    def __set_name__(self, owner: type, name: str):
         self._name = name
 
-    def __get__(self, instance, owner: type = None) -> _T:
+    @overload
+    def __get__(self, instance: None, owner: type = None) -> 'Section':
+        ...
+
+    @overload
+    def __get__(self, instance: _I, owner: type = None) -> _T:
+        ...
+
+    def __get__(self, instance: _I, owner: type = None):
         if instance is None:
             return getattr(owner, f"_{self._name}") if self._class_attr else self
 
@@ -387,26 +343,30 @@ class Section:
         except IndexError:
             raise ValueError(f"data '{self._name}' is empty or missing")
 
-    def __set__(self, instance, value: _T):
+    def __set__(self, instance: _I, value: _T):
         setattr(instance.raw, self._name, self._set_raw(instance, value))
 
-    def __call__(self, func: Callable) -> 'Section':
+        if issubclass(self._converter, Data):
+            instance.update()
+
+
+    def __call__(self, func: Callable[[_I], _T] | Callable[[_I, _T], _T]) -> 'Section':
         new = copy.copy(self)
         new.__doc__ = func.__doc__
 
         signature = inspect.signature(func)
         match len(signature.parameters):
             case 1: pass
-            case 2: new._set = lambda value, _set=self._set, *, instance=None, **kwargs:\
+            case 2: new._set = lambda value, _set=self._set, *, instance=None, **kwargs: \
                 _set(func(instance, value), instance=instance, **kwargs)
             case _: raise TypeError("Section and View function definitions can only take 1 or 2 parameters.")
 
         return new
 
-    def _get_raw(self, instance) -> bytes:
-        return getattr(instance.raw, self._name, None)
+    def _get_raw(self, instance: _I) -> bytes:
+        return getattr(instance.raw, self._name, b'')
 
-    def _set_raw(self, instance, value: _T) -> _T:
+    def _set_raw(self, instance: _I, value: _T) -> bytes:
         value = self._set(value, instance=instance, length=self._length, current=self._get_raw(instance))
 
         if self._length is not None:
@@ -457,16 +417,18 @@ class View(Section):
     An optional second parameter can be passed, wherein the method is used as a pre-converter before `Converter.set`.
     """
 
-    def __init__(self, target: Section, converter: type[Converter], indices: slice = slice(None)):
+    def __init__(self, target: Section, converter: type[Converter], indices: slice = slice(None), *,
+                 class_attr: bool = False):
         """
         Define a new data view given a data section to watch, a type converter, and the portion of the section to view
 
         :param target: The data section to view
         :param converter: The type converter for the view (defaults to `Bytes`)
         :param indices: The slice of the data section to view (defaults to the entire section)
+        :param class_attr: Whether the view should return a shadowed class attribute (defaults to ``False``)
         """
 
-        super().__init__(None, converter)
+        super().__init__(None, converter, class_attr=class_attr)
 
         self._target = target
         self._indices = indices
@@ -486,8 +448,11 @@ class View(Section):
         else:
             self._length = len(range(*self._indices.indices(self._target.length)))
 
-    def __set__(self, instance, value: _T):
+    def __set__(self, instance: _I, value: _T):
         getattr(instance.raw, self._target.name)[self._indices] = self._set_raw(instance, value)
+
+        if issubclass(self._converter, Data):
+            instance.update()
 
     def __getitem__(self, indices: slice) -> 'View':
         return self.__class__(self._target, self._converter, indices)
@@ -495,7 +460,7 @@ class View(Section):
     def __index__(self) -> slice:
         return self.indices
 
-    def _get_raw(self, instance) -> bytes:
+    def _get_raw(self, instance: _I) -> bytes:
         return getattr(instance.raw, self._target.name)[self._indices]
 
     @property
@@ -512,7 +477,7 @@ class Dock:
     Base class to inherit to implement the loader system
     """
 
-    loaders = {}
+    loaders: dict[tuple[type, ...], Callable] = {}
 
     def load(self, data):
         """
@@ -545,25 +510,24 @@ class Loader:
             ...
     """
 
-    types = ()
+    types: tuple[type, ...] = ()
 
-    def __init__(self, func):
+    def __init__(self, func: Callable):
         self._func = func
 
     def __call__(self, *args, **kwargs):
         pass
 
     def __class_getitem__(cls, item: tuple[type, ...] | type) -> type:
-        try:
-            return type("Loader", (Loader,), {"types": tuple(item)})
+        if isinstance(item, tuple):
+            return type("Loader", (Loader,), {"types": item})
 
-        except TypeError:
-            return type("Loader", (Loader,), {"types": (item,)})
+        return type("Loader", (Loader,), {"types": (item,)})
 
-    def __set_name__(self, owner, name: str):
+    def __set_name__(self, owner: Dock, name: str):
         owner.loaders = owner.loaders | {self.types: self._func}
         setattr(owner, name, self._func)
 
 
 __all__ = ["Section", "View", "Dock", "Loader",
-           "Converter", "Bytes", "Data", "SizedData", "Boolean", "Integer", "String", "Bits"]
+           "Converter", "Bytes", "Data", "Boolean", "Integer", "String", "Bits"]

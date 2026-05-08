@@ -8,21 +8,20 @@ from warnings import warn
 from tivars.data import *
 from tivars.models import *
 from tivars.numeric import *
+from tivars.util import *
 from tivars.var import TIEntry
 from .real import *
 
 
-class RealPart(Converter):
+class RealPart(Converter[RealEntry]):
     """
     Converter for the real part of complex numbers
 
     Real parts are instances of `RealEntry`.
     """
 
-    _T = RealEntry
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> RealEntry:
         """
         Converts ``bytes`` -> `RealEntry`
 
@@ -34,7 +33,7 @@ class RealPart(Converter):
         return instance.real_type.get(data)
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: RealEntry, **kwargs) -> bytes:
         """
         Converts `RealEntry` -> ``bytes``
 
@@ -47,7 +46,7 @@ class RealPart(Converter):
         return type(value).set(value)
 
 
-class ImaginaryPart(Converter):
+class ImaginaryPart(Converter[RealEntry]):
     """
     Converter for the imaginary part of complex numbers
 
@@ -55,10 +54,8 @@ class ImaginaryPart(Converter):
     Updating the imaginary part of a complex entry updates the type of the entire entry.
     """
 
-    _T = RealEntry
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> RealEntry:
         """
         Converts ``bytes`` -> `RealEntry`
 
@@ -70,7 +67,7 @@ class ImaginaryPart(Converter):
         return instance.imag_type.get(data)
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: RealEntry, *, instance=None, **kwargs) -> bytes:
         """
         Converts `RealEntry` -> ``bytes``
 
@@ -100,15 +97,9 @@ class ComplexEntry(TIEntry):
     The entry is coerced automatically if the imaginary part is updated.
     """
 
-    versions = [0x00, 0x0B, 0x10]
+    extension = "8xc"
 
-    extensions = {
-        None: "8xc",
-        TI_83: "83c",
-        TI_83P: "8xc"
-    }
-
-    min_data_length = 18
+    min_calc_data_length = 18
 
     is_exact = False
     """
@@ -121,11 +112,11 @@ class ComplexEntry(TIEntry):
     """
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "A",
+                 name: str = "A",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __complex__(self):
         return self.complex()
@@ -168,8 +159,8 @@ class ComplexEntry(TIEntry):
                 except (TypeError, ValueError):
                     return super().__format__(format_spec)
 
-    @Section(min_data_length)
-    def calc_data(self) -> bytes:
+    @Section(min_calc_data_length)
+    def calc_data(self) -> bytearray:
         """
         The data section of the entry
 
@@ -234,7 +225,7 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `real_subtype_id`.
         """
 
-        return self.get_type(self.real_subtype_id).real_analogue
+        return self.get_type(type_id=self.real_subtype_id).real_analogue
 
     @property
     def imag_type(self) -> type['RealEntry']:
@@ -242,7 +233,7 @@ class ComplexEntry(TIEntry):
         :return: The subclass of `RealEntry` corresponding to this entry's `imag_subtype_id`.
         """
 
-        return self.get_type(self.imag_subtype_id).real_analogue
+        return self.get_type(type_id=self.imag_subtype_id).real_analogue
 
     def clear(self):
         super().clear()
@@ -250,15 +241,15 @@ class ComplexEntry(TIEntry):
         self.real_subtype_id = TIComplex.type_id
         self.imag_subtype_id = self._type_id if self._type_id is not None else TIComplex.type_id
 
-    def components(self) -> (RealEntry, RealEntry):
+    def components(self) -> tuple[RealEntry, RealEntry]:
         """
         :return: The components of this complex number as a pair of `RealEntry` values
         """
 
         return self.real, self.imag
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        match self.get_version(data):
+    def get_min_os(self) -> OsVersion:
+        match self.get_version():
             case 0x00:
                 return TI_83.OS()
 
@@ -266,12 +257,10 @@ class ComplexEntry(TIEntry):
                 return TI_84P.OS("2.55")
 
             case _:
-                return TI_83PCE()
+                return TI_83PCE.OS()
 
-    def get_version(self, data: bytes = None) -> int:
-        data = data or self.data
-
-        match max(data[0], data[9]):
+    def get_version(self) -> int:
+        match max(self.data[0] & 63, self.data[9] & 63):
             case TIComplex.type_id:
                 return 0x00
 
@@ -332,7 +321,7 @@ class ComplexEntry(TIEntry):
                     continue
 
                 try:
-                    self.real = self.get_type(type_id)(parts[0])
+                    self.real = self.get_type(type_id=type_id)(parts[0])
                     break
 
                 except (TypeError, ValueError):
@@ -345,7 +334,7 @@ class ComplexEntry(TIEntry):
 
     def coerce(self):
         self.type_id = self.imag_subtype_id
-        if subclass := self.get_type(self.type_id):
+        if subclass := self.get_type(type_id=self.type_id):
             self.__class__ = subclass
 
         else:
@@ -382,6 +371,8 @@ class TIComplexFraction(TIComplex, register=True):
     A `TIComplexFraction` has a `TIRealFraction` as its imaginary part.
     """
 
+    versions = [0x0B]
+
     is_exact = True
 
     real_analogue = TIRealFraction
@@ -397,6 +388,8 @@ class TIComplexRadical(ComplexEntry, register=True):
     """
 
     flash_only = True
+
+    versions = [0x10]
 
     is_exact = True
 
@@ -417,6 +410,8 @@ class TIComplexPi(TIComplex, register=True):
     """
 
     flash_only = True
+
+    versions = [0x10]
 
     is_exact = True
 

@@ -7,7 +7,7 @@ import numpy as np
 import warnings
 
 from PIL import Image, ImageFile
-from tivars import TIVar
+from tivars import TIVarFile
 from tivars.types.picture import PictureEntry
 
 
@@ -17,8 +17,11 @@ def accept(prefix):
 
 def register(file, encoder):
     Image.register_open(file.format, file, accept)
-    Image.register_extension(file.format, "." + file.format)
     Image.register_decoder(file.format, TIDecoder)
+
+    Image.register_extension(file.format, "." + file.format)
+    Image.register_extension(file.format, "." + file.format.replace("x", "2"))
+    Image.register_extension(file.format, "." + file.format.replace("x", "3"))
 
     Image.register_save(file.format, file._save)
     Image.register_encoder(file.format, encoder)
@@ -41,7 +44,7 @@ class TIImageFile(ImageFile.ImageFile):
         with warnings.catch_warnings():
             warnings.simplefilter("error")
 
-            var = TIVar()
+            var = TIVarFile()
             var.load_bytes(self.fp.read())
 
             img = var.entries[0]
@@ -82,7 +85,7 @@ class TIDecoder(ImageFile.PyDecoder):
         :return: The number of bytes consumed and the error code (``-1, 0`` on success)
         """
 
-        var = TIVar()
+        var = TIVarFile()
         var.load_bytes(buffer)
         self.set_as_raw(np.asarray(var.entries[0].array(), dtype=np.uint8))
 

@@ -3,6 +3,8 @@ Flash types
 """
 
 
+import re
+
 from tivars.data import *
 from tivars.flash import TIFlashHeader
 from tivars.models import *
@@ -14,8 +16,8 @@ class TIOperatingSystem(TIFlashHeader, register=True):
     """
 
     extensions = {
-        None: "8eu",
         TI_82A: "82u",
+        TI_83P: "8xu",
         TI_84PCSE: "8cu",
         TI_84PCE: "8eu",
         TI_83PCE: "8pu",
@@ -31,7 +33,6 @@ class TIApp(TIFlashHeader, register=True):
     """
 
     extensions = {
-        None: "8ek",
         TI_83P: "8xk",
         TI_84PCSE: "8ck",
         TI_84PCE: "8ek"
@@ -48,7 +49,6 @@ class TICertificate(TIFlashHeader, register=True):
     """
 
     extensions = {
-        None: "8eq",
         TI_83P: "8xq",
         TI_84PCSE: "8cq",
         TI_84PCE: "8eq"
@@ -64,19 +64,12 @@ class TILicense(TIFlashHeader, register=True):
     A license is simply a string containing the TI license agreement, possibly spanning multiple devices and languages.
     """
 
-    extensions = {
-        None: "8eu",
-        TI_82A: "82u",
-        TI_84PCSE: "8cu",
-        TI_84PCE: "8eu",
-        TI_83PCE: "8pu",
-        TI_82AEP: "8yu"
-    }
+    extensions = TIOperatingSystem.extensions
 
     _type_id = 0x3E
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         """
         The data stored in the flash header
         """
@@ -86,6 +79,13 @@ class TILicense(TIFlashHeader, register=True):
         """
         The license stored in the header as a string
         """
+
+    def summary(self) -> str:
+        regex = r"\[\w+\]"
+        return super().summary() + (
+            f"\n"
+            f"  License(s)     {', '.join(re.findall(regex, self.license))}\n"
+        )
 
 
 __all__ = ["TIOperatingSystem", "TIApp", "TICertificate", "TILicense"]

@@ -9,9 +9,11 @@ from typing import BinaryIO
 from warnings import warn
 
 from .data import *
+from .file import *
 from .flags import *
 from .models import *
 from .numeric import BCD
+from .util import *
 
 
 match version_info[:2]:
@@ -32,21 +34,16 @@ class DeviceType(Enum):
     TI_92 = 0x88
     TI_89 = 0x98
 
-    _all = [TI_83P, TI_73, TI_92, TI_89]
-    DEVICES = _all
 
-
-class BCDDate(Converter):
+class BCDDate(Converter[tuple[int, int, int]]):
     """
     Converter for dates stored in four byte BCD
 
     A date (dd, mm, yyyy) is stored in BCD as ``ddmmyyyy``.
     """
 
-    _T = tuple[int, int, int]
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> tuple[int, int, int]:
         """
         Converts ``bytes`` -> ``tuple[int, int, int]``
 
@@ -57,7 +54,7 @@ class BCDDate(Converter):
         return BCD.get(data[0:1]), BCD.get(data[1:2]), BCD.get(data[2:4])
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: tuple[int, int, int], **kwargs) -> bytes:
         """
         Converts ``tuple[int, int, int]`` -> ``bytes``
 
@@ -68,17 +65,15 @@ class BCDDate(Converter):
         return BCD.set(value[0] * 100 ** 3 + value[1] * 100 ** 2 + value[2], **kwargs)
 
 
-class BCDRevision(Converter):
+class BCDRevision(Converter[str]):
     """
     Converter for revision numbers stored in two byte BCD
 
     A revision xx.yy is stored in BCD as ``xxyy``.
     """
 
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         """
         Converts ``bytes`` -> ``str``
 
@@ -89,7 +84,7 @@ class BCDRevision(Converter):
         return f"{BCD.get(data[0:1])}.{BCD.get(data[1:2])}"
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         """
         Converts ``str`` -> ``bytes``
 
@@ -101,7 +96,7 @@ class BCDRevision(Converter):
         return BCD.set(100 * int(major) + int(minor), **kwargs)
 
 
-class FlashDevices(Converter):
+class FlashDevices(Converter[list[tuple[int | DeviceType, int]]]):
     """
     Converter for the device field of a flash header
 
@@ -110,29 +105,27 @@ class FlashDevices(Converter):
     The exception is a `TILicense`, which can hold licenses for multiple devices.
     """
 
-    _T = list[tuple[int, int]]
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> list[tuple[DeviceType, int]]:
         """
-        Converts ``bytes`` -> ``list[tuple[int, int]]``
+        Converts ``bytes`` -> ``list[tuple[DeviceType, int]]``
 
         :param data: The raw bytes to convert
         :return: The device tuples stored in ``data``
         """
 
-        return [*zip(*[iter(data)] * 2)]
+        return [(DeviceType(device), type_id) for device, type_id in zip(*[iter(data)] * 2)]
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: list[tuple[int | DeviceType, int]], **kwargs) -> bytes:
         """
-        Converts ``list[tuple[int, int]]`` -> ``bytes``
+        Converts ``list[tuple[int | DeviceType, int]]`` -> ``bytes``
 
         :param value: The value to convert
         :return: The device field derived from ``value``
         """
 
-        return bytes([item for pair in value for item in pair])
+        return bytes([int(item) for pair in value for item in pair])
 
 
 class TIFlashBlock(Dock):
@@ -209,6 +202,10 @@ class TIFlashBlock(Dock):
             else:
                 self.load(init)
 
+    def __str__(self) -> str:
+        return " ".join(section.decode().upper()
+                        for section in (self.raw.size, self.raw.address, self.raw.data, self.raw.checksum))
+
     @property
     def size(self) -> int:
         """
@@ -246,7 +243,7 @@ class TIFlashBlock(Dock):
 
         return self.raw.checksum
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this block
@@ -290,8 +287,48 @@ class TIFlashBlock(Dock):
 
         return self.raw.bytes()
 
+    @Loader[dict]
+    def load_json(self, dct: dict, **kwargs):
+        """
+        Loads this component from a JSON dictionary representation
 
-class FlashData(Converter):
+        :param dct: The dict to load
+        """
+
+        self.load_dict(dct, **kwargs)
+
+    @Loader[dict]
+    def load_dict(self, dct: dict, **kwargs):
+        """
+        Loads this block from a JSON dictionary representation
+
+        :param dct: The dict to load
+        """
+
+        self.address = bytes.fromhex(dct["address"]),
+        self.block_type = bytes.fromhex(dct["blockType"]),
+        self.data = bytearray.fromhex(dct["dataHex"])
+
+    def json(self, **kwargs) -> dict:
+        """
+        :return: A JSON dictionary representation of this block
+        """
+
+        return self.dict(**kwargs)
+
+    def dict(self, **kwargs) -> dict:
+        """
+        :return: A JSON dictionary representation of this block
+        """
+
+        return {
+            "address": self.address.hex().upper(),
+            "block_type": self.block_type.hex().upper(),
+            "dataHex": self.data.hex().upper()
+        }
+
+
+class FlashData(Converter[bytes | list[TIFlashBlock]]):
     """
     Converter to split flash data into blocks if stored in Intel format
 
@@ -299,10 +336,8 @@ class FlashData(Converter):
     Otherwise, this converter manipulates ``list[TIFlashBlock]``.
     """
 
-    _T = bytes | list[TIFlashBlock]
-
     @classmethod
-    def get(cls, data: bytes, *, instance=None) -> _T:
+    def get(cls, data: bytes, *, instance=None) -> bytes | list[TIFlashBlock]:
         """
         Converts ``bytes`` -> ``bytes | list[TIFlashBlock]``
 
@@ -318,48 +353,39 @@ class FlashData(Converter):
             return data
 
     @classmethod
-    def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+    def set(cls, value: bytes | list[TIFlashBlock], *, instance=None, **kwargs) -> bytes:
         """
         Converts ``bytes | list[TIFlashBlock]`` -> ``bytes``
+
+        If `value` is a `list[TIFlashBlock]`, the instance `binary_flag` will be updated.
 
         :param value: The value to convert
         :param instance: The instance which contains the data section
         :return: The concatenation of the blocks in ``value``
         """
 
-        if instance is None or instance.binary_flag == 0x01:
+        if instance is not None and instance.binary_flag == 0x01 and isinstance(value, list):
             return b'\r\n'.join(block.bytes() for block in value)
 
         else:
             return value
 
 
-class TIFlashHeader(Dock):
+class TIFlashHeader(TIComponent):
     """
     Parser for flash headers
 
     A flash file can contain up to three headers, though usually only one.
     """
 
-    extensions = {None: "8ek"}
+    extensions: dict[TIModel | None, str] = {None: "8ek"}
     """
     The file extension used for this header per-model
     """
 
-    _type_id = None
-    _type_ids = {}
+    _type_ids: dict[int, type[Self]] = {}
 
-    class Raw:
-        """
-        Raw bytes container for `TIFlashHeader`
-
-        Any class with a distinct byte format requires its own `Raw` class to contain its data sections.
-        Each data section must have a corresponding slot in `Raw` in order to use `Converter` classes.
-
-        The `Raw` class must also contain a `bytes()` method specifying the order and visibility of the data sections.
-        Additional methods can also be included, but should be callable from the outer class.
-        """
-
+    class Raw(TIComponent.Raw):
         __slots__ = "magic", "revision", "binary_flag", "object_type", "date", "name", "devices", "product_id", \
             "calc_data"
 
@@ -401,7 +427,7 @@ class TIFlashHeader(Dock):
     def __init__(self, init=None, *,
                  magic: str = "**TIFL**", revision: str = "0.0", binary_format: bool = False, object_type: int = 0x88,
                  date: tuple[int, int, int] = (0, 0, 0), name: str = "UNNAMED",
-                 device_type: int = 0x73, product_id: int = 0x00,
+                 device_type: int | DeviceType = DeviceType.TI_83P, product_id: int = 0x00,
                  data: bytes = b':00000001FF'):
         """
         Creates an empty flash header with specified meta and data values
@@ -431,19 +457,11 @@ class TIFlashHeader(Dock):
         self.devices = [(device_type, self._type_id if self._type_id is not None else 0xFF)]
         self.product_id = product_id
 
-        if data:
-            self.calc_data = bytearray(data)
-
-        elif init is not None:
-            if hasattr(init, "bytes"):
-                self.load_bytes(init.bytes())
-
-            else:
-                self.load(init)
+        super().__init__(init, data=data)
 
         self._has_checksum = True
 
-    def __init_subclass__(cls, /, register=False, override=None, **kwargs):
+    def __init_subclass__(cls, /, register: bool = False, override: int = None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if register:
@@ -494,14 +512,14 @@ class TIFlashHeader(Dock):
 
         return int.from_bytes(self.raw.name_length, 'little')
 
-    @Section(31, String)
+    @Section(8, String)
     def name(self) -> str:
         """
         The name or basecode attached to the flash header
         """
 
     @Section(None, FlashDevices)
-    def devices(self) -> list[tuple[int, int]]:
+    def devices(self) -> list[tuple[DeviceType, int]]:
         """
         The devices targeted by the flash header
 
@@ -510,12 +528,12 @@ class TIFlashHeader(Dock):
         """
 
     @View(devices, DeviceType)[0:1]
-    def device_type(self) -> int:
+    def device_type(self) -> DeviceType:
         """
         The (first) device targeted by the flash header
         """
 
-    @View(devices, Bits[:])[1:2]
+    @View(devices, Bits[:], class_attr=True)[1:2]
     def type_id(self) -> int:
         """
         The (first) type ID of the flash header
@@ -539,7 +557,7 @@ class TIFlashHeader(Dock):
         return int.from_bytes(self.raw.calc_data_size, 'little')
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         """
         The data stored in the flash header
         """
@@ -564,15 +582,16 @@ class TIFlashHeader(Dock):
         return self.raw.checksum
 
     @classmethod
-    def get_type(cls, type_id: int) -> type['TIFlashHeader'] | None:
-        """
-        Gets the subclass corresponding to a type ID if one is registered
+    def get_type(cls, *, type_id: int = None, name: str = None, extension: str = None) -> type[Self] | None:
+        if extension is not None:
+            for var_type in cls._type_ids.values():
+                if extension.lstrip(".") in var_type.extensions:
+                    return var_type
 
-        :param type_id: The type ID to search by
-        :return: A subclass of `TIFlashHeader` with corresponding type ID or ``None``
-        """
+            return None
 
-        return cls._type_ids.get(type_id, None)
+        else:
+            return super().get_type(type_id=type_id, name=name)
 
     @staticmethod
     def next_header_length(stream: BinaryIO) -> int:
@@ -589,31 +608,21 @@ class TIFlashHeader(Dock):
         stream.seek(data_size, 1)
         match remaining := stream.read(8):
             case b"":
-                entry_length = 78 + data_size
+                header_length = 78 + data_size
 
             case b"**TIFL**":
-                entry_length = 78 + data_size
+                header_length = 78 + data_size
                 stream.seek(-8, 1)
 
             case _:
-                entry_length = 78 + data_size + 2
+                header_length = 78 + data_size + 2
                 stream.seek(-len(remaining), 1)
 
         stream.seek(-78 - data_size, 1)
-        return entry_length
+        return header_length
 
     @classmethod
-    def register(cls, var_type: type['TIFlashHeader'], override: int = None):
-        """
-        Registers a subtype with this class for coercion
-
-        :param var_type: The `TIFlashHeader` subtype to register
-        :param override: A type ID to use for registry that differs from that of the var type
-        """
-
-        cls._type_ids[var_type._type_id if override is None else override] = var_type
-
-    def extension(self, model: TIModel = TI_84PCE) -> str:
+    def get_extension(cls, model: TIModel = TI_84PCE) -> str:
         """
         Determines the header's file extension given a targeted model
 
@@ -625,33 +634,13 @@ class TIFlashHeader(Dock):
             warn(f"The {model} does not support flash files.",
                  UserWarning)
 
-        extension = ""
         for min_model in reversed(TIModel.MODELS):
-            if model in self.extensions and min_model <= model:
-                extension = self.extensions[model]
-                break
+            if model in cls.extensions and min_model <= model:
+                return cls.extensions[model]
 
-        if not extension:
-            warn(f"The {model} does not support this var type.",
-                 UserWarning)
+        return cls.extensions[TI_84PCE]
 
-            return self.extensions[None]
-
-        return extension
-
-    def filename(self, model: TIModel = TI_84PCE) -> str:
-        """
-        Determines the header's filename given a targeted model
-
-        The filename is the concatenation of the header name and extension (see `TIFlashHeader.extension`).
-
-        :param model: A model to target (defaults to ``TI_84PCE``)
-        :return: The header's filename
-        """
-
-        return f"{self.name}.{self.extension(model)}"
-
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this header
@@ -680,7 +669,7 @@ class TIFlashHeader(Dock):
 
         # Read name
         name_length = data.read(1)[0]
-        self.raw.name = data.read(31).rstrip(b'\x00')
+        self.raw.name = data.read(8)
 
         if name_length != self.name_length:
             warn(f"The header name length ({name_length}) doesn't match the length of the name "
@@ -688,9 +677,10 @@ class TIFlashHeader(Dock):
                  BytesWarning)
 
         # Read types
+        data.seek(23, 1)
         self.raw.devices = data.read(1)
 
-        if self.device_type not in DeviceType.DEVICES:
+        if self.device_type not in list(DeviceType):
             warn(f"The device type ({self.device_type}) is not recognized.",
                  BytesWarning)
 
@@ -755,6 +745,30 @@ class TIFlashHeader(Dock):
 
         self.load_bytes(file.read(self.next_header_length(file)))
 
+    def summary(self) -> str:
+        joiner = "\n                 "
+
+        if self.binary_flag == 0x01:
+            data = trim_list([str(block) for block in self.data], 4, joiner)
+
+        else:
+            data = trim_string(hex_format(self.calc_data, '-2x'), 50)
+
+        return (
+            f"Header Information\n"
+            f"  Type           {type(self).__name__} (ID 0x{self.type_id})\n"
+            f"  Name           {self.name}\n"
+            f"\n"
+            f"  Revision No.   {self.revision}\n"
+            f"  Revision Date  {self.date}\n"
+            f"\n"
+            f"  Binary Format  0x{self.binary_flag:02x} ({'Intel' if self.binary_flag == 0x01 else 'binary'})\n"
+            f"  Object Type    0x{self.object_type:02x}\n"
+            f"  Device(s)      {', '.join(device.name for device, _ in self.devices)}"
+            f"\n"
+            f"  Data           {data}\n"
+        )
+
     @classmethod
     def open(cls, filename: str) -> Self:
         """
@@ -788,28 +802,87 @@ class TIFlashHeader(Dock):
         :param model: A model to target (defaults to ``TI_84PCE``)
         """
 
-        with open(filename or self.filename(model), 'wb+') as file:
+        with open(filename or self.get_filename(model), 'wb+') as file:
             file.write(self.bytes())
 
-    def coerce(self):
+
+class TIFlashFile(TIFile, register=True):
+    magics = ["**TIFL**"]
+
+    def __init__(self, *, name: str = "UNNAMED", data: bytes = None):
         """
-        Coerces this header to a subclass if possible using the header's type ID
+        Creates an empty flash file with a specified name
 
-        Valid types must be registered to be considered for coercion.
+        :param name: The name of the flash file (defaults to ``UNNAMED``)
+        :param data: The file's data (defaults to empty)
         """
 
-        if self._type_id is None:
-            if subclass := self.get_type(self.type_id):
-                self.__class__ = subclass
-                self.coerce()
+        self.headers: list[TIFlashHeader] = []
 
-            elif self.type_id != 0xFF:
-                warn(f"Type ID 0x{self.type_id:02x} is not recognized; no coercion will occur.",
+        super().__init__(name=name, data=data)
+
+    @property
+    def is_empty(self) -> bool:
+        """
+        :return: Whether this flash file contains no headers
+        """
+
+        return len(self.headers) == 0
+
+    def add_header(self, header: TIFlashHeader = None):
+        """
+        Adds a header to this file
+
+        :param header: A `TIFlashHeader` to add (defaults to an empty header)
+        """
+
+        header = header or TIFlashHeader()
+        self.headers.append(header)
+
+    def clear(self):
+        """
+        Removes all headers from this flash file
+        """
+
+        self.headers = []
+
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
+        if self.is_empty:
+            return "8xk"
+
+        else:
+            return self.headers[0].get_extension(model)
+
+    @Loader[bytes, bytearray, memoryview, BytesIO]
+    def load_bytes(self, data: bytes | BytesIO):
+        if hasattr(data, "read"):
+            data = BytesIO(data.read())
+
+        else:
+            data = BytesIO(data)
+
+        self.clear()
+        while data.read(8) == b'**TIFL**':
+            data.seek(-8, 1)
+            self.add_header()
+
+            length = TIFlashHeader.next_header_length(data)
+            self.headers[-1].load_bytes(header_data := data.read(length))
+
+            if len(header_data) != length:
+                warn(f"The data length of header #{len(self.headers) - 1} ({type(self.headers[-1])}) is incorrect "
+                     f"(expected {length}, got {len(header_data)}).",
                      BytesWarning)
 
-            else:
-                warn("Type ID is 0xFF; no coercion will occur.",
-                     UserWarning)
+        if remaining := data.read():
+            warn(f"The selected flash file contains unexpected additional data: {remaining}.",
+                 BytesWarning)
+
+    def bytes(self) -> bytes:
+        return b"".join(header.bytes() for header in self.headers)
+
+    def summary(self) -> str:
+        return "\n".join(header.summary() for header in self.headers) + "\n"
 
 
-__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader"]
+__all__ = ["DeviceType", "BCDDate", "BCDRevision", "TIFlashBlock", "TIFlashHeader", "TIFlashFile", "TIFile"]

@@ -35,7 +35,7 @@ else:
                "TIMonoGDB", "TIGDB", "TIGraphedEquation",
                "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
                "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-               "EquationFlags", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle",
+               "EquationFlags", "GraphMode", "SeqMode", "GraphStyle", "GraphColor", "GlobalLineStyle", "BorderColor",
                "TIComplex", "TIComplexList",
                "TIUndefinedReal",
                "TIWindowSettings", "TIRecallWindow", "TITableSettings",

@@ -14,6 +14,15 @@ class TIToken(Token):
     Instantiating your own `TIToken` is not recommended.
     """
 
+    var_prefixes = {
+        0x5C: r"Matr\x",
+        0x5D: r"List\x",
+        0x5E: r"Equ\x",
+        0x60: r"Pic\x",
+        0x61: r"GDB\x",
+        0xAA: r"Str\x"
+    }
+
     def __init__(self, token: Token):
         super().__init__(token.bits, token.langs, token.attrs, token.since, token.until)
 
@@ -65,8 +74,15 @@ class IllegalToken(TIToken):
     def __init__(self, bits: bytes):
         self.bits = bits
 
-        super().__init__(Token(bits, {"en": Translation(b'?', self.escape, self.escape, [])},
-                               {"illegal": "true"}))
+        # Display leading byte type if this is an illegal variable
+        if prefix := self.var_prefixes.get(self.bits[0]):
+            display = prefix + self.bits.hex()[2:]
+
+        else:
+            display = self.escape
+
+        super().__init__(Token(bits, {"en": Translation(b'?', display, self.escape, [])},
+                                   {"illegal": "true"}))
 
 
 __all__ = ["TIToken", "IllegalToken"]

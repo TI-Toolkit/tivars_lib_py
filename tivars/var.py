@@ -9,11 +9,13 @@ from collections.abc import Iterator
 from io import BytesIO
 from sys import version_info
 from typing import BinaryIO
-from warnings import catch_warnings, simplefilter, warn
+from warnings import warn
 
 from .data import *
+from .file import *
 from .models import *
 from .tokenizer import Name
+from .util import *
 
 
 # Use Self type if possible
@@ -31,6 +33,10 @@ class TIHeader:
 
     All var files require a header which includes a number of magic bytes, data lengths, and a customizable comment.
     """
+
+    magics: list[str] = [model.magic for model in TIModel.MODELS]
+
+    length: int = 53
 
     class Raw:
         """
@@ -52,14 +58,14 @@ class TIHeader:
 
             return self.magic + self.extra + self.product_id + self.comment
 
-    def __init__(self, model: TIModel = None, *,
+    def __init__(self, model: TIModel = TI_84PCE, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
-                 comment: str = "Created with tivars_lib_py v0.9.2",
+                 comment: str = "Created with tivars_lib_py v1.0.0",
                  data: bytes = None):
         """
         Creates an empty header which targets a specified model
 
-        :param model: A minimum `TIModel` to target (defaults to ``TI_83P``)
+        :param model: A minimum `TIModel` to target (defaults to ``TI_84PCE``)
         :param magic: File magic at the start of the header (default to the model's magic)
         :param extra: Extra export bytes for the header (defaults to ``$1a0a``)
         :param product_id: The targeted model's product ID (defaults to ``$00``)
@@ -68,8 +74,6 @@ class TIHeader:
         """
 
         self.raw = self.Raw()
-
-        model = model or TI_83P
 
         self.magic = magic or model.magic
         self.extra = extra
@@ -95,7 +99,7 @@ class TIHeader:
         new.load_bytes(self.bytes())
         return new
 
-    def __eq__(self, other: 'TIHeader') -> bool:
+    def __eq__(self, other) -> bool:
         """
         Determines if two headers have the same bytes
 
@@ -109,7 +113,10 @@ class TIHeader:
         except AttributeError:
             return False
 
-    def __or__(self, other: list['TIEntry']) -> 'TIVar':
+    def __format__(self, format_spec: str) -> str:
+        return hex_format(self.bytes(), format_spec)
+
+    def __or__(self, other: list['TIEntry']) -> 'TIVarFile':
         """
         Constructs a var by concatenating this header with a list of entries
 
@@ -117,7 +124,7 @@ class TIHeader:
         :return: A var with this header and ``other`` as its entries
         """
 
-        new = other[0].export(header=self, name=other[0].name, model=self.targets().pop())
+        new = other[0].export(header=self, name=other[0].name)
 
         for entry in other[1:]:
             new.add_entry(entry)
@@ -129,7 +136,7 @@ class TIHeader:
         :return: The total length of this header's bytes
         """
 
-        return 53
+        return self.length
 
     @Section(8, String)
     def magic(self) -> str:
@@ -161,29 +168,32 @@ class TIHeader:
         The comment attached to the var
         """
 
-    def targets(self) -> set[TIModel]:
+    def supported_by(self, model: TIModel = TI_84PCE) -> bool:
         """
-        Determines which model(s) this header can target
+        Determines whether this header supports a given model
+
+        See `TIHeader.targets` to check models this header explicitly targets.
+
+        :param model: The model to check support for
+        :return: Whether ``model`` supports this header
+        """
+
+        return model.magic == self.magic
+
+    def targets(self, model: TIModel = TI_84PCE) -> bool:
+        """
+        Determines whether this header targets a given model
 
         The header contains no reference to a model to target, which permits sharing across models where possible.
         This method derives a set of valid models from the header's file magic and product ID.
 
-        If the header contains malformed magic, an error will be raised.
-        If the header contains a malformed product ID, it will be ignored.
+        See `TIHeader.supported_by` to check models this header _can_ be sent be to.
 
-        :return: A set of models that this header can target
+        :param model: The model to check as a target
+        :return: Whether ``model`` is targeted by this header
         """
 
-        models = {m for m in TIModel.MODELS if m.magic == self.magic}
-
-        if self.product_id != 0x00:
-            if filtered := {m for m in models if m.product_id == self.product_id}:
-                return filtered
-
-        if not models:
-            raise ValueError(f"file magic '{self.magic}' not recognized")
-
-        return models
+        return self.supported_by(model) and self.product_id in (0x00, model.product_id)
 
     def load_bytes(self, data: bytes | BytesIO):
         """
@@ -225,6 +235,21 @@ class TIHeader:
 
         self.load_bytes(file.read(len(self)))
 
+    def summary(self) -> str:
+        """
+        :return: A text summary of this header
+        """
+
+        model = next((model for model in TIModel.MODELS
+                      if model.magic == self.magic and model.product_id == self.product_id), 'unknown')
+
+        return (
+            f"Header Information\n"
+            f"  Product ID  0x{self.product_id:02x}\n"
+            f"  Model       {model} or newer\n"
+            f"  Comment     {self.comment}\n"
+        )
+
     @classmethod
     def open(cls, filename: str) -> 'TIHeader':
         """
@@ -238,7 +263,7 @@ class TIHeader:
             return cls(data=file.read())
 
 
-class TIEntry(Dock, Converter):
+class TIEntry(TIComponent):
     """
     Base class for all var entries
 
@@ -247,63 +272,48 @@ class TIEntry(Dock, Converter):
     **Even though most var files have just one entry, an entry does NOT constitute a complete var file.**
     **All var files require an attached header and other metadata.**
 
-    **Use** `TIEntry.export` **to create a new** `TIVar` **containing the entry, with an optional custom header.**
+    **Use** `TIEntry.export` **to create a new** `TIVarFile` **containing the entry, with an optional custom header.**
     **Use** `TIEntry.save` **to export and save the entry in a var file in the current directory.**
     """
 
-    _T = 'TIEntry'
-
-    flash_only = False
+    flash_only: bool = False
     """
     Whether this entry only supports flash chips
     """
 
-    extensions = {None: "8xg"}
-    """
-    The file extension used for this entry per-model
-    """
-
-    versions = [0x00]
+    versions: list[int] = [0x00]
     """
     The possible versions of this entry
     """
 
-    base_meta_length = 11
-    flash_meta_length = 13
+    extension: str = "8xg"
+    """
+    The base file extension used for this entry
+    """
 
-    min_data_length = 0
+    base_meta_length: int = 11
+    flash_meta_length: int = 13
+
+    min_calc_data_length: int = 0
     """
     The minimum length of this entry's data
     
     If an entry's data is fixed in size, this value is necessarily the length of the data
     """
 
-    leading_name_byte = b''
+    leading_name_byte: bytes = b''
     """
     Byte that always begins the name of this entry
     """
 
-    leading_data_bytes = b''
+    leading_data_bytes: bytes = b''
     """
     Bytes that always begin this entry's data
     """
 
-    _type_id = None
-    _type_ids = {}
+    _type_ids: dict[int, type[Self]] = {}
 
-    class Raw:
-        """
-        Raw bytes container for `TIEntry`
-
-        Any class with a distinct byte format requires its own ``Raw`` class to contain its data sections.
-        Each data section must have a corresponding slot in ``Raw`` in order to use `Converter` classes.
-
-        The ``Raw`` class must also contain a ``bytes()`` method specifying the order of the data sections.
-        Additional methods can also be included, but should be callable from the outer class.
-
-        Most entry types do not require a new ``Raw`` class since only the entry's data changes between types.
-        """
-
+    class Raw(TIComponent.Raw):
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "calc_data"
 
         @property
@@ -329,28 +339,23 @@ class TIEntry(Dock, Converter):
             :return: The meta section of this entry
             """
 
-            return self.bytes()[2:int.from_bytes(self.meta_length, 'little') + 2]
+            return self.calc_data_length + self.type_id + self.name + self.flash_bytes
 
         def bytes(self) -> bytes:
             """
             :return: The bytes contained in this entry
             """
 
-            return self.meta_length + self.calc_data_length + \
-                self.type_id + self.name + self.flash_bytes + \
-                self.calc_data_length + self.calc_data
+            return self.meta_length + self.meta + self.calc_data_length + self.calc_data
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "UNNAMED",
+                 name: str = "UNNAMED",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
         """
         Creates an empty entry with specified meta and data values
 
-        The entry ``version`` and ``archived`` flag are invalid if ``for_flash == False``.
-
         :param init: Values to initialize the entry's data (defaults to ``None``)
-        :param for_flash: Whether the entry supports flash chips (defaults to ``True``)
         :param name: The name of the entry (defaults to a valid default name)
         :param version: The entry's version (defaults to ``None``)
         :param archived: Whether the entry is archived (defaults to entry's default state on-calc)
@@ -359,104 +364,18 @@ class TIEntry(Dock, Converter):
 
         self.raw = self.Raw()
 
-        self.meta_length = TIEntry.flash_meta_length if for_flash else TIEntry.base_meta_length
+        self.meta_length = TIEntry.flash_meta_length
         self.type_id = self._type_id if self._type_id is not None else 0xFF
         self.name = name
-        self.archived = archived or False
+        self.archived = archived if archived is not None else False
         self.version = version or 0x00
 
-        if not for_flash:
-            if version is not None or archived is not None:
-                warn("Models without flash chips do not support versioning or archiving.",
-                     UserWarning)
-
-            if self.flash_only:
-                warn(f"{type(self)} entries are not compatible with flashless chips.",
-                     UserWarning)
-
-        self.clear()
-        if data:
-            self.data = bytearray(data)
-            self.coerce()
-
-        elif init is not None:
-            if hasattr(init, "bytes"):
-                self.load_bytes(init.bytes())
-
-            else:
-                self.load(init)
+        super().__init__(init, data=data)
 
         if version is None:
             self.version = self.get_version()
 
-    def __bool__(self) -> bool:
-        """
-        :return: Whether this entry's data is empty
-        """
-
-        return not self.is_empty
-
-    def __bytes__(self) -> bytes:
-        """
-        :return: The bytes contained in this entry
-        """
-
-        return self.bytes()
-
-    def __copy__(self) -> Self:
-        """
-        :return: A copy of this entry
-        """
-
-        new = self.__class__()
-        new.load_bytes(self.bytes())
-        return new
-
-    def __eq__(self, other: 'TIEntry') -> bool:
-        """
-        Determines if two entries are the same type and have the same bytes
-
-        :param other: The entry to check against
-        :return: Whether this entry is equal to ``other``
-        """
-
-        try:
-            return self.__class__ == other.__class__ and self.bytes() == other.bytes()
-
-        except AttributeError:
-            return False
-
-    def __format__(self, format_spec: str) -> str:
-        """
-        Formats this entry for string representations
-
-        :param format_spec: The format parameters
-        :return: A string representation of this entry
-        """
-
-        if match := re.fullmatch(r"(?P<width>[+-]?\d+)?(?P<case>[xX])(?P<sep>\D)?", format_spec):
-            match match["sep"], match["width"]:
-                case None, None:
-                    string = self.calc_data.hex()
-
-                case sep, None:
-                    string = self.calc_data.hex(sep)
-
-                case None, width:
-                    string = self.calc_data.hex(" ", int(width))
-
-                case sep, width:
-                    string = self.calc_data.hex(sep, int(width))
-
-            return string.lower() if match["case"] == "x" else string.upper()
-
-        elif not format_spec:
-            return super().__str__()
-
-        else:
-            raise TypeError(f"unsupported format string passed to {type(self)}.__format__")
-
-    def __init_subclass__(cls, /, register=False, override=None, **kwargs):
+    def __init_subclass__(cls, /, register: bool = False, override: int = None, **kwargs):
         super().__init_subclass__(**kwargs)
 
         if register:
@@ -476,13 +395,6 @@ class TIEntry(Dock, Converter):
 
         return 2 + self.meta_length + 2 + self.calc_data_length
 
-    def __str__(self) -> str:
-        """
-        :return: A string representation of this entry
-        """
-
-        return self.string()
-
     @Section(2, Integer)
     def meta_length(self, value) -> int:
         """
@@ -492,7 +404,7 @@ class TIEntry(Dock, Converter):
         """
 
         if value == TIEntry.base_meta_length:
-            if self.raw.meta_length == b'\x0D\x00':
+            if self.raw.meta_length == TIEntry.flash_meta_length.to_bytes(2, 'little'):
                 warn(f"Meta data (0x{self.flash_bytes.hex()}) will be lost.",
                      UserWarning)
 
@@ -532,7 +444,7 @@ class TIEntry(Dock, Converter):
         The version number of the entry
 
         The version is used to determine model compatibility where necessary.
-        Only flash files support this section, and is thus not present if `meta_length` <= 11.
+        Only flash files support this section, and is thus not present if `meta_length` < 13.
         """
 
         if self.meta_length == TIEntry.base_meta_length:
@@ -546,7 +458,7 @@ class TIEntry(Dock, Converter):
         """
         Whether the entry is archived
 
-        Only flash files support this section, and is thus not present if `meta_length` <= 11.
+        Only flash files support this section, and is thus not present if `meta_length` < 13.
         """
 
         if self.meta_length == TIEntry.base_meta_length:
@@ -554,40 +466,6 @@ class TIEntry(Dock, Converter):
                  UserWarning)
 
         return value
-
-    @Section()
-    def calc_data(self) -> bytes:
-        """
-        The data section of the entry which is loaded on-calc
-        """
-
-    @View(calc_data, Data)[:]
-    def data(self) -> bytes:
-        """
-        The entry's user data
-        """
-
-    @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
-        """
-        Converts ``bytes`` -> `TIEntry`
-
-        :param data: The raw bytes to convert
-        :return: A `TIEntry` instance with data equal to ``data``
-        """
-
-        return cls(data=data)
-
-    @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
-        """
-        Converts `TIEntry` -> ``bytes``
-
-        :param value: The value to convert
-        :return: The data of ``value``
-        """
-
-        return value.calc_data
 
     @property
     def flash_bytes(self) -> bytes:
@@ -598,12 +476,24 @@ class TIEntry(Dock, Converter):
         return (self.raw.version + self.raw.archived)[:self.meta_length - TIEntry.base_meta_length]
 
     @property
-    def is_empty(self) -> bool:
+    def for_flash(self) -> bool:
         """
-        :return: Whether this entry's data is empty
+        :return: Whether this entry supports flash chips
         """
 
-        return self.calc_data_length == 0
+        return self.meta_length >= TIEntry.flash_meta_length
+
+    @classmethod
+    def get_type(cls, *, type_id: int = None, name: str = None, extension: str = None) -> type[Self] | None:
+        if extension is not None:
+            for var_type in cls._type_ids.values():
+                if replacer(extension, {"2": "x", "3": "x"}).lstrip(".") == var_type.extension:
+                    return var_type
+
+            return None
+
+        else:
+            return super().get_type(type_id=type_id, name=name)
 
     @property
     def meta(self) -> bytes:
@@ -611,18 +501,7 @@ class TIEntry(Dock, Converter):
         :return: The meta section of this entry
         """
 
-        return self.raw.calc_data_length + self.raw.type_id + self.raw.name + self.raw.version + self.raw.archived
-
-    @classmethod
-    def get_type(cls, type_id: int) -> type['TIEntry'] | None:
-        """
-        Gets the subclass corresponding to a type ID if one is registered
-
-        :param type_id: The type ID to search by
-        :return: A subclass of `TIEntry` with corresponding type ID or ``None``
-        """
-
-        return cls._type_ids.get(type_id, None)
+        return self.raw.meta
 
     @staticmethod
     def next_entry_length(stream: BinaryIO) -> int:
@@ -643,26 +522,16 @@ class TIEntry(Dock, Converter):
 
         return 2 + meta_length + 2 + data_length
 
-    @classmethod
-    def register(cls, var_type: type['TIEntry'], override: int = None):
-        """
-        Registers a subtype with this class for coercion
-
-        :param var_type: The `TIEntry` subtype to register
-        :param override: A type ID to use for registry that differs from that of the var type
-        """
-
-        cls._type_ids[var_type._type_id if override is None else override] = var_type
-
     def archive(self):
         """
-        Archives this entry (if supported)
+        Archives this entry
         """
 
-        if self.flash_bytes:
-            self.archived = True
-        else:
-            raise TypeError("entry does not support archiving.")
+        self.archived = True
+
+        if not self.for_flash:
+            warn(f"This entry's meta length is too short ({self.meta_length}), and thus does not support archiving.",
+                 UserWarning)
 
     def clear(self):
         """
@@ -670,34 +539,43 @@ class TIEntry(Dock, Converter):
         """
 
         self.raw.calc_data = bytearray(self.leading_data_bytes)
-        self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
+        self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
+    @classmethod
+    def get_extension(cls, model: TIModel = TI_84PCE) -> str:
+        if model == TI_82:
+            return cls.extension.replace("x", "2")
+
+        elif model == TI_83:
+            return cls.extension.replace("x", "3")
+
+        else:
+            return cls.extension
+
+    def get_min_os(self) -> OsVersion:
         """
         Determines the minimum OS that supports this entry's data
 
-        :param data: The data to find the minimum support for (defaults to this entry's data)
         :return: The minimum ``OsVersion`` this entry supports
         """
 
         return OsVersions.INITIAL
 
-    def get_version(self, data: bytes = None) -> int:
+    def get_version(self) -> int:
         """
         Determines the version byte corresponding to given data for this entry type
 
         Entries which could contain non-backwards compatible data are assigned a version byte.
         If an entry's version exceeds the "version" of a calculator, transfer to the calculator will fail.
 
-        :param data: The data to find the version of (defaults to this entry's data)
-        :return: The version byte for ``data``
+        :return: The version byte for this entry
         """
 
         return self.versions[0]
 
     def supported_by(self, model: TIModel) -> bool:
         """
-        Determines whether a given model can support this entry
+        Determines whether a given model supports this entry
 
         :param model: The model to check support for
         :return: Whether ``model`` supports this entry
@@ -707,15 +585,16 @@ class TIEntry(Dock, Converter):
 
     def unarchive(self):
         """
-        Unarchives this entry (if supported)
+        Unarchives this entry
         """
 
-        if self.flash_bytes:
-            self.archived = False
-        else:
-            raise TypeError("entry does not support archiving.")
+        self.archived = False
 
-    @Loader[bytes, bytearray, BytesIO]
+        if not self.for_flash:
+            warn(f"This entry's meta length is too short ({self.meta_length}), and thus does not support archiving.",
+                 UserWarning)
+
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         """
         Loads a byte string or bytestream into this entry
@@ -738,14 +617,14 @@ class TIEntry(Dock, Converter):
         self.raw.type_id = data.read(1)
 
         if self._type_id is not None and self.type_id != self._type_id:
-            if subclass := TIEntry.get_type(self.type_id):
+            if subclass := TIEntry.get_type(type_id=self.type_id):
                 if not issubclass(subclass, self.__class__):
                     warn(f"The entry type is incorrect (expected {type(self)}, got {subclass}).",
                          BytesWarning)
 
             else:
                 warn(f"The entry type is incorrect (expected {type(self)}, got an unknown type). "
-                     f"Load the var file into a TIVar instance if you don't know the entry type(s).",
+                     f"Load the entry into a base TIEntry instance if you don't know the entry type.",
                      BytesWarning)
 
         # Read varname
@@ -766,14 +645,13 @@ class TIEntry(Dock, Converter):
                      f"attempting to read flash bytes anyway.",
                      BytesWarning)
 
+                self.meta_length = TIEntry.flash_meta_length
                 self.raw.version = data.read(1)
                 self.raw.archived = data.read(1)
 
         if self.meta_length == TIEntry.flash_meta_length and self.raw.version + self.raw.archived == data_length:
-            warn(f"The entry meta length is {self.meta_length}, but the flash data is likely missing; "
-                 f"the meta section will be corrected to be flashless.")
+            warn(f"The entry meta length is {self.meta_length}, but the flash data is likely missing.")
 
-            self.meta_length = TIEntry.base_meta_length
             self.raw.version = b'\x00'
             self.raw.archived = b'\x00'
 
@@ -817,6 +695,44 @@ class TIEntry(Dock, Converter):
 
         return self.raw.bytes()
 
+    @Loader[dict]
+    def load_dict(self, dct: dict, **kwargs):
+        self.__class__ = self.get_type(type_id=dct.get("typeID"), name=dct.get("typeName"))
+        self.type_id = self._type_id
+
+        self.version = dct.get("version", self.version)
+        self.archived = dct.get("archived", self.archived)
+        self.name = dct.get("name", self.name)
+
+        if "nameHex" in dct:
+            name = bytes.fromhex(dct["nameHex"])
+            if "name" in dct and name != self.raw.name:
+                warn(f"The provided name string ('{dct['name']}') and decoded hex ('{name}') disagree.",
+                     UserWarning)
+
+        if "rawDataHex" in dct:
+            self.raw.calc_data = bytearray.fromhex(dct["rawDataHex"])
+            self.coerce()
+
+        elif "readableContent" in dct:
+            self.load_string(dct["readableContent"])
+
+        else:
+            warn(f"No entry data was provided.",
+                 UserWarning)
+
+    def dict(self, **kwargs) -> dict:
+        string = self.string(**kwargs)
+        return {
+            "typeName": type(self).__name__.removeprefix("TI"),
+            "typeID": self.type_id,
+            "version": self.version,
+            "archived": self.archived,
+            "name": self.name,
+            "nameHex": self.raw.name.hex().upper(),
+            "rawDataHex": (data := self.calc_data.hex().upper())
+        } | ({"readableContent": string} if string.upper() != data else {})
+
     def load_data_section(self, data: BytesIO):
         """
         Loads the data of this entry from a bytestream
@@ -825,23 +741,6 @@ class TIEntry(Dock, Converter):
         """
 
         self.raw.calc_data = bytearray(data.read(type(self).calc_data.length))
-
-    @Loader[dict]
-    def load_dict(self, dct: dict):
-        """
-        Loads this entry from a JSON dictionary representation
-
-        :param dct: The dict to load
-        """
-
-        raise NotImplementedError
-
-    def dict(self) -> str:
-        """
-        :return: A JSON dictionary representation of this entry
-        """
-
-        raise NotImplementedError
 
     @Loader[BinaryIO]
     def load_from_file(self, file: BinaryIO, *, offset: int = 0):
@@ -865,37 +764,22 @@ class TIEntry(Dock, Converter):
         self.load_bytes(file.read(self.next_entry_length(file)))
         file.seek(2, 1)
 
-    @Loader[str]
-    def load_string(self, string: str):
-        """
-        Loads this entry from a string representation
+    def summary(self) -> str:
+        os = self.get_min_os()
+        model = os.model or TI_82
+        compat = f"{model} (OS {os.version})" if os.version else f"{model}"
 
-        If there is no dedicated handler for an entry type, all subclasses of the type will be considered.
-
-        :param string: The string to load
-        """
-
-        with catch_warnings():
-            simplefilter("ignore")
-
-            for entry_type in self._type_ids.values():
-                if issubclass(entry_type, self.__class__):
-                    try:
-                        # Try out each possible string format
-                        self.load_bytes(entry_type(string).bytes())
-                        return
-
-                    except Exception:
-                        continue
-
-        raise ValueError(f"could not parse '{string}' as entry type")
-
-    def string(self) -> str:
-        """
-        :return: A string representation of this entry
-        """
-
-        return format(self, "")
+        return (
+            f"Entry Information\n"
+            f"  Type           {type(self).__name__} (ID 0x{self.type_id:02x})\n"
+            f"  Name           {self.name}\n"
+            f"  Version        0x{self.version:02x}\n"
+            f"  Archived?      {self.archived}\n"
+            f"\n"
+            f"  Data Length    {self.calc_data_length}\n"
+            f"  Compatibility  {compat} or newer\n"
+            f"  Data           {trim_string(hex_format(self.calc_data, '-2x'), 50)}\n"
+        )
 
     @classmethod
     def open(cls, filename: str) -> Self:
@@ -906,8 +790,7 @@ class TIEntry(Dock, Converter):
         :return: The (first) entry stored in the file
         """
 
-        if cls._type_id is not None and \
-                not any(filename.lower().endswith(extension) for extension in cls.extensions.values()):
+        if cls._type_id is not None and not re.search(rf"\.{cls.extension.replace('x', '.')}$", filename.lower()):
             warn(f"File extension .{filename.split('.')[-1]} not recognized for var type {cls}; "
                  f"attempting to read anyway.",
                  UserWarning)
@@ -916,99 +799,80 @@ class TIEntry(Dock, Converter):
             # Use header for sanity check
             header = TIHeader()
             header.load_from_file(file)
-            file.seek(2, 1)
+
+            data_length = int.from_bytes(file.read(2), 'little')
+            entry_length = cls.next_entry_length(file)
 
             entry = cls()
-            entry.load_bytes(file.read(cls.next_entry_length(file)))
+            entry.load_bytes(file.read(entry_length))
 
-            file.seek(2, 1)
-
-            if remaining := file.read():
-                if remaining.startswith(b'\x0B\x00') or remaining.startswith(b'\x0D\x00'):
+            if (remaining := file.read())[2:]:
+                if remaining.startswith((TIEntry.base_meta_length.to_bytes(2, 'little'),
+                                         TIEntry.flash_meta_length.to_bytes(2, 'little'))):
                     warn("The selected var file contains multiple entries; only the first will be loaded. "
-                         "Use load_from_file to select a particular entry, or load the entire file into a TIVar object.",
+                         "Use load_from_file to select a particular entry, or load the entire file into a TIVarFile object.",
                          UserWarning)
 
                 else:
+                    remaining = trim_string(str(remaining)[2:], 24)
                     warn(f"The selected var file contains unexpected additional data: {remaining}.",
                          BytesWarning)
 
+            elif data_length != entry_length:
+                warn(f"The entry length is incorrect (expected {entry_length}, got {data_length}).",
+                     BytesWarning)
+
         return entry
 
-    def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = None):
+    def save(self, filename: str = None, *, header: TIHeader = None, model: TIModel = TI_84PCE):
         """
         Saves this entry as a var file in the current directory given a filename and optional header and targeted model
 
         :param filename: A filename to save to (defaults to the var's name and extension)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A `TIModel` to target (defaults to ``None``)
+        :param model: A `TIModel` to target (defaults to ``TI_84PCE``)
         """
 
-        self.export(header=header, model=model).save(filename)
+        self.export(header=header).save(filename, model=model)
 
-    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = None) -> 'TIVar':
+    def export(self, *, name: str = None, header: TIHeader = None, model: TIModel = TI_84PCE) -> 'TIVarFile':
         """
-        Exports this entry to a `TIVar` with a specified name, header, and target model
+        Exports this entry to a `TIVarFile` with a specified name and header
 
         :param name: The name of the var (defaults to this entry's name)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A `TIModel` to target (defaults to ``None``)
+        :param model: A `TIModel` to target (defaults to ``TI_84PCE``)
+
+        :return: A `TIVarFile` containing this entry and the specified header
         """
 
-        var = TIVar(header=header, name=name or self.name, model=model)
+        var = TIVarFile(header=header or TIHeader(model=model), name=name or self.name)
         var.add_entry(self)
         return var
 
-    def coerce(self):
-        """
-        Coerces this entry to a subclass if possible using the entry's type ID
 
-        Valid types must be registered to be considered for coercion.
-        """
-
-        if self._type_id is None:
-            if subclass := self.get_type(self.type_id):
-                self.__class__ = subclass
-                self.coerce()
-
-            elif self.type_id != 0xFF:
-                warn(f"Type ID 0x{self.type_id:02x} is not recognized; no coercion will occur.",
-                     BytesWarning)
-
-            else:
-                warn("Type ID is 0xFF; no coercion will occur.",
-                     UserWarning)
-
-
-class TIVar:
+class TIVarFile(TIFile, register=True):
     """
     Container for var files
 
     A var file is composed of a header and any number of entries (though most have only one).
     """
 
-    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, model: TIModel = None, data: bytes = None):
+    magics = TIHeader.magics
+
+    def __init__(self, *, name: str = "UNNAMED", header: TIHeader = None, data: bytes = None):
         """
         Creates an empty var with a specified name, header, and targeted model
 
         :param name: The name of the var (defaults to ``UNNAMED``)
         :param header: A `TIHeader` to attach (defaults to an empty header)
-        :param model: A minimum `TIModel` to target (defaults to ``None``)
         :param data: The var's data (defaults to empty)
         """
 
-        self._header = header or TIHeader(model)
-        self.entries = []
+        self.header = header or TIHeader()
+        self.entries: list[TIEntry] = []
 
-        self.name = name
-        self._model = model
-
-        if self._model and self._model not in self._header.targets():
-            warn(f"The var's model ({self._model}) is incompatible with the given header.",
-                 UserWarning)
-
-        if data:
-            self.load_bytes(data)
+        super().__init__(name=name, data=data)
 
     def __bool__(self) -> bool:
         """
@@ -1016,44 +880,6 @@ class TIVar:
         """
 
         return not self.is_empty
-
-    def __bytes__(self) -> bytes:
-        """
-        :return: The bytes contained in this var
-        """
-
-        return self.bytes()
-
-    def __copy__(self) -> 'TIVar':
-        """
-        :return: A copy of this var
-        """
-
-        new = TIVar()
-        new.load_bytes(self.bytes())
-        return new
-
-    def __eq__(self, other: 'TIVar'):
-        """
-        Determines if two vars contain the same entries
-
-        :param other: The var to check against
-        :return: Whether this var is equal to ``other``
-        """
-
-        try:
-            eq = self.__class__ == other.__class__ and len(self.entries) == len(other.entries)
-            return eq and all(entry == other_entry for entry, other_entry in zip(self.entries, other.entries))
-
-        except AttributeError:
-            return False
-
-    def __len__(self):
-        """
-        :return: The total length of this var's bytes
-        """
-
-        return len(self._header) + self.entry_length + 2
 
     @property
     def entry_length(self) -> int:
@@ -1076,75 +902,12 @@ class TIVar:
         return int.to_bytes(sum(sum(entry.bytes()) for entry in self.entries) & 0xFFFF, 2, 'little')
 
     @property
-    def extension(self) -> str:
-        """
-        Determines the var's file extension based on its entries and targeted model
-
-        If there is only one entry, that entry's extension for the target model is used.
-        Otherwise, ``.8xg`` is used.
-
-        :return: The var's file extension
-        """
-
-        if len(self.entries) > 1:
-            return "8xg"
-
-        try:
-            if self._model is None:
-                return self.entries[0].extensions[None]
-
-            extension = ""
-            for model in reversed(TIModel.MODELS):
-                if model in self.entries[0].extensions and model <= self._model:
-                    extension = self.entries[0].extensions[self._model]
-                    break
-
-            if not extension:
-                warn(f"The {self._model} does not support this var type.",
-                     UserWarning)
-
-                return self.entries[0].extensions[None]
-
-            return extension
-
-        except IndexError:
-            raise ValueError("this var is empty")
-
-    @property
-    def filename(self) -> str:
-        """
-        Determines the var's filename based on its name, entries, and targeted model
-
-        The filename is the concatenation of the var name and extension (see `TIVar.extension`).
-
-        :return: The var's filename
-        """
-
-        return f"{self.name}.{self.extension}"
-
-    @property
-    def header(self) -> 'TIHeader':
-        """
-        :return: This var's header
-        """
-
-        return self._header
-
-    @property
     def is_empty(self) -> bool:
         """
         :return: Whether this var contains no entries
         """
 
         return len(self.entries) == 0
-
-    @property
-    def model(self) -> TIModel:
-        """
-        :return: This var's targeted model
-        """
-
-        return self._model
 
     def add_entry(self, entry: TIEntry = None):
         """
@@ -1168,30 +931,27 @@ class TIVar:
         Removes all entries from this var
         """
 
-        self.entries.clear()
+        self.entries = []
 
-    def supported_by(self, model: TIModel = None) -> bool:
-        """
-        Determines whether a given model can support this var
+    def get_extension(self, model: TIModel = TI_84PCE) -> str:
+        if len(self.entries) != 1:
+            if self.is_empty:
+                warn("This var is empty.",
+                     UserWarning)
 
-        :param model: The model to check support for (defaults to this var's model, if it is set)
-        :return: Whether ``model`` supports this var
-        """
+            return "8xg"
 
-        model = model or self._model
-        if model is None:
-            raise ValueError("no model was passed")
+        else:
+            return self.entries[0].get_extension(model)
 
-        return model in self._header.targets() and \
-            all(entry.get_min_os() < model.OS("latest") for entry in self.entries)
+    def supported_by(self, model: TIModel) -> bool:
+        return all(item.supported_by(model) for item in [self.header, *self.entries])
 
+    def targets(self, model: TIModel) -> bool:
+        return self.header.targets(model)
+
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
-        """
-        Loads a byte string or bytestream into this var
-
-        :param data: The bytes to load
-        """
-
         if hasattr(data, "read"):
             data = BytesIO(data.read())
 
@@ -1199,7 +959,7 @@ class TIVar:
             data = BytesIO(data)
 
         # Read header
-        self._header.load_bytes(data.read(53))
+        self.header = TIHeader(data=data.read(TIHeader.length))
         entry_length = int.from_bytes(data.read(2), 'little')
 
         # Read entries
@@ -1225,22 +985,17 @@ class TIVar:
         # Read checksum
         checksum = data.read(2)
 
-        # Check model
-        if self._model and not self._model <= min(*self._header.targets()):
-            warn(f"The loaded var file is incompatible with the {self._model}.",
-                 BytesWarning)
-
         # Check² sum
         if checksum != self.checksum:
             warn(f"The checksum is incorrect (expected {self.checksum}, got {checksum}).",
                  BytesWarning)
 
-    def bytes(self):
-        """
-        :return: The bytes contained in this var
-        """
+        if remaining := data.read():
+            warn(f"The selected var file contains unexpected additional data: {remaining}.",
+                 BytesWarning)
 
-        dump = self._header.bytes()
+    def bytes(self) -> bytes:
+        dump = self.header.bytes()
         dump += int.to_bytes(self.entry_length, 2, 'little')
 
         for entry in self.entries:
@@ -1249,48 +1004,16 @@ class TIVar:
         dump += self.checksum
         return dump
 
-    def load_var_file(self, file: BinaryIO):
-        """
-        Loads this var from a file given a file pointer
+    def summary(self) -> str:
+        return "\n".join([self.header.summary(), *[entry.summary() for entry in self.entries]]) + "\n"
 
-        :param file: A binary file to read from
-        """
+    def save(self, filename: str = None, model: TIModel = TI_84PCE):
+        for index, entry in enumerate(self.entries):
+            if entry.get_min_os() > model.OS("latest"):
+                warn(f"Entry #{index + 1} is not supported by {model}.",
+                     UserWarning)
 
-        self.load_bytes(file.read())
-
-    @classmethod
-    def open(cls, filename: str) -> 'TIVar':
-        """
-        Creates a new var from a file given a filename
-
-        :param filename: A filename to open
-        :return: The var stored in the file
-        """
-
-        with open(filename, 'rb') as file:
-            return cls(data=file.read())
-
-    def save(self, filename: str = None):
-        """
-        Saves this var given a filename
-
-        :param filename: A filename to save to (defaults to the var's name and extension)
-        """
-
-        if not filename:
-            filename = self.filename
-
-        elif "." not in filename:
-            filename += f".{self.extension}"
-
-        if self._model:
-            for index, entry in enumerate(self.entries):
-                if entry.get_min_os() > self._model.OS("latest"):
-                    warn(f"Entry #{index + 1} is not supported by {self._model}.",
-                         UserWarning)
-
-        with open(filename, 'wb+') as file:
-            file.write(self.bytes())
+        super().save(filename, model)
 
 
 class SizedEntry(TIEntry):
@@ -1301,10 +1024,10 @@ class SizedEntry(TIEntry):
     This length is two less than the length stored in the ``data_length`` section(s).
     """
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[0:2]
@@ -1313,16 +1036,23 @@ class SizedEntry(TIEntry):
         The length of this entry's user data section
         """
 
-    @View(calc_data, SizedData)[2:]
+    @View(calc_data, Data)[2:]
     def data(self) -> bytes:
         pass
 
     def clear(self):
         self.raw.calc_data = bytearray([0, 0, *self.leading_data_bytes])
-        self.raw.calc_data.extend(bytearray(self.min_data_length - self.calc_data_length))
+        self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
         self.length = len(self.leading_data_bytes) + len(self.data)
 
-    @Loader[bytes, bytearray, BytesIO]
+    def get_length(self) -> int:
+        """
+        Determines the length of this entry's user data section
+        """
+
+        return len(self.data)
+
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
@@ -1335,4 +1065,4 @@ class SizedEntry(TIEntry):
         self.raw.calc_data = bytearray(length_bytes + data.read(data_length))
 
 
-__all__ = ["TIHeader", "TIEntry", "TIVar", "SizedEntry"]
+__all__ = ["TIHeader", "TIEntry", "TIVarFile", "SizedEntry", "TIFile"]

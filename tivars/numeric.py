@@ -12,21 +12,6 @@ pi = dec.Decimal("3.1415926535898")
 e = dec.Decimal("2.718281828459")
 
 
-def replacer(string: str, replacements: dict[str, str]) -> str:
-    """
-    Iteratively applies string replacements
-
-    :param string: The input string
-    :param replacements: The replacements to make
-    :return: The input string with all replacements made in-order
-    """
-
-    for substring, replacement in replacements.items():
-        string = string.replace(substring, replacement)
-
-    return string
-
-
 def sign(x: int) -> int:
     """
     Computes the mathematical sign of a number
@@ -38,28 +23,15 @@ def sign(x: int) -> int:
     return (x > 0) - (x < 0)
 
 
-def squash(string: str) -> str:
-    """
-    Removes all spaces from a string
-
-    :param string: The input string
-    :return: The input string with all spaces removed
-    """
-
-    return ''.join(string.split())
-
-
-class BCD(Converter):
+class BCD(Converter[int]):
     """
     Converter for 2-digit binary-coded decimal
 
     A single byte contains two decimal digits as if they were hex digits.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal
 
@@ -76,7 +48,7 @@ class BCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, *, length: int = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, length: int = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal
 
@@ -88,7 +60,7 @@ class BCD(Converter):
         return int.to_bytes(int(str(value), 16), length if length is not None else 7, 'big')
 
 
-class LeftNibbleBCD(Converter):
+class LeftNibbleBCD(Converter[int]):
     """
     Converter for 2-digit binary-coded decimal with a single extra nibble
 
@@ -96,10 +68,8 @@ class LeftNibbleBCD(Converter):
     The extraneous nibble appears in the leftmost byte, left-padded with a single hex digit.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal with an extra nibble on the left
 
@@ -116,7 +86,7 @@ class LeftNibbleBCD(Converter):
         return value
 
     @classmethod
-    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the left
 
@@ -131,7 +101,7 @@ class LeftNibbleBCD(Converter):
         return bytes(data)
 
 
-class RightNibbleBCD(Converter):
+class RightNibbleBCD(Converter[int]):
     """
     Converter for 2-digit binary-coded decimal with a single extra nibble
 
@@ -139,10 +109,8 @@ class RightNibbleBCD(Converter):
     The extraneous nibble appears in the rightmost byte, right-padded with a single hex digit.
     """
 
-    _T = int
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> int:
         """
         Converts ``bytes`` -> ``int`` from 2-digit binary coded decimal with an extra nibble on the right
 
@@ -159,7 +127,7 @@ class RightNibbleBCD(Converter):
         return 10 * value + data[-1] // 16
 
     @classmethod
-    def set(cls, value: _T, *, current: bytes = None, **kwargs) -> bytes:
+    def set(cls, value: int, *, current: bytes = None, **kwargs) -> bytes:
         """
         Converts ``int`` -> ``bytes`` as 2-digit binary coded decimal with an extra nibble on the right
 
@@ -174,5 +142,4 @@ class RightNibbleBCD(Converter):
         return bytes(data)
 
 
-__all__ = ["pi", "e", "replacer", "sign", "squash",
-           "BCD", "LeftNibbleBCD", "RightNibbleBCD"]
+__all__ = ["pi", "e", "sign", "BCD", "LeftNibbleBCD", "RightNibbleBCD"]

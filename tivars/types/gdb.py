@@ -13,6 +13,7 @@ from warnings import catch_warnings, filterwarnings, warn
 from tivars.flags import *
 from tivars.data import *
 from tivars.models import *
+from tivars.util import *
 from tivars.var import TIEntry, SizedEntry
 from .real import *
 from .tokenized import TIEquation
@@ -76,9 +77,6 @@ class GraphStyle(Enum):
     Animate = 0x05
     DottedLine = 0x06
 
-    _all = [SolidLine, ThickLine, ShadeAbove, ShadeBelow, Trace, Animate, DottedLine]
-    STYLES = _all[:7]
-
 
 class GraphColor(Enum):
     """
@@ -102,10 +100,6 @@ class GraphColor(Enum):
     Gray = 0x0E
     DarkGray = 0x0F
 
-    _all = [Mono, Blue, Red, Black, Magenta, Green, Orange, Brown, Navy,
-            LtBlue, Yellow, White, LtGray, MedGray, Gray, DarkGray]
-    COLORS = _all[1:]
-
 
 class GlobalLineStyle(Enum):
     """
@@ -117,9 +111,6 @@ class GlobalLineStyle(Enum):
     Thin = 0x02
     DotThin = 0x03
 
-    _all = [Thick, Thin, DotThick, DotThin]
-    STYLES = _all
-
 
 class BorderColor(Enum):
     """
@@ -130,9 +121,6 @@ class BorderColor(Enum):
     Teal = 0x02
     LtBlue = 0x03
     White = 0x04
-
-    _all = [LtGray, Teal, LtBlue, White]
-    COLORS = _all
 
 
 class EquationFlags(Flags):
@@ -156,7 +144,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
     The equation's style and color in its GDB is bundled for convenience.
     """
 
-    min_data_length = 3
+    min_calc_data_length = 3
 
     class Raw(TIEntry.Raw):
         """
@@ -169,19 +157,19 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         __slots__ = "meta_length", "type_id", "name", "version", "archived", "style", "color", "calc_data"
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "Y1",
+                 name: str = "Y1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
         self.flags = EquationFlags({0: 1, 1: 1})
-        self.style = 0x00
-        self.color = 0x00
+        self.style = GraphStyle(0x00)
+        self.color = GraphColor(0x00)
 
     def __class_getitem__(cls, index: int):
         index -= 1
 
-        class IndexedEquationConverter(Converter):
+        class IndexedEquationConverter(Converter[TIGraphedEquation]):
             """
             Converter for equations within a GDB
 
@@ -191,10 +179,8 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
             The ``n``th equation in a GDB is interfaced by the converter ``TIGraphedEquation[n]``.
             """
 
-            _T = TIGraphedEquation
-
             @classmethod
-            def get(cls, data: bytes, *, instance=None) -> _T:
+            def get(cls, data: bytes, *, instance=None) -> TIGraphedEquation:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by finding the equation at ``index`` within a GDB
 
@@ -206,7 +192,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
                 return instance.equations[index]
 
             @classmethod
-            def set(cls, value: _T, *, instance=None, **kwargs) -> bytes:
+            def set(cls, value: TIGraphedEquation, *, instance=None, **kwargs) -> bytes:
                 """
                 Converts ``bytes`` -> `TIGraphedEquation` by modifying the equation at ``index`` within a GDB
 
@@ -259,7 +245,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         """
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, EquationFlags)[0:1]
@@ -272,9 +258,19 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
 
     @View(calc_data, Integer)[1:3]
     def length(self) -> int:
+        pass
+
+    @View(calc_data, Data)[3:]
+    def data(self) -> bytes:
+        pass
+
+    @property
+    def is_defined(self) -> bool:
         """
-        The length of this entry's user data section
+        :return: Whether this GDB equation is undefined
         """
+
+        return self.length != 0
 
     @property
     def json_name(self) -> str:
@@ -282,7 +278,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         :return: The name of this equation used in the GDB JSON format
         """
 
-        return self.decode(self.raw.name, mode="accessible").strip("{}|")
+        return TIGraphedEquation.decode(self.raw.name, mode="accessible").strip("{}|")
 
     def load_data_section(self, data: BytesIO):
         flag_byte = data.read(1)
@@ -290,15 +286,15 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         self.raw.calc_data = bytearray(flag_byte + length_bytes + data.read(data_length))
 
     @Loader[dict]
-    def load_dict(self, dct: dict):
+    def load_dict(self, dct: dict, **kwargs):
         """
         Loads a JSON ``dict`` into this GDB equation
 
         :param dct: The dict to load
         """
 
-        self.style = getattr(GraphStyle, dct["style"])
-        self.color = getattr(GraphColor, dct["color"])
+        self.style = GraphStyle[dct["style"]]
+        self.color = GraphColor[dct["color"]]
 
         self.load_equation(TIEquation(dct["expr"]))
 
@@ -310,15 +306,15 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
         self.flags |= EquationFlags.UsedForGraph if flags["wasUsedForGraph"] else EquationFlags.UnusedForGraph
         self.flags |= EquationFlags.LinkTransferSet if flags["linkTransfer"] else EquationFlags.LinkTransferClear
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         """
         :return: A ``dict`` representing this GDB equation in JSON format
         """
 
-        dct = {"style": GraphStyle.get_name(self.style)}
+        dct = {"style": self.style.name}
 
         if self.color != GraphColor.Mono:
-            dct["color"] = GraphColor.get_name(self.color)
+            dct["color"] = self.color.name
 
         return dct | {
             "flags": {
@@ -350,7 +346,7 @@ class TIGraphedEquation(TIEquation, register=True, override=0x23):
             return TIEquation(self.bytes()[:-self.calc_data_length] + self.bytes()[-self.calc_data_length + 1:])
 
     @Loader[str]
-    def load_string(self, string: str, *, model: TIModel = None, lang: str = None, mode: str = None):
+    def load_string(self, string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
         equation = TIEquation()
         equation.load_string(string, model=model, lang=lang, mode=mode)
         self.load_equation(equation)
@@ -370,43 +366,38 @@ class TIMonoGDB(SizedEntry, register=True):
     GDBs for monochrome models are truncations of those for color models.
     """
 
-    extensions = {
-        None: "8xd",
-        TI_82: "82d",
-        TI_83: "83d",
-        TI_83P: "8xd"
-    }
+    extension = "8xd"
 
-    min_data_length = 61
+    min_calc_data_length = 61
 
     leading_name_byte = b'\x61'
 
-    mode_byte = 0x00
+    mode_byte: int = 0x00
     """
     The byte which identifies the GDB type
     """
 
-    has_color = False
+    has_color: bool = False
     """
     Whether this GDB type carries color information
     """
 
-    num_equations = 0
+    num_equations: int = 0
     """
     The number of equations contained in this GDB type
     """
 
-    num_parameters = 0
+    num_parameters: int = 0
     """
     The number of graph parameters contained in this GDB type
     """
 
-    num_styles = 0
+    num_styles: int = 0
     """
     The number of equation styles contained in this GDB type
     """
 
-    equation_names = []
+    equation_names: list[str] = []
     """
     The names of the equations in this GDB type
     """
@@ -414,11 +405,11 @@ class TIMonoGDB(SizedEntry, register=True):
     _type_id = 0x08
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
+                 name: str = "GDB1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
@@ -432,7 +423,7 @@ class TIMonoGDB(SizedEntry, register=True):
         return iter(self.dict().items())
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -459,44 +450,44 @@ class TIMonoGDB(SizedEntry, register=True):
         ExprOn/Off and sequence plot offsets for sequence mode
         """
 
-    @View(calc_data, GraphRealEntry)[7:16]
-    def Xmin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[7:16]
+    def Xmin(self) -> RealEntry:
         """
         Xmin: the X-coordinate of the left edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[16:25]
-    def Xmax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[16:25]
+    def Xmax(self) -> RealEntry:
         """
         Xmax: the X-coordinate of the right edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[25:34]
-    def Xscl(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[25:34]
+    def Xscl(self) -> RealEntry:
         """
         Xscl: the separation between ticks on the X-axis
         """
 
-    @View(calc_data, GraphRealEntry)[34:43]
-    def Ymin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[34:43]
+    def Ymin(self) -> RealEntry:
         """
         Ymin: the Y-coordinate of the bottom edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[43:52]
-    def Ymax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[43:52]
+    def Ymax(self) -> RealEntry:
         """
         Ymax: the Y-coordinate of the top edge of the graphscreen
         """
 
-    @View(calc_data, GraphRealEntry)[52:61]
-    def Yscl(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[52:61]
+    def Yscl(self) -> RealEntry:
         """
         Yscl: the separation between ticks on the Y-axis
         """
 
     @property
-    def mode(self) -> str:
+    def mode(self) -> str | None:
         """
         The mode for the GDB
 
@@ -520,10 +511,10 @@ class TIMonoGDB(SizedEntry, register=True):
     @property
     def offset(self) -> int:
         """
-        :return: The index of the start of the equation styles in this GDB
+        :return: The index of the start of the equation styles in this GDB's data
         """
 
-        return TIMonoGDB.min_data_length + GraphRealEntry.min_data_length * self.num_parameters
+        return TIMonoGDB.min_calc_data_length + RealEntry.min_calc_data_length * self.num_parameters
 
     @property
     def equations(self) -> tuple[TIGraphedEquation, ...]:
@@ -533,30 +524,35 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return self.get_equations()
 
-    def get_color_data(self, data: bytes = None) -> bytes:
-        """
-        Finds the color portion of a GDB if it exists
+    def clear(self):
+        self.raw.calc_data = bytearray([0, 0, 0, self.mode_byte])
+        self.raw.calc_data.extend(bytearray(self.min_calc_data_length - self.calc_data_length))
+        self.length = len(self.data)
 
-        :param data: The data to find the color portion of (defaults to this GDB's data)
-        :return: The color portion of ``data``, which may be empty
+    def get_color_data(self) -> bytes:
+        """
+        Finds the color portion of this GDB if it exists
+
+        :return: The color portion of this GDB, which may be empty
         """
 
-        data = BytesIO(data or self.calc_data[self.offset + self.num_styles:])
+        data = BytesIO(self.data)
+        data.seek(self.offset + self.num_styles - 2, 0)
         temp = TIGraphedEquation()
         for i in range(self.num_equations):
             temp.load_data_section(data)
 
         return data.read()
 
-    def get_equations(self, data: bytes = None) -> tuple[TIGraphedEquation, ...]:
+    def get_equations(self) -> tuple[TIGraphedEquation, ...]:
         """
-        Extracts the equations stored in a GDB into a ``tuple``
+        Extracts the equations stored in this GDB
 
-        :param data: The data to extract equations from (defaults to this GDB's data)
-        :return: A ``tuple`` of equations stored in ``data``
+        :return: A ``tuple`` of equations stored in this GDB
         """
 
-        data = BytesIO(data or self.calc_data[self.offset:])
+        data = BytesIO(self.data)
+        data.seek(self.offset - 2, 0)
         equations = tuple(TIGraphedEquation(name=name) for name in self.equation_names)
 
         # Load styles
@@ -581,27 +577,38 @@ class TIMonoGDB(SizedEntry, register=True):
 
         return equations
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        return max([eq.get_min_os() for eq in self.get_equations(data)], default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        return max([eq.get_min_os() for eq in self.get_equations()], default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        return max([eq.get_version() for eq in self.get_equations(data)], default=0x00)
+    def get_version(self) -> int:
+        return max([eq.get_version() for eq in self.get_equations()], default=0x00)
 
     @Loader[dict]
-    def load_dict(self, dct: dict):
+    def load_dict(self, dct: dict = None, **kwargs):
         """
         Loads a JSON ``dict`` into this GDB
 
         :param dct: The dict to load
         """
 
-        self.clear()
+        if dct is None:
+            name = split_case(self.__name__)[-2].removeprefix("TI").lower()
+            with open(os.path.join(os.path.dirname(__file__), f"json/{name}.default.json")) as file:
+                dct = json.load(file)
+
         self.raw.calc_data[3] = {
             'Function': 0x10,
             'Parametric': 0x40,
             'Polar': 0x20,
             'Sequence': 0x80
         }.get(mode := dct.get("graphMode", "Function"), 0x00)
+
+        # Set type if color data exists so it can be loaded
+        if "global84CSettings" in dct:
+            self.__class__ = TIGDB
+
+        self.coerce()
+        self.clear()
 
         # Load formatSettings
         for setting in dct.get("formatSettings", []):
@@ -650,17 +657,12 @@ class TIMonoGDB(SizedEntry, register=True):
                 warn(f"Unrecognized equation ({name}).",
                      UserWarning)
 
-        # Set type if color data exists so it can be loaded
-        if "global84CSettings" in dct:
-            self.__class__ = TIGDB
-
-        self.coerce()
         self._load_dict(dct)
 
     def _load_dict(self, dct: dict):
         pass
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         """
         :return: A ``dict`` representing this GDB in JSON format
         """
@@ -693,6 +695,39 @@ class TIMonoGDB(SizedEntry, register=True):
     def load_string(self, string: str):
         self.load_dict(json.loads(string))
 
+    def summary(self) -> str:
+        if isinstance(self, TIMonoSeqGDB):
+            seq_modes = (f"{mode_format(self.extended_mode_flags, 'SEQ_n', 'SEQ_np1', 'SEQ_np2')}\n"
+                         f"\n"
+                         f"{mode_format(self.sequence_flags, 'Time', 'Web', 'uv', 'vw', 'uw')}")
+
+        else:
+            seq_modes = ""
+
+        return TIEntry.summary(self) + (
+            f"\n"
+            f"GDB Information\n"
+            f"  Type             {self.mode}\n"
+            f"  Has Color Data?  False\n"
+            f"\n"
+            f"  Mode Settings    {mode_format(self.mode_flags, 'Connected', 'Dot')}\n"
+            f"                   {mode_format(self.mode_flags, 'Sequential', 'Simul')}\n"
+            f"                   {seq_modes}\n"
+            f"                   {mode_format(self.mode_flags, 'RectGC', 'PolarGC')}\n"
+            f"                   {mode_format(self.mode_flags, 'CoordOn', 'CoordOff')}\n"
+            f"                   {mode_format(self.mode_flags, 'GridOff', 'GridOn')}\n"
+            f"                   {mode_format(self.mode_flags, 'AxesOn', 'AxesOff')}\n"
+            f"                   {mode_format(self.mode_flags, 'LabelOff', 'LabelOn')}\n"
+            f"                   {mode_format(self.extended_mode_flags, 'ExprOn', 'ExprOff')}\n"
+        ) + (
+            "\n  " +
+            "\n  ".join(f"{var:9} {value}" for var, value in
+                        (self.dict()["globalWindowSettings"] | self.dict()["specificData"]["settings"]).items()) +
+            "\n\n  " +
+            "\n  ".join(f"{equation.json_name:9} {equation}" for equation in self.equations if equation.is_defined) +
+            "\n"
+        )
+
     def coerce(self):
         if self.get_color_data():
             self.__class__ = TIGDB
@@ -721,21 +756,21 @@ class TIGDB(TIMonoGDB):
     A GDB can correspond to one of the Function, Parametric, Polar, or Sequence plotting modes.
     """
 
-    min_data_length = 66
+    min_calc_data_length = 66
     has_color = True
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "GDB1",
+                 name: str = "GDB1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
         self.axes_color = GraphColor.Black
         self.grid_color = GraphColor.MedGray
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, GraphColor)[-5:-4]
@@ -775,36 +810,74 @@ class TIGDB(TIMonoGDB):
 
         if colors := dct.get("global84CSettings", {}).get("colors", {}):
             if "grid" in colors:
-                self.grid_color = getattr(GraphColor, colors["grid"])
+                self.grid_color = GraphColor[colors["grid"]]
 
             if "axes" in colors:
-                self.axes_color = getattr(GraphColor, colors["axes"])
+                self.axes_color = GraphColor[colors["axes"]]
 
             if "border" in colors:
-                self.border_color = BorderColor.COLORS[colors["border"] - 1]
+                self.border_color = BorderColor(colors["border"])
 
         if other := dct.get("global84CSettings", {}).get("other", {}):
             if "globalLineStyle" in other:
-                self.global_line_style = getattr(GlobalLineStyle, other["globalLineStyle"])
+                self.global_line_style = GlobalLineStyle[other["globalLineStyle"]]
 
             if "detectAsymptotes" in other:
                 self.color_mode_flags |= \
                     GraphMode.DetectAsymptotesOn if other["detectAsymptotes"] else GraphMode.DetectAsymptotesOff
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return {
             "global84CSettings": {
                 "colors": {
-                    "grid": GraphColor.get_name(self.grid_color),
-                    "axes": GraphColor.get_name(self.axes_color),
-                    "border": self.border_color
+                    "grid": self.grid_color.name,
+                    "axes": self.axes_color.name,
+                    "border": self.border_color.value
                 },
                 "other": {
-                    "globalLineStyle": GlobalLineStyle.get_name(self.global_line_style),
+                    "globalLineStyle": self.global_line_style.name,
                     "detectAsymptotes": GraphMode.DetectAsymptotesOn in self.color_mode_flags
                 }
             }
         }
+
+    def summary(self) -> str:
+        if isinstance(self, TISeqGDB):
+            seq_modes = (f"{mode_format(self.extended_mode_flags, 'SEQ_n', 'SEQ_np1', 'SEQ_np2')}\n"
+                         f"\n"
+                         f"{mode_format(self.sequence_flags, 'Time', 'Web', 'uv', 'vw', 'uw')}")
+
+        else:
+            seq_modes = ""
+
+        detect_asymptotes = "On" if GraphMode.DetectAsymptotesOn in self.color_mode_flags else "Off"
+
+        return TIEntry.summary(self) + (
+            f"\n"
+            f"GDB Information\n"
+            f"  Type             {self.mode}\n"
+            f"  Has Color Data?  True\n"
+            f"\n"
+            f"  Mode Settings    {mode_format(self.mode_flags, 'Sequential', 'Simul')}\n"
+            f"                   {seq_modes}\n"
+            f"                   {mode_format(self.mode_flags, 'RectGC', 'PolarGC')}\n"
+            f"                   {mode_format(self.mode_flags, 'CoordOn', 'CoordOff')}\n"
+            f"                   {mode_format(self.mode_flags, 'GridOff', 'GridDot', 'GridLine')}\n"
+            f"                   GridColor: {self.grid_color.name}\n"
+            f"                   Axes: {self.axes_color.name}\n"
+            f"                   {mode_format(self.mode_flags, 'LabelOff', 'LabelOn')}\n"
+            f"                   {mode_format(self.extended_mode_flags, 'ExprOn', 'ExprOff')}\n"
+            f"                   BorderColor: {BorderColor(self.border_color)}\n"
+            f"\n"
+            f"                   Detect Asymptotes: {detect_asymptotes}\n"
+        ) + (
+            "\n  " +
+            "\n  ".join(f"{var:9} {value}" for var, value in
+                        (self.dict()["globalWindowSettings"] | self.dict()["specificData"]["settings"]).items()) +
+            "\n\n  " +
+            "\n  ".join(f"{equation.json_name:9} {equation}" for equation in self.equations if equation.is_defined)
+            + "\n"
+        )
 
     def coerce(self):
         match self.mode_id:
@@ -829,7 +902,7 @@ class TIMonoFuncGDB(TIMonoGDB):
 
     mode_byte = 0x10
 
-    min_data_length = 110
+    min_calc_data_length = 110
 
     num_equations = 10
     num_parameters = 1
@@ -838,7 +911,7 @@ class TIMonoFuncGDB(TIMonoGDB):
     equation_names = ["Y1", "Y2", "Y3", "Y4", "Y5", "Y6", "Y7", "Y8", "Y9", "Y0"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -847,8 +920,8 @@ class TIMonoFuncGDB(TIMonoGDB):
         The mode ID for the GDB - ``0x10``
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def Xres(self, value: GraphRealEntry) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def Xres(self, value: RealEntry) -> RealEntry:
         """
         Xres: The pixel separation of points in a function plot
 
@@ -921,15 +994,7 @@ class TIMonoFuncGDB(TIMonoGDB):
         Y0: The 10th equation in function mode
         """
 
-    @Loader[dict]
-    def load_dict(self, dct: dict = None):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/func.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
-
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
                 "settings": {
@@ -947,10 +1012,10 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
     Parser for function color GDBs
     """
 
-    min_data_length = 128
+    min_calc_data_length = 128
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-18:-15]
@@ -972,7 +1037,7 @@ class TIFuncGDB(TIGDB, TIMonoFuncGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TIFuncGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TIFuncGDB, self).dict()
 
 
@@ -983,7 +1048,7 @@ class TIMonoParamGDB(TIMonoGDB):
 
     mode_byte = 0x40
 
-    min_data_length = 130
+    min_calc_data_length = 130
 
     num_equations = 12
     num_parameters = 3
@@ -992,7 +1057,7 @@ class TIMonoParamGDB(TIMonoGDB):
     equation_names = ["X1T", "Y1T", "X2T", "Y2T", "X3T", "Y3T", "X4T", "Y4T", "X5T", "Y5T", "X6T", "Y6T"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1001,20 +1066,20 @@ class TIMonoParamGDB(TIMonoGDB):
         The mode ID for the GDB - ``0x40``
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def Tmin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def Tmin(self) -> RealEntry:
         """
         Tmin: The initial time
         """
 
-    @View(calc_data, GraphRealEntry)[70:79]
-    def Tmax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[70:79]
+    def Tmax(self) -> RealEntry:
         """
         Tmax: The final time
         """
 
-    @View(calc_data, GraphRealEntry)[79:88]
-    def Tstep(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[79:88]
+    def Tstep(self) -> RealEntry:
         """
         Tstep: The time increment
         """
@@ -1091,14 +1156,6 @@ class TIMonoParamGDB(TIMonoGDB):
         Y6T: The 6th Y-component in parametric mode
         """
 
-    @Loader[dict]
-    def load_dict(self, dct: dict = None):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/param.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
-
     def _load_dict(self, dct: dict):
         for i in range(1, self.num_styles + 1):
             if (x_style := getattr(self, f"X{i}T").style) != (y_style := getattr(self, f"Y{i}T").style):
@@ -1109,7 +1166,7 @@ class TIMonoParamGDB(TIMonoGDB):
                 warn(f"X and Y component colors do not agree (X{i}T: {x_color}, Y{i}T: {y_color}).",
                      UserWarning)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
                 "settings": {
@@ -1129,10 +1186,10 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
     Parser for parametric color GDBs
     """
 
-    min_data_length = 144
+    min_calc_data_length = 144
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-14:-11]
@@ -1154,7 +1211,7 @@ class TIParamGDB(TIGDB, TIMonoParamGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TIParamGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TIParamGDB, self).dict()
 
 
@@ -1165,7 +1222,7 @@ class TIMonoPolarGDB(TIMonoGDB):
 
     mode_byte = 0x20
 
-    min_data_length = 112
+    min_calc_data_length = 112
 
     num_equations = 6
     num_parameters = 3
@@ -1174,7 +1231,7 @@ class TIMonoPolarGDB(TIMonoGDB):
     equation_names = ["r1", "r2", "r3", "r4", "r5", "r6"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1183,20 +1240,20 @@ class TIMonoPolarGDB(TIMonoGDB):
         The mode ID for the GDB - ``0x20``
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def Thetamin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def Thetamin(self) -> RealEntry:
         """
         θmin: The initial angle
         """
 
-    @View(calc_data, GraphRealEntry)[70:79]
-    def Thetamax(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[70:79]
+    def Thetamax(self) -> RealEntry:
         """
         θmax: The final angle
         """
 
-    @View(calc_data, GraphRealEntry)[79:88]
-    def Thetastep(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[79:88]
+    def Thetastep(self) -> RealEntry:
         """
         θstep: The angle increment
         """
@@ -1237,15 +1294,7 @@ class TIMonoPolarGDB(TIMonoGDB):
         r6: The 6th equation in polar mode
         """
 
-    @Loader[dict]
-    def load_dict(self, dct: dict = None):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/polar.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
-
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super().dict() | {
             "specificData": {
                 "settings": {
@@ -1265,10 +1314,10 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
     Parser for polar color GDBs
     """
 
-    min_data_length = 126
+    min_calc_data_length = 126
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-14:-11]
@@ -1290,7 +1339,7 @@ class TIPolarGDB(TIGDB, TIMonoPolarGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TIPolarGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TIPolarGDB, self).dict()
 
 
@@ -1301,7 +1350,7 @@ class TIMonoSeqGDB(TIMonoGDB):
 
     mode_byte = 0x80
 
-    min_data_length = 163
+    min_calc_data_length = 163
 
     num_equations = 3
     num_parameters = 10
@@ -1310,7 +1359,7 @@ class TIMonoSeqGDB(TIMonoGDB):
     equation_names = ["u", "v", "w"]
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[3:4]
@@ -1325,8 +1374,8 @@ class TIMonoSeqGDB(TIMonoGDB):
         The flags for the sequence mode settings
         """
 
-    @View(calc_data, GraphRealEntry)[61:70]
-    def PlotStart(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[61:70]
+    def PlotStart(self, value) -> RealEntry:
         """
         PlotStart: The initial value of 𝑛 for sequential plots
 
@@ -1339,8 +1388,8 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[70:79]
-    def nMax(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[70:79]
+    def nMax(self, value) -> RealEntry:
         """
         𝑛Max: The final value of 𝑛
 
@@ -1353,20 +1402,20 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[79:88]
-    def unMin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[79:88]
+    def unMin(self) -> RealEntry:
         """
         u(𝑛Min): The initial value of u at 𝑛Min
         """
 
-    @View(calc_data, GraphRealEntry)[88:97]
-    def vnMin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[88:97]
+    def vnMin(self) -> RealEntry:
         """
         v(𝑛Min): The initial value of v at 𝑛Min
         """
 
-    @View(calc_data, GraphRealEntry)[97:106]
-    def nMin(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[97:106]
+    def nMin(self, value) -> RealEntry:
         """
         nMin: the initial value of 𝑛
 
@@ -1379,26 +1428,26 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[106:115]
-    def unMinp1(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[106:115]
+    def unMinp1(self) -> RealEntry:
         """
         u(𝑛Min+1): The initial value of u at 𝑛Min + 1
         """
 
-    @View(calc_data, GraphRealEntry)[115:124]
-    def vnMinp1(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[115:124]
+    def vnMinp1(self) -> RealEntry:
         """
         v(nMin+1): The initial value of v at 𝑛Min + 1
         """
 
-    @View(calc_data, GraphRealEntry)[124:133]
-    def wnMin(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[124:133]
+    def wnMin(self) -> RealEntry:
         """
         w(𝑛Min): The initial value of w at 𝑛Min
         """
 
-    @View(calc_data, GraphRealEntry)[133:142]
-    def PlotStep(self, value) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[133:142]
+    def PlotStep(self, value) -> RealEntry:
         """
         PlotStep: The 𝑛 increment for sequential plots
 
@@ -1411,8 +1460,8 @@ class TIMonoSeqGDB(TIMonoGDB):
 
         return value
 
-    @View(calc_data, GraphRealEntry)[142:151]
-    def wnMinp1(self) -> GraphRealEntry:
+    @View(calc_data, RealEntry)[142:151]
+    def wnMinp1(self) -> RealEntry:
         """
         w(𝑛Min+1): The initial value of w at 𝑛Min + 1
         """
@@ -1435,14 +1484,6 @@ class TIMonoSeqGDB(TIMonoGDB):
         w: The 3rd equation in sequence mode
         """
 
-    @Loader[dict]
-    def load_dict(self, dct: dict = None):
-        if dct is None:
-            with open(os.path.join(os.path.dirname(__file__), "json/seq.default.json")) as file:
-                dct = json.load(file)
-
-        super().load_dict(dct)
-
     def _load_dict(self, dct: dict):
         ext_settings = dct.get("extSettings", {})
         if "seqMode" in ext_settings:
@@ -1462,7 +1503,7 @@ class TIMonoSeqGDB(TIMonoGDB):
                 warn(f"Unrecognized sequence mode ({dct['seqMode']}).",
                      UserWarning)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         dct = super().dict()
 
         match self.extended_mode_flags:
@@ -1513,10 +1554,10 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
     Parser for sequential color GDBs
     """
 
-    min_data_length = 174
+    min_calc_data_length = 174
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, String)[-11:-8]
@@ -1538,10 +1579,11 @@ class TISeqGDB(TIGDB, TIMonoSeqGDB):
         super(TIGDB, self)._load_dict(dct)
         super(TISeqGDB, self)._load_dict(dct)
 
-    def dict(self) -> dict:
+    def dict(self, **kwargs) -> dict:
         return super(TIGDB, self).dict() | super(TISeqGDB, self).dict()
 
 
 __all__ = ["TIMonoGDB", "TIMonoFuncGDB", "TIMonoParamGDB", "TIMonoPolarGDB", "TIMonoSeqGDB",
            "TIGDB", "TIFuncGDB", "TIParamGDB", "TIPolarGDB", "TISeqGDB",
-           "TIGraphedEquation", "EquationFlags", "GraphMode", "GraphStyle", "GraphColor", "GlobalLineStyle"]
+           "TIGraphedEquation", "EquationFlags",
+           "GraphMode", "SeqMode", "GraphStyle", "GraphColor", "GlobalLineStyle", "BorderColor"]

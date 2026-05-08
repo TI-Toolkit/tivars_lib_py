@@ -5,11 +5,13 @@ Lists
 
 from collections.abc import Iterator, Sequence
 from io import BytesIO
+from typing import TypeAlias
 from warnings import warn
 
 from tivars.data import *
 from tivars.models import *
 from tivars.tokenizer import *
+from tivars.util import *
 from tivars.var import TIEntry
 from .complex import *
 from .real import *
@@ -22,11 +24,8 @@ class ListName(Name):
     List names can be ``L1`` - ``L6`` or a string of five alphanumeric characters that do not start with a digit.
     The special name and token ``IDList`` is also used (but is planned to be relegated to a separate type).
     """
-
-    _T = str
-
     @classmethod
-    def get(cls, data: bytes, **kwargs) -> _T:
+    def get(cls, data: bytes, **kwargs) -> str:
         """
         Converts ``bytes`` -> ``str`` as done by the memory viewer
 
@@ -46,7 +45,7 @@ class ListName(Name):
         return super().get(data)
 
     @classmethod
-    def set(cls, value: _T, **kwargs) -> bytes:
+    def set(cls, value: str, **kwargs) -> bytes:
         """
         Converts ``str`` -> ``bytes`` to match appearance in the memory viewer
 
@@ -56,6 +55,8 @@ class ListName(Name):
 
         # TI-ASCII hack
         varname = value.upper().replace("]", "|L")
+        if not varname.startswith("|L"):
+            varname = "|L" + varname
 
         if "IDList" in varname:
             return b'\x5D\x40'
@@ -76,18 +77,19 @@ class TIList(TIEntry):
     Exact types are supported.
     """
 
-    _E = TIEntry
+    _E: TypeAlias = TIEntry
 
-    versions = [0x10, 0x0B, 0x00]
+    versions = [0x00, 0x0B, 0x10]
+    extension = "8xl"
 
-    min_data_length = 2
+    min_calc_data_length = 2
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "L1",
+                 name: str = "L1",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         if format_spec.endswith("t"):
@@ -110,7 +112,7 @@ class TIList(TIEntry):
         """
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[0:2]
@@ -127,17 +129,17 @@ class TIList(TIEntry):
 
         return value
 
-    @View(calc_data, Bytes)[2:]
+    @View(calc_data, Data)[2:]
     def data(self) -> bytes:
         pass
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        it = zip(*[iter(data or self.data)] * self._E.min_data_length)
-        return max(map(self._E().get_min_os, it), default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        it = zip(*[iter(self.data)] * self._E.min_calc_data_length)
+        return max([self._E(data=data).get_min_os() for data in it], default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        it = zip(*[iter(data or self.data)] * self._E.min_data_length)
-        version = max(map(self._E().get_version, it), default=0x00)
+    def get_version(self) -> int:
+        it = zip(*[iter(self.data)] * self._E.min_calc_data_length)
+        version = max([self._E(data=data).get_version() for data in it], default=0x00)
 
         if version > 0x1B:
             return 0x10
@@ -151,13 +153,13 @@ class TIList(TIEntry):
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self._E.min_data_length and self.calc_data_length // self._E.min_data_length != self.length:
+        if self._E.min_calc_data_length and self.calc_data_length // self._E.min_calc_data_length != self.length:
             warn(f"The list has an unexpected length "
-                 f"(expected {self.length}, got {self.calc_data_length // self._E.min_data_length}).",
+                 f"(expected {self.length}, got {self.calc_data_length // self._E.min_calc_data_length}).",
                  BytesWarning)
 
     @Loader[Sequence]
@@ -170,18 +172,25 @@ class TIList(TIEntry):
 
         self.length = len(lst)
         self.data = b''.join(entry.calc_data for entry in lst)
+        self.coerce()
 
     def list(self) -> list[_E]:
         """
         :return: A ``list`` of the elements in this list
         """
 
-        it = zip(*[iter(self.data)] * self._E.min_data_length)
-        return [self._E(for_flash=bool(self.flash_bytes), data=data) for data in it]
+        it = zip(*[iter(self.data)] * self._E.min_calc_data_length)
+        return [self._E(data=data) for data in it]
 
     @Loader[str]
     def load_string(self, string: str):
         self.load_list([self._E(element) for element in "".join(string.strip("[]{}")).split(",")])
+
+    def summary(self) -> str:
+        return super().summary() + (
+            f"\n"
+            f"  Value          [{trim_string(trim_list(self.list(), 8, ', '), 46)}]\n"
+        )
 
     def coerce(self):
         for type_id, entry_type in self._type_ids.items():
@@ -208,14 +217,7 @@ class TIRealList(TIList, register=True):
     Parser for lists of real numbers
     """
 
-    _E = RealEntry
-
-    extensions = {
-        None: "8xl",
-        TI_82: "82l",
-        TI_83: "83l",
-        TI_83P: "8xl",
-    }
+    _E: TypeAlias = RealEntry
 
     _type_id = 0x01
 
@@ -225,13 +227,7 @@ class TIComplexList(TIList, register=True):
     Parser for lists of complex numbers
     """
 
-    _E = ComplexEntry
-
-    extensions = {
-        None: "8xl",
-        TI_83: "83l",
-        TI_83P: "8xl",
-    }
+    _E: TypeAlias = ComplexEntry
 
     _type_id = 0x0D
 

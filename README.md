@@ -11,6 +11,7 @@ Much of the functionality of this package has been ported over from [tivars_lib_
 - [How to Use](#how-to-use)
   - [Entries](#entries)
   - [Vars & Headers](#vars--headers)
+  - [Other Files](#other-files) 
   - [Models](#models)
 - [Documentation](#documentation)
   - [API](#api)
@@ -197,13 +198,13 @@ assert my_program.raw.type_id == b'\x05'
 
 ### Vars & Headers
 
-If you want to create an entire var or just a header, use `TIVar` or `TIHeader`:
+If you want to create an entire var or just a header, use `TIVarFile` or `TIHeader`:
 
 ```python
 from tivars.var import *
 
-my_var = TIVar()
-my_var_for84pce = TIVar(model=TI_84PCE)
+my_var = TIVarFile()
+my_var_for84pce = TIVarFile(model=TI_84PCE)
 
 my_header = TIHeader()
 my_header_with_a_cool_comment = TIHeader(comment="Wow! I'm a comment!")
@@ -226,7 +227,7 @@ An entry can be exported to a var, with an optional attached header; likewise, a
 ```python
 my_var = my_program.export(header=my_header)
 
-assert my_header = my_var.header
+assert my_header == my_var.header
 assert my_program == my_var.entries[0]
 ```
 
@@ -251,16 +252,28 @@ Vars and headers, like entries, are composed of data sections, and contain packa
 > [!WARNING]
 > Edits to read-only bytes like the checksum are reset whenever any other data in the var is updated.
 
+### Other Files
+
 #### Flash Files
 
-Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers. A flash header does _not_ need to be "packaged" into a larger file format like an entry in a regular var; see `TIFlashHeader.open` and `TIFlashHeader.save`.
+Flash files such as apps, OSes, and certificates can be loaded using the `TIFlashHeader` base class or its children. A flash file is composed of one to three headers (though usually only one); these are not to be confused with var headers.
+
+A flash header does _not_ need to be "packaged" into a larger file format like an entry in a regular var; see `TIFlashHeader.open` and `TIFlashHeader.save`. If you do want to stitch multiple together, though, or need to load a source with multiple headers, use a `TIFlashFile`.
 
 > [!TIP]
 > Loading flash files into a `TIEntry` probably won't work very well.
 
+#### Bundles
+
+Bundles can be loaded and unpacked using the `TIBundle` type.
+
+#### Generic Loaders
+
+All file types are children of the `TIFile` base type, and entries and flash headers are children of the `TIComponent` type. Use either of these to load files or portions thereof whose identities are completely unknown to you, and they will be coerced to the correct type. Methods such as `TIComponent.get_type` can additionally be used to identify unknown files from partial information, such as a file extension, without delegating to the type handlers.
+
 ### Models
 
-All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets.
+All TI-82/83/84 series calcs are represented as `TIModel` objects stored in `tivars.models`. Each model contains its name, metadata, and features; use `has` on a `TIFeature` to check that a model has a given a feature. Models are also used to determine var file extensions and token sheets (see [Tokenization](#tokenization)).
 
 ## Documentation
 
@@ -277,10 +290,13 @@ The var file format(s) and data sections can be found in a readable format on th
 
 All entry types support string formatting using Python's f-strings.
 
-- All entries support hex formatting of their data: `{sep}{width}x`
+- All entries support hex formatting of their data: `{width}?{case}{sep}?`
+  - `width`: how many digits to group together; negative values group from the end *(default: no groups)*
+  - `case`: the case of the hex digits
+    - `x`: lowercase
+    - `X`: uppercase
   - `sep`: a single character to separate groups of hex digits *(default: none)*
-  - `width`: how many digits to group together *(default: no groups)*
-- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}{sep}{type}{lang}`
+- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}?{sep}?{type}{lang}?`
   - `line_spec`: format specifier for line numbers *(default: no line numbers)*
   - `sep`: a string to separate lines and line numbers *(required for line numbering)*
   - `type`: how to format each token
@@ -308,7 +324,12 @@ img.show()
 
 ### Tokenization
 
-Functions to decode and encode strings into tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
+Functions to transcode between strings and TI-BASIC tokens can be found in `tivars.tokenizer`. These functions utilize the [TI-Toolkit token sheets](https://github.com/TI-Toolkit/tokens), which are kept as a submodule in `tivars.tokens`. Support currently exists for all models in the 82/83/84 series; PR's concerning the sheets themselves should be directed upstream.
+
+These functions operate on sequences of `TIToken` objects, which store relevant translation and transcoding information. `TIModel` instances (see [Models](#models)) track a `TITokens` container of all tokens available on that model and a `TITokenTrie` for encoding those tokens.
+
+> [!TIP]
+> If you find yourself holding an `IllegalToken` after decoding, the source program is either malformed, not written in TI-BASIC, or engaging in deep shenanigans.
 
 ## Examples
 

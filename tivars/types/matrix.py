@@ -9,6 +9,7 @@ from warnings import warn
 
 from tivars.data import *
 from tivars.models import *
+from tivars.util import *
 from tivars.var import TIEntry
 from .real import RealEntry
 
@@ -21,27 +22,21 @@ class TIMatrix(TIEntry, register=True):
     Exact types are supported, but complex numbers are not.
     """
 
-    versions = [0x10, 0x0B, 0x00]
+    versions = [0x00, 0x0B, 0x10]
+    extension = "8xm"
 
-    extensions = {
-        None: "8xm",
-        TI_82: "82m",
-        TI_83: "83m",
-        TI_83P: "8xm"
-    }
-
-    min_data_length = 2
+    min_calc_data_length = 2
 
     leading_name_byte = b'\x5C'
 
     _type_id = 0x02
 
     def __init__(self, init=None, *,
-                 for_flash: bool = True, name: str = "[A]",
+                 name: str = "[A]",
                  version: int = None, archived: bool = None,
                  data: bytes = None):
 
-        super().__init__(init, for_flash=for_flash, name=name, version=version, archived=archived, data=data)
+        super().__init__(init, name=name, version=version, archived=archived, data=data)
 
     def __format__(self, format_spec: str) -> str:
         if format_spec.endswith("t"):
@@ -63,7 +58,7 @@ class TIMatrix(TIEntry, register=True):
                 yield entry
 
     @Section()
-    def calc_data(self) -> bytes:
+    def calc_data(self) -> bytearray:
         pass
 
     @View(calc_data, Integer)[0:1]
@@ -104,7 +99,7 @@ class TIMatrix(TIEntry, register=True):
 
         return value
 
-    @View(calc_data, Bytes)[2:]
+    @View(calc_data, Data)[2:]
     def data(self) -> bytes:
         pass
 
@@ -116,13 +111,13 @@ class TIMatrix(TIEntry, register=True):
 
         return self.width * self.height
 
-    def get_min_os(self, data: bytes = None) -> OsVersion:
-        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
-        return max(map(RealEntry().get_min_os, it), default=OsVersions.INITIAL)
+    def get_min_os(self) -> OsVersion:
+        it = zip(*[iter(self.data)] * RealEntry.min_calc_data_length)
+        return max([RealEntry(data=data).get_min_os() for data in it], default=OsVersions.INITIAL)
 
-    def get_version(self, data: bytes = None) -> int:
-        it = zip(*[iter(data or self.data)] * RealEntry.min_data_length)
-        version = max(map(RealEntry().get_version, it), default=0x00)
+    def get_version(self) -> int:
+        it = zip(*[iter(self.data)] * RealEntry.min_calc_data_length)
+        version = max([RealEntry(data=data).get_version() for data in it], default=0x00)
 
         if version > 0x1B:
             return 0x10
@@ -136,19 +131,19 @@ class TIMatrix(TIEntry, register=True):
     def supported_by(self, model: TIModel) -> bool:
         return super().supported_by(model) and (self.get_version() <= 0x0B or model.has(TIFeature.ExactMath))
 
-    @Loader[bytes, bytearray, BytesIO]
+    @Loader[bytes, bytearray, memoryview, BytesIO]
     def load_bytes(self, data: bytes | BytesIO):
         super().load_bytes(data)
 
-        if self.calc_data_length // RealEntry.min_data_length != self.size:
+        if self.calc_data_length // RealEntry.min_calc_data_length != self.size:
             warn(f"The matrix has an unexpected size "
-                 f"(expected {self.size}, got {self.calc_data_length // RealEntry.min_data_length}).",
+                 f"(expected {self.size}, got {self.calc_data_length // RealEntry.min_calc_data_length}).",
                  BytesWarning)
 
     def load_data_section(self, data: BytesIO):
         width = int.from_bytes(width_byte := data.read(1), 'little')
         height = int.from_bytes(height_byte := data.read(1), 'little')
-        self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height))
+        self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height * RealEntry.min_calc_data_length))
 
     @Loader[Sequence]
     def load_matrix(self, matrix: Sequence[Sequence[RealEntry]]):
@@ -170,14 +165,22 @@ class TIMatrix(TIEntry, register=True):
         :return: A two-dimensional ``list`` of the elements in this matrix
         """
 
-        it = zip(*[iter(self.data)] * RealEntry.min_data_length)
-        return [[RealEntry(for_flash=bool(self.flash_bytes), data=data)
-                 for data in row] for row in zip(*[it] * self.width)]
+        it = zip(*[iter(self.data)] * RealEntry.min_calc_data_length)
+        return [[RealEntry(data=data) for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]
     def load_string(self, string: str):
-        self.load_matrix([[RealEntry(item) for item in row.replace("[", "").replace("]", "").split(",")]
-                          for row in "".join(string.split())[1:-1].replace("],[", "][").split("][")])
+        self.load_matrix([[RealEntry(item) for item in replacer(row, {"[": "", "]": ""}).split(",")]
+                          for row in replacer("".join(string.split())[1:-1], {"],[": "]["}).split("][")])
+
+    def summary(self) -> str:
+        joiner = "\n                 "
+        matrix = trim_list([f"[{trim_string(trim_list(row, 8, ', '), 46)}]" for row in self.matrix()], 8, joiner)
+
+        return super().summary() + (
+            f"\n"
+            f"  Value          {matrix}\n"
+        )
 
 
 __all__ = ["TIMatrix"]
