@@ -68,7 +68,7 @@ class TITokenTrie:
         tokens = []
 
         if string and string[0] in self.children:
-            tokens += self.children[string[0]].match(string[1:])
+            tokens.extend(self.children[string[0]].match(string[1:]))
 
         if self.token:
             tokens.append((self.token, string))
