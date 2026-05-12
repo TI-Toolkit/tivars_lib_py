@@ -193,6 +193,9 @@ class TIList(TIEntry):
         )
 
     def coerce(self):
+        if not self.data:
+            return
+
         for type_id, entry_type in self._type_ids.items():
             if type_id == self.data[0] & 31:
                 if issubclass(entry_type, RealEntry):

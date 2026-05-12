@@ -26,6 +26,8 @@ class ListTests(unittest.TestCase):
         test_real_list.load_string(string)
         self.assertEqual(list(test_real_list), test_list)
 
+        self.assertEqual(TIRealList([]).list(), [])
+
 
     def test_complex_list(self):
         test_comp_list = TIComplexList.open("tests/data/var/ComplexList.8xl")
@@ -48,6 +50,8 @@ class ListTests(unittest.TestCase):
         test_comp_list.clear()
         test_comp_list.load_string(string)
         self.assertEqual(list(test_comp_list), test_list)
+
+        self.assertEqual(TIComplexList([]).list(), [])
 
 
 class MatrixTests(unittest.TestCase):
