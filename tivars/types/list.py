@@ -55,7 +55,7 @@ class ListName(Name):
 
         # TI-ASCII hack
         varname = value.upper().replace("]", "|L")
-        if not varname.startswith("|L"):
+        if not varname.startswith("|L") and varname not in ("L1", "L2", "L3", "L4", "L5", "L6"):
             varname = "|L" + varname
 
         if "IDList" in varname:
