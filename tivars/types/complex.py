@@ -307,7 +307,12 @@ class ComplexEntry(TIEntry):
             else:
                 parts = [parts[0], "0i"]
 
-        parts[1] = parts[1].replace("i", "") or "1"
+        parts[1] = parts[1].replace("i", "")
+        if parts[1] == "-":
+            parts[1] = "-1"
+
+        elif not parts[1]:
+            parts[1] = "1"
 
         try:
             self.real = self.real_type(parts[0])
