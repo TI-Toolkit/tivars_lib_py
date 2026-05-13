@@ -38,7 +38,7 @@ class CLITests(unittest.TestCase):
         cli("convert", "../data/json/param.json", format="TIGDB", name="test_gdb")
         self.assertEqual(TIGDB.open("test_gdb.8xd").json(), json.loads(Path("../data/json/param.json").read_text()))
 
-        cli("convert", "../data/var/Real.8xn", format="json", name="test_real")
+        cli("convert", "../data/var/Real.8xn", format="json")
         self.assertEqual(json.loads(Path("A.json").read_text()), TIReal.open("../data/var/Real.8xn").json())
 
     @in_clean_dir
@@ -60,6 +60,11 @@ class CLITests(unittest.TestCase):
     def test_convert_program(self):
         cli("convert", "../data/var/Program.8xp", format="text")
         self.assertEqual(Path("SETDATE.txt").read_text(), "setDate(1")
+
+    @in_clean_dir
+    def test_convert_csv(self):
+        cli("convert", "../data/var/RealList.8xl", name="my_csv", format="csv")
+        self.assertEqual(Path("my_csv.csv").read_text(), "-1,2,999\n")
 
     def test_info(self):
         out = io.StringIO()

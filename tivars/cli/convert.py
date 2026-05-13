@@ -3,6 +3,7 @@ Convert between file types
 """
 
 
+import csv
 import io
 import json
 
@@ -18,8 +19,8 @@ TIGDB             <-> json
 TIGroup           <-> json
 TIImage           <-> png, jpeg, etc. (requires PIL)
 TILicense         <-> json, txt
-TIList            <-> json, txt
-TIMatrix          <-> json, txt
+TIList            <-> csv, json, txt
+TIMatrix          <-> csv, json, txt
 TIMonoPicture     <-> png, jpeg, etc. (requires PIL)
 TIPicture         <-> png, jpeg, etc. (requires PIL)
 TIProgram         <-> json, txt
@@ -29,6 +30,11 @@ TIString          <-> json, txt
 TITableSettings   <-> json
 TIWindowSettings  <-> json
 """
+
+
+class FormatError(TypeError):
+    def __init__(self, var: TIComponent, fmt: str):
+        super().__init__(f"A {type(var).__name__} cannot be converted to {fmt}.")
 
 
 def format_to_extension(fmt: str, *, model: TIModel) -> str:
@@ -63,28 +69,48 @@ def extension_to_type(ext: str) -> type[TIComponent]:
     raise TypeError(f"Extension '{ext}' does not correspond to a TI-(e)z80 type")
 
 
-def component_to_json(var: TIComponent, **kwargs) -> str:
+def component_to_csv(var: TIComponent, **kwargs) -> bytes:
+    """
+    :return: A list of lists (CSV rows) representing ``var`` given some parameters, or errors
+    """
+
+    writer = csv.writer(outfile := io.StringIO(), delimiter=",")
+
+    if isinstance(var, TIList):
+        writer.writerow(var.list())
+
+    elif isinstance(var, TIMatrix):
+        writer.writerows(var.matrix())
+
+    else:
+        raise FormatError(var, "csv")
+
+    outfile.seek(0)
+    return outfile.read().encode()
+
+
+def component_to_json(var: TIComponent, **kwargs) -> bytes:
     """
     :return: The JSON representation of ``var`` given some parameters, or errors
     """
 
     try:
-        return json.dumps(var.json(**kwargs))
+        return json.dumps(var.json(**kwargs)).encode()
 
     except NotImplementedError:
-        raise TypeError(f"A {type(var).__name__} cannot be converted to json.")
+        raise FormatError(var, "json")
 
 
-def component_to_text(var: TIComponent, **kwargs) -> str:
+def component_to_text(var: TIComponent, **kwargs) -> bytes:
     """
     :return: The text representation of ``var`` given some parameters, or errors
     """
 
     if var.__format__ == TIComponent.__format__:
-        raise TypeError(f"A {type(var).__name__} cannot be converted to text.")
+        raise FormatError(var, "text")
 
     else:
-        return var.string(**kwargs)
+        return var.string(**kwargs).encode()
 
 
 def image_to_image(infile: bytes, out_ext: str) -> bytes:

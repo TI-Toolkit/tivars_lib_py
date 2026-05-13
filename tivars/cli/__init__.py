@@ -42,16 +42,16 @@ def cli(*args, **kwargs):
 
             try:
                 match in_ext:
-                    case "txt":
-                        text = Path(args.infile).read_text(encoding="utf8")
-
-                        text_to_component(text, out_ext, lang=args.lang, model=args.model).save(args.outfile or args.name, model=args.model)
-
                     case "json":
                         with open(args.infile) as file:
                             dct = json.load(file)
 
                         json_to_component(dct, out_ext, lang=args.lang, model=args.model).save(args.outfile or args.name, model=args.model)
+
+                    case "txt":
+                        text = Path(args.infile).read_text(encoding="utf8")
+
+                        text_to_component(text, out_ext, lang=args.lang, model=args.model).save(args.outfile or args.name, model=args.model)
 
                     case _:
                         try:
@@ -59,14 +59,17 @@ def cli(*args, **kwargs):
 
                         except Exception as e:
                             infile = extension_to_type(in_ext).open(args.infile)
-                            name = infile.name
+                            name = name or infile.name
 
                             match out_ext:
-                                case "txt":
-                                    outfile = component_to_text(infile, lang=args.lang, model=args.model).encode()
+                                case "csv":
+                                    outfile = component_to_csv(infile, lang=args.lang, model=args.model)
 
                                 case "json":
-                                    outfile = component_to_json(infile, lang=args.lang, model=args.model).encode()
+                                    outfile = component_to_json(infile, lang=args.lang, model=args.model)
+
+                                case "txt":
+                                    outfile = component_to_text(infile, lang=args.lang, model=args.model)
 
                                 case _:
                                     raise TypeError(f"Format '{in_ext}' not recognized.")
@@ -79,7 +82,7 @@ def cli(*args, **kwargs):
                 raise e
 
             except Exception as e:
-                raise ValueError(f"Cannot convert file '{args.infile}' to format '{out_ext}'.") from None
+                raise ValueError(f"Cannot convert file '{args.infile}' to format '{out_ext}'.") from e
 
         case "info":
             infile = TIFile.open(args.infile)
