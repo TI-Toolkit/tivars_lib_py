@@ -710,6 +710,9 @@ class TIEntry(TIComponent):
                 warn(f"The provided name string ('{dct['name']}') and decoded hex ('{name}') disagree.",
                      UserWarning)
 
+            else:
+                self.name = name
+
         if "rawDataHex" in dct:
             self.raw.calc_data = bytearray.fromhex(dct["rawDataHex"])
             self.coerce()
