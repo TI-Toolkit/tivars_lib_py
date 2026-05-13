@@ -2,13 +2,15 @@ from tivars import *
 
 
 # Put real numbers into a list
-my_reals = TIReal(1), TIReal(2), TIReal(3)
+my_reals = [1, 2.0, TIReal(3)]
 lst = TIRealList(my_reals)
 
 
-# Ungroup a group
+# Manipulate a group
 my_group = TIGroup.open("EXAMPLE.8xg")
 entries = my_group.ungroup()
+
+my_new_group = TIGroup.group(entries, name="NEW.8xg")
 
 
 # Put inaccessible tokens into a string
