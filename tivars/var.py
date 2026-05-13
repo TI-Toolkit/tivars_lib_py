@@ -711,7 +711,7 @@ class TIEntry(TIComponent):
                      UserWarning)
 
             else:
-                self.name = name
+                self.raw.name = name
 
         if "rawDataHex" in dct:
             self.raw.calc_data = bytearray.fromhex(dct["rawDataHex"])
