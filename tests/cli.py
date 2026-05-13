@@ -36,9 +36,10 @@ class CLITests(unittest.TestCase):
     @in_clean_dir
     def test_convert_json(self):
         cli("convert", "../data/json/param.json", format="TIGDB", name="test_gdb")
+        self.assertEqual(TIGDB.open("test_gdb.8xd").json(), json.loads(Path("../data/json/param.json").read_text()))
 
-        self.assertEqual(TIGDB.open("test_gdb.8xd").json(), json.load(file := open("../data/json/param.json")))
-        file.close()
+        cli("convert", "../data/var/Real.8xn", format="json", name="test_real")
+        self.assertEqual(json.loads(Path("A.json").read_text()), TIReal.open("../data/var/Real.8xn").json())
 
     @in_clean_dir
     def test_convert_number(self):

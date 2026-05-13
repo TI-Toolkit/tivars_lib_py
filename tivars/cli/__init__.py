@@ -66,7 +66,7 @@ def cli(*args, **kwargs):
                                     outfile = component_to_text(infile, lang=args.lang, model=args.model).encode()
 
                                 case "json":
-                                    outfile = json.dumps(component_to_json(infile, lang=args.lang, model=args.model))
+                                    outfile = component_to_json(infile, lang=args.lang, model=args.model).encode()
 
                                 case _:
                                     raise TypeError(f"Format '{in_ext}' not recognized.")
