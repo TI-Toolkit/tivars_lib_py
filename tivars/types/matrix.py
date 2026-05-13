@@ -146,7 +146,7 @@ class TIMatrix(TIEntry, register=True):
         self.raw.calc_data = bytearray(width_byte + height_byte + data.read(width * height * RealEntry.min_calc_data_length))
 
     @Loader[Sequence]
-    def load_matrix(self, matrix: Sequence[Sequence[RealEntry]]):
+    def load_matrix(self, matrix: Sequence[Sequence[float | int | str | RealEntry]]):
         """
         Loads a two-dimensional sequence into this matrix
 
@@ -158,7 +158,7 @@ class TIMatrix(TIEntry, register=True):
 
         self.width = len(matrix[0] if matrix else [])
         self.height = len(matrix)
-        self.data = b''.join(entry.calc_data for row in matrix for entry in row)
+        self.data = b''.join(RealEntry(entry).calc_data for row in matrix for entry in row)
 
     def matrix(self) -> list[list[RealEntry]]:
         """
@@ -170,7 +170,7 @@ class TIMatrix(TIEntry, register=True):
 
     @Loader[str]
     def load_string(self, string: str, **kwargs):
-        self.load_matrix([[RealEntry(item) for item in replacer(row, {"[": "", "]": ""}).split(",")]
+        self.load_matrix([replacer(row, {"[": "", "]": ""}).split(",")
                           for row in replacer("".join(string.split())[1:-1], {"],[": "]["}).split("][")])
 
     def summary(self) -> str:

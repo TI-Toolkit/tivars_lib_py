@@ -163,7 +163,7 @@ class TIList(TIEntry):
                  BytesWarning)
 
     @Loader[Sequence]
-    def load_list(self, lst: Sequence[_E]):
+    def load_list(self, lst: Sequence[int | float | str | _E]):
         """
         Loads a sequence into this list
 
@@ -171,7 +171,7 @@ class TIList(TIEntry):
         """
 
         self.length = len(lst)
-        self.data = b''.join(entry.calc_data for entry in lst)
+        self.data = b''.join(self._E(entry).calc_data for entry in lst)
         self.coerce()
 
     def list(self) -> list[_E]:
@@ -184,7 +184,7 @@ class TIList(TIEntry):
 
     @Loader[str]
     def load_string(self, string: str, **kwargs):
-        self.load_list([self._E(element) for element in "".join(string.strip("[]{}")).split(",")])
+        self.load_list("".join(string.strip("[]{}")).split(","))
 
     def summary(self) -> str:
         return super().summary() + (
