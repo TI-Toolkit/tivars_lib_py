@@ -45,13 +45,13 @@ def cli(*args, **kwargs):
                     case "txt":
                         text = Path(args.infile).read_text(encoding="utf8")
 
-                        text_to_component(text, out_ext, lang=args.lang, model=args.model).save(args.name, model=args.model)
+                        text_to_component(text, out_ext, lang=args.lang, model=args.model).save(args.outfile or args.name, model=args.model)
 
                     case "json":
                         with open(args.infile) as file:
                             dct = json.load(file)
 
-                        json_to_component(dct, out_ext, lang=args.lang, model=args.model).save(args.name, model=args.model)
+                        json_to_component(dct, out_ext, lang=args.lang, model=args.model).save(args.outfile or args.name, model=args.model)
 
                     case _:
                         try:
