@@ -692,7 +692,7 @@ class TIMonoGDB(SizedEntry, register=True):
         }
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         self.load_dict(json.loads(string))
 
     def summary(self) -> str:

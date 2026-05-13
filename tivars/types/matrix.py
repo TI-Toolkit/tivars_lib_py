@@ -169,7 +169,7 @@ class TIMatrix(TIEntry, register=True):
         return [[RealEntry(data=data) for data in row] for row in zip(*[it] * self.width)]
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         self.load_matrix([[RealEntry(item) for item in replacer(row, {"[": "", "]": ""}).split(",")]
                           for row in replacer("".join(string.split())[1:-1], {"],[": "]["}).split("][")])
 

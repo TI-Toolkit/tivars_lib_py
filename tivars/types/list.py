@@ -183,7 +183,7 @@ class TIList(TIEntry):
         return [self._E(data=data) for data in it]
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         self.load_list([self._E(element) for element in "".join(string.strip("[]{}")).split(",")])
 
     def summary(self) -> str:

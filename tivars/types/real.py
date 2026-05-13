@@ -244,7 +244,7 @@ class TIReal(RealEntry, register=True):
         return decimal
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         if not string:
             self.mantissa, self.exponent, self.sign_bit = 0, 0x80, False
             return
@@ -334,7 +334,7 @@ class TIRealFraction(TIReal, register=True):
         return Fraction(self.decimal()).limit_denominator(10000)
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         self.load_fraction(Fraction(squash(string)))
 
 
@@ -493,7 +493,7 @@ class TIRealRadical(RealEntry, register=True):
             / self.denominator
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         if not string:
             self.sign_type, self.denominator = 0, 1
             self.left_scalar, self.left_radicand = 0, 0
@@ -615,7 +615,7 @@ class TIRealPi(TIReal, register=True):
             return super().decimal() * pi
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         string = replacer(string.lower(), {"pi": "π", "*": ""})
 
         if "π" not in string:
@@ -656,7 +656,7 @@ class TIRealPiFraction(TIRealPi, TIRealFraction, register=True):
         return Fraction(self.decimal() / pi).limit_denominator(10000)
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         string = replacer(string.lower(), {"pi": "π", "*": ""})
 
         if string != "0" and "π" not in string:

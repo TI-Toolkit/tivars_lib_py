@@ -291,7 +291,7 @@ class ComplexEntry(TIEntry):
         return self.real.float() + 1j * self.imag.float()
 
     @Loader[str]
-    def load_string(self, string: str):
+    def load_string(self, string: str, **kwargs):
         string = replacer(squash(string), {"*": "", "-": "+-", "[i]": "i", "j": "i"})
 
         # Split into real and imaginary components
