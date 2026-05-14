@@ -35,8 +35,8 @@ def in_clean_dir(func):
 class CLITests(unittest.TestCase):
     @in_clean_dir
     def test_convert_json(self):
-        cli("convert", "../data/json/param.json", format="TIGDB", name="test_gdb")
-        self.assertEqual(TIGDB.open("test_gdb.8xd").json(), json.loads(Path("../data/json/param.json").read_text()))
+        cli("convert", "../data/other/param.json", format="TIGDB", name="GDB2")
+        self.assertEqual(TIGDB.open("GDB2.8xd").json(), json.loads(Path("../data/other/param.json").read_text()))
 
         cli("convert", "../data/var/Real.8xn", format="json")
         self.assertEqual(json.loads(Path("A.json").read_text()), TIReal.open("../data/var/Real.8xn").json())
@@ -65,6 +65,13 @@ class CLITests(unittest.TestCase):
     def test_convert_csv(self):
         cli("convert", "../data/var/RealList.8xl", name="my_csv", format="csv")
         self.assertEqual(Path("my_csv.csv").read_text(), "-1,2,999\n")
+
+        cli("convert", "../data/other/lists.csv", format="TIList")
+        self.assertEqual(TIRealList.open("L2.8xl").list(), TIRealList([1, 2.0, 3.14]).list())
+        self.assertEqual(TIRealList.open("L4.8xl").list(), TIRealList([-69, 420, 80085]).list())
+
+        cli("convert", "../data/other/lists.csv", format="TIMatrix", name="[J]")
+        self.assertEqual(TIMatrix.open("[J].8xm").matrix(), TIMatrix([[1, -69], [2.0, 420], [3.14, 80085]]).matrix())
 
     def test_info(self):
         out = io.StringIO()

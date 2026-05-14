@@ -156,7 +156,7 @@ class TIMatrix(TIEntry, register=True):
         if len({len(row) for row in matrix}) > 1:
             raise IndexError("matrix has uneven rows")
 
-        self.width = len(matrix[0] if matrix else [])
+        self.width = len(matrix[0]) if matrix else 0
         self.height = len(matrix)
         self.data = b''.join(RealEntry(entry).calc_data for row in matrix for entry in row)
 

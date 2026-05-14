@@ -36,7 +36,7 @@ class GDBTests(unittest.TestCase):
     def test_json(self):
         test_gdb = TIParamGDB()
 
-        with open("tests/data/json/param.json") as file:
+        with open("tests/data/other/param.json") as file:
             param = json.load(file)
 
         test_gdb.load_dict(param)
