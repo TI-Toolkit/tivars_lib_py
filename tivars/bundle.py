@@ -81,7 +81,7 @@ class TIBundle(TIFile, register=True):
 
     @staticmethod
     def bundle(files: list[TIFile], *, name: str = "BUNDLE", model: TIModel = TI_84PCE,
-               comment: str = "Created with tivars_lib_py v1.0.0",
+               comment: str = "Created with tivars_lib_py v1.1.0",
                target_type: str = "CUSTOM", version: int = 1) -> 'TIBundle':
         """
         Compress a list of `TIFile` objects into a bundle
