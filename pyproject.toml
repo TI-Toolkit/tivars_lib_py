@@ -14,7 +14,7 @@ name = "tivars"
 version = "1.1.0"
 description = "A library for interacting with TI-(e)z80 (82/83/84 series) calculator files"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
 requires-python = ">=3.10"
 
 [project.urls]
