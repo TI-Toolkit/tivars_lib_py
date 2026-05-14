@@ -2,6 +2,9 @@
 
 `tivars_lib_py` is a Python package for interacting with TI-(e)z80 (82/83/84 series) calculator files, i.e. lists, programs, matrices, appvars, etc.
 
+> [!IMPORTANT]
+> The TI-84 Evo uses an entirely new & non-backwards compatible file format that has not yet been fully documented, and thus the Evo is not yet supported.
+
 Much of the functionality of this package has been ported over from [tivars_lib_cpp](https://github.com/adriweb/tivars_lib_cpp). However, a number of changes have been made to the API to better suit Python's strengths and capabilities as a language (e.g. scripting, dynamic typing).
 
 - [Installation](#installation)
@@ -64,7 +67,7 @@ Every var file has two parts: a _header_ and a number of _entries_, where a sing
 Most var files you might encounter in the wild or need to create programmatically contain just one entry holding all relevant variable data, so the library provides a convenient interface for loading, manipulating, and saving entries by themselves.
 
 > [!TIP]
-> If you _do_ need to mess about with headers or entire files at once (including flash files), head down to the [Vars & Headers](#vars--headers) section.
+> If you _do_ need to mess about with headers or entire files at once, head down to the [Vars & Headers](#vars--headers) section. For flash files and other goodies like bundles, head to [Other Files](#other-files).
 
 ### Entries
 
