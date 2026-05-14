@@ -54,13 +54,15 @@ class TIComponent(Dock, Converter):
 
             raise NotImplementedError
 
-    def __init__(self, init=None, *, data: bytes = None):
+    def __init__(self, init=None, *, name: str = "UNNAMED", data: bytes = None):
         """
         Creates an empty component with specified data
 
         :param init: Values to initialize the component's data (defaults to ``None``)
         :param data: The component's data (defaults to empty)
         """
+
+        self.name = name
 
         self.clear()
         if data:

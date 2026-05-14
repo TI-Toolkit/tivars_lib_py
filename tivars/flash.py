@@ -452,12 +452,11 @@ class TIFlashHeader(TIComponent):
         self.object_type = object_type
 
         self.date = date
-        self.name = name
 
         self.devices = [(device_type, self._type_id if self._type_id is not None else 0xFF)]
         self.product_id = product_id
 
-        super().__init__(init, data=data)
+        super().__init__(init, name=name, data=data)
 
         self._has_checksum = True
 

@@ -366,11 +366,11 @@ class TIEntry(TIComponent):
 
         self.meta_length = TIEntry.flash_meta_length
         self.type_id = self._type_id if self._type_id is not None else 0xFF
-        self.name = name
+
         self.archived = archived if archived is not None else False
         self.version = version or 0x00
 
-        super().__init__(init, data=data)
+        super().__init__(init, name=name, data=data)
 
         if version is None:
             self.version = self.get_version()
