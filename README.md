@@ -315,7 +315,7 @@ For simple var operations that don't need whole scripts to hoist, a command-line
 
 The CLI is divided into three core functionalities.
 - `tivars convert`: Convert between file types, e.g. `TIProgram -> txt`, `png -> TIPicture`, etc.
-  - `PIL` must be installed to import or export TI picture types 
+  - `PIL` must be installed to import or export TI picture types (see [PIL](#pil) below)
 - `tivars info`: Display basic information about a file
   - The same view can be obtained in the library using the `.summary()` method on an object
 - `tivars pack/unpack`: Manipulate groups and bundles
