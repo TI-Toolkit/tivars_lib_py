@@ -60,7 +60,7 @@ class TIHeader:
 
     def __init__(self, model: TIModel = TI_84PCE, *,
                  magic: str = None, extra: bytes = b'\x1a\x0a', product_id: int = None,
-                 comment: str = "Created with tivars_lib_py v1.1.0",
+                 comment: str = "Created with tivars_lib_py v1.1.1",
                  data: bytes = None):
         """
         Creates an empty header which targets a specified model

@@ -17,7 +17,7 @@ MODEL_LIST = "\n".join("\t".join(f"{model:9}" for model in MODEL_ORDER if MODEL_
 
 parser.add_argument("-m", "--models", action="version", version=MODEL_LIST,
                     help="show list of models and exit")
-parser.add_argument("-v", "--version", action="version", version="tivars_lib_py 1.1.0",
+parser.add_argument("-v", "--version", action="version", version="tivars_lib_py 1.1.1",
                     help="show tivars_lib_py version and exit")
 
 subparsers = parser.add_subparsers(title="modes", dest="subparser")

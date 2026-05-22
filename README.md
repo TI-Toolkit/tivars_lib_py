@@ -27,7 +27,7 @@ Much of the functionality of this package has been ported over from [tivars_lib_
 
 ## Installation
 
-The current release version is `v1.1.0`. All versions require Python 3.10+ to run.
+The current release version is `v1.1.1`. All versions require Python 3.10+ to run.
 
 ### As a Package
 

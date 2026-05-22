@@ -15,5 +15,5 @@ from .types import *
 from .var import *
 
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __all__ = list({*bundle.__all__, *file.__all__, *flash.__all__, *models.__all__, *tokenizer.__all__, *types.__all__, *var.__all__, "__version__"})
