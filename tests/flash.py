@@ -33,6 +33,9 @@ class FlashTests(unittest.TestCase):
         self.assertEqual(test_os.binary_flag, 0x00)
         self.assertEqual(type(test_os.data), bytes)
 
+        test_84p_os = TIOperatingSystem.open("tests/data/var/TI84Plus_OS255.8Xu")
+        self.assertEqual(test_84p_os.revision, "2.55")
+
     def test_license(self):
         test_license = TILicense.open("tests/data/var/ti89_2.01_10-13-1999.89u")
 
