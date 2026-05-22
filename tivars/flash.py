@@ -4,10 +4,10 @@ The fundamental flash file components
 
 
 from io import BytesIO
+from string import hexdigits
 from sys import version_info
 from typing import BinaryIO
 from warnings import warn
-from string import hexdigits
 
 from .data import *
 from .file import *
@@ -328,11 +328,6 @@ class TIFlashBlock(Dock):
             "dataHex": self.data.hex().upper()
         }
 
-def split_intelhex(data):
-    for i, c in enumerate(data):
-        if chr(c) == ':' and chr(data[i+1]) in hexdigits:
-            yield data[i:]
-
 class FlashData(Converter[bytes | list[TIFlashBlock]]):
     """
     Converter to split flash data into blocks if stored in Intel format
@@ -352,7 +347,12 @@ class FlashData(Converter[bytes | list[TIFlashBlock]]):
         """
 
         if instance is None or instance.binary_flag == 0x01:
-            return list(map(TIFlashBlock, split_intelhex(data)))
+            intelhex = []
+            for i, c in enumerate(data):
+                if chr(c) == ':' and chr(data[i + 1]) in hexdigits:
+                    intelhex.append(TIFlashBlock(data[i:]))
+
+            return intelhex
 
         else:
             return data
