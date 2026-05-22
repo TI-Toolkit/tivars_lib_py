@@ -7,6 +7,7 @@ from io import BytesIO
 from sys import version_info
 from typing import BinaryIO
 from warnings import warn
+from string import hexdigits
 
 from .data import *
 from .file import *
@@ -327,6 +328,10 @@ class TIFlashBlock(Dock):
             "dataHex": self.data.hex().upper()
         }
 
+def split_intelhex(data):
+    for i, c in enumerate(data):
+        if chr(c) == ':' and chr(data[i+1]) in hexdigits:
+            yield data[i:]
 
 class FlashData(Converter[bytes | list[TIFlashBlock]]):
     """
@@ -347,7 +352,7 @@ class FlashData(Converter[bytes | list[TIFlashBlock]]):
         """
 
         if instance is None or instance.binary_flag == 0x01:
-            return list(map(TIFlashBlock, data.split(b'\r\n')))
+            return list(map(TIFlashBlock, split_intelhex(data)))
 
         else:
             return data
