@@ -300,7 +300,7 @@ All entry types support string formatting using Python's f-strings.
     - `x`: lowercase
     - `X`: uppercase
   - `sep`: a single character to separate groups of hex digits *(default: none)*
-- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}?{sep}?{type}{lang}?`
+- Tokenized entries support formatting of their tokens into readable lines: `{line_spec}?{sep}?{type}.{lang}?`
   - `line_spec`: format specifier for line numbers *(default: no line numbers)*
   - `sep`: a string to separate lines and line numbers *(required for line numbering)*
   - `type`: how to format each token
@@ -351,4 +351,4 @@ These functions operate on sequences of `TIToken` objects, which store relevant 
 
 ## Examples
 
-You can find more sample code in [`examples`](https://github.com/TI-Toolkit/tivars_lib_py/tree/main/examples) that details common operations on each of the entry types. There are also examples for interfacing with popular external libraries (e.g. NumPy, PIL). Contributions welcome!
+You can find more sample code in [`examples`](https://github.com/TI-Toolkit/tivars_lib_py/tree/main/examples), which detail common operations on each of the entry types. There are also examples for interfacing with popular external libraries (e.g. NumPy, PIL). Contributions welcome!
