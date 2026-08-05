@@ -13,7 +13,7 @@ from .state import *
 
 def encode(string: str, *,
            trie: TITokenTrie = None, mode: str = None, normalize: bool = True) -> tuple[bytes, OsVersion]:
-    """
+    r"""
     Encodes a string of tokens represented as text into a byte stream and its minimum supported OS version
 
     Tokenization is performed using one of three procedures, dictated by ``mode``:
@@ -26,10 +26,18 @@ def encode(string: str, *,
         - Program names: munch minimally up to 8 tokens
         - List names: munch minimally up to 5 tokens
 
+    In all modes:
+        - `\xXX` and `\uUUUU` output the denoted bytes exactly, regardless of validity
+        - `\ABCD` maximally munches `ABCD`, regardless of surrounding context
+        - Certain unprintable characters act as a hard separator for tokens
+            - U+001F (unit separator): `␟`
+            - U+200A (hair space): ` `
+            - U+200C (zero width non-joiner): `‌`
+
     For reference, here are the tokenization modes utilized by popular IDEs and other software:
         - SourceCoder: ``max``
         - TokenIDE: ``max``
-        - TI Connect CE: ¯\\_(ツ)_/¯
+        - TI Connect CE: ¯\_(ツ)_/¯
         - TI-Planet Project Builder: ``smart``
         - tivars_lib_cpp: ``smart``
 

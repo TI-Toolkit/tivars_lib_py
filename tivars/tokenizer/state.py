@@ -56,8 +56,13 @@ class EncoderState:
                 return token, remainder, self.next(token)
 
         # Is there a token separator?
-        if string.startswith(("\\", "␟", " ", "‌")):
+        if string.startswith(("␟", " ", "‌")):
             string = string[1:]
+
+        # Is there a backslash?
+        if string.startswith("\\"):
+            string = string[1:]
+            self.mode = 0
 
         tokens = trie.match(string)
         if not tokens:

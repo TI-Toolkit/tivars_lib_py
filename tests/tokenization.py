@@ -89,14 +89,14 @@ class TokenizationTests(unittest.TestCase):
             self.assertEqual(test_program.string()[-12:], "End\n0000\nEnd")
 
     def test_modes(self):
-        interpolation = "A and B:Disp \"A and B\":Send(\"SET SOUND eval(A and B) TIME 2"
-        names = "Disp \"WHITE,ʟWHITE,prgmWHITE\",WHITE,ʟWHITE:prgmWHITE:prgmABCDEF"
+        interpolation = 'A and B:Disp "A and B":Send("SET SOUND eval(A and B) TIME 2'
+        names = 'Disp "WHITE,ʟWHITE,prgmWHITE",WHITE,ʟWHITE:prgmWHITE:prgmABCDEF'
 
         self.assertEqual(TIProgram.encode(interpolation, mode="max"),
                          b'A@B>\xde*A@B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
         self.assertEqual(TIProgram.encode(interpolation, mode="smart"),
                          b'A@B>\xde*A)\xbb\xb0\xbb\xbe\xbb\xb3)B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
-        self.assertEqual(TIProgram.encode(interpolation, mode="string"),
+        self.assertEqual(TIProgram.encode(interpolation, mode="min"),
                          b'A)\xbb\xb0\xbb\xbe\xbb\xb3)B>D\xbb\xb8\xbb\xc3\xbb\xc0)*A)\xbb\xb0'
                          b'\xbb\xbe\xbb\xb3)B*>S\xbb\xb4\xbb\xbe\xbb\xb3\x10*SET)SOUND)\xbb'
                          b'\xb4\xbb\xc6\xbb\xb0\xbb\xbc\x10A)\xbb\xb0\xbb\xbe\xbb\xb3)B\x11)TIME)2')
@@ -124,3 +124,14 @@ class TokenizationTests(unittest.TestCase):
             self.assertEqual(TIProgram(r"List\x00").string(), "L₁")
             self.assertEqual(TIProgram(r"List\xff").string(), r"List\xff")
             self.assertEqual(TIProgram("String").string(), "String")
+
+    def test_backslash(self):
+        self.assertEqual(TIProgram.encode(r'\sin(X)'), TIProgram.encode('sin(X)'))
+        self.assertNotEqual(TIProgram.encode(r'Disp "\sin(X)"'), TIProgram.encode(r'Disp "sin(X)"'))
+        self.assertEqual(TIProgram.encode(r'Send("\sin(X)")'), TIProgram.encode(r'Send("sin(X)")'))
+
+        self.assertEqual(TIProgram.encode(r'TI(Disp \"sin(X)TI'), TIProgram.encode(r'TI(Disp "sin(X)TI'))
+        self.assertEqual(TIProgram.encode(r'TI(Disp "A\->sin(X)TI'), TIProgram.encode(r'TI(Disp "A->sin(X)TI'))
+
+        self.assertEqual(TIProgram.encode(r'TI(Disp "A\ and B")TI'), TIProgram.encode(r'TI(Disp "\x41\x40\x42")TI'))
+        self.assertEqual(TIProgram.encode(r'TI(Send("A\ and \B"))TI'), TIProgram.encode(r'TI(Send("A and B"))TI'))
