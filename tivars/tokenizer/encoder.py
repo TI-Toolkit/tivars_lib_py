@@ -27,6 +27,7 @@ def encode(string: str, *,
         - List names: munch minimally up to 5 tokens
 
     In all modes:
+        - Standard glyphs can be used for substituting Unicode symbols
         - `\xXX` and `\uUUUU` output the denoted bytes exactly, regardless of validity
         - `\ABCD` maximally munches `ABCD`, regardless of surrounding context
         - Certain unprintable characters act as a hard separator for tokens
@@ -40,8 +41,6 @@ def encode(string: str, *,
         - TI Connect CE: ¯\_(ツ)_/¯
         - TI-Planet Project Builder: ``smart``
         - tivars_lib_cpp: ``smart``
-
-    All tokenization modes respect token glyphs for substituting Unicode symbols.
 
     :param string: The text string to encode
     :param trie: The `TokenTrie` object to use for tokenization (defaults to the TI-84+CE trie)

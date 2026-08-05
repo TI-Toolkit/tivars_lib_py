@@ -40,7 +40,7 @@ class Name(TokenizedString):
     @classmethod
     def set(cls, value: str, *, instance=None, **kwargs) -> bytes:
         # Is this necessary?
-        mode = "max" if instance is not None and instance.leading_name_byte else "string"
+        mode = "max" if instance is not None and instance.leading_name_byte else "min"
         data = encode(value, mode=mode)[0].rstrip(b'\x00')
 
         if instance is not None and not data.startswith(instance.leading_name_byte):

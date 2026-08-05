@@ -4,6 +4,7 @@ Tokenized types
 
 
 import re
+import unicodedata
 
 from collections.abc import Iterator, Sequence
 from io import BytesIO
@@ -273,7 +274,7 @@ class TIEquation(TokenizedEntry, register=True):
         (See https://ti-toolkit.github.io/tokens-wiki/categories/Y%3D%20Functions.html)
         """
 
-        varname = value.replace("\uF038", "T")
+        varname = unicodedata.normalize("NFKD", value.replace("\uF038", "T").replace("ᴛ", "T"))
         if varname in ("u", "v", "w"):
             varname = "|" + varname
 
