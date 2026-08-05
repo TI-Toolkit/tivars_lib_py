@@ -19,10 +19,10 @@ def encode(string: str, *,
     Tokenization is performed using one of three procedures, dictated by ``mode``:
         - ``max``: Always munch maximally, i.e. consume the most input possible to produce a token
         - ``smart``: Munch maximally or minimally depending on context
-        - ``string``: Always munch minimally (equivalent to ``smart`` string context)
+        - ``min``: Always munch minimally (equivalent to ``smart`` string context; may also be passed as ``string``)
 
     The ``smart`` tokenization mode uses the following contexts, munching maximally otherwise:
-        - Strings: munch minimally, except when interpolating using ``Send(``
+        - Strings: munch minimally, except when interpolating using ``Send(`` or storing to an equation
         - Program names: munch minimally up to 8 tokens
         - List names: munch minimally up to 5 tokens
 
@@ -57,7 +57,7 @@ def encode(string: str, *,
         case "smart":
             stack = [SmartMode()]
 
-        case "string" | "min":
+        case "min" | "string":
             stack = [MinMode()]
 
         case _:

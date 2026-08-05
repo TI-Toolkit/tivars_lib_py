@@ -171,17 +171,17 @@ class String(Line):
                 return super().next(token)
 
 
-class InterpolatedString(String):
+class MaxString(String):
     """
-    Strings interpolated via ``Send(``
+    Maximally munched string
     """
 
     mode = 0
 
 
-class InterpolationStart(Line):
+class MaxStart(Line):
     """
-    Encoder state to initialize `InterpolatedString`
+    Encoder state to initialize `MaxString`
 
     If any token besides ``"`` is encountered, this state is immediately exited to avoid cluttering the stack.
     """
@@ -191,7 +191,7 @@ class InterpolationStart(Line):
     def next(self, token: TIToken) -> list[EncoderState]:
         match token.bits:
             case b'\x2A':
-                return [InterpolatedString()]
+                return [MaxString()]
 
             case _:
                 return []
@@ -214,9 +214,9 @@ class SmartMode(EncoderState):
             case b'\x5F':
                 return [self, ProgramName()]
 
-            #    Send(
-            case b'\xE7':
-                return [self, InterpolationStart()]
+            #    Send(     String>Equ(
+            case b'\xE7' | b'\xBB\x56':
+                return [self, MaxStart()]
 
             #    |L
             case b'\xEB':
@@ -228,4 +228,4 @@ class SmartMode(EncoderState):
 
 __all__ = ["EncoderState", "MaxMode", "MinMode", "SmartMode",
            "Line", "Name", "ListName", "ProgramName",
-           "String", "InterpolatedString", "InterpolationStart"]
+           "String", "MaxString", "MaxStart"]
