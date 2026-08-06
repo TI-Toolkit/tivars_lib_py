@@ -1,8 +1,100 @@
 import unittest
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN, ROUND_HALF_EVEN, localcontext
 
 from tivars.types import *
+
+
+def round_to_mantissa(string: str) -> Decimal:
+    """
+    Independent reference for the value a mantissa should hold
+
+    The decimal literal is parsed exactly, then rounded to the 14 digits of a mantissa.
+    """
+
+    exact = Decimal(string)
+
+    with localcontext() as ctx:
+        ctx.prec = 14
+        ctx.rounding = ROUND_HALF_EVEN
+
+        return +exact
+
+
+class RoundingTests(unittest.TestCase):
+    def test_mantissa_is_rounded(self):
+        # Truncating instead of rounding loses the last digit and never carries
+        for string, mantissa, exponent in [("1.23456789012344", 12345678901234, 0x80),
+                                           ("1.23456789012346", 12345678901235, 0x80),
+                                           ("1.4999999999999949", 15000000000000, 0x80),
+                                           ("9.99999999999996", 10000000000000, 0x81),
+                                           ("0.99999999999999999", 10000000000000, 0x80),
+                                           ("9999999999999999", 10000000000000, 0x90),
+                                           ("0.000123456789012349", 12345678901235, 0x7C)]:
+            with self.subTest(string=string):
+                real = TIReal(string)
+
+                self.assertEqual(real.mantissa, mantissa)
+                self.assertEqual(real.exponent, exponent)
+                self.assertEqual(real.decimal(), round_to_mantissa(string))
+
+    def test_sign_is_preserved_by_carry(self):
+        self.assertEqual(TIReal("-9.99999999999996").decimal(), Decimal("-10"))
+        self.assertEqual(TIReal("-9.99999999999996").sign, -1)
+
+    def test_ties_round_half_even(self):
+        # Matches the rounding TIRealFraction already uses to reach 14 digits
+        self.assertEqual(TIReal("1.23456789012345").mantissa, 12345678901234)
+        self.assertEqual(TIReal("1.23456789012335").mantissa, 12345678901234)
+
+    def test_ignores_ambient_decimal_context(self):
+        # The stored value must not depend on the caller's decimal context
+        with localcontext() as ctx:
+            ctx.prec = 5
+            ctx.rounding = ROUND_DOWN
+
+            self.assertEqual(TIReal("1.23456789012346").mantissa, 12345678901235)
+            self.assertEqual(TIRealFraction("2/3").mantissa, 66666666666667)
+
+    def test_leading_zeros(self):
+        # Leading zeros must not shift the mantissa; "0000000000000000009" once loaded as 0
+        for string in ["0009.5", "0010.5", "00.5", "0000000000000000009", "000.000123"]:
+            with self.subTest(string=string):
+                self.assertEqual(TIReal(string).decimal(), round_to_mantissa(string))
+
+    def test_float_input(self):
+        # A float's exact binary expansion runs well past 14 digits
+        for number in [0.7, 2.675, 8.7]:
+            with self.subTest(number=number):
+                self.assertEqual(TIReal(number).float(), number)
+
+        # A float needing more than 14 digits still lands on the nearest mantissa
+        self.assertEqual(TIReal(1 / 3).decimal(), round_to_mantissa(str(Decimal(1 / 3))))
+
+    def test_every_real_type_rounds(self):
+        # All of these funnel into TIReal.load_string
+        self.assertEqual(TIUndefinedReal("9.99999999999996").mantissa, 10000000000000)
+        self.assertEqual(TIRealPi("9.99999999999996π").mantissa, 10000000000000)
+        self.assertEqual(TIComplex("9.99999999999996").real.mantissa, 10000000000000)
+        self.assertEqual(TIComplex("9.99999999999996i").imag.mantissa, 10000000000000)
+        self.assertEqual(TIRealList("{9.99999999999996}").list()[0].mantissa, 10000000000000)
+        self.assertEqual(TIMatrix("[[9.99999999999996]]").matrix()[0][0].mantissa, 10000000000000)
+
+    def test_format_keeps_all_digits(self):
+        # A mantissa holds 14 significant digits, not 14 decimal places
+        self.assertEqual(str(TIReal("1e-20")), "0.00000000000000000001")
+        self.assertEqual(str(TIReal("0.00012345678901235")), "0.00012345678901235")
+        self.assertEqual(str(TIReal("1.5e20")), "150000000000000000000")
+        self.assertEqual(str(TIRealPi("1e-20π")), "0.00000000000000000001π")
+
+    def test_string_round_trip(self):
+        for mantissa in [10000000000000, 12345678901235, 99999999999999]:
+            for exponent in [0x01, 0x6C, 0x80, 0x94, 0xFE]:
+                with self.subTest(mantissa=mantissa, exponent=exponent):
+                    real = TIReal()
+                    real.mantissa, real.exponent, real.sign_bit = mantissa, exponent, 1
+
+                    self.assertEqual(TIReal(str(real)).calc_data, real.calc_data)
 
 
 class RealTests(unittest.TestCase):

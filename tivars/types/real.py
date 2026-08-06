@@ -6,7 +6,7 @@ Real numeric types
 import copy
 import re
 
-from decimal import Decimal, localcontext
+from decimal import Decimal, ROUND_HALF_EVEN, localcontext
 from fractions import Fraction
 
 from tivars.data import *
@@ -14,6 +14,18 @@ from tivars.models import *
 from tivars.numeric import *
 from tivars.util import *
 from tivars.var import TIEntry
+
+
+def _positional(decimal: Decimal) -> str:
+    """
+    Formats a decimal in positional notation, keeping every digit it holds
+
+    :param decimal: The decimal to format
+    :return: ``decimal`` without an exponent, trailing zeros, or a trailing point
+    """
+
+    # A mantissa holds 14 significant digits, which is not 14 decimal places
+    return f"{decimal:.{max(1, -decimal.as_tuple().exponent)}f}".rstrip("0").rstrip(".")
 
 
 class RealEntry(TIEntry):
@@ -62,7 +74,7 @@ class RealEntry(TIEntry):
                     return "0"
 
                 else:
-                    return f"{self.decimal():.14f}".rstrip("0").rstrip(".")
+                    return _positional(self.decimal())
 
             case _:
                 if format_spec.endswith("t"):
@@ -270,18 +282,14 @@ class TIReal(RealEntry, register=True):
             self.mantissa, self.exponent, self.sign_bit = 0, 0x80, neg
             return
 
-        # Adjust exponent to make integer mantissa
-        exponent = int(exponent or "0")
-        while not 0 < (value := int(integer)) < 10:
-            if value == 0:
-                integer, decimal = decimal[0], decimal[1:]
-                exponent -= 1
+        # Round to the 14 digits the mantissa can hold, then normalize
+        with localcontext() as ctx:
+            ctx.prec = 14
+            ctx.rounding = ROUND_HALF_EVEN
+            _, digits, exponent = (+Decimal(f"{integer}.{decimal}e{exponent or 0}")).as_tuple()
 
-            else:
-                integer, decimal = integer[:-1], integer[-1] + decimal
-                exponent += 1
-
-        self.mantissa, self.exponent, self.sign_bit = int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
+        self.mantissa = int("".join(map(str, digits)).ljust(14, "0"))
+        self.exponent, self.sign_bit = exponent + len(digits) - 1 + 0x80, neg
 
 
 class TIUndefinedReal(TIReal, register=True):
@@ -326,6 +334,7 @@ class TIRealFraction(TIReal, register=True):
     def load_fraction(self, fraction: Fraction):
         with localcontext() as ctx:
             ctx.prec = 14
+            ctx.rounding = ROUND_HALF_EVEN
             decimal = Decimal(fraction.numerator) / fraction.denominator
 
         super().load_string(str(decimal))
@@ -599,7 +608,7 @@ class TIRealPi(TIReal, register=True):
                     return "0"
 
                 else:
-                    return f"{super().decimal():.14f}".rstrip("0").rstrip(".") + "π"
+                    return _positional(super().decimal()) + "π"
 
             case _:
                 return super().__format__(format_spec)
