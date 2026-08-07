@@ -9,7 +9,7 @@ from .data import *
 
 
 
-TI_CONTEXT = dec.Context(prec=14, rounding=dec.ROUND_DOWN, Emin=-128, Emax=128, capitals=1)
+TI_CONTEXT = dec.Context(prec=14, rounding=dec.ROUND_DOWN, Emin=-128, Emax=127, capitals=1)
 """
 Decimal context for working with TI floats
 """
