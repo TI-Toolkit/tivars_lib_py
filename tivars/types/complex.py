@@ -3,6 +3,7 @@ Complex numeric types
 """
 
 
+from decimal import InvalidOperation
 from warnings import warn
 
 from tivars.data import *
@@ -317,7 +318,7 @@ class ComplexEntry(TIEntry):
         try:
             self.real = self.real_type(parts[0])
 
-        except (TypeError, ValueError):
+        except (InvalidOperation, TypeError, ValueError):
             for type_id, entry_type in self._type_ids.items():
                 if not issubclass(entry_type, RealEntry):
                     continue
@@ -329,7 +330,7 @@ class ComplexEntry(TIEntry):
                     self.real = self.get_type(type_id=type_id)(parts[0])
                     break
 
-                except (TypeError, ValueError):
+                except (InvalidOperation, TypeError, ValueError):
                     continue
 
             else:

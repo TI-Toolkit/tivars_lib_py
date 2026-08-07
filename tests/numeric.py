@@ -1,6 +1,6 @@
 import unittest
 
-from decimal import Decimal
+from decimal import Decimal, Overflow
 
 from tivars.types import *
 
@@ -61,6 +61,19 @@ class RealTests(unittest.TestCase):
 
         self.assertEqual(str(TIReal("1.2345678901234e-8")), "1.2345678901234E-8")
         self.assertEqual(str(TIReal("1.2345678901234E88")), "1.2345678901234E88")
+
+        self.assertEqual(str(TIReal(2.675)), "2.675")
+        self.assertEqual(str(TIReal(0.1 + 0.2)), "0.3")
+
+        self.assertEqual(str(TIReal("0009.5")), "9.5")
+        self.assertEqual(str(TIReal("000000000000001")), "1")
+        self.assertEqual(str(TIReal("12345678901234567890")), "1.2345678901234E19")
+
+        with self.assertRaises(Overflow):
+            TIReal(5e300)
+            
+        with self.assertWarns(UserWarning):
+            TIReal(1.8e100)
 
 
 class ComplexTests(unittest.TestCase):

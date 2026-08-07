@@ -8,6 +8,7 @@ import re
 
 from decimal import Decimal, localcontext
 from fractions import Fraction
+from warnings import warn
 
 from tivars.data import *
 from tivars.models import *
@@ -171,7 +172,7 @@ class RealEntry(TIEntry):
         :param decimal: The float to load
         """
 
-        self.load_decimal(Decimal(decimal))
+        self.load_decimal(Decimal(str(decimal)))
 
     def json_number(self) -> float | str:
         """
@@ -252,36 +253,23 @@ class TIReal(RealEntry, register=True):
         # Normalize string
         string = replacer(squash(string).upper(), {"~": "-", "|E": "E"})
 
-        if "E" not in string:
-            string += "E0"
+        # Let Decimal handle it
+        self.sign_bit, digits, exponent = TI_CONTEXT.create_decimal(string).as_tuple()
 
-        if "." not in string:
-            string = string.replace("E", ".E")
+        if not isinstance(exponent, int):
+            raise OverflowError("cannot create real number from ±inf")
 
-        neg = string.startswith("-")
-        string = string.strip("+-")
+        elif digits == (0,):
+            self.mantissa = 0
+            self.exponent = 0x80
 
-        # Obtain integer and decimal parts
-        number, exponent = string.split("E")
-        integer, decimal = number.split(".")
-        integer, decimal = integer or "0", decimal or "0"
+        else:
+            self.mantissa = int("".join(map(str, digits)).ljust(14, "0"))
+            self.exponent = exponent + (len(digits) - 1) + 0x80
 
-        if int(integer) == int(decimal) == 0:
-            self.mantissa, self.exponent, self.sign_bit = 0, 0x80, neg
-            return
-
-        # Adjust exponent to make integer mantissa
-        exponent = int(exponent or "0")
-        while not 0 < (value := int(integer)) < 10:
-            if value == 0:
-                integer, decimal = decimal[0], decimal[1:]
-                exponent -= 1
-
-            else:
-                integer, decimal = integer[:-1], integer[-1] + decimal
-                exponent += 1
-
-        self.mantissa, self.exponent, self.sign_bit = int((integer + decimal).ljust(14, "0")[:14]), exponent + 0x80, neg
+        if self.exponent < -29 or 227 < self.exponent:
+            warn(f"Values with |exponent| > 99 raise errors when used for arithmetic.",
+                 UserWarning)
 
 
 class TIUndefinedReal(TIReal, register=True):
@@ -326,7 +314,7 @@ class TIRealFraction(TIReal, register=True):
     def load_fraction(self, fraction: Fraction):
         with localcontext() as ctx:
             ctx.prec = 14
-            decimal = Decimal(fraction.numerator) / fraction.denominator
+            decimal = TI_CONTEXT.create_decimal(fraction.numerator) / fraction.denominator
 
         super().load_string(str(decimal))
 

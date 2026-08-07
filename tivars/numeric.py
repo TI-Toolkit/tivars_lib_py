@@ -8,8 +8,14 @@ import decimal as dec
 from .data import *
 
 
-pi = dec.Decimal("3.1415926535898")
-e = dec.Decimal("2.718281828459")
+
+TI_CONTEXT = dec.Context(prec=14, rounding=dec.ROUND_DOWN, Emin=-128, Emax=128, capitals=1)
+"""
+Decimal context for working with TI floats
+"""
+
+pi = TI_CONTEXT.create_decimal("3.1415926535898")
+e = TI_CONTEXT.create_decimal("2.718281828459")
 
 
 def sign(x: int) -> int:
@@ -142,4 +148,4 @@ class RightNibbleBCD(Converter[int]):
         return bytes(data)
 
 
-__all__ = ["pi", "e", "sign", "BCD", "LeftNibbleBCD", "RightNibbleBCD"]
+__all__ = ["TI_CONTEXT", "pi", "e", "sign", "BCD", "LeftNibbleBCD", "RightNibbleBCD"]
