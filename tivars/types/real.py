@@ -62,12 +62,12 @@ class RealEntry(TIEntry):
                     return "0"
 
                 else:
-                    return f"{self.decimal():.14f}".rstrip("0").rstrip(".")
+                    return f"{self.decimal().normalize():.14G}".replace("E+", "E")
 
             case _:
                 if format_spec.endswith("t"):
-                    spec = "" if format_spec == "t" else format_spec[:-1] + "f"
-                    return squash(re.sub(r"√(\d*)", r"sqrt(\1)", replacer(format(self, spec), {"-": "~", "/": "n/d"})))
+                    spec = "" if format_spec == "t" else format_spec[:-1] + "G"
+                    return squash(replacer(format(self, spec), {"-": "~", "/": "n/d", "E": "|E"}))
 
                 try:
                     return format(self.decimal(), format_spec)
@@ -250,19 +250,19 @@ class TIReal(RealEntry, register=True):
             return
 
         # Normalize string
-        string = replacer(squash(string).lower(), {"~": "-", "|e": "e"})
+        string = replacer(squash(string).upper(), {"~": "-", "|E": "E"})
 
-        if "e" not in string:
-            string += "e0"
+        if "E" not in string:
+            string += "E0"
 
         if "." not in string:
-            string = string.replace("e", ".e")
+            string = string.replace("E", ".E")
 
         neg = string.startswith("-")
         string = string.strip("+-")
 
         # Obtain integer and decimal parts
-        number, exponent = string.split("e")
+        number, exponent = string.split("E")
         integer, decimal = number.split(".")
         integer, decimal = integer or "0", decimal or "0"
 
@@ -418,7 +418,11 @@ class TIRealRadical(RealEntry, register=True):
                 return f"({left}+{right})/{self.denominator}".replace("+-", "-")
 
             case _:
-                return super().__format__(format_spec)
+                if format_spec.endswith("t"):
+                    return re.sub(r"√(\d*)", r"sqrt(\1)", super().__format__(format_spec))
+
+                else:
+                    return super().__format__(format_spec)
 
     @Section(min_calc_data_length)
     def calc_data(self) -> bytearray:

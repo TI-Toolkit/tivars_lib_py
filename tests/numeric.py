@@ -54,6 +54,14 @@ class RealTests(unittest.TestCase):
         self.assertEqual(f"{test_alternate}", "(4√3-2)/2")
         self.assertEqual(f"{test_alternate:#}", "(4√3-2√1)/2")
 
+    def test_sig_figs(self):
+        tiny = TIReal("1e-20")
+        self.assertEqual(str(tiny), "1E-20")
+        self.assertEqual(f"{tiny:t}", "1|E~20")
+
+        self.assertEqual(str(TIReal("1.2345678901234e-8")), "1.2345678901234E-8")
+        self.assertEqual(str(TIReal("1.2345678901234E88")), "1.2345678901234E88")
+
 
 class ComplexTests(unittest.TestCase):
     def complex_float_test(self, comp_type, filename, name, real_sign, real_exponent, real_mantissa,
