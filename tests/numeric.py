@@ -67,7 +67,12 @@ class RealTests(unittest.TestCase):
 
         self.assertEqual(str(TIReal("0009.5")), "9.5")
         self.assertEqual(str(TIReal("000000000000001")), "1")
+        self.assertEqual(str(TIReal("-000000000000001")), "-1")
+        self.assertEqual(str(TIReal("0.000000000000001")), "1E-15")
+        self.assertEqual(str(TIReal("-0.000000000000001")), "-1E-15")
+
         self.assertEqual(str(TIReal("12345678901234567890")), "1.2345678901234E19")
+        self.assertEqual(str(TIReal("-12345678901234567890")), "-1.2345678901234E19")
 
         with self.assertRaises(Overflow):
             TIReal(5e300)
