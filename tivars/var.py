@@ -14,7 +14,7 @@ from warnings import warn
 from .data import *
 from .file import *
 from .models import *
-from .tokenizer import Name
+from .tokenizer import *
 from .util import *
 
 
@@ -849,7 +849,8 @@ class TIEntry(TIComponent):
         :return: A `TIVarFile` containing this entry and the specified header
         """
 
-        var = TIVarFile(header=header or TIHeader(model=model), name=name or self.name)
+        var = TIVarFile(header=header or TIHeader(model=model),
+                        name=name or decode(self.raw.name, mode="accessible"))
         var.add_entry(self)
         return var
 

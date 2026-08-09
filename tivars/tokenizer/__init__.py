@@ -23,11 +23,11 @@ class TokenizedString(String):
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> str:
-        return detokenize(decode(data.ljust(8, b'\x00')), mode="accessible")
+        return decode(data.ljust(8, b'\x00'))
 
     @classmethod
     def set(cls, value: str, **kwargs) -> bytes:
-        return encode(tokenize(value)).rstrip(b'\x00')
+        return encode(value).rstrip(b'\x00')
 
 
 class Name(TokenizedString):
@@ -48,6 +48,6 @@ class Name(TokenizedString):
         return data
 
 
-__all__ = ["decode", "detokenize", "normalize", "tokenize", "encode",
+__all__ = ["parse", "detokenize", "decode", "normalize", "tokenize", "unparse", "encode",
            "Name", "TokenizedString",
            "TIToken", "IllegalToken", "TITokenTrie", "TITokens", "OsVersion", "OsVersions"]

@@ -11,16 +11,16 @@ from tivars.token import *
 from tivars.trie import *
 
 
-def decode(bytestream: bytes, *, tokens: TITokens = None) -> list[TIToken]:
+def parse(bytestream: bytes, *, tokens: TITokens = None) -> list[TIToken]:
     """
-    Decodes a byte stream into a list of `TIToken` objects
+    Parses a byte stream into a list of `TIToken` objects
 
     Each token is represented using one of three different representations formats, dictated by ``mode``:
         - ``display``: Represents the tokens with Unicode characters matching the calculator's display
         - ``accessible``: Represents the tokens with ASCII-only equivalents, often requiring multi-character glyphs
         - ``ti_ascii``: Represents the tokens with their internal font indices (returns a ``bytes`` object)
 
-    :param bytestream: The token bytes to decode
+    :param bytestream: The token bytes to parse
     :param tokens: The `TITokens` object to use for decoding (defaults to the TI-84+CE tokens)
     :return: A list of `TIToken` objects assembled from `bytestream`
     """
@@ -85,4 +85,18 @@ def detokenize(tokens: Sequence[TIToken], *, model: TIModel = TI_84PCE, lang: st
         raise ValueError(f"unrecognized token representation: '{mode}'")
 
 
-__all__ = ["decode", "detokenize"]
+def decode(data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
+    """
+    Decodes a byte stream into a string of tokens
+
+    :param data: The token bytes to decode
+    :param model: A model for which compatibility is ensured (defaults to the TI-84+CE)
+    :param lang: The language used in ``string`` (defaults to the locale of `model`, or English, ``en``)
+    :param mode: The token representation to use for output (defaults to ``display``)
+    :return: A string representing the tokens in `data`
+    """
+
+    return detokenize(parse(data, tokens=model.tokens), model=model, lang=lang, mode=mode)
+
+
+__all__ = ["parse", "detokenize", "decode"]

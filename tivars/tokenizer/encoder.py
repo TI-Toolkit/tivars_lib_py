@@ -104,9 +104,9 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
     return tokens
 
 
-def encode(tokens: Sequence[TIToken]) -> bytes:
+def unparse(tokens: Sequence[TIToken]) -> bytes:
     """
-    Encodes a `TIToken` sequence into a bytestream
+    Concatenates a `TIToken` sequence into a bytestream
 
     :param tokens: The tokens to encode
     :return: The bytes comprising `tokens`
@@ -115,4 +115,20 @@ def encode(tokens: Sequence[TIToken]) -> bytes:
     return b"".join(token.bits for token in tokens)
 
 
-__all__ = ["normalize", "tokenize", "encode"]
+def encode(string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> bytes:
+    """
+    Encodes a string of token represented as text into a byte stream
+
+    For detailed information on tokenization modes, see `tivars.tokenizer.tokenize`.
+
+    :param string: The text string to encode
+    :param model: A model to target when encoding (defaults to no specific model)
+    :param lang: The language used in `string` (defaults to the locale of `model`, or English, ``en``)
+    :param mode: The tokenization mode to use (defaults to ``smart``)
+    :return: The bytes comprising the tokens represented by `string`
+    """
+
+    return unparse(tokenize(string, trie=model.tokens.tries[lang or model.lang], mode=mode))
+
+
+__all__ = ["normalize", "tokenize", "unparse", "encode"]

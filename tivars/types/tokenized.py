@@ -71,38 +71,11 @@ class TokenizedEntry(SizedEntry):
     def __iter__(self) -> Iterator[TIToken]:
         return iter(self.tokens())
 
-    @staticmethod
-    def decode(data: bytes, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> str:
-        """
-        Decodes a byte stream into a string of tokens
-
-        :param data: The token bytes to decode
-        :param model: A model for which compatibility is ensured (defaults to the TI-84+CE)
-        :param lang: The language used in ``string`` (defaults to the locale of `model`, or English, ``en``)
-        :param mode: The token representation to use for output (defaults to ``display``)
-        :return: A string representing the tokens in `data`
-        """
-
-        return detokenize(decode(data, tokens=model.tokens), model=model, lang=lang, mode=mode)
-
-    @staticmethod
-    def encode(string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> bytes:
-        """
-        Encodes a string of token represented as text into a byte stream
-
-        For detailed information on tokenization modes, see `tivars.tokenizer.tokenize`.
-
-        :param string: The text string to encode
-        :param model: A model to target when encoding (defaults to no specific model)
-        :param lang: The language used in ``string`` (defaults to the locale of `model`, or English, ``en``)
-        :param mode: The tokenization mode to use (defaults to ``smart``)
-        :return: The bytes comprising the tokens represented by `string`
-        """
-
-        return encode(tokenize(string, trie=model.tokens.tries[lang or model.lang], mode=mode))
+    decode = staticmethod(decode)
+    encode = staticmethod(encode)
 
     def get_min_os(self) -> OsVersion:
-        return max((token.since for token in decode(self.data)), default=OsVersions.INITIAL)
+        return max((token.since for token in self.tokens()), default=OsVersions.INITIAL)
 
     def get_version(self) -> int:
         match self.get_min_os():
@@ -199,7 +172,7 @@ class TokenizedEntry(SizedEntry):
         :return: The tokens comprising this entry as a list of `TIToken` objects
         """
 
-        return decode(self.data)
+        return parse(self.data)
 
     def lines(self) -> list[list[TIToken]]:
         """
