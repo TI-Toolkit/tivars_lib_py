@@ -3,6 +3,7 @@ Token stream decoder
 """
 
 
+from typing import Sequence
 from warnings import warn
 
 from tivars.models import *
@@ -10,9 +11,9 @@ from tivars.token import *
 from tivars.trie import *
 
 
-def decode(bytestream: bytes, *, tokens: TITokens = None) -> tuple[list[TIToken], OsVersion]:
+def decode(bytestream: bytes, *, tokens: TITokens = None) -> list[TIToken]:
     """
-    Decodes a byte stream into a list of `TIToken` objects and its minimum supported OS version
+    Decodes a byte stream into a list of `TIToken` objects
 
     Each token is represented using one of three different representations formats, dictated by ``mode``:
         - ``display``: Represents the tokens with Unicode characters matching the calculator's display
@@ -21,13 +22,12 @@ def decode(bytestream: bytes, *, tokens: TITokens = None) -> tuple[list[TIToken]
 
     :param bytestream: The token bytes to decode
     :param tokens: The `TITokens` object to use for decoding (defaults to the TI-84+CE tokens)
-    :return: A tuple of a list of `TIToken` objects and a minimum `OsVersion`
+    :return: A list of `TIToken` objects assembled from `bytestream`
     """
 
     tokens = tokens or TI_84PCE.tokens
 
     out = []
-    since = OsVersions.INITIAL
 
     index = 0
     curr_bytes = b''
@@ -38,7 +38,6 @@ def decode(bytestream: bytes, *, tokens: TITokens = None) -> tuple[list[TIToken]
         if curr_bytes[0]:
             if curr_bytes in tokens.bytes:
                 out.append(tokens.bytes[curr_bytes])
-                since = max(tokens.bytes[curr_bytes].since, since)
 
                 curr_bytes = b''
 
@@ -65,7 +64,25 @@ def decode(bytestream: bytes, *, tokens: TITokens = None) -> tuple[list[TIToken]
 
         index += 1
 
-    return out, since
+    return out
 
 
-__all__ = ["decode"]
+def detokenize(tokens: Sequence[TIToken], *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None):
+    """
+    Stringifies a sequence of `TIToken` objects given a language and token representation type
+
+    :param tokens: The `TIToken` sequence to stringify
+    :param model: The target model (defaults to the TI-84+CE)
+    :param lang: The target language (defaults to the locale of `model`, or English, ``en``)
+    :param mode: The token representation to use for output (defaults to ``display``)
+    :return: A string representing `tokens`
+    """
+
+    try:
+        return "".join(getattr(token.langs[lang or model.lang], mode or "display") for token in tokens)
+
+    except (AttributeError, TypeError):
+        raise ValueError(f"unrecognized token representation: '{mode}'")
+
+
+__all__ = ["decode", "detokenize"]

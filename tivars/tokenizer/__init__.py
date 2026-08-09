@@ -23,11 +23,11 @@ class TokenizedString(String):
 
     @classmethod
     def get(cls, data: bytes, **kwargs) -> str:
-        return "".join(token.langs["en"].display for token in decode(data.ljust(8, b'\x00'))[0])
+        return detokenize(decode(data.ljust(8, b'\x00')), mode="accessible")
 
     @classmethod
     def set(cls, value: str, **kwargs) -> bytes:
-        return encode(value)[0].rstrip(b'\x00')
+        return encode(tokenize(value)).rstrip(b'\x00')
 
 
 class Name(TokenizedString):
@@ -39,9 +39,7 @@ class Name(TokenizedString):
 
     @classmethod
     def set(cls, value: str, *, instance=None, **kwargs) -> bytes:
-        # Is this necessary?
-        mode = "max" if instance is not None and instance.leading_name_byte else "min"
-        data = encode(value, mode=mode)[0].rstrip(b'\x00')
+        data = super().set(value, **kwargs)
 
         if instance is not None and not data.startswith(instance.leading_name_byte):
             warn(f"Entry has an invalid name: '{value}'.",
@@ -50,5 +48,6 @@ class Name(TokenizedString):
         return data
 
 
-__all__ = ["decode", "encode", "normalize", "Name", "TokenizedString",
+__all__ = ["decode", "detokenize", "normalize", "tokenize", "encode",
+           "Name", "TokenizedString",
            "TIToken", "IllegalToken", "TITokenTrie", "TITokens", "OsVersion", "OsVersions"]

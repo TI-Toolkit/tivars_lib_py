@@ -6,15 +6,32 @@ Context-aware text encoder
 import re
 import unicodedata
 
+from typing import Sequence
+
 from tivars.models import *
+from tivars.token import *
 from tivars.trie import *
 from .state import *
 
 
-def encode(string: str, *,
-           trie: TITokenTrie = None, mode: str = None, normalize: bool = True) -> tuple[bytes, OsVersion]:
+def normalize(string: str):
+    """
+    Applies NFC normalization to a given string to ensure recognition of certain Unicode characters used as token names
+
+    :param string: The text to normalize
+    :return: The text in ``string`` normalized
+    """
+
+    return re.sub("[\u0398\u03F4\u1DBF]", "θ", unicodedata.normalize("NFC", string))
+
+
+# Yucky scope nonsense to avoid a globals() call
+_normalize = normalize
+
+
+def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normalize: bool = True) -> list[TIToken]:
     r"""
-    Encodes a string of tokens represented as text into a byte stream and its minimum supported OS version
+    Tokenizes a string of tokens represented as text into a list of `TIToken` objects
 
     Tokenization is performed using one of three procedures, dictated by ``mode``:
         - ``max``: Always munch maximally, i.e. consume the most input possible to produce a token
@@ -46,15 +63,14 @@ def encode(string: str, *,
     :param trie: The `TokenTrie` object to use for tokenization (defaults to the TI-84+CE trie)
     :param mode: The tokenization mode to use (defaults to ``smart``)
     :param normalize: Whether to apply NFC normalization to the input before encoding (defaults to ``true``)
-    :return: A tuple of a stream of token bytes and a minimum `OsVersion`
+    :return: A list of `TIToken` objects represented by `string`
     """
 
     string = _normalize(string) if normalize else string
     trie = trie or TI_84PCE.tokens.tries[None]
     mode = mode or "smart"
 
-    data = b''
-    since = OsVersions.INITIAL
+    tokens = []
     index = 0
 
     match mode:
@@ -81,28 +97,22 @@ def encode(string: str, *,
         except IndexError:
             raise ValueError(f"stack consumed at position {index}: '{string[:12]}'")
 
-        data += token.bits
-        since = max(token.since, since)
-
+        tokens.append(token)
         index += len(string) - len(remainder)
         string = remainder
 
-    return data, since
+    return tokens
 
 
-def normalize(string: str):
+def encode(tokens: Sequence[TIToken]) -> bytes:
     """
-    Applies NFC normalization to a given string to ensure recognition of certain Unicode characters used as token names
+    Encodes a `TIToken` sequence into a bytestream
 
-    :param string: The text to normalize
-    :return: The text in ``string`` normalized
+    :param tokens: The tokens to encode
+    :return: The bytes comprising `tokens`
     """
 
-    return re.sub("[\u0398\u03F4\u1DBF]", "θ", unicodedata.normalize("NFC", string))
+    return b"".join(token.bits for token in tokens)
 
 
-# Yucky scope nonsense to avoid a globals() call
-_normalize = normalize
-
-
-__all__ = ["encode", "normalize"]
+__all__ = ["normalize", "tokenize", "encode"]

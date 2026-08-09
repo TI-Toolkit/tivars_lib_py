@@ -79,35 +79,30 @@ class TokenizedEntry(SizedEntry):
         :param data: The token bytes to decode
         :param model: A model for which compatibility is ensured (defaults to the TI-84+CE)
         :param lang: The language used in ``string`` (defaults to the locale of `model`, or English, ``en``)
-        :param mode: The form of token representation to use for output (defaults to ``display``)
-        :return: A string of token representations
+        :param mode: The token representation to use for output (defaults to ``display``)
+        :return: A string representing the tokens in `data`
         """
 
-        try:
-            return "".join(getattr(token.langs[lang or model.lang], mode or "display")
-                           for token in decode(data, tokens=model.tokens)[0])
-
-        except (AttributeError, TypeError):
-            raise ValueError(f"unrecognized tokenization mode: '{mode}'")
+        return detokenize(decode(data, tokens=model.tokens), model=model, lang=lang, mode=mode)
 
     @staticmethod
     def encode(string: str, *, model: TIModel = TI_84PCE, lang: str = None, mode: str = None) -> bytes:
         """
-        Encodes a string of token represented in text into a byte stream
+        Encodes a string of token represented as text into a byte stream
 
-        For detailed information on tokenization modes, see `tivars.tokenizer.encode`.
+        For detailed information on tokenization modes, see `tivars.tokenizer.tokenize`.
 
         :param string: The text string to encode
         :param model: A model to target when encoding (defaults to no specific model)
         :param lang: The language used in ``string`` (defaults to the locale of `model`, or English, ``en``)
         :param mode: The tokenization mode to use (defaults to ``smart``)
-        :return: A stream of token bytes
+        :return: The bytes comprising the tokens represented by `string`
         """
 
-        return encode(string, trie=model.tokens.tries[lang or model.lang], mode=mode)[0]
+        return encode(tokenize(string, trie=model.tokens.tries[lang or model.lang], mode=mode))
 
     def get_min_os(self) -> OsVersion:
-        return decode(self.data)[1]
+        return max((token.since for token in decode(self.data)), default=OsVersions.INITIAL)
 
     def get_version(self) -> int:
         match self.get_min_os():
@@ -204,7 +199,7 @@ class TokenizedEntry(SizedEntry):
         :return: The tokens comprising this entry as a list of `TIToken` objects
         """
 
-        return decode(self.data)[0]
+        return decode(self.data)
 
     def lines(self) -> list[list[TIToken]]:
         """
