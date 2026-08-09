@@ -9,9 +9,9 @@ from tivars.token import *
 from tivars.trie import *
 
 
-class EncoderState:
+class TokenizerState:
     """
-    Base class for encoder states
+    Base class for tokenizer states
 
     Each state represents some encoding context which affects tokenization.
     """
@@ -29,7 +29,7 @@ class EncoderState:
     def __init__(self, length: int = 0):
         self.length = length
 
-    def munch(self, string: str, trie: TITokenTrie) -> tuple[TIToken, str, list['EncoderState']]:
+    def munch(self, string: str, trie: TITokenTrie) -> tuple[TIToken, str, list['TokenizerState']]:
         """
         Munch the input string and determine the resulting token, encoder state, and remainder of the string
 
@@ -80,25 +80,25 @@ class EncoderState:
 
         return token, remainder, self.next(token)
 
-    def next(self, token: TIToken) -> list['EncoderState']:
+    def next(self, token: TIToken) -> list['TokenizerState']:
         """
-        Determines the next encode state given a token
+        Determines the next tokenizer state given a token
 
         The current state is popped from the stack, and the states returned by this method are pushed.
 
         If the list of returned states is...
-            - empty, then the encoder is exiting the current state.
-            - length one, then the encoder's current state is being replaced by a new state.
-            - length two, then the encoder is entering a new state, able to exit back to this one.
+            - empty, then the tokenizer is exiting the current state.
+            - length one, then the tokenizer's current state is being replaced by a new state.
+            - length two, then the tokenizer is entering a new state, able to exit back to this one.
 
         :param token: The current token
-        :return: A list of encoder states to add to the stack
+        :return: A list of tokenizer states to add to the stack
         """
 
         return [type(self)(self.length + 1)]
 
 
-class MaxMode(EncoderState):
+class MaxMode(TokenizerState):
     """
     Maximal munching mode
     """
@@ -106,7 +106,7 @@ class MaxMode(EncoderState):
     mode = 0
 
 
-class MinMode(EncoderState):
+class MinMode(TokenizerState):
     """
     Minimal munching mode
     """
@@ -114,12 +114,12 @@ class MinMode(EncoderState):
     mode = -1
 
 
-class Line(EncoderState):
+class Line(TokenizerState):
     """
-    Encoder state which is always exited after a line break or STO
+    State which is always exited after a line break or STO
     """
 
-    def next(self, token: TIToken) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[TokenizerState]:
         match token.bits:
             case b'\x04' | b'\x3F':
                 return []
@@ -135,7 +135,7 @@ class Name(Line):
 
     mode = -1
 
-    def next(self, token: TIToken) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[TokenizerState]:
         #  Digits                              Uppercase letters (and theta)
         if b'\x30' <= token.bits <= b'\x39' or b'\x41' <= token.bits <= b'\x5B':
             return super().next(token)
@@ -167,7 +167,7 @@ class String(Line):
 
     mode = -1
 
-    def next(self, token: TIToken) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[TokenizerState]:
         match token.bits:
             case b'\x2A':
                 return []
@@ -186,14 +186,14 @@ class MaxString(String):
 
 class MaxStart(Line):
     """
-    Encoder state to initialize `MaxString`
+    State to initialize `MaxString`
 
     If any token besides ``"`` is encountered, this state is immediately exited to avoid cluttering the stack.
     """
 
     mode = 0
 
-    def next(self, token: TIToken) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[TokenizerState]:
         match token.bits:
             case b'\x2A':
                 return [MaxString()]
@@ -202,14 +202,14 @@ class MaxStart(Line):
                 return []
 
 
-class SmartMode(EncoderState):
+class SmartMode(TokenizerState):
     """
     Smart tokenization mode
     """
 
     mode = 0
 
-    def next(self, token: TIToken) -> list[EncoderState]:
+    def next(self, token: TIToken) -> list[TokenizerState]:
         match token.bits:
             #    "
             case b'\x2A':
@@ -231,6 +231,6 @@ class SmartMode(EncoderState):
                 return super().next(token)
 
 
-__all__ = ["EncoderState", "MaxMode", "MinMode", "SmartMode",
+__all__ = ["TokenizerState", "MaxMode", "MinMode", "SmartMode",
            "Line", "Name", "ListName", "ProgramName",
            "String", "MaxString", "MaxStart"]

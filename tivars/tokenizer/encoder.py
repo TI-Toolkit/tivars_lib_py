@@ -76,12 +76,12 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
     match mode:
         case "max":
             stack = [MaxMode()]
+            
+        case "min" | "string":
+            stack = [MinMode()]
 
         case "smart":
             stack = [SmartMode()]
-
-        case "min" | "string":
-            stack = [MinMode()]
 
         case _:
             raise ValueError(f"unrecognized tokenization mode: '{mode}'")
