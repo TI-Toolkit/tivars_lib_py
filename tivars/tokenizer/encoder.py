@@ -36,8 +36,8 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
 
     Tokenization is performed using one of three procedures, dictated by ``mode``:
         - ``max``: Always munch maximally, i.e. consume the most input possible to produce a token
+        - ``min``: Always munch minimally, i.e. consume the least input possible, which is often single characters
         - ``smart``: Munch maximally or minimally depending on context
-        - ``min``: Always munch minimally (equivalent to ``smart`` string context; may also be passed as ``string``)
 
     The ``smart`` tokenization mode uses the following contexts, munching maximally otherwise:
         - Strings: munch minimally, except when interpolating using ``Send(`` or storing to an equation
@@ -75,7 +75,7 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
         case "max":
             steps = [([], string, 0, [MaxMode()])]
 
-        case "min" | "string":
+        case "min":
             steps = [([], string, 0, [MinMode()])]
 
         case "smart":

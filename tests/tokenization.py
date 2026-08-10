@@ -94,21 +94,21 @@ class TokenizationTests(unittest.TestCase):
 
         self.assertEqual(TIProgram.encode(interpolation, mode="max"),
                          b'A@B>\xde*A@B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
-        self.assertEqual(TIProgram.encode(interpolation, mode="smart"),
-                         b'A@B>\xde*A)\xbb\xb0\xbb\xbe\xbb\xb3)B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
         self.assertEqual(TIProgram.encode(interpolation, mode="min"),
                          b'A)\xbb\xb0\xbb\xbe\xbb\xb3)B>D\xbb\xb8\xbb\xc3\xbb\xc0)*A)\xbb\xb0'
                          b'\xbb\xbe\xbb\xb3)B*>S\xbb\xb4\xbb\xbe\xbb\xb3\x10*SET)SOUND)\xbb'
                          b'\xb4\xbb\xc6\xbb\xb0\xbb\xbc\x10A)\xbb\xb0\xbb\xbe\xbb\xb3)B\x11)TIME)2')
+        self.assertEqual(TIProgram.encode(interpolation, mode="smart"),
+                         b'A@B>\xde*A)\xbb\xb0\xbb\xbe\xbb\xb3)B*>\xe7*SET)SOUND)\xef\x98A@B\x11)TIME)2')
 
         self.assertEqual(TIProgram.encode(names, mode="max"),
                          b'\xde*\xefK+\xeb\xefK+_\xefK*+\xefK+\xeb\xefK>_\xefK>_ABCDEF')
-        self.assertEqual(TIProgram.encode(names, mode="smart"),
-                         b'\xde*WHITE+\xebWHITE+\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdWHITE*+\xefK+\xebWHITE>_WHITE>_ABCDEF')
-        self.assertEqual(TIProgram.encode(names, mode="string"),
+        self.assertEqual(TIProgram.encode(names, mode="min"),
                          b'D\xbb\xb8\xbb\xc3\xbb\xc0)*WHITE+\xebWHITE+\xbb\xc0\xbb\xc2\xbb\xb6'
                          b'\xbb\xbdWHITE*+WHITE+\xebWHITE>\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdWHITE>'
                          b'\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdABCDEF')
+        self.assertEqual(TIProgram.encode(names, mode="smart"),
+                         b'\xde*WHITE+\xebWHITE+\xbb\xc0\xbb\xc2\xbb\xb6\xbb\xbdWHITE*+\xefK+\xebWHITE>_WHITE>_ABCDEF')
 
     def test_newlines(self):
         lines = "For(A,1,10", "Disp A", "End"
