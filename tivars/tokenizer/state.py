@@ -86,11 +86,7 @@ class TokenizerState:
         """
         Determines the next tokenizer timelines given a token
 
-        The current state is popped from the stack, and the states returned by this method are pushed.
-
-        1. The current state is popped from the stack.
-        2. All possible timelines are determined, each a list of states.
-        3. For each separate timeline, those states are added its stack.
+        Each timeline that will branch from this one is returned as a list of states to add to a copy of the stack.
 
         If a list of states in a timeline is...
             - empty, then the timeline is exiting the current state.

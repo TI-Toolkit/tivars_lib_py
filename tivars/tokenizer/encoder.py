@@ -31,7 +31,7 @@ _normalize = normalize
 
 
 def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normalize: bool = True) -> list[TIToken]:
-    r"""
+    """
     Tokenizes a string of tokens represented as text into a list of `TIToken` objects
 
     Tokenization is performed using one of three procedures, dictated by ``mode``:
@@ -46,8 +46,8 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
 
     In all modes:
         - Standard glyphs can be used for substituting Unicode symbols
-        - `\xXX` and `\uUUUU` output the denoted bytes exactly, regardless of validity
-        - `\ABCD` maximally munches `ABCD`, regardless of surrounding context
+        - `\\xXX` and `\\uUUUU` output the denoted bytes exactly, regardless of validity
+        - `\\ABCD` maximally munches `ABCD`, regardless of surrounding context
         - Certain unprintable characters act as a hard separator for tokens
             - U+001F (unit separator): `␟`
             - U+200A (hair space): ` `
@@ -56,7 +56,7 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
     For reference, here are the tokenization modes utilized by popular IDEs and other software:
         - SourceCoder: ``max``
         - TokenIDE: ``max``
-        - TI Connect CE: ¯\_(ツ)_/¯
+        - TI Connect CE: ¯\\_(ツ)_/¯
         - TI-Planet Project Builder: ``smart``
         - tivars_lib_cpp: ``smart``
 
