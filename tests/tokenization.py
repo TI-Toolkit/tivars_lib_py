@@ -135,3 +135,9 @@ class TokenizationTests(unittest.TestCase):
 
         self.assertEqual(TIProgram.encode(r'TI(Disp "A\ and B")TI'), TIProgram.encode(r'TI(Disp "\x41\x40\x42")TI'))
         self.assertEqual(TIProgram.encode(r'TI(Send("A\ and \B"))TI'), TIProgram.encode(r'TI(Send("A and B"))TI'))
+
+    def test_equations(self):
+        self.assertEqual(TIProgram.encode(r'"sin(X)"->{Y1}'), b'\x2A\xc2X\x11\x2A\x04\x5E\x10')
+        self.assertEqual(TIProgram.encode(r'String>Equ("sin(X)",{r1}'), b'\xBB\x56\x2A\xc2X\x11\x2A\x2B\x5E\x40')
+        self.assertEqual(TIProgram.encode(r'"sin(X)->{X2T}'), TIProgram.encode(r'"\sin(X)->{X2T}'))
+        self.assertNotEqual(TIProgram.encode(r'"sin(X)->|u')[:-2], TIProgram.encode(r'"sin(X)->UU')[:-2])

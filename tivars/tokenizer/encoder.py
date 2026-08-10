@@ -11,6 +11,7 @@ from typing import Sequence
 from tivars.models import *
 from tivars.token import *
 from tivars.trie import *
+from tivars.util import *
 from .state import *
 
 
@@ -70,38 +71,46 @@ def tokenize(string: str, *, trie: TITokenTrie = None, mode: str = None, normali
     trie = trie or TI_84PCE.tokens.tries[None]
     mode = mode or "smart"
 
-    tokens = []
-    index = 0
-
     match mode:
         case "max":
-            stack = [MaxMode()]
-            
+            steps = [([], string, 0, [MaxMode()])]
+
         case "min" | "string":
-            stack = [MinMode()]
+            steps = [([], string, 0, [MinMode()])]
 
         case "smart":
-            stack = [SmartMode()]
+            steps = [([], string, 0, [SmartMode()])]
 
         case _:
             raise ValueError(f"unrecognized tokenization mode: '{mode}'")
 
-    while string:
-        try:
-            token, remainder, contexts = stack.pop().munch(string, trie)
-            stack += contexts
+    while steps:
+        tokens, string, index, stack = steps.pop(0)
 
-        except ValueError:
-            raise ValueError(f"could not tokenize input at position {index}: '{string[:12]}'")
+        try:
+            state = stack.pop()
+            if not string:
+                if state.accept:
+                    return tokens
+
+                else:
+                    continue
+
+            if isinstance(state, IllegalState):
+                continue
 
         except IndexError:
-            raise ValueError(f"stack consumed at position {index}: '{string[:12]}'")
+            raise ValueError(f"stack consumed at position {index}: '{trim_string(string, 12)}'")
 
-        tokens.append(token)
-        index += len(string) - len(remainder)
-        string = remainder
+        try:
+            token, remainder, timelines = state.munch(string, trie)
+            for contexts in timelines:
+                steps.append((tokens + [token], remainder, index + len(string) - len(remainder), stack + contexts))
 
-    return tokens
+        except (IndexError, ValueError):
+            raise ValueError(f"failed to tokenize input at position {index}: '{trim_string(string, 12)}'")
+
+    raise ValueError(f"all tokenization attempts failed; last segment was '{trim_string(string, 12)}'")
 
 
 def unparse(tokens: Sequence[TIToken]) -> bytes:
