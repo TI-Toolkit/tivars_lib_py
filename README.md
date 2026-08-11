@@ -107,8 +107,8 @@ with open("HELLO.8xp", 'rb') as file:
 Most entry types also support loading from other natural data types. Any data can be passed to the constructor directly and be delegated to the correct loader:
 
 ```python
-my_program = TIProgram("Disp \"HELLO WORLD!\"")
-my_program.load_string("Disp \"HELLO WORLD!\"")
+my_program = TIProgram('Disp "HELLO WORLD!"')
+my_program.load_string('Disp "HELLO WORLD!"')
 
 my_real = TIReal(1.23)
 my_real.load_float(1.23)
@@ -156,7 +156,7 @@ my_var.bytes()
 You can also export entries to any of their input data types:
 
 ```python
-assert my_program.string() == "Disp \"HELLO WORLD!\""
+assert my_program.string() == 'Disp "HELLO WORLD!"'
 
 assert my_real.float() == 1.23
 ```
@@ -320,7 +320,7 @@ The CLI is divided into three core functionalities.
 - `tivars convert`: Convert between file types, e.g. `TIProgram -> txt`, `png -> TIPicture`, etc.
   - `PIL` must be installed to import or export TI picture types (see [PIL](#pil) below)
 - `tivars info`: Display basic information about a file
-  - The same view can be obtained in the library using the `.summary()` method on an object
+  - The same view can be obtained in code using the `.summary()` method on an object
 - `tivars pack/unpack`: Manipulate groups and bundles
   - Placing multiple entries or flash headers into one file is also supported
 
