@@ -7,8 +7,7 @@ import re
 
 from collections.abc import Iterator
 from io import BytesIO
-from sys import version_info
-from typing import BinaryIO
+from typing import BinaryIO, Self
 from warnings import warn
 
 from .data import *
@@ -16,15 +15,6 @@ from .file import *
 from .models import *
 from .tokenizer import *
 from .util import *
-
-
-# Use Self type if possible
-match version_info[:2]:
-    case 3, 10:
-        Self = 'TIEntry'
-
-    case _:
-        from typing import Self
 
 
 class TIHeader:

@@ -5,8 +5,7 @@ The fundamental flash file components
 
 from io import BytesIO
 from string import hexdigits
-from sys import version_info
-from typing import BinaryIO
+from typing import BinaryIO, Self
 from warnings import warn
 
 from .data import *
@@ -15,14 +14,6 @@ from .flags import *
 from .models import *
 from .numeric import BCD
 from .util import *
-
-
-match version_info[:2]:
-    case 3, 10:
-        Self = 'TIFlashHeader'
-
-    case _:
-        from typing import Self
 
 
 class DeviceType(Enum):

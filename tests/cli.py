@@ -20,14 +20,10 @@ def in_clean_dir(func):
         with TemporaryDirectory() as tmp:
             shutil.copytree("tests", tmp, dirs_exist_ok=True)
 
-            try:
-                with contextlib.chdir(tmp):
-                    os.makedirs("cli")
-                    with contextlib.chdir("cli"):
-                        func(self)
-
-            except AttributeError:
-                raise unittest.SkipTest("contextlib.chdir is not present in 3.10")
+            with contextlib.chdir(tmp):
+                os.makedirs("cli")
+                with contextlib.chdir("cli"):
+                    func(self)
 
     return inner
 
